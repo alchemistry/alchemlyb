@@ -25,8 +25,8 @@ def generate_xvgs(tpr, files, outdir):
     outdir = mds.Tree(outdir).makedirs()
     for edr in files:
         edr_file = mds.Leaf(edr)
-        outfile = outdir["/dhdl.{}.xvg".format(edr_file.name.split('.')[1])]
-        gromacs.energy(f=edr.abspath, s=tpr, odh=outfile.abspath)
+        outfile = outdir["dhdl.{}.xvg".format(edr_file.name.split('.')[1])]
+        gromacs.energy(f=edr_file.abspath, s=tpr, odh=outfile.abspath)
 
 
 def get_u_kn(xvg, T=310):
@@ -59,7 +59,7 @@ def get_u_kn(xvg, T=310):
     times = df[df.columns[0]]
 
     # want to grab only dH columns
-    DHcols = [(col_match in col) for col in df.columns]
+    DHcols = [col for col in df.columns if (col_match in col)]
     dH = df[DHcols]
     
     # not entirely sure if we need to get potentials relative to
