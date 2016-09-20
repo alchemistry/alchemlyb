@@ -14,7 +14,10 @@ molecular dynamics engines such as GROMACS [Abraham2015]_.
 
 2. functions for obtaining free energies directly from this data, using
 best-practices approaches for Multistate Bennett Acceptance Ratio (MBAR)
-[Shirts2008]_ and thermodynamic integration (TI).
+[Shirts2008]_ and thermodynamic integration (TI). In particular, it uses
+internally the excellent `pymbar <http://pymbar.readthedocs.io/>`_ library
+for performing MBAR and extracting independent, equilibrated samples
+[Chodera2016]_.
 
 This library currently centers around the use of `MDSynthesis
 <http://mdsynthesis.readthedocs.org>`_ at the moment for memory efficiency,
@@ -28,4 +31,8 @@ persistence, and code simplicity, though this may change in the future.
 .. [Shirts2008] Shirts, M.R., and Chodera, J.D. (2008). Statistically optimal
     analysis of samples from multiple equilibrium states. The Journal of Chemical
     Physics 129, 124105.
+
+.. [Chodera2016] Chodera, J.D. (2016). A Simple Method for Automated
+    Equilibration Detection in Molecular Simulations. Journal of Chemical Theory
+    and Computation 12, 1799–1805.
 

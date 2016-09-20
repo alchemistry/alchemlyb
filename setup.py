@@ -24,5 +24,5 @@ setup(name='alchemlyb',
       packages=['alchemlyb'],
       license='BSD',
       long_description=open('README.rst').read(),
-      install_requires=['GromacsWrapper', 'pandas', 'numpy', 'mdsynthesis']
+      install_requires=['GromacsWrapper', 'pymbar', 'pandas', 'numpy', 'mdsynthesis']
       )
