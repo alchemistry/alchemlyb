@@ -134,8 +134,7 @@ def get_block_ukn(sims, lower, upper, step=1):
     dfs = []
     N_k = []
     for sim in sims:
-        print "\r{}".format(sim.name), 
-        
+
         # get data for every `step`
         df = sim.data['u_kn/subsampled_dt1ps'].loc[range(lower, upper, step)]
         dfs.append(df)

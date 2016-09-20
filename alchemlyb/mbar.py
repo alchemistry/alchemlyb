@@ -48,7 +48,6 @@ def get_DG(sims, name, lower, upper):
     for state in groups:
         dfs_g = []
         for sim in groups[state]:
-            print "\r{}".format(sim.name), 
 
             # get data for every `step`
             df = sim.data[name].loc[lower[state]:upper[state]]
