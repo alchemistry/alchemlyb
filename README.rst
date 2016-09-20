@@ -1,16 +1,17 @@
-``alchemlyb``: data munging and analysis library for alchemical free energy calculations
-========================================================================================
+alchemlyb: data munging and analysis library for alchemical free energy calculations
+====================================================================================
 
 **Warning**: This library is young. It is **not** API stable. It is a
 nucleation point. By all means use and help improve it, but note that it will
 change with time.
 
-``alchemlyb`` is an attempt to make alchemical free energy calculations easier
+**alchemlyb** is an attempt to make alchemical free energy calculations easier
 to do leveraging the full power and flexibility of the PyData stack. It
 includes: 
 
 1. functions for extracting raw data from output files of common
 molecular dynamics engines such as GROMACS [Abraham2015]_. 
+
 2. functions for obtaining free energies directly from this data, using
 best-practices approaches for Multistate Bennett Acceptance Ratio (MBAR)
 [Shirts2008]_ and thermodynamic integration (TI).
