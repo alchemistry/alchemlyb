@@ -1,3 +1,8 @@
+import numpy as np
+import pandas as pd
+
+from pymbar import MBAR
+from pymbar.timeseries import detectEquilibration
 
 
 def get_DG(sims, name, lower, upper):
@@ -26,10 +31,6 @@ def get_DG(sims, name, lower, upper):
         Standard deviation of Delta G between each state as calculated by MBAR.
     
     """
-    import numpy as np
-    import pandas as pd
-    from pymbar import MBAR
-    from pymbar.timeseries import detectEquilibration
     
     import gc
     
@@ -88,41 +89,3 @@ def get_DG(sims, name, lower, upper):
     DG, DDG = mbar.getFreeEnergyDifferences()
     
     return DG, DDG
-
-def get_neighbor_DG(sims, name, lower, upper, neighbor='right'):
-    import pandas as pd
-    
-    lambdas = sorted(list(set(sims.categories['coul-lambda'])))[:-1]
-    
-    k_b = 8.3144621E-3
-    T = 310
-    
-    if neighbor == 'right':
-        neigh = 1
-    elif neighbor == 'left':
-        neigh = -1
-    else:
-        raise ValueError("neighbor must be right or left")
-        
-    mbar = get_DG(sims=sims, name=name, lower=lower, upper=upper)
-    
-    df = pd.DataFrame({'DG': k_b * T * mbar[0].diagonal(neigh), 
-                      'std': k_b * T * mbar[1].diagonal(neigh)},
-                      columns=['DG', 'std'],
-                      index=pd.Float64Index(lambdas))
-
-    return df
-
-def get_total_DG(sims, name, lower, upper):
-    import pandas as pd
-    
-    k_b = 8.3144621E-3
-    T = 310
-        
-    mbar = get_DG(sims=sims, name=name, lower=lower, upper=upper)
-    
-    df = pd.DataFrame({'DG': k_b * T * mbar[0][0,-1:], 
-                      'std': k_b * T * mbar[1][0,-1:]},
-                      columns=['DG', 'std'])
-
-    return df
