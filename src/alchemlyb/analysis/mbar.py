@@ -89,3 +89,74 @@ def get_DG(sims, name, lower, upper):
     DG, DDG = mbar.getFreeEnergyDifferences()
     
     return DG, DDG
+
+
+def get_DG_dask(sims, name, lower, upper, step):
+    """Get DG and DDG from set of simulations. Does automatic subsampling
+    for each simulation on the basis of automated equilibrium detection on its
+    own reduced potential timeseries.
+    
+    Parameters
+    ----------
+    sims : Bundle
+        Bundle of sims to grab data from.
+    name : str
+        Name of dataset to use.
+    lower : float, dict
+        Time (ps) to start block from. Could also be a dict 
+        giving state number as keys and float as value.
+    upper : float
+        Time (ps) to end block at. Could also be a dict 
+        giving state number as keys and float as value.
+        
+    Returns
+    -------
+    DG : array
+        Delta G between each state as calculated by MBAR.
+    DDG : array
+        Standard deviation of Delta G between each state as calculated by MBAR.
+    
+    """
+    import numpy as np    
+    from pymbar import MBAR
+        
+    states = np.array(sorted(list(set(sims.categories['state']))))
+    
+    if isinstance(lower, (float, int)) or lower is None:
+        lower = {state: lower for state in states}
+            
+    if isinstance(upper, (float, int)) or upper is None:
+        upper = {state: upper for state in states}
+    
+    dfs = []
+    N_k = []
+    
+    groups = sims.categories.groupby('state')
+    for state in groups:
+        dfs_g = []
+        for sim in groups[state]:
+            
+            df = delayed(process_df)(sim, 
+                                     name, 
+                                     lower[state], 
+                                     upper[state],
+                                     step,
+                                     states)
+            
+            dfs_g.append(df)
+            
+        df = delayed(np.vstack)(dfs_g)
+        dfs.append(df)
+
+        N_k.append(delayed(len)(df))
+        
+    u_kn = delayed(np.vstack)(dfs)
+    u_kn = u_kn.T
+    
+    mbar = delayed(MBAR)(u_kn, N_k)
+    
+    outs = mbar.getFreeEnergyDifferences()
+    
+    DG, DDG = [outs[i] for i in range(2)]
+    
+    return DG, DDG
