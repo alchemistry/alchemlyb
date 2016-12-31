@@ -3,6 +3,7 @@ sudo: false
 
 python:
    - "2.7"
+   - "3.5"
 
 branches:
     only:
@@ -11,6 +12,7 @@ branches:
 
 install:
     - pip install --upgrade pip setuptools wheel
+    - pip install six
     - pip install codecov
     - pip install pytest-cov
     - pip install pytest-pep8
