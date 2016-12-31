@@ -1,6 +1,8 @@
 alchemlyb: data munging and analysis library for alchemical free energy calculations
 ====================================================================================
 
+|build|
+
 **Warning**: This library is young. It is **not** API stable. It is a
 nucleation point. By all means use and help improve it, but note that it will
 change with time.
@@ -35,4 +37,9 @@ persistence, and code simplicity, though this may change in the future.
 .. [Chodera2016] Chodera, J.D. (2016). A Simple Method for Automated
     Equilibration Detection in Molecular Simulations. Journal of Chemical Theory
     and Computation 12, 1799–1805.
+
+.. |build| image:: https://travis-ci.org/alchemistry/alchemlyb.svg?branch=master
+    :alt: Build Status
+    :scale: 100%
+    :target: https://travis-ci.org/alchemistry/alchemlyb
 
