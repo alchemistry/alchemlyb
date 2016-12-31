@@ -1,6 +1,7 @@
-def test_import(object):
+import alchemlyb
+
+def test_name():
     try:
-        import alchemlyb
-        assert True
-    except:
-        assert False
+        assert alchemlyb.__name__ == 'alchemlyb'
+    except Exception as e:
+        raise e

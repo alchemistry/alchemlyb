@@ -1,0 +1,5 @@
+[run]
+branch = True
+omit =
+    # omit all tests
+    src/alchemlyb/tests/*

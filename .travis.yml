@@ -18,7 +18,7 @@ install:
     - pip install -e .
 
 script:
-    - py.test --cov alchemlyb alchemlyb/src/alchemlyb/tests
+    - py.test --cov alchemlyb src/alchemlyb/tests
 
 after_success:
     - codecov
