@@ -1,0 +1,24 @@
+language: python
+sudo: false
+
+python:
+   - "2.7"
+
+branches:
+    only:
+        - master
+        - develop
+
+install:
+    - pip install --upgrade pip setuptools wheel
+    - pip install codecov
+    - pip install pytest-cov
+    - pip install pytest-pep8
+    - pip install --only-binary=numpy numpy # Otherwise this would take ages
+    - pip install -e .
+
+script:
+    - py.test --cov alchemlyb alchemlyb/src/alchemlyb/tests
+
+after_success:
+    - codecov
