@@ -7,8 +7,8 @@ import gromacs
 from gromacs.formats import XVG
 
 
-def get_u_kn(xvg, T=310):
-    """Return u_kn from a Hamiltonian differences XVG file.
+def extract_u_kn(xvg, T):
+    """Return reduced potentials `u_kn` from a Hamiltonian differences XVG file.
     
     Parameters
     ----------
@@ -19,7 +19,7 @@ def get_u_kn(xvg, T=310):
     
     Returns
     -------
-    u_kn : array
+    u_kn : DataFrame
         Potential energy for each alchemical state (k) for each frame (n).
     
     """
@@ -62,23 +62,24 @@ def get_u_kn(xvg, T=310):
     return u_k
 
 
-def get_u_kn_edr(tpr, edr, T=310):
-    """Obtain XVGs from EDR files giving Hamiltonian differences for each window.
+def generate_xvg(tpr, edr, xvg):
+    """Obtain an XVG from an EDR file giving Hamiltonian differences for each window.
 
     Parameters
     ----------
     tpr : str
         Path to TPR file.
-    files : list
-        List of paths to EDR files to use.
-    outdir : path
-        Path to directory in which to place XVG files.
+    edr : str 
+        Path to EDR file to use.
+    xvg : str
+        Path for new XVG file.
+
+    Returns
+    -------
+    xvg : str
+        Path of new XVG file.
 
     """
-    outfile = "dhdl.{}.xvg".format(edr)
+    gromacs.energy(f=edr, s=tpr, odh=xvg)
 
-    out = 
-
-    gromacs.energy(f=edr, s=tpr, odh=out)
-
-
+    return xvg

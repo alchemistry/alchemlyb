@@ -1,33 +1,47 @@
+import numpy as np
+from pymbar.timeseries import statisticalInefficiency
 
-def subsample(sim, name, lower, upper, step, states):
-    import numpy as np
-    from pymbar.timeseries import statisticalInefficiency
+def subsample(df, series, lower=None, upper=None, step=None):
+    """Subsample a DataFrame based on the calculated statistical inefficiency of a timeseries.
 
-    # get data for every `step`
-    df = sim.data.retrieve(name)
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame to subsample according statistical inefficiency of `series`.
+    series : Series
+        Series to use for calculating statistical inefficiency.
+    lower : float
+        Lower bound to slice `series` data from.
+    upper : float
+        Upper bound to slice `series` to (inclusive).
+    step : int
+        Step between `series` items to slice by.
 
-    df = df.loc[lower:upper]
+    Returns
+    -------
+    DataFrame
+        `df`, subsampled according to subsampled `series`.
+
+    """
+    series = series.loc[lower:upper]
 
     # drop any rows that have missing values
-    df = df.dropna()
+    series = series.dropna()
+
+    # subsample according to step
+    series = series.iloc[::step]
 
     # subsample according to statistical inefficiency after equilibration detection
     # we do this after slicing by lower/upper to simulate
     # what we'd get with only this data available
-    #statinef  = statisticalInefficiency(df[df.columns[sim.categories['state']]])
+    statinef  = statisticalInefficiency(series)
 
     # we round up
-    #statinef = int(np.rint(statinef))
+    statinef = int(np.rint(statinef))
 
-    #df = df.to_delayed()[0]
-    
-    # subsample
-    df = df.iloc[::step]
+    # subsample according to statistical inefficiency
+    series = series.iloc[::statinef]
 
-    # extract only columns that have the corresponding sim present        
-    df = df[df.columns[states]]
-
-    # subsample according to statistical inefficiency and equilibrium detection
-    #df = df.iloc[::statinef]
+    df = df.loc[series.index]
     
     return df
