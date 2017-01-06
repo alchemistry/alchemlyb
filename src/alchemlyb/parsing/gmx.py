@@ -7,8 +7,8 @@ import gromacs
 from gromacs.formats import XVG
 
 
-def extract_u_kn(xvg, T):
-    """Return reduced potentials `u_kn` from a Hamiltonian differences XVG file.
+def extract_u_nk(xvg, T):
+    """Return reduced potentials `u_nk` from a Hamiltonian differences XVG file.
     
     Parameters
     ----------
@@ -19,7 +19,7 @@ def extract_u_kn(xvg, T):
     
     Returns
     -------
-    u_kn : DataFrame
+    u_nk : DataFrame
         Potential energy for each alchemical state (k) for each frame (n).
     
     """
@@ -60,6 +60,40 @@ def extract_u_kn(xvg, T):
     u_k.name = 'reduced potential'
     
     return u_k
+
+
+def extract_dHdl(xvg, name='fep-lambda'):
+    """Return dH/dl from a Hamiltonian differences XVG file.
+    
+    Parameters
+    ----------
+    xvg : str
+        Path to XVG file to extract data from.
+    name : str
+        Name of dH/dl vector to pull the column for.
+    
+    Returns
+    -------
+    dH/dl : Series
+        dH/dl as a function of time for this lambda window.
+    
+    """
+    # TODO: add checking of name
+
+    # extract a DataFrame from XVG data
+    xvg = XVG(xvg)
+    df = xvg.to_df()
+    
+    times = df[df.columns[0]]
+
+    # want to grab only dH/dl column specified
+    dHdlcols = [col for col in df.columns if (name in col)][0]
+    dHdl = df[dHdlcols]
+    
+    dHdl = pd.Series(dHdl.values, index=pd.Float64Index(times.values, name='time (ps)'),
+                     name='dH/dl')
+    
+    return dHdl
 
 
 def generate_xvg(tpr, edr, xvg):
