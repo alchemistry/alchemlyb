@@ -25,5 +25,5 @@ setup(name='alchemlyb',
       package_dir={'': 'src'},
       license='BSD',
       long_description=open('README.rst').read(),
-      install_requires=['numpy', 'pandas', 'GromacsWrapper', 'pymbar']
+      install_requires=['numpy', 'pandas', 'GromacsWrapper', 'pymbar', 'scipy', 'scikit-learn']
       )
