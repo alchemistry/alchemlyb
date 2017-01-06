@@ -2,6 +2,7 @@ import pandas as pd
 import scipy.integrate
 
 
+# CODE DUMP; BROKEN
 def thermodynamic_integration(dHdls):
     """
 

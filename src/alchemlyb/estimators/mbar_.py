@@ -41,6 +41,9 @@ class MBAR(BaseEstimator):
         The estimated statistical uncertainty (one standard deviation) in
         dimensionless free energy differences.
 
+    theta_ : np.ndarray, float, shape=(K, K)
+        The theta matrix.
+
     """
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
@@ -49,7 +52,7 @@ class MBAR(BaseEstimator):
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
         self.initial_f_k = initial_f_k
-        self.method = method
+        self.method = (dict(method=method), )
         self.verbose = verbose
 
     def fit(self, u_nk, N_k):
@@ -79,7 +82,8 @@ class MBAR(BaseEstimator):
                            solver_protocol=self.method,
                            verbose=self.verbose)
         
-        self.delta_f_, self.d_delta_f_ = self._mbar.getFreeEnergyDifferences()
+        out = self._mbar.getFreeEnergyDifferences()
+        self.delta_f_, self.d_delta_f_, self.theta_ = out
 
         return self
 
