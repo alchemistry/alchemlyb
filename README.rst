@@ -43,7 +43,7 @@ persistence, and code simplicity, though this may change in the future.
     :scale: 100%
     :target: https://travis-ci.org/alchemistry/alchemlyb
 
-.. |cov| image:: https://codecov.io/github/alchemistry/alchemlyb/coverage.svg?branch=master
+.. |cov| image:: https://codecov.io/gh/alchemistry/alchemlyb/branch/master/graph/badge.svg
     :alt: Code coverage
     :scale: 100%
-    :target:https://codecov.io/github/alchemistry/alchemlyb
+    :target: https://codecov.io/gh/alchemistry/alchemlyb
