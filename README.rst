@@ -1,7 +1,7 @@
 alchemlyb: data munging and analysis library for alchemical free energy calculations
 ====================================================================================
 
-|build| |cov|
+|build| |cov| |gitter|
 
 **Warning**: This library is young. It is **not** API stable. It is a
 nucleation point. By all means use and help improve it, but note that it will
@@ -47,3 +47,8 @@ persistence, and code simplicity, though this may change in the future.
     :alt: Code coverage
     :scale: 100%
     :target: https://codecov.io/gh/alchemistry/alchemlyb
+
+.. |gitter| image:: https://badges.gitter.im/alchemistry/alchemlyb.png
+    :alt: Gitter chat
+    :scale: 100%
+    :target: https://gitter.im/alchemistry/alchemlyb
