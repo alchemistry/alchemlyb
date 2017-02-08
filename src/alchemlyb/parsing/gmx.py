@@ -28,10 +28,18 @@ def extract_u_nk(xvg, T):
     k_b = 8.3144621E-3
     beta = 1/(k_b * T)
     
+    # extract state; should drop below to read just once later
+    with open(xvg, 'r') as f:
+        for line in f.readlines():
+            if ('subtitle' in line) and ('state' in line):
+                state = int(line.split('state')[1].split(':')[0])
+                statenames = [word.strip(')(,') for word in line.split() if 'lambda' in word]
+                break
+
     # extract a DataFrame from XVG data
     xvg = XVG(xvg)
     df = xvg.to_df()
-
+    
     # drop duplicate columns if we (stupidly) have them
     df = df.iloc[:, ~df.columns.duplicated()]
     
@@ -52,12 +60,22 @@ def extract_u_nk(xvg, T):
     u_k = dict()
     cols= list()
     for col in dH:
-        u_col = 'u' + col.split('to')[1]
+        u_col = eval(col.split('to')[1])
         u_k[u_col] = beta * (dH[col].values + U.values + pV.values)
         cols.append(u_col)
     
-    u_k = pd.DataFrame(u_k, columns=cols, index=pd.Float64Index(times.values, name='time (ps)'))
-    u_k.name = 'reduced potential'
+    u_k = pd.DataFrame(u_k, columns=cols, 
+                       index=pd.Float64Index(times.values, name='time'))
+    
+    # create columns for each lambda, indicating state each row sampled from
+    for i, statename in enumerate(statenames):
+        u_k[statename] = u_k.columns[state][i]
+    
+    # set up new multi-index
+    newind = ['time'] + statenames
+    u_k = u_k.reset_index().set_index(newind)
+    
+    u_k.name = 'u_nk'
     
     return u_k
 

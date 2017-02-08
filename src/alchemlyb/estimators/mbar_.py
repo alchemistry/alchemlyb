@@ -34,14 +34,14 @@ class MBAR(BaseEstimator):
     Attributes
     ----------
 
-    delta_f_ : np.ndarray, float, shape=(K, K)
+    delta_f_ : DataFrame
         The estimated dimensionless free energy difference between each state.
 
-    d_delta_f_ : np.ndarray, float, shape=(K, K)
+    d_delta_f_ : DataFrame
         The estimated statistical uncertainty (one standard deviation) in
         dimensionless free energy differences.
 
-    theta_ : np.ndarray, float, shape=(K, K)
+    theta_ : DataFrame
         The theta matrix.
 
     """
@@ -55,13 +55,17 @@ class MBAR(BaseEstimator):
         self.method = (dict(method=method), )
         self.verbose = verbose
 
-    def fit(self, u_nk, N_k):
+        # handle for pymbar.MBAR object
+        self._mbar = None
+
+    def fit(self, u_nk):
         """
-        Compute k-means clustering.
+        Compute overlap matrix of reduced potentials using multi-state
+        Bennett acceptance ratio.
 
         Parameters
         ----------
-        u_nk : np.ndarray, float, shape=(N_max, K)
+        u_nk : DataFrame 
             u_kn[k,n] is the reduced potential energy of uncorrelated
             configuration n evaluated at state k.
 
@@ -70,22 +74,41 @@ class MBAR(BaseEstimator):
                                 .  .  .
                  u_1(x_n) u_2(x_n) u_3(x_n) . . . u_k(x_n)]
 
-        N_k :  np.ndarray, int, shape=(K)
-            N_k[k] is the number of uncorrelated snapshots sampled from state k.
-            Some may be zero, indicating that there are no samples from that state.
-
         """
-        self._mbar = MBAR_(u_nk.T, N_k, 
+        # sort by state so that rows from same state are in contiguous blocks
+        u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
+        
+        groups = u_nk.groupby(level=u_nk.index.names[1:])
+        N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in u_nk.columns]        
+        
+        self._mbar = MBAR_(u_nk.T, N_k,
                            maximum_iterations=self.maximum_iterations,
                            relative_tolerance=self.relative_tolerance,
                            initial_f_k=self.initial_f_k,
                            solver_protocol=self.method,
                            verbose=self.verbose)
-        
-        out = self._mbar.getFreeEnergyDifferences()
-        self.delta_f_, self.d_delta_f_, self.theta_ = out
 
+        self.states_ = u_nk.columns.values.tolist()
+        
         return self
 
+    @property
+    def delta_f_(self):
+        if self._mbar is not None:
+            out = self._mbar.getFreeEnergyDifferences()[0]
+            return pd.DataFrame(out, columns=self.states_, index=self.states_)
+
+    @property
+    def d_delta_f_(self):
+        if self._mbar is not None:
+            out = self._mbar.getFreeEnergyDifferences()[1]
+            return pd.DataFrame(out, columns=self.states_, index=self.states_)
+
+    @property
+    def theta_(self):
+        if self._mbar is not None:
+            out = self._mbar.getFreeEnergyDifferences()[2]
+            return pd.DataFrame(out, columns=self.states_, index=self.states_)
+            
     def predict(self, u_ln):
         pass
