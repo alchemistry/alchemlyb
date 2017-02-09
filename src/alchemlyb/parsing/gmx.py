@@ -69,7 +69,10 @@ def extract_u_nk(xvg, T):
     
     # create columns for each lambda, indicating state each row sampled from
     for i, statename in enumerate(statenames):
-        u_k[statename] = u_k.columns[state][i]
+        try:
+            u_k[statename] = u_k.columns[state][i]
+        except IndexError:
+            u_k[statename] = u_k.columns[state]
     
     # set up new multi-index
     newind = ['time'] + statenames
