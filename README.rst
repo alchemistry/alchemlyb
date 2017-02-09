@@ -8,22 +8,21 @@ nucleation point. By all means use and help improve it, but note that it will
 change with time.
 
 **alchemlyb** is an attempt to make alchemical free energy calculations easier
-to do leveraging the full power and flexibility of the PyData stack. It
+to do by leveraging the full power and flexibility of the PyData stack. It
 includes: 
 
-1. functions for extracting raw data from output files of common
-molecular dynamics engines such as GROMACS [Abraham2015]_. 
+1. Parsers for extracting raw data from output files of common molecular
+   dynamics engines such as GROMACS [Abraham2015]_. 
 
-2. functions for obtaining free energies directly from this data, using
-best-practices approaches for Multistate Bennett Acceptance Ratio (MBAR)
-[Shirts2008]_ and thermodynamic integration (TI). In particular, it uses
-internally the excellent `pymbar <http://pymbar.readthedocs.io/>`_ library
-for performing MBAR and extracting independent, equilibrated samples
-[Chodera2016]_.
+2. Subsamplers for obtaining uncorrelated samples from timeseries data.
 
-This library currently centers around the use of `MDSynthesis
-<http://mdsynthesis.readthedocs.org>`_ at the moment for memory efficiency,
-persistence, and code simplicity, though this may change in the future.
+3. Estimators for obtaining free energies directly from this data, using
+   best-practices approaches for multistate Bennett acceptance ratio (MBAR)
+    [Shirts2008]_ and thermodynamic integration (TI).
+
+In particular, it uses internally the excellent `pymbar
+<http://pymbar.readthedocs.io/>`_ library for performing MBAR and extracting
+independent, equilibrated samples [Chodera2016]_.
 
 .. [Abraham2015] Abraham, M.J., Murtola, T., Schulz, R., Páll, S., Smith, J.C.,
     Hess, B., and Lindahl, E. (2015). GROMACS: High performance molecular
