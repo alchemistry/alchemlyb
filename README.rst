@@ -18,7 +18,7 @@ includes:
 
 3. Estimators for obtaining free energies directly from this data, using
    best-practices approaches for multistate Bennett acceptance ratio (MBAR)
-    [Shirts2008]_ and thermodynamic integration (TI).
+   [Shirts2008]_ and thermodynamic integration (TI).
 
 In particular, it uses internally the excellent `pymbar
 <http://pymbar.readthedocs.io/>`_ library for performing MBAR and extracting
