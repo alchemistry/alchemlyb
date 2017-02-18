@@ -3,8 +3,13 @@
 """
 import pandas as pd
 
-import gromacs
 from gromacs.formats import XVG
+
+
+# TODO: perhaps move constants elsewhere?
+# these are the units we need for dealing with gromacs, so not
+# a bad place for it, honestly
+k_b = 8.3144621E-3
 
 
 def extract_u_nk(xvg, T):
@@ -25,16 +30,9 @@ def extract_u_nk(xvg, T):
     """
 
     col_match = r"\xD\f{}H \xl\f{}"
-    k_b = 8.3144621E-3
     beta = 1/(k_b * T)
-    
-    # extract state; should drop below to read just once later
-    with open(xvg, 'r') as f:
-        for line in f.readlines():
-            if ('subtitle' in line) and ('state' in line):
-                state = int(line.split('state')[1].split(':')[0])
-                statenames = [word.strip(')(,') for word in line.split() if 'lambda' in word]
-                break
+
+    state, lambdas, statevec = _extract_state(xvg)
 
     # extract a DataFrame from XVG data
     xvg = XVG(xvg)
@@ -48,7 +46,7 @@ def extract_u_nk(xvg, T):
     # want to grab only dH columns
     DHcols = [col for col in df.columns if (col_match in col)]
     dH = df[DHcols]
-    
+
     # not entirely sure if we need to get potentials relative to
     # the state actually sampled, but perhaps needed to stack
     # samples from all states?
@@ -64,18 +62,18 @@ def extract_u_nk(xvg, T):
         u_k[u_col] = beta * (dH[col].values + U.values + pV.values)
         cols.append(u_col)
     
-    u_k = pd.DataFrame(u_k, columns=cols, 
+    u_k = pd.DataFrame(u_k, columns=cols,
                        index=pd.Float64Index(times.values, name='time'))
     
     # create columns for each lambda, indicating state each row sampled from
-    for i, statename in enumerate(statenames):
+    for i, l in enumerate(lambdas):
         try:
-            u_k[statename] = u_k.columns[state][i]
-        except IndexError:
-            u_k[statename] = u_k.columns[state]
+            u_k[l] = statevec[i]
+        except TypeError:
+            u_k[l] = statevec
     
     # set up new multi-index
-    newind = ['time'] + statenames
+    newind = ['time'] + lambdas
     u_k = u_k.reset_index().set_index(newind)
     
     u_k.name = 'u_nk'
@@ -83,15 +81,13 @@ def extract_u_nk(xvg, T):
     return u_k
 
 
-def extract_dHdl(xvg, name='fep-lambda'):
+def extract_dHdl(xvg, T):
     """Return dH/dl from a Hamiltonian differences XVG file.
     
     Parameters
     ----------
     xvg : str
         Path to XVG file to extract data from.
-    name : str
-        Name of dH/dl vector to pull the column for.
     
     Returns
     -------
@@ -99,42 +95,60 @@ def extract_dHdl(xvg, name='fep-lambda'):
         dH/dl as a function of time for this lambda window.
     
     """
-    # TODO: add checking of name
+    beta = 1/(k_b * T)
+
+    state, lambdas, statevec = _extract_state(xvg)
 
     # extract a DataFrame from XVG data
     xvg = XVG(xvg)
     df = xvg.to_df()
     
+    
     times = df[df.columns[0]]
 
-    # want to grab only dH/dl column specified
-    dHdlcols = [col for col in df.columns if (name in col)][0]
-    dHdl = df[dHdlcols]
+    # want to grab only dH/dl columns
+    dHcols = []
+    for l in lambdas:
+        dHcols.extend([col for col in df.columns if (l in col)])
+
+    dHdl = df[dHcols]
+
+    # make dimensionless
+    dHdl = beta * dHdl
+
+    # rename columns to not include the word 'lambda', since we use this for
+    # index below
+    cols = [l.split('-')[0] for l in lambdas]
     
-    dHdl = pd.Series(dHdl.values, index=pd.Float64Index(times.values, name='time (ps)'),
-                     name='dH/dl')
+    dHdl = pd.DataFrame(dHdl.values, columns=cols,
+                        index=pd.Float64Index(times.values, name='time'))
+
+    # create columns for each lambda, indicating state each row sampled from
+    for i, l in enumerate(lambdas):
+        try:
+            dHdl[l] = statevec[i]
+        except TypeError:
+            dHdl[l] = statevec
+    
+    # set up new multi-index
+    newind = ['time'] + lambdas
+    dHdl= dHdl.reset_index().set_index(newind)
+
+    dHdl.name='dH/dl'
     
     return dHdl
 
 
-def generate_xvg(tpr, edr, xvg):
-    """Obtain an XVG from an EDR file giving Hamiltonian differences for each window.
-
-    Parameters
-    ----------
-    tpr : str
-        Path to TPR file.
-    edr : str 
-        Path to EDR file to use.
-    xvg : str
-        Path for new XVG file.
-
-    Returns
-    -------
-    xvg : str
-        Path of new XVG file.
+def _extract_state(xvg):
+    """Extract information on state sampled, names of lambdas.
 
     """
-    gromacs.energy(f=edr, s=tpr, odh=xvg)
+    with open(xvg, 'r') as f:
+        for line in f.readlines():
+            if ('subtitle' in line) and ('state' in line):
+                state = int(line.split('state')[1].split(':')[0])
+                lambdas = [word.strip(')(,') for word in line.split() if 'lambda' in word]
+                statevec = eval(line.strip().split(' = ')[-1].strip('"'))
+                break
 
-    return xvg
+    return state, lambdas, statevec

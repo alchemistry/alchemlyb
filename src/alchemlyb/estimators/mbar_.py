@@ -44,6 +44,9 @@ class MBAR(BaseEstimator):
     theta_ : DataFrame
         The theta matrix.
 
+    states_ : list
+        Lambda states for which free energy differences were obtained.
+
     """
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
@@ -66,13 +69,8 @@ class MBAR(BaseEstimator):
         Parameters
         ----------
         u_nk : DataFrame 
-            u_kn[k,n] is the reduced potential energy of uncorrelated
+            u_nk[n,k] is the reduced potential energy of uncorrelated
             configuration n evaluated at state k.
-
-        u_nk = [ u_1(x_1) u_2(x_1) u_3(x_1) . . . u_k(x_1)
-                 u_1(x_2) u_2(x_2) u_3(x_2) . . . u_k(x_2)
-                                .  .  .
-                 u_1(x_n) u_2(x_n) u_3(x_n) . . . u_k(x_n)]
 
         """
         # sort by state so that rows from same state are in contiguous blocks
@@ -89,26 +87,16 @@ class MBAR(BaseEstimator):
                            verbose=self.verbose)
 
         self.states_ = u_nk.columns.values.tolist()
+
+        # set attributes
+        out = self._mbar.getFreeEnergyDifferences()
+        attrs = [pd.DataFrame(i,
+                              columns=self.states_,
+                              index=self.states_) for i in out]
+
+        (self.delta_f_, self.d_delta_f_, self.theta_) = attrs 
         
         return self
 
-    @property
-    def delta_f_(self):
-        if self._mbar is not None:
-            out = self._mbar.getFreeEnergyDifferences()[0]
-            return pd.DataFrame(out, columns=self.states_, index=self.states_)
-
-    @property
-    def d_delta_f_(self):
-        if self._mbar is not None:
-            out = self._mbar.getFreeEnergyDifferences()[1]
-            return pd.DataFrame(out, columns=self.states_, index=self.states_)
-
-    @property
-    def theta_(self):
-        if self._mbar is not None:
-            out = self._mbar.getFreeEnergyDifferences()[2]
-            return pd.DataFrame(out, columns=self.states_, index=self.states_)
-            
     def predict(self, u_ln):
         pass
