@@ -1,0 +1,6 @@
+name: alchemlyb
+dependencies:
+- numpy
+- scipy
+- pandas
+- scikit-learn
