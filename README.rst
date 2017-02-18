@@ -37,7 +37,7 @@ independent, equilibrated samples [Chodera2016]_.
     Equilibration Detection in Molecular Simulations. Journal of Chemical Theory
     and Computation 12, 1799–1805.
 
-.. |docs| image:: http://alchemlyb.readthedocs.io/en/latest/?badge=latest
+.. |docs| image:: https://readthedocs.org/projects/alchemlyb/badge/?version=latest
     :alt: Documentation
     :scale: 100%
     :target: http://alchemlyb.readthedocs.io/en/latest/
