@@ -10,8 +10,8 @@ For a basic installation just type the command::
 from setuptools import setup, find_packages
 
 setup(name='alchemlyb',
-      version='0.1.0-dev',
-      description='data munging and analysis library for alchemical free energy calculations',
+      version='0.1.0.a0',
+      description='the simple alchemistry library',
       author='David Dotson',
       author_email='dotsdl@gmail.com',
       classifiers=[
