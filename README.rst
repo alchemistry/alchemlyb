@@ -1,7 +1,7 @@
 alchemlyb: data munging and analysis library for alchemical free energy calculations
 ====================================================================================
 
-|docs| |build| |cov| |gitter|
+|doi| |docs| |build| |cov| |gitter|
 
 **Warning**: This library is young. It is **not** API stable. It is a
 nucleation point. By all means use and help improve it, but note that it will
@@ -37,6 +37,11 @@ independent, equilibrated samples [Chodera2016]_.
     Equilibration Detection in Molecular Simulations. Journal of Chemical Theory
     and Computation 12, 1799–1805.
 
+.. |doi| image:: https://zenodo.org/badge/68669096.svg
+    :alt: Zenodo DOI
+    :scale: 100%
+    :target: https://zenodo.org/badge/latestdoi/68669096
+
 .. |docs| image:: https://readthedocs.org/projects/alchemlyb/badge/?version=latest
     :alt: Documentation
     :scale: 100%
@@ -56,3 +61,4 @@ independent, equilibrated samples [Chodera2016]_.
     :alt: Gitter chat
     :scale: 100%
     :target: https://gitter.im/alchemistry/alchemlyb
+
