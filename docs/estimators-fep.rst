@@ -1,3 +1,5 @@
+.. _estimators_fep:
+
 FEP-based estimators
 ====================
 

@@ -1,2 +1,4 @@
+.. _subsampling:
+
 Subsampling datasets
 ====================

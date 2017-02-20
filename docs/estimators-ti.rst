@@ -1,3 +1,5 @@
+.. _estimators_ti:
+
 TI-based estimators
 ===================
 
