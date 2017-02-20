@@ -87,6 +87,12 @@ For datasets that sample only a single :math:`\lambda` parameter, then the DataF
        99.0 1.0         -22016.69   -22016.93  -22017.17        -22057.68
       100.0 1.0         -22137.19   -22136.51  -22135.83        -22101.26
 
+A note on units
+'''''''''''''''
+Throughout ``alchemlyb``, energy quantities such as ``dHdl`` or ``u_nk`` are given in units of :math:`k_B T`.
+Also, although parsers will extract timestamps from input data, these are taken as-is and the library does not have any awareness of units for these.
+Keep this in mind when doing, e.g. :ref:`subsampling <subsampling>`.
+
 Parsers by software package
 ---------------------------
 **alchemlyb** tries to provide parser functions for as many simulation packages as possible.
