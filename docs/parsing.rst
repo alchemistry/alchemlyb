@@ -17,6 +17,8 @@ Standard forms of raw data
 --------------------------
 All components of **alchemlyb** are designed to work together well with minimal work on the part of the user.
 To make this possible, the library deals in a common data structure for each ``dHdl`` and ``u_nk``, and all parsers yield these quantities in these standard forms.
+The layout of these data structures allow for easy stacking of samples from different simulations while retaining information on where each sample came from using e.g. :py:func:`pandas.concat`.
+
 
 ``dHdl`` standard form
 ''''''''''''''''''''''
@@ -34,7 +36,7 @@ All parsers yielding ``dHdl`` gradients return this as a :py:class:`pandas.DataF
    99 0 1.0         1.0         -3.833667  -0.836967
   100.0 1.0         1.0        -12.835707   0.786278
 
-This is a multi-index DataFrame, giving ``time`` for each sample as the outermost index, and the value of each :math:`\lambda` from which the sample as subsequent indexes.
+This is a multi-index DataFrame, giving ``time`` for each sample as the outermost index, and the value of each :math:`\lambda` from which the sample came as subsequent indexes.
 The columns of the DataFrame give the value of :math:`\frac{dH}{d\lambda}` with respect to each of these separate :math:`\lambda` parameters.
 
 For datasets that sample with only a single :math:`\lambda` parameter, then the DataFrame will feature only a single column perhaps like::
@@ -51,12 +53,48 @@ For datasets that sample with only a single :math:`\lambda` parameter, then the 
    99 0 1.0         -3.833667
   100.0 1.0        -12.835707
 
-The layout of this data structure allows for easy stacking of samples from different simulations while retaining information on where each sample came from using e.g. :py:func:`pandas.concat`.
+``u_nk`` standard form
+''''''''''''''''''''''
+All parsers yielding ``u_nk`` reduced potentials return this as a :py:class:`pandas.DataFrame` with the following structure::
 
+                                   (0.0, 0.0) (0.25, 0.0) (0.5, 0.0)  ...  (1.0, 1.0)
+      time  coul-lambda vdw-lambda                                                
+        0.0 0.0         0.0         -22144.50   -22144.24  -22143.98        -21984.81
+        1.0 0.0         0.0         -21985.24   -21985.10  -21984.96        -22124.26
+        2.0 0.0         0.0         -22124.58   -22124.47  -22124.37        -22230.61
+        3.0 1.0         0.1         -22230.65   -22230.63  -22230.62        -22083.04
+      ..... ...         ...         .........   .........  .........  ...   .........
+       97.0 1.0         1.0         -22082.29   -22082.54  -22082.79        -22017.42
+       98.0 1.0         1.0         -22087.57   -22087.76  -22087.94        -22135.15
+       99.0 1.0         1.0         -22016.69   -22016.93  -22017.17        -22057.68
+      100.0 1.0         1.0         -22137.19   -22136.51  -22135.83        -22101.26
+
+This is a multi-index DataFrame, giving ``time`` for each sample as the outermost index, and the value of each :math:`\lambda` from which the sample came as subsequent indexes.
+The columns of the DataFrame give the value of :math:`u_{nk}` for each set of :math:`\lambda` parameters values were recorded for.
+Column labels are the values of the :math:`\lambda` parameters as a tuple in the same order as they appear in the multi-index.
+
+For datasets that sample only a single :math:`\lambda` parameter, then the DataFrame will feature only a single index in addition to ``time``, with the values of :math:`\lambda` for which reduced potentials were recorded given as column labels::
+
+                              0.0        0.25        0.5  ...         1.0
+      time  fep-lambda                                               
+        0.0 0.0         -22144.50   -22144.24  -22143.98        -21984.81
+        1.0 0.0         -21985.24   -21985.10  -21984.96        -22124.26
+        2.0 0.0         -22124.58   -22124.47  -22124.37        -22230.61
+        3.0 1.0         -22230.65   -22230.63  -22230.62        -22083.04
+      ..... ...         .........   .........  .........  ...   .........
+       97.0 1.0         -22082.29   -22082.54  -22082.79        -22017.42
+       98.0 1.0         -22087.57   -22087.76  -22087.94        -22135.15
+       99.0 1.0         -22016.69   -22016.93  -22017.17        -22057.68
+      100.0 1.0         -22137.19   -22136.51  -22135.83        -22101.26
 
 Parsers by software package
 ---------------------------
-.. toctree::
-    :maxdepth: 1
+**alchemlyb** tries to provide parser functions for as many simulation packages as possible.
+See the documentation for the package you are using for more details on parser usage, including the assumptions parsers make and suggestions for how output data should be structured for ease of use:
 
-    parsing-gmx
+.. currentmodule:: alchemlyb.parsing
+
+.. autosummary::
+    :toctree: parsing
+
+    gmx
