@@ -3,7 +3,7 @@
 """
 import pandas as pd
 
-from gromacs.formats import XVG as _XVG
+from gromacs.formats import XVG
 
 
 # TODO: perhaps move constants elsewhere?
@@ -35,7 +35,7 @@ def extract_u_nk(xvg, T):
     state, lambdas, statevec = _extract_state(xvg)
 
     # extract a DataFrame from XVG data
-    xvg = _XVG(xvg)
+    xvg = XVG(xvg)
     df = xvg.to_df()
     
     # drop duplicate columns if we (stupidly) have them
@@ -100,7 +100,7 @@ def extract_dHdl(xvg, T):
     state, lambdas, statevec = _extract_state(xvg)
 
     # extract a DataFrame from XVG data
-    xvg = _XVG(xvg)
+    xvg = XVG(xvg)
     df = xvg.to_df()
     
     
