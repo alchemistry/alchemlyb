@@ -1,5 +1,5 @@
 #! /usr/bin/python
-"""Setuptools-based setup script for datreant.
+"""Setuptools-based setup script for alchemlyb.
 
 For a basic installation just type the command::
 
@@ -25,5 +25,5 @@ setup(name='alchemlyb',
       package_dir={'': 'src'},
       license='BSD',
       long_description=open('README.rst').read(),
-      install_requires=['numpy', 'pandas', 'GromacsWrapper', 'pymbar', 'scipy', 'scikit-learn']
+      install_requires=['numpy', 'pandas', 'pymbar', 'scipy', 'scikit-learn']
       )

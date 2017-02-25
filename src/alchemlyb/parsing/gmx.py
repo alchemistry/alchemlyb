@@ -3,7 +3,7 @@
 """
 import pandas as pd
 
-from gromacs.formats import XVG
+from .xvg import XVG
 
 
 # TODO: perhaps move constants elsewhere?
@@ -14,19 +14,19 @@ k_b = 8.3144621E-3
 
 def extract_u_nk(xvg, T):
     """Return reduced potentials `u_nk` from a Hamiltonian differences XVG file.
-    
+
     Parameters
     ----------
     xvg : str
         Path to XVG file to extract data from.
     T : float
         Temperature in Kelvin the simulations sampled.
-    
+
     Returns
     -------
     u_nk : DataFrame
         Potential energy for each alchemical state (k) for each frame (n).
-    
+
     """
 
     col_match = r"\xD\f{}H \xl\f{}"
@@ -37,10 +37,10 @@ def extract_u_nk(xvg, T):
     # extract a DataFrame from XVG data
     xvg = XVG(xvg)
     df = xvg.to_df()
-    
+
     # drop duplicate columns if we (stupidly) have them
     df = df.iloc[:, ~df.columns.duplicated()]
-    
+
     times = df[df.columns[0]]
 
     # want to grab only dH columns
@@ -61,39 +61,39 @@ def extract_u_nk(xvg, T):
         u_col = eval(col.split('to')[1])
         u_k[u_col] = beta * (dH[col].values + U.values + pV.values)
         cols.append(u_col)
-    
+
     u_k = pd.DataFrame(u_k, columns=cols,
                        index=pd.Float64Index(times.values, name='time'))
-    
+
     # create columns for each lambda, indicating state each row sampled from
     for i, l in enumerate(lambdas):
         try:
             u_k[l] = statevec[i]
         except TypeError:
             u_k[l] = statevec
-    
+
     # set up new multi-index
     newind = ['time'] + lambdas
     u_k = u_k.reset_index().set_index(newind)
-    
+
     u_k.name = 'u_nk'
-    
+
     return u_k
 
 
 def extract_dHdl(xvg, T):
     """Return dH/dl from a Hamiltonian differences XVG file.
-    
+
     Parameters
     ----------
     xvg : str
         Path to XVG file to extract data from.
-    
+
     Returns
     -------
     dH/dl : Series
         dH/dl as a function of time for this lambda window.
-    
+
     """
     beta = 1/(k_b * T)
 
@@ -102,8 +102,8 @@ def extract_dHdl(xvg, T):
     # extract a DataFrame from XVG data
     xvg = XVG(xvg)
     df = xvg.to_df()
-    
-    
+
+
     times = df[df.columns[0]]
 
     # want to grab only dH/dl columns
@@ -119,7 +119,7 @@ def extract_dHdl(xvg, T):
     # rename columns to not include the word 'lambda', since we use this for
     # index below
     cols = [l.split('-')[0] for l in lambdas]
-    
+
     dHdl = pd.DataFrame(dHdl.values, columns=cols,
                         index=pd.Float64Index(times.values, name='time'))
 
@@ -129,13 +129,13 @@ def extract_dHdl(xvg, T):
             dHdl[l] = statevec[i]
         except TypeError:
             dHdl[l] = statevec
-    
+
     # set up new multi-index
     newind = ['time'] + lambdas
     dHdl= dHdl.reset_index().set_index(newind)
 
     dHdl.name='dH/dl'
-    
+
     return dHdl
 
 
