@@ -33,9 +33,9 @@ def anyopen(filename, mode='r'):
     ext = os.path.splitext(filename)[1]
 
     if ext in extensions:
-       opener = extensions[ext] 
+       opener = extensions[ext]
 
     else:
         opener = open
 
-    return opener(filename, 'r')
+    return opener(filename, mode)
