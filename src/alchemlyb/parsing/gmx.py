@@ -3,7 +3,7 @@
 """
 import pandas as pd
 
-from .xvg import XVG
+from .util import anyopen
 
 
 # TODO: perhaps move constants elsewhere?
@@ -35,9 +35,8 @@ def extract_u_nk(xvg, T):
     state, lambdas, statevec = _extract_state(xvg)
 
     # extract a DataFrame from XVG data
-    xvg = XVG(xvg)
-    df = xvg.to_df()
-
+    df = _extract_dataframe(xvg)
+    
     # drop duplicate columns if we (stupidly) have them
     df = df.iloc[:, ~df.columns.duplicated()]
 
@@ -100,10 +99,8 @@ def extract_dHdl(xvg, T):
     state, lambdas, statevec = _extract_state(xvg)
 
     # extract a DataFrame from XVG data
-    xvg = XVG(xvg)
-    df = xvg.to_df()
-
-
+    df = _extract_dataframe(xvg)
+    
     times = df[df.columns[0]]
 
     # want to grab only dH/dl columns
@@ -143,8 +140,8 @@ def _extract_state(xvg):
     """Extract information on state sampled, names of lambdas.
 
     """
-    with open(xvg, 'r') as f:
-        for line in f.readlines():
+    with anyopen(xvg, 'r') as f:
+        for line in f:
             if ('subtitle' in line) and ('state' in line):
                 state = int(line.split('state')[1].split(':')[0])
                 lambdas = [word.strip(')(,') for word in line.split() if 'lambda' in word]
@@ -152,3 +149,40 @@ def _extract_state(xvg):
                 break
 
     return state, lambdas, statevec
+
+
+def _extract_dataframe(xvg):
+    """Extract a DataFrame from XVG data.
+    
+    """
+    with anyopen(xvg, 'r') as f:
+        names = []
+        rows = []
+        for line in f:
+            line = line.strip()
+            if len(line) == 0:
+                continue
+
+            if "label" in line and "xaxis" in line:
+                xaxis = line.split('"')[-2]
+
+            if line.startswith("@ s") and "subtitle" not in line:
+                name = line.split("legend ")[-1].replace('"','').strip()
+                names.append(name)
+
+            # should catch non-numeric lines so we don't proceed in parsing
+            # here
+            if line.startswith(('#', '@')) :
+                continue
+
+            if line.startswith('&'):
+                raise NotImplementedError('{}: Multi-data not supported,'
+                                          'only simple NXY format.'.format(xvg))
+            # parse line as floats
+            row = map(float, line.split())
+            rows.append(row)
+
+    cols = [xaxis]
+    cols.extend(names)
+
+    return pd.DataFrame(rows, columns=cols)
