@@ -5,3 +5,4 @@ dependencies:
 - scipy
 - pandas
 - scikit-learn
+- sphinx
