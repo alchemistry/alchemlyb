@@ -17,6 +17,7 @@ install:
     - pip install pytest-cov
     - pip install pytest-pep8
     - pip install --only-binary=numpy numpy # Otherwise this would take ages
+    - pip install https://github.com/alchemistry/alchemtest/archive/master.zip
     - pip install -e .
 
 script:
