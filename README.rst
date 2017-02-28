@@ -1,5 +1,5 @@
-alchemlyb: data munging and analysis library for alchemical free energy calculations
-====================================================================================
+alchemlyb: the simple alchemistry library
+=========================================
 
 |doi| |docs| |build| |cov| |gitter|
 
