@@ -5,6 +5,7 @@
 from alchemlyb.parsing.gmx import extract_dHdl, extract_u_nk
 from alchemtest.gmx import load_benzene
 
+
 def test_dHdl():
     """Test that dHdl has the correct form when extracted from files.
 
