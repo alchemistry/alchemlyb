@@ -14,7 +14,9 @@ try:
 except AttributeError:
     bz2_open = bz2.BZ2File
 else:
-    bz2_open = bz2.open
+    def bz2_open(filename, mode):
+        mode += 't'
+        return bz2.open(filename, mode)
 
 
 def anyopen(filename, mode='r'):
@@ -37,16 +39,15 @@ def anyopen(filename, mode='r'):
         Open stream for reading.
 
     """
-    # opener and mode modifier for each type of file
-    extensions = {'.bz2': (bz2_open, 't'),
-                  '.gz': (gzip.open, ''),
-                  '.zip': (zipfile.ZipFile, '')}
+    # opener for each type of file
+    extensions = {'.bz2': bz2_open,
+                  '.gz': gzip.open,
+                  '.zip': zipfile.ZipFile}
 
     ext = os.path.splitext(filename)[1]
 
     if ext in extensions:
-       opener, mod = extensions[ext]
-       mode += mod
+       opener= extensions[ext]
 
     else:
         opener = open
