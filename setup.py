@@ -26,6 +26,6 @@ setup(name='alchemlyb',
       license='BSD',
       long_description=open('README.rst').read(),
       tests_require = ['pytest', 'alchemtest'],
-      dependency_links=['http://github.com/alchemistry/alchemtest/tarball/master#egg=alchemtest-0.1.0-dev']
+      dependency_links=['http://github.com/alchemistry/alchemtest/tarball/master#egg=alchemtest-0.1.0-dev'],
       install_requires=['numpy', 'pandas', 'pymbar', 'scipy', 'scikit-learn']
       )
