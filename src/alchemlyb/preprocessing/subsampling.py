@@ -34,15 +34,20 @@ def slicing(df, lower=None, upper=None, step=None):
     return df
 
 
-def statistical_inefficiency(df, series, lower=None, upper=None, step=None):
-    """Subsample a DataFrame based on the calculated statistical inefficiency of a timeseries.
+def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None):
+    """Subsample a DataFrame based on the calculated statistical inefficiency
+    of a timeseries.
+
+    If `series` is ``None``, then this function will behave the same as
+    :func:`slicing`.
 
     Parameters
     ----------
     df : DataFrame
         DataFrame to subsample according statistical inefficiency of `series`.
     series : Series
-        Series to use for calculating statistical inefficiency.
+        Series to use for calculating statistical inefficiency. If ``None``,
+        no statistical inefficiency-based subsampling will be performed.
     lower : float
         Lower bound to pre-slice `series` data from.
     upper : float
@@ -60,37 +65,44 @@ def statistical_inefficiency(df, series, lower=None, upper=None, step=None):
     pymbar.timeseries.statisticalInefficiency : detailed background
 
     """
-    series = series.loc[lower:upper]
+    if series is not None:
+        series = series.loc[lower:upper]
 
-    # drop any rows that have missing values
-    series = series.dropna()
+        # drop any rows that have missing values
+        series = series.dropna()
 
-    # subsample according to step
-    series = series.iloc[::step]
+        # subsample according to step
+        series = series.iloc[::step]
 
-    # calculate statistical inefficiency of series
-    statinef  = statisticalInefficiency(series)
+        # calculate statistical inefficiency of series
+        statinef  = statisticalInefficiency(series)
 
-    # we round up
-    statinef = int(np.rint(statinef))
+        # we round up
+        statinef = int(np.rint(statinef))
 
-    # subsample according to statistical inefficiency
-    series = series.iloc[::statinef]
+        # subsample according to statistical inefficiency
+        series = series.iloc[::statinef]
 
-    df = df.loc[series.index]
+        df = df.loc[series.index]
+    else:
+        df = slicing(df, lower=lower, upper=upper, step=step)
     
     return df
 
 
-def equilibrium_detection(df, series, lower=None, upper=None, step=None):
+def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
     """Subsample a DataFrame using automated equilibrium detection on a timeseries.
+
+    If `series` is ``None``, then this function will behave the same as
+    :func:`slicing`.
 
     Parameters
     ----------
     df : DataFrame
         DataFrame to subsample according to equilibrium detection on `series`.
     series : Series
-        Series to detect equilibration on.
+        Series to detect equilibration on. If ``None``, no equilibrium 
+        detection-based subsampling will be performed.
     lower : float
         Lower bound to pre-slice `series` data from.
     upper : float
@@ -108,23 +120,26 @@ def equilibrium_detection(df, series, lower=None, upper=None, step=None):
     pymbar.timeseries.detectEquilibration : detailed background
 
     """
-    series = series.loc[lower:upper]
+    if series is not None:
+        series = series.loc[lower:upper]
 
-    # drop any rows that have missing values
-    series = series.dropna()
+        # drop any rows that have missing values
+        series = series.dropna()
 
-    # subsample according to step
-    series = series.iloc[::step]
+        # subsample according to step
+        series = series.iloc[::step]
 
-    # calculate statistical inefficiency of series, with equilibrium detection
-    t, statinef, Neff_max  = detectEquilibration(series)
+        # calculate statistical inefficiency of series, with equilibrium detection
+        t, statinef, Neff_max  = detectEquilibration(series)
 
-    # we round up
-    statinef = int(np.rint(statinef))
+        # we round up
+        statinef = int(np.rint(statinef))
 
-    # subsample according to statistical inefficiency
-    series = series.iloc[t::statinef]
+        # subsample according to statistical inefficiency
+        series = series.iloc[t::statinef]
 
-    df = df.loc[series.index]
+        df = df.loc[series.index]
+    else:
+        df = slicing(df, lower=lower, upper=upper, step=step)
     
     return df
