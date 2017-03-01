@@ -2,9 +2,20 @@
 
 """
 import os
-from bz2 import BZ2File
-from gzip import GzipFile
-from zipfile import ZipFile
+import bz2
+import gzip
+import zipfile
+
+# need to do some backflips to support Python 2 bz2 behavior
+# bz2 in Python 2 doesn't have an open function, and in Python 3
+# the BZ2File class only does binary mode
+try:
+    bz2.open
+except AttributeError:
+    bz2_open = bz2.BZ2File
+else:
+    bz2_open = bz2.open
+
 
 def anyopen(filename, mode='r'):
     """Return a file stream for filename, even if compressed.
@@ -26,14 +37,16 @@ def anyopen(filename, mode='r'):
         Open stream for reading.
 
     """
-    extensions = {'.bz2': BZ2File,
-                  '.gz': GzipFile,
-                  '.zip': ZipFile}
+    # opener and mode modifier for each type of file
+    extensions = {'.bz2': (bz2_open, 't'),
+                  '.gz': (gzip.open, ''),
+                  '.zip': (zipfile.ZipFile, '')}
 
     ext = os.path.splitext(filename)[1]
 
     if ext in extensions:
-       opener = extensions[ext]
+       opener, mod = extensions[ext]
+       mode += mod
 
     else:
         opener = open
