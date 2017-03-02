@@ -12,6 +12,7 @@ branches:
 
 install:
     - pip install --upgrade pip setuptools wheel
+    - pip install --upgrade pytest
     - pip install six
     - pip install codecov
     - pip install pytest-cov
