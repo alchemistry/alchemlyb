@@ -23,13 +23,13 @@ def slicing(df, lower=None, upper=None, step=None):
         `df`, subsampled.
 
     """
-    df = df.loc[lower:upper]
+    df = df.loc[lower:upper:step]
 
     # drop any rows that have missing values
     df = df.dropna()
 
     # subsample according to step
-    df = df.iloc[::step]
+    #df = df.iloc[::step]
 
     return df
 
@@ -130,7 +130,7 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
         series = series.iloc[::step]
 
         # calculate statistical inefficiency of series, with equilibrium detection
-        t, statinef, Neff_max  = detectEquilibration(series)
+        t, statinef, Neff_max  = detectEquilibration(series.values)
 
         # we round up
         statinef = int(np.rint(statinef))
