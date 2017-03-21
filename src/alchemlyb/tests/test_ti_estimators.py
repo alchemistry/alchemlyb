@@ -29,8 +29,8 @@ def gmx_benzene_vdw_dHdl():
 
 class TIestimatorMixin:
 
-    @pytest.mark.parametrize('X_delta_f', ((gmx_benzene_coul_dHdl(), 3.105),
-                                           (gmx_benzene_vdw_dHdl(), -3.006)))
+    @pytest.mark.parametrize('X_delta_f', ((gmx_benzene_coul_dHdl(), 3.089),
+                                           (gmx_benzene_vdw_dHdl(), -3.056)))
     def test_get_delta_f(self, X_delta_f):
         est = self.cls().fit(X_delta_f[0])
         delta_f = est.delta_f_.iloc[0, -1]

@@ -32,8 +32,8 @@ class FEPestimatorMixin:
 
     """
 
-    @pytest.mark.parametrize('X_delta_f', ((gmx_benzene_coul_u_nk(), 3.058),
-                                           (gmx_benzene_vdw_u_nk(), -2.985)))
+    @pytest.mark.parametrize('X_delta_f', ((gmx_benzene_coul_u_nk(), 3.041),
+                                           (gmx_benzene_vdw_u_nk(), -3.007)))
     def test_get_delta_f(self, X_delta_f):
         est = self.cls().fit(X_delta_f[0])
         delta_f = est.delta_f_.iloc[0, -1]
