@@ -24,6 +24,9 @@ UBAR
 RBAR
 ----
 
+
+.. _estimators_MBAR:
+
 MBAR
 ----
 

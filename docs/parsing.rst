@@ -58,16 +58,16 @@ For datasets that sample with only a single :math:`\lambda` parameter, then the 
 All parsers yielding ``u_nk`` reduced potentials return this as a :py:class:`pandas.DataFrame` with the following structure::
 
                                    (0.0, 0.0) (0.25, 0.0) (0.5, 0.0)  ...  (1.0, 1.0)
-      time  coul-lambda vdw-lambda                                                
-        0.0 0.0         0.0         -22144.50   -22144.24  -22143.98        -21984.81
-        1.0 0.0         0.0         -21985.24   -21985.10  -21984.96        -22124.26
-        2.0 0.0         0.0         -22124.58   -22124.47  -22124.37        -22230.61
-        3.0 1.0         0.1         -22230.65   -22230.63  -22230.62        -22083.04
-      ..... ...         ...         .........   .........  .........  ...   .........
-       97.0 1.0         1.0         -22082.29   -22082.54  -22082.79        -22017.42
-       98.0 1.0         1.0         -22087.57   -22087.76  -22087.94        -22135.15
-       99.0 1.0         1.0         -22016.69   -22016.93  -22017.17        -22057.68
-      100.0 1.0         1.0         -22137.19   -22136.51  -22135.83        -22101.26
+  time  coul-lambda vdw-lambda                                                
+    0.0 0.0         0.0         -22144.50   -22144.24  -22143.98        -21984.81
+    1.0 0.0         0.0         -21985.24   -21985.10  -21984.96        -22124.26
+    2.0 0.0         0.0         -22124.58   -22124.47  -22124.37        -22230.61
+    3.0 1.0         0.1         -22230.65   -22230.63  -22230.62        -22083.04
+  ..... ...         ...         .........   .........  .........  ...   .........
+   97.0 1.0         1.0         -22082.29   -22082.54  -22082.79        -22017.42
+   98.0 1.0         1.0         -22087.57   -22087.76  -22087.94        -22135.15
+   99.0 1.0         1.0         -22016.69   -22016.93  -22017.17        -22057.68
+  100.0 1.0         1.0         -22137.19   -22136.51  -22135.83        -22101.26
 
 This is a multi-index DataFrame, giving ``time`` for each sample as the outermost index, and the value of each :math:`\lambda` from which the sample came as subsequent indexes.
 The columns of the DataFrame give the value of :math:`u_{nk}` for each set of :math:`\lambda` parameters values were recorded for.

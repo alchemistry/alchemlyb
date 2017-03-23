@@ -1,4 +1,4 @@
-"""Parsers for extracting alchemical data from Gromacs output files.
+"""Parsers for extracting alchemical data from `Gromacs <http://www.gromacs.org/>`_ output files.
 
 """
 import pandas as pd
@@ -81,7 +81,7 @@ def extract_u_nk(xvg, T):
 
 
 def extract_dHdl(xvg, T):
-    """Return dH/dl from a Hamiltonian differences XVG file.
+    """Return gradients `dH/dl` from a Hamiltonian differences XVG file.
 
     Parameters
     ----------
