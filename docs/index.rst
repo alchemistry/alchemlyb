@@ -43,7 +43,7 @@ Software engineering best-practices are used throughout, including continuous in
     install
     examples
     parsing
-    subsampling
+    preprocessing
     estimators
 
 .. toctree::

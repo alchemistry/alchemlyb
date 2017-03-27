@@ -1,4 +1,0 @@
-.. _subsampling:
-
-Subsampling datasets
-====================

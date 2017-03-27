@@ -25,8 +25,8 @@ To use TI-based estimators that require gradients, you will need to include thes
 .. _`MDP options`: 
 
 
-Parsers
--------
+API Reference
+-------------
 This submodule includes these parsing functions:
 
 .. autofunction:: alchemlyb.parsing.gmx.extract_dHdl

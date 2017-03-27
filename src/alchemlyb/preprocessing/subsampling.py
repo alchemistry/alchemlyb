@@ -1,3 +1,6 @@
+"""Functions for subsampling datasets.
+
+"""
 import numpy as np
 from pymbar.timeseries import statisticalInefficiency
 from pymbar.timeseries import detectEquilibration
@@ -20,7 +23,7 @@ def slicing(df, lower=None, upper=None, step=None):
     Returns
     -------
     DataFrame
-        `df`, subsampled.
+        `df` subsampled.
 
     """
     df = df.loc[lower:upper:step]
@@ -58,7 +61,7 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None)
     Returns
     -------
     DataFrame
-        `df`, subsampled according to subsampled `series`.
+        `df` subsampled according to subsampled `series`.
 
     See Also
     --------
@@ -113,7 +116,7 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
     Returns
     -------
     DataFrame
-        `df`, subsampled according to subsampled `series`.
+        `df` subsampled according to subsampled `series`.
 
     See Also
     --------

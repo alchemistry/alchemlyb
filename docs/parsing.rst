@@ -20,6 +20,8 @@ To make this possible, the library deals in a common data structure for each ``d
 The layout of these data structures allow for easy stacking of samples from different simulations while retaining information on where each sample came from using e.g. :py:func:`pandas.concat`.
 
 
+.. _dHdl:
+
 ``dHdl`` standard form
 ''''''''''''''''''''''
 All parsers yielding ``dHdl`` gradients return this as a :py:class:`pandas.DataFrame` with the following structure::
@@ -52,6 +54,9 @@ For datasets that sample with only a single :math:`\lambda` parameter, then the 
    98.0 1.0         29.518990
    99 0 1.0         -3.833667
   100.0 1.0        -12.835707
+
+
+.. _u_nk:
 
 ``u_nk`` standard form
 ''''''''''''''''''''''
