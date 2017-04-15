@@ -39,7 +39,7 @@ class TI(BaseEstimator):
             The variance of each lambda state
         """
 
-        return 0.25 * (dl[i]**2) * (dHdl_var[i] * dHdl_var[i+1])
+        return 0.25 * (dl[i]**2) * (dHdl_var[i] + dHdl_var[i+1])
 
     def _trapezoidal_error(self, i, j, dl, dHdl_var):
         """Calculate the error of the trapezoidal rule integral approximation
@@ -81,7 +81,7 @@ class TI(BaseEstimator):
 
         # obtain the mean value for each state
         means = dHdl.mean(level=dHdl.index.names[1:])
-        variance = dHdl.std(level=dHdl.index.names[1:])**2
+        variance = dHdl.std(level=dHdl.index.names[1:]).values**2
         
         # obtain vector of delta lambdas between each state
         dl = means.reset_index()[means.index.names[:]].diff().iloc[1:].values
