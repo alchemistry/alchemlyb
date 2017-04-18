@@ -44,10 +44,11 @@ class TI(BaseEstimator):
         # and adjacent states are next to each other
         dHdl = dHdl.sort_index(level=dHdl.index.names[1:])
 
-        # obtain the mean and variance for each state
-        # variance calculation assumes no correlation
+        # obtain the mean and variance of the mean for each state
+        # variance calculation assumes no correlation between points
+        # used to calculate mean
         means = dHdl.mean(level=dHdl.index.names[1:])
-        variances = dHdl.var(level=dHdl.index.names[1:])
+        variances = np.square(dHdl.sem(level=dHdl.index.names[1:]))
         
         # obtain vector of delta lambdas between each state
         dl = means.reset_index()[means.index.names[:]].diff().iloc[1:].values
