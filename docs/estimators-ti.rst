@@ -16,8 +16,8 @@ and parse the datafiles separately for each alchemical leg using :func:`alchemly
     >>> from alchemlyb.parsing.gmx import extract_dHdl
     >>> import pandas as pd
 
-    >>> dHdl_coul = pd.concat([extract_dHdl(dHdl, T=300) for dHdl in bz['Coulomb']])
-    >>> dHdl_vdw = pd.concat([extract_dHdl(dHdl, T=300) for dHdl in bz['VDW']])
+    >>> dHdl_coul = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+    >>> dHdl_vdw = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
 
 We can now use the :class:`~alchemlyb.estimators.TI` estimator to obtain the free energy differences between each :math:`\lambda` window sampled.
 The :meth:`~alchemlyb.estimators.TI.fit` method is used to perform the free energy estimate, given the gradient data::
@@ -26,6 +26,7 @@ The :meth:`~alchemlyb.estimators.TI.fit` method is used to perform the free ener
 
     >>> ti_coul = TI()
     >>> ti_coul.fit(dHdl_coul)
+    TI(verbose=False)
 
     # we could also just call the `fit` method
     # directly, since it returns the `TI` object
@@ -42,7 +43,7 @@ The free energy differences (in units of :math:`k_B T`) between each :math:`\lam
     0.75 -3.022170 -1.401842 -0.448832  0.000000  0.066857
     1.00 -3.089027 -1.468699 -0.515690 -0.066857  0.000000
 
-So we can get the endpoint of each with::
+So we can get the endpoint differences (free energy difference between :math:`\lambda = 0` and :math:`\lambda = 1`) of each with::
 
     >>> ti_coul.delta_f_.loc[0.00, 1.00]
     3.0890270218676896
@@ -52,7 +53,7 @@ So we can get the endpoint of each with::
 
 giving us a solvation free energy in units of :math:`k_B T` for benzene of::
     
-    >>> ti_vdw.delta_f_.loc[0.00, 1.00] + ti_coul.delta_f_.loc[0.00, 1.00]
+    >>> ti_coul.delta_f_.loc[0.00, 1.00] + ti_vdw.delta_f_.loc[0.00, 1.00]
     0.033209501883083803
 
 In addition to the free energy differences, we also have access to the errors on these differences via the ``d_delta_f_`` attribute::
@@ -65,8 +66,12 @@ In addition to the free energy differences, we also have access to the errors on
     0.75  0.015038  0.011486  0.007458  0.000000  0.006447
     1.00  0.016362  0.013172  0.009858  0.006447  0.000000
 
+
+.. _estimatators_TI:
+
 TI
 --
+The :class:`~alchemlyb.estimators.TI` estimator is a simple implementation of `thermodynamic integration <https://en.wikipedia.org/wiki/Thermodynamic_integration>`_ that uses the trapezoid rule for integrating the space between :math:`\left<\frac{dH}{d\lambda}\right>` values for each :math:`\lambda` sampled.
 
 .. autoclass:: alchemlyb.estimators.TI
     :members:

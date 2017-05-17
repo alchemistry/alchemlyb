@@ -162,6 +162,7 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None,
                        'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
+                       'pymbar': ('http://pymbar.readthedocs.io/en/latest/', None),
                        'alchemtest': ('http://alchemtest.readthedocs.io/en/latest/', None)}
 
 # generate stub pages where directed with autosummary
