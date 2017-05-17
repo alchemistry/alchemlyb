@@ -41,7 +41,6 @@ Software engineering best-practices are used throughout, including continuous in
     :caption: User Documentation
 
     install
-    examples
     parsing
     preprocessing
     estimators
