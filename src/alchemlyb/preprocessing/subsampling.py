@@ -6,7 +6,15 @@ from pymbar.timeseries import statisticalInefficiency
 from pymbar.timeseries import detectEquilibration
 
 
-def slicing(df, lower=None, upper=None, step=None):
+def _check_multiple_times(df):
+    return df.sort_index(0).reset_index(0).duplicated('time').any()
+
+
+def _check_sorted(df):
+    return df.reset_index(0)['time'].is_monotonic_increasing
+
+
+def slicing(df, lower=None, upper=None, step=None, force=False):
     """Subsample a DataFrame using simple slicing.
 
     Parameters
@@ -14,11 +22,13 @@ def slicing(df, lower=None, upper=None, step=None):
     df : DataFrame
         DataFrame to subsample.
     lower : float
-        Lower bound to slice from.
+        Lower time to slice from.
     upper : float
-        Upper bound to slice to (inclusive).
+        Upper time to slice to (inclusive).
     step : int
         Step between rows to slice by.
+    force : bool
+        Ignore checks that DataFrame is in proper form for expected behavior.
 
     Returns
     -------
@@ -26,13 +36,18 @@ def slicing(df, lower=None, upper=None, step=None):
         `df` subsampled.
 
     """
-    df = df.loc[lower:upper:step]
+    try:
+        df = df.loc[lower:upper:step]
+    except KeyError:
+        raise KeyError("DataFrame rows must be sorted by time, increasing.")
+
+    if not force and _check_multiple_times(df):
+        raise KeyError("Duplicate time values found; it's generally advised "
+                       "to use slicing on DataFrames with unique time values "
+                       "for each row. Use `force=True` to ignore this error.")
 
     # drop any rows that have missing values
     df = df.dropna()
-
-    # subsample according to step
-    #df = df.iloc[::step]
 
     return df
 
@@ -68,14 +83,17 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None)
     pymbar.timeseries.statisticalInefficiency : detailed background
 
     """
+    if _check_multiple_times(df):
+        raise KeyError("Duplicate time values found; statistical inefficiency "
+                       "only works on a single, contiguous, "
+                       "and sorted timeseries.")
+
+    if not _check_sorted(df):
+        raise KeyError("Statistical inefficiency only works as expected if "
+                       "values are sorted by time, increasing.")
+
     if series is not None:
-        series = series.loc[lower:upper]
-
-        # drop any rows that have missing values
-        series = series.dropna()
-
-        # subsample according to step
-        series = series.iloc[::step]
+        series = slicing(series, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series
         statinef  = statisticalInefficiency(series)
@@ -123,14 +141,20 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
     pymbar.timeseries.detectEquilibration : detailed background
 
     """
+    if _check_multiple_times(df):
+        raise KeyError("Duplicate time values found; equilibrium detection "
+                       "is only meaningful for a single, contiguous, "
+                       "and sorted timeseries.")
+
+    if not _check_sorted(df):
+        raise KeyError("Equilibrium detection only works as expected if "
+                       "values are sorted by time, increasing.")
+
     if series is not None:
-        series = series.loc[lower:upper]
+        series = slicing(series, lower=lower, upper=upper, step=step)
 
-        # drop any rows that have missing values
-        series = series.dropna()
-
-        # subsample according to step
-        series = series.iloc[::step]
+        # calculate statistical inefficiency of series
+        statinef  = statisticalInefficiency(series)
 
         # calculate statistical inefficiency of series, with equilibrium detection
         t, statinef, Neff_max  = detectEquilibration(series.values)

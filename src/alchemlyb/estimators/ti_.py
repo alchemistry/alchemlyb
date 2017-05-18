@@ -18,9 +18,13 @@ class TI(BaseEstimator):
 
     delta_f_ : DataFrame
         The estimated dimensionless free energy difference between each state.
+
     d_delta_f_ : DataFrame
         The estimated statistical uncertainty (one standard deviation) in 
         dimensionless free energy differences.
+
+    states_ : list
+        Lambda states for which free energy differences were obtained.
 
     """
 
@@ -80,5 +84,7 @@ class TI(BaseEstimator):
         self.d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
                                        columns=variances.index.values,
                                        index=variances.index.values)
+
+        self.states_ = means.index.values.tolist()
 
         return self
