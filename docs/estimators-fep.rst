@@ -68,13 +68,12 @@ In addition to the free energy differences, we also have access to the errors on
     1.00  0.020879  0.015143  0.009983  0.005133  0.000000
 
 
-.. _estimators_MBAR:
+List of FEP-based estimators
+----------------------------
 
-MBAR
-----
-The :class:`~alchemlyb.estimators.MBAR` estimator is a light wrapper around the reference implementation of MBAR from :mod:`pymbar` (:class:`pymbar.mbar.MBAR`).
-As a generalization of BAR, it uses information from all sampled states to generate an estimate for the free energy difference between each state.
+.. currentmodule:: alchemlyb.estimators
 
-.. autoclass:: alchemlyb.estimators.MBAR
-    :members:
-    :inherited-members:
+.. autosummary::
+    :toctree: estimators
+
+    MBAR

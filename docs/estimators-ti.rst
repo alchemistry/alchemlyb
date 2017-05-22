@@ -67,12 +67,12 @@ In addition to the free energy differences, we also have access to the errors on
     1.00  0.016362  0.013172  0.009858  0.006447  0.000000
 
 
-.. _estimatators_TI:
+List of TI-based estimators
+---------------------------
 
-TI
---
-The :class:`~alchemlyb.estimators.TI` estimator is a simple implementation of `thermodynamic integration <https://en.wikipedia.org/wiki/Thermodynamic_integration>`_ that uses the trapezoid rule for integrating the space between :math:`\left<\frac{dH}{d\lambda}\right>` values for each :math:`\lambda` sampled.
+.. currentmodule:: alchemlyb.estimators
 
-.. autoclass:: alchemlyb.estimators.TI
-    :members:
-    :inherited-members:
+.. autosummary::
+    :toctree: estimators
+
+    TI
