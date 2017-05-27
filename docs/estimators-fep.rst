@@ -5,7 +5,7 @@ FEP-based estimators
 FEP-based estimators such as :class:`~alchemlyb.estimators.MBAR` take as input :ref:`u_nk <u_nk>` reduced potentials for the calculation of free energy differences.
 All FEP-based estimators make use of the overlap between distributions of these values for each sampled :math:`\lambda`, differing in *how* they use this overlap information to give their free energy difference estimate.
 
-As a usage example, we'll use :class:`~alchemlyb.estimators.TI` to calculate the free energy of solvation of benzene in water.
+As a usage example, we'll use :class:`~alchemlyb.estimators.MBAR` to calculate the free energy of solvation of benzene in water.
 We'll use the benzene-in-water dataset from :mod:`alchemtest.gmx`::
 
     >>> from alchemtest.gmx import load_benzene
