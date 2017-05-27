@@ -1,0 +1,4 @@
+include *.rst
+recursive-include src/alchemlyb *.gz *.bz2 *.zip *.rst *.txt
+include README.rst
+include LICENSE
