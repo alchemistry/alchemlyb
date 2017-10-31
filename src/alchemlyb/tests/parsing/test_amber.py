@@ -2,8 +2,6 @@
 
 """
 
-import sys
-sys.path.insert(0, "/home/shuai/Desktop/alchemlyb/alchemlyb/src")
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemtest.amber import load_simplesolvated
 
