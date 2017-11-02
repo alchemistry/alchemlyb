@@ -3,12 +3,16 @@ Most of the file parsing part are inheriting from alchemical-analysis
 Change the final format to pandas to be consistent with the alchemlyb format
 """
 
-import pandas as pd
-import re
-import numpy as np
 import os
+import re
+import pandas as pd
+import numpy as np
+import logging 
 
-def convert_to_pandas(file_datum, ):
+logger = logging.getLogger("alchemlyb.parsers.Amber")
+
+def convert_to_pandas(file_datum):
+    """Convert the data structure from numpy to pandas format"""
     data_dic = {}
     data_dic["dHdl"] = []
     data_dic["lambdas"] = []
@@ -68,9 +72,10 @@ class SectionParser(object):
         try:
             self.fileh = open_it(self.filename, 'rb')
             self.filesize = os.stat(self.filename).st_size
-        except IOError:
-            raise SystemExit('ERROR: cannot open file %s' % filename)
+        except Exception as ex:
+            logging.exception("ERROR: cannot open file %s" % filename)
         self.lineno = 0
+
     def skip_lines(self, nlines):
         """Skip a given number of files."""
         lineno = 0
@@ -79,6 +84,7 @@ class SectionParser(object):
             if lineno > nlines:
                 return line
         return None
+
     def skip_after(self, pattern):
         """Skip until after a line that matches a regex pattern."""
         for line in self:
@@ -86,6 +92,7 @@ class SectionParser(object):
             if match:
                 break
         return self.fileh.tell() != self.filesize
+
     def extract_section(self, start, end, fields, limit=None, extra='',
                         debug=False):
         """
@@ -122,8 +129,10 @@ class SectionParser(object):
             else:                       # section may be incomplete
                 result.append(None)
         return result
+
     def __iter__(self):
         return self
+
     def next(self):
         """Read next line of the filehandle and check for EOF."""
         self.lineno += 1
@@ -132,19 +141,20 @@ class SectionParser(object):
             raise StopIteration
         # NOTE: can't mix next() with seek()
         return self.fileh.readline()
+
     def close(self):
         """Close the filehandle."""
         self.fileh.close()
+
     def __enter__(self):
         return self
+
     def __exit__(self, typ, value, traceback):
         self.close()
 
 class FEData(object):
     """A simple struct container to collect data from individual files."""
 
-    #__slots__ = ['clambda', 't0', 'dt', 'T', 'gradients',
-    #             'component_gradients', 'mbar_energies']
     __slots__ = ['clambda', 't0', 'dt', 'T', 'gradients',
                  'component_gradients']
 
@@ -155,19 +165,18 @@ class FEData(object):
         self.T = -1.0
         self.gradients = []
         self.component_gradients = []
-        #self.mbar_energies = []
 
-
-def file_validation(outfile, ):
+def file_validation(outfile):
+    """validate the energy output file """
     invalid = False
     with SectionParser(outfile) as secp:
         line = secp.skip_lines(5) 
         if not line:
-            print('  WARNING: file does not contain any useful data, '
-                      'ignoring file')
+            logging.warning('  WARNING: file does not contain any useful data, '
+                            'ignoring file')
             invalid = True
         if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
-            print('  WARNING: no CONTROL DATA found, ignoring file')
+            logging.warning('  WARNING: no CONTROL DATA found, ignoring file')
             invalid = True
         ntpr, = secp.extract_section('^Nature and format of output:', '^$',
                                      ['ntpr'])
@@ -176,85 +185,93 @@ def file_validation(outfile, ):
         T, = secp.extract_section('temperature regulation:', '^$',
                                  ['temp0'])
         if not T:
-            raise SystemExit('ERROR: Non-constant temperature MD not '
-                             'currently supported')
+            logging.error('ERROR: Non-constant temperature MD not '
+                          'currently supported')
             invalid = True
         clambda, = secp.extract_section('^Free energy options:', '^$',
                                         ['clambda'], '^---')
         if clambda is None:
-            print('  WARNING: no free energy section found, ignoring file')
+            logging.warning('  WARNING: no free energy section found, ignoring file')
             invalid = True
 
         if not secp.skip_after('^   3.  ATOMIC '):
-            print('  WARNING: no ATOMIC section found, ignoring file\n')
+            logging.warning('  WARNING: no ATOMIC section found, ignoring file\n')
             invalid = True
 
         t0, = secp.extract_section('^ begin time', '^$', ['coords'])
         if not secp.skip_after('^   4.  RESULTS'):
-            print('  WARNING: no RESULTS section found, ignoring file\n')
+            logging.warning('  WARNING: no RESULTS section found, ignoring file\n')
             invalid = True
     if invalid:
         return False
-    else:
-        file_datum = FEData()
-        file_datum.clambda = clambda
-        file_datum.t0 = t0
-        file_datum.dt = dt
-        file_datum.T = T
-        return file_datum
+    file_datum = FEData()
+    file_datum.clambda = clambda
+    file_datum.t0 = t0
+    file_datum.dt = dt
+    file_datum.T = T
+    return file_datum
 
-def extract_dHdl(outfile, ):
+def extract_dHdl(outfile):
+    """Return gradients `dH/dl` from Amebr TI outputfile
+    Parameters
+    ----------
+    outfile : str
+        Path to Amber .out file to extract data from.
+
+    Returns
+    -------
+    dH/dl : Series
+        dH/dl as a function of time for this lambda window.
+    """
     file_datum = file_validation(outfile)
-    if file_validation(outfile):
-        finished = False
-        comps = []
-        with SectionParser(outfile) as secp:
-            line = secp.skip_lines(5)
-            nensec = 0
-            nenav = 0
-            old_nstep = -1
-            old_comp_nstep = -1
-            high_E_cnt = 0
-
-            in_comps = False
-            for line in secp:
-                if 'DV/DL, AVERAGES OVER' in line:
-                    in_comps = True
-                if line.startswith(' NSTEP'):
-                    if in_comps:
-                        #CHECK the result
-                        result = secp.extract_section('^ NSTEP', '^ ---',
-                                                     ['NSTEP'] + DVDL_COMPS,
-                                                     extra=line)
-                        if result[0] != old_comp_nstep and not any_none(result):
-                            comps.append([float(E) for E in result[1:]])
-                            nenav += 1  
-                            old_comp_nstep = result[0]
-                        in_comps = False
-                    else:
-                        nstep, dvdl = secp.extract_section('^ NSTEP', '^ ---',
-                                                           ['NSTEP', 'DV/DL'],
-                                                           extra=line)
-                        if nstep != old_nstep and dvdl is not None \
-                                and nstep is not None:
-                            file_datum.gradients.append(dvdl)
-                            nensec += 1
-                            old_nstep = nstep
-                if line == '   5.  TIMINGS\n':
-                    finished = True
-                    break
-        if not finished:
-            print('  WARNING: prematurely terminated run')
-        if not nensec:
-            print('  WARNING: File %s does not contain any DV/DL data\n' %
-                  outfile)
-        print('%i data points, %i DV/DL averages' % (nensec, nenav))
-        #at this step we get info stored in the FEData object for a given amber out file
-        file_datum.component_gradients.extend(comps)
-        #convert file_datum to the pandas format to make it identical to alchemlyb output format
-        df = convert_to_pandas(file_datum)        
-    else:
-        df = None
+    if not file_validation(outfile):
+        return None
+    finished = False
+    comps = []
+    with SectionParser(outfile) as secp:
+        line = secp.skip_lines(5)
+        nensec = 0
+        nenav = 0
+        old_nstep = -1
+        old_comp_nstep = -1
+        high_E_cnt = 0
+        in_comps = False
+        for line in secp:
+            if 'DV/DL, AVERAGES OVER' in line:
+                in_comps = True
+            if line.startswith(' NSTEP'):
+                if in_comps:
+                    #CHECK the result
+                    result = secp.extract_section('^ NSTEP', '^ ---',
+                                                 ['NSTEP'] + DVDL_COMPS,
+                                                 extra=line)
+                    if result[0] != old_comp_nstep and not any_none(result):
+                        comps.append([float(E) for E in result[1:]])
+                        nenav += 1  
+                        old_comp_nstep = result[0]
+                    in_comps = False
+                else:
+                    nstep, dvdl = secp.extract_section('^ NSTEP', '^ ---',
+                                                       ['NSTEP', 'DV/DL'],
+                                                       extra=line)
+                    if nstep != old_nstep and dvdl is not None \
+                            and nstep is not None:
+                        file_datum.gradients.append(dvdl)
+                        nensec += 1
+                        old_nstep = nstep
+            if line == '   5.  TIMINGS\n':
+                finished = True
+                break
+    if not finished:
+        logging.warning('  WARNING: prematurely terminated run')
+    if not nensec:
+        logging.warning('  WARNING: File %s does not contain any DV/DL data\n' %
+              outfile)
+    logging.info('%i data points, %i DV/DL averages' % (nensec, nenav))
+    #at this step we get info stored in the FEData object for a given amber out file
+    file_datum.component_gradients.extend(comps)
+    #convert file_datum to the pandas format to make it identical to alchemlyb output format
+    df = convert_to_pandas(file_datum)        
     return df
 
 #currently just check the code with a simple amber ti output file
