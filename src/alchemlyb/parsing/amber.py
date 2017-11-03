@@ -61,7 +61,7 @@ class SectionParser(object):
     def __init__(self, filename):
         """Opens a file according to its file type."""
         self.filename = filename
-        with open(filename, 'rb') as f:
+        with open(filename, 'r') as f:
             magic = f.read(3)   # NOTE: works because all 3-byte headers
         try:
             method = _MAGIC_CMPR[magic]
@@ -70,7 +70,7 @@ class SectionParser(object):
         else:
             open_it = getattr(__import__(method[0]), method[1])
         try:
-            self.fileh = open_it(self.filename, 'rb')
+            self.fileh = open_it(self.filename, 'r')
             self.filesize = os.stat(self.filename).st_size
         except Exception as ex:
             logging.exception("ERROR: cannot open file %s" % filename)
@@ -141,6 +141,8 @@ class SectionParser(object):
             raise StopIteration
         # NOTE: can't mix next() with seek()
         return self.fileh.readline()
+    #make compatible with python 3.6
+    __next__ = next
 
     def close(self):
         """Close the filehandle."""
@@ -184,6 +186,7 @@ def file_validation(outfile):
                                           ['nstlim', 'dt'])
         T, = secp.extract_section('temperature regulation:', '^$',
                                  ['temp0'])
+        print ("Check the temperature", T)
         if not T:
             logging.error('ERROR: Non-constant temperature MD not '
                           'currently supported')
