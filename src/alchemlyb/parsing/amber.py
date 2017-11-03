@@ -273,10 +273,3 @@ def extract_dHdl(outfile):
     #convert file_datum to the pandas format to make it identical to alchemlyb output format
     df = convert_to_pandas(file_datum)        
     return df
-
-#currently just check the code with a simple amber ti output file
-#likely to switch to the alchmetest frame with more testing cases 
-if ("__main__") == (__name__):
-    dataset = "./amber_dataset/ti-0.00.out"
-    df = extract_dHdl(dataset)
-    print "Check the df", df
