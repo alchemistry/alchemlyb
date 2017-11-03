@@ -186,7 +186,6 @@ def file_validation(outfile):
                                           ['nstlim', 'dt'])
         T, = secp.extract_section('temperature regulation:', '^$',
                                  ['temp0'])
-        print ("Check the temperature", T)
         if not T:
             logging.error('ERROR: Non-constant temperature MD not '
                           'currently supported')
