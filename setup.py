@@ -9,8 +9,11 @@ For a basic installation just type the command::
 
 from setuptools import setup, find_packages
 
+import versioneer
+
 setup(name='alchemlyb',
-      version='0.2.0-dev',
+      version=versioneer.get_version(),
+      cmdclass=versioneer.get_cmdclass(),
       description='the simple alchemistry library',
       author='David Dotson',
       author_email='dotsdl@gmail.com',
