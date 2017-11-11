@@ -3,3 +3,5 @@ branch = True
 omit =
     # omit all tests
     src/alchemlyb/tests/*
+    # omit the versioneer-installed _version.py
+    src/alchemlyb/_version.py
