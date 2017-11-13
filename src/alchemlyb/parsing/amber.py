@@ -8,6 +8,7 @@ import re
 import pandas as pd
 import numpy as np
 import logging 
+from .util import anyopen
 
 logger = logging.getLogger("alchemlyb.parsers.Amber")
 
@@ -61,16 +62,8 @@ class SectionParser(object):
     def __init__(self, filename):
         """Opens a file according to its file type."""
         self.filename = filename
-        with open(filename, 'r') as f:
-            magic = f.read(3)   # NOTE: works because all 3-byte headers
         try:
-            method = _MAGIC_CMPR[magic]
-        except KeyError:
-            open_it = open
-        else:
-            open_it = getattr(__import__(method[0]), method[1])
-        try:
-            self.fileh = open_it(self.filename, 'r')
+            self.fileh = anyopen(self.filename, 'r')
             self.filesize = os.stat(self.filename).st_size
         except Exception as ex:
             logging.exception("ERROR: cannot open file %s" % filename)
