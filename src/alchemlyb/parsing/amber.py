@@ -5,10 +5,11 @@ Change the final format to pandas to be consistent with the alchemlyb format
 
 import os
 import re
+import logging 
 import pandas as pd
 import numpy as np
-import logging 
-from .util import anyopen
+
+from util import anyopen
 
 logger = logging.getLogger("alchemlyb.parsers.Amber")
 
@@ -32,10 +33,6 @@ def convert_to_pandas(file_datum):
 DVDL_COMPS = ['BOND', 'ANGLE', 'DIHED', '1-4 NB', '1-4 EEL', 'VDWAALS',
               'EELEC', 'RESTRAINT']
 _FP_RE = r'[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
-_MAGIC_CMPR = {
-    '\x1f\x8b\x08': ('gzip', 'GzipFile'),  # last byte is compression method
-    '\x42\x5a\x68': ('bz2', 'BZ2File')
-}
 
 def any_none(sequence):
     """Check if any element of a sequence is None."""
@@ -53,7 +50,7 @@ def _pre_gen(it, first):
         yield first
 
     while it:
-        yield it.next()
+        yield next(it)
 
 class SectionParser(object):
     """
@@ -64,7 +61,6 @@ class SectionParser(object):
         self.filename = filename
         try:
             self.fileh = anyopen(self.filename, 'r')
-            self.filesize = os.stat(self.filename).st_size
         except Exception as ex:
             logging.exception("ERROR: cannot open file %s" % filename)
         self.lineno = 0
@@ -80,11 +76,13 @@ class SectionParser(object):
 
     def skip_after(self, pattern):
         """Skip until after a line that matches a regex pattern."""
+        Found_pattern = False
         for line in self:
             match = re.search(pattern, line)
             if match:
+                Found_pattern = True
                 break
-        return self.fileh.tell() != self.filesize
+        return Found_pattern
 
     def extract_section(self, start, end, fields, limit=None, extra='',
                         debug=False):
@@ -129,11 +127,7 @@ class SectionParser(object):
     def next(self):
         """Read next line of the filehandle and check for EOF."""
         self.lineno += 1
-        curr_pos = self.fileh.tell()
-        if curr_pos == self.filesize:
-            raise StopIteration
-        # NOTE: can't mix next() with seek()
-        return self.fileh.readline()
+        return next(self.fileh)
     #make compatible with python 3.6
     __next__ = next
 
@@ -207,7 +201,7 @@ def file_validation(outfile):
     return file_datum
 
 def extract_dHdl(outfile):
-    """Return gradients `dH/dl` from Amebr TI outputfile
+    """Return gradients `dH/dl` from Amber TI outputfile
     Parameters
     ----------
     outfile : str
