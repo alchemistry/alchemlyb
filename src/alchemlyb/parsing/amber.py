@@ -6,10 +6,9 @@ Change the final format to pandas to be consistent with the alchemlyb format
 import os
 import re
 import logging
+
 import pandas as pd
 import numpy as np
-
-import logging
 
 from .util import anyopen
 
@@ -27,7 +26,8 @@ def convert_to_pandas(file_datum):
         #here we need to convert dt to ps unit from ns
         frame_time = file_datum.t0 + (frame_index + 1) * file_datum.dt*1000
         data_dic["time"].append(frame_time)
-    df = pd.DataFrame(data_dic["dHdl"], columns=["dHdl"], index =pd.Float64Index(data_dic["time"], name='time'))
+    df = pd.DataFrame(data_dic["dHdl"], columns=["dHdl"],
+                      index =pd.Float64Index(data_dic["time"], name='time'))
     df["lambdas"] = data_dic["lambdas"][0]
     df = df.reset_index().set_index(['time'] + ['lambdas'])
     return df
@@ -63,7 +63,7 @@ class SectionParser(object):
         self.filename = filename
         try:
             self.fileh = anyopen(self.filename, 'r')
-        except Exception as ex:
+        except Exception as ex:    #pragma: no cover
             logging.exception("ERROR: cannot open file %s" % filename)
         self.lineno = 0
 
@@ -130,6 +130,7 @@ class SectionParser(object):
         """Read next line of the filehandle and check for EOF."""
         self.lineno += 1
         return next(self.fileh)
+
     #make compatible with python 3.6
     __next__ = next
 
@@ -253,14 +254,13 @@ def extract_dHdl(outfile):
             if line == '   5.  TIMINGS\n':
                 finished = True
                 break
-    if not finished:
+    if not finished:      #pragma: no cover
         logging.warning('  WARNING: prematurely terminated run')
-    if not nensec:
-        logging.warning('  WARNING: File %s does not contain any DV/DL data\n' %
-              outfile)
-    logging.info('%i data points, %i DV/DL averages' % (nensec, nenav))
+    if not nensec:        #pragma: no cover
+        logging.warning('  WARNING: File %s does not contain any DV/DL data',
+                        outfile)
+    logging.info('%i data points, %i DV/DL averages', nensec, nenav)
     #at this step we get info stored in the FEData object for a given amber out file
     file_datum.component_gradients.extend(comps)
     #convert file_datum to the pandas format to make it identical to alchemlyb output format
-    df = convert_to_pandas(file_datum)
-    return df
+    return convert_to_pandas(file_datum)

@@ -36,7 +36,7 @@ def extract_u_nk(xvg, T):
 
     # extract a DataFrame from XVG data
     df = _extract_dataframe(xvg)
-    
+
     # drop duplicate columns if we (stupidly) have them
     df = df.iloc[:, ~df.columns.duplicated()]
 
@@ -100,7 +100,7 @@ def extract_dHdl(xvg, T):
 
     # extract a DataFrame from XVG data
     df = _extract_dataframe(xvg)
-    
+
     times = df[df.columns[0]]
 
     # want to grab only dH/dl columns
@@ -153,7 +153,7 @@ def _extract_state(xvg):
 
 def _extract_dataframe(xvg):
     """Extract a DataFrame from XVG data.
-    
+
     """
     with anyopen(xvg, 'r') as f:
         names = []
@@ -175,7 +175,7 @@ def _extract_dataframe(xvg):
             if line.startswith(('#', '@')) :
                 continue
 
-            if line.startswith('&'):
+            if line.startswith('&'):  #pragma: no cover
                 raise NotImplementedError('{}: Multi-data not supported,'
                                           'only simple NXY format.'.format(xvg))
             # parse line as floats
