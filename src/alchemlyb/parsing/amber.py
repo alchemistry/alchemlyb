@@ -9,7 +9,7 @@ import logging
 import pandas as pd
 import numpy as np
 
-from util import anyopen
+from .util import anyopen
 
 logger = logging.getLogger("alchemlyb.parsers.Amber")
 
