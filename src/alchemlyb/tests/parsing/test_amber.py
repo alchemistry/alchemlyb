@@ -3,6 +3,7 @@
 """
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemlyb.parsing.amber import file_validation
+from alchemlyb.parsing.amber import any_none
 from alchemtest.amber import load_simplesolvated
 from alchemtest.amber import load_invalidfiles
 
@@ -29,3 +30,9 @@ def test_invalidfiles():
     for invalid_file_list in invalid_files['data']:
         for invalid_file in invalid_file_list:
             assert file_validation(invalid_file) == False
+
+def test_any_none():
+    """Test the any None function to ensure if the None value will be caught
+    """
+    None_value_result = [150000, None, None, None, None, None, None, None, None]
+    assert any_none(None_value_result) == True
