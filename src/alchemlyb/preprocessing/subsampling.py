@@ -2,9 +2,7 @@
 
 """
 import numpy as np
-from pymbar.timeseries import statisticalInefficiency
-from pymbar.timeseries import detectEquilibration
-from pymbar.timeseries import subsampleCorrelatedData
+from pymbar.timeseries import statisticalInefficiency, detectEquilibration, subsampleCorrelatedData
 
 
 def _check_multiple_times(df):
@@ -101,13 +99,7 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None)
         
         #use the subsampleCorrelatedData function to get the subsample index
         indices = subsampleCorrelatedData(series, g=statinef)
-        picked_time_index = []
-        #pick the time index for the pandas dataframe based on the python index from subsample
-        for s_index, s_index_pair in enumerate(series.index):
-            if s_index in indices:
-                picked_time_index.append(s_index_pair[0])
-
-        df = df.loc[picked_time_index]
+        df = df.iloc[indices]
     else:
         df = slicing(df, lower=lower, upper=upper, step=step)
     
