@@ -1,6 +1,9 @@
-"""Parsers for extracting alchemical data from amber output files.
-Most of the file parsing part are inheriting from alchemical-analysis
-Change the final format to pandas to be consistent with the alchemlyb format
+"""Parsers for extracting alchemical data from Amber_ output files.
+Most of the file parsing parts are inherited from
+`alchemical-analysis`_.
+
+.. _alchemical-analysis: https://github.com/MobleyLab/alchemical-analysis
+
 """
 
 import os
@@ -204,7 +207,8 @@ def file_validation(outfile):
     return file_datum
 
 def extract_dHdl(outfile):
-    """Return gradients `dH/dl` from Amber TI outputfile
+    """Return gradients ``dH/dl`` from Amber TI outputfile.
+
     Parameters
     ----------
     outfile : str
