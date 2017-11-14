@@ -2,8 +2,7 @@
 
 """
 import numpy as np
-from pymbar.timeseries import statisticalInefficiency
-from pymbar.timeseries import detectEquilibration
+from pymbar.timeseries import statisticalInefficiency, detectEquilibration, subsampleCorrelatedData
 
 
 def _check_multiple_times(df):
@@ -97,14 +96,10 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None)
 
         # calculate statistical inefficiency of series
         statinef  = statisticalInefficiency(series)
-
-        # we round up
-        statinef = int(np.rint(statinef))
-
-        # subsample according to statistical inefficiency
-        series = series.iloc[::statinef]
-
-        df = df.loc[series.index]
+        
+        #use the subsampleCorrelatedData function to get the subsample index
+        indices = subsampleCorrelatedData(series, g=statinef)
+        df = df.iloc[indices]
     else:
         df = slicing(df, lower=lower, upper=upper, step=step)
     
