@@ -2,7 +2,9 @@
 
 """
 import numpy as np
-from pymbar.timeseries import statisticalInefficiency, detectEquilibration, subsampleCorrelatedData
+from pymbar.timeseries import (statisticalInefficiency,
+                               detectEquilibration,
+                               subsampleCorrelatedData, )
 
 
 def _check_multiple_times(df):
@@ -51,7 +53,8 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
     return df
 
 
-def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None):
+def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
+                             conservative=True):
     """Subsample a DataFrame based on the calculated statistical inefficiency
     of a timeseries.
 
@@ -71,15 +74,45 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None)
         Upper bound to pre-slice `series` to (inclusive).
     step : int
         Step between `series` items to pre-slice by.
+    conservative : bool
+        ``True`` use ``ceil(statistical_inefficiency)`` to slice the data in uniform
+        intervals (the default). ``False`` will sample at non-uniform intervals to
+        closely match the (fractional) statistical_inefficieny, as implemented
+        in :func:`pymbar.timeseries.subsampleCorrelatedData`.
 
     Returns
     -------
     DataFrame
         `df` subsampled according to subsampled `series`.
 
+    Warning
+    -------
+    The `series` and the data to be sliced, `df`, need to have the same number
+    of elements because the statistical inefficiency is calculated based on
+    the index of the series (and not an associated time). At the moment there is
+    no automatic conversion from a time to an index.
+
+    Note
+    ----
+    For a non-integer statistical ineffciency :math:`g`, the default value
+    ``conservative=True`` will provide _fewer_ data points than allowed by
+    :math:`g` and thus error estimates will be _higher_. For large numbers of
+    data points and converged free energies, the choice should not make a
+    difference. For small numbers of data points, ``conservative=True``
+    decreases a false sense of accuracy and is deemed the more careful and
+    conservative approach.
+
     See Also
     --------
     pymbar.timeseries.statisticalInefficiency : detailed background
+    pymbar.timeseries.subsampleCorrelatedData : used for subsampling
+
+
+    .. versionchanged:: 0.2.0
+       The ``conservative`` keyword was added and the method is now using
+       ``pymbar.timeseries.statisticalInefficiency()``; previously, the statistical
+       inefficiency was _rounded_ (instead of ``ceil()``) and thus one could
+       end up with correlated data.
 
     """
     if _check_multiple_times(df):
@@ -94,15 +127,20 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None)
     if series is not None:
         series = slicing(series, lower=lower, upper=upper, step=step)
 
-        # calculate statistical inefficiency of series
-        statinef  = statisticalInefficiency(series)
-        
-        #use the subsampleCorrelatedData function to get the subsample index
-        indices = subsampleCorrelatedData(series, g=statinef)
+        if (len(series) != len(df) or
+            not all(series.reset_index()['time'] == df.reset_index()['time'])):
+            raise ValueError("series and data must be sampled at the same times")
+
+        # calculate statistical inefficiency of series (could use fft=True but needs test)
+        statinef  = statisticalInefficiency(series, fast=False)
+
+        # use the subsampleCorrelatedData function to get the subsample index
+        indices = subsampleCorrelatedData(series, g=statinef,
+                                          conservative=conservative)
         df = df.iloc[indices]
     else:
         df = slicing(df, lower=lower, upper=upper, step=step)
-    
+
     return df
 
 
@@ -117,7 +155,7 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
     df : DataFrame
         DataFrame to subsample according to equilibrium detection on `series`.
     series : Series
-        Series to detect equilibration on. If ``None``, no equilibrium 
+        Series to detect equilibration on. If ``None``, no equilibrium
         detection-based subsampling will be performed.
     lower : float
         Lower bound to pre-slice `series` data from.
@@ -163,5 +201,5 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
         df = df.loc[series.index]
     else:
         df = slicing(df, lower=lower, upper=upper, step=step)
-    
+
     return df
