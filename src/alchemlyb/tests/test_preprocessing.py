@@ -65,7 +65,7 @@ class TestSlicing:
 
         """
         with pytest.raises(KeyError):
-            self.slicer(data, lower=200)
+            self.slicer(data.sort_index(0), lower=200)
 
 
 class CorrelatedPreprocessors:
