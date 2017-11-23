@@ -7,9 +7,8 @@ import pandas as pd
 import numpy as np
 
 from alchemlyb.parsing import gmx
-from alchemlyb.preprocessing import slicing
-from alchemlyb.preprocessing import statistical_inefficiency
-from alchemlyb.preprocessing import equilibrium_detection
+from alchemlyb.preprocessing import (slicing, statistical_inefficiency,
+                                     equilibrium_detection,)
 
 import alchemtest.gmx
 
@@ -39,7 +38,7 @@ class TestSlicing:
     """
     def slicer(self, *args, **kwargs):
         return slicing(*args, **kwargs)
-    
+
     @pytest.mark.parametrize(('data', 'size'), [(gmx_benzene_dHdl(), 661),
                                                 (gmx_benzene_u_nk(), 661)])
     def test_basic_slicing(self, data, size):
@@ -66,7 +65,7 @@ class TestSlicing:
 
         """
         with pytest.raises(KeyError):
-            self.slicer(data, lower=200)
+            self.slicer(data.sort_index(0), lower=200)
 
 
 class CorrelatedPreprocessors:
@@ -85,8 +84,8 @@ class CorrelatedPreprocessors:
         """Check that we get the same result as simple slicing with no Series.
 
         """
-        df_sub = self.slicer(data, lower=200, upper=5000, step=2) 
-        df_sliced = slicing(data, lower=200, upper=5000, step=2) 
+        df_sub = self.slicer(data, lower=200, upper=5000, step=2)
+        df_sliced = slicing(data, lower=200, upper=5000, step=2)
 
         assert np.all((df_sub == df_sliced))
 
@@ -95,6 +94,30 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
 
     def slicer(self, *args, **kwargs):
         return statistical_inefficiency(*args, **kwargs)
+
+    @pytest.mark.parametrize(('conservative', 'data', 'size'),
+                             [
+                                 (True, gmx_benzene_dHdl(), 2001),  # 0.00:  g = 1.0559445620585415
+                                 (True, gmx_benzene_u_nk(), 2001),  # 'fep': g = 1.0560203916559594
+                                 (False, gmx_benzene_dHdl(), 3789),
+                                 (False, gmx_benzene_u_nk(), 3789),
+                             ])
+    def test_conservative(self, data, size, conservative):
+        sliced = self.slicer(data, series=data.iloc[:, 0], conservative=conservative)
+        # results can vary slightly with different machines
+        # so possibly do
+        # delta = 10
+        # assert size - delta < len(sliced) < size + delta
+        assert len(sliced) == size
+
+    @pytest.mark.parametrize('series', [
+        gmx_benzene_dHdl()['fep'][:20],   # wrong length
+        gmx_benzene_dHdl()['fep'][::-1],  # wrong time stamps (reversed)
+        ])
+    def test_raise_ValueError_for_mismatched_data(self, series):
+        data = gmx_benzene_dHdl()
+        with pytest.raises(ValueError):
+            self.slicer(data, series=series)
 
 
 class TestEquilibriumDetection(TestSlicing, CorrelatedPreprocessors):
