@@ -21,10 +21,10 @@ else:
     def bz2_open(filename, mode):
         mode += 't'
         return bz2.open(filename, mode)
-    def gzip_open(filename, mode):
-	mode += 't'
-	return gzip.open(filname, mode)
 
+    def gzip_open(filename, mode):
+        mode += 't'
+        return gzip.open(filename, mode)
 
 
 def anyopen(filename, mode='r'):
