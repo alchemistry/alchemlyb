@@ -65,7 +65,7 @@ class SectionParser(object):
         """Opens a file according to its file type."""
         self.filename = filename
         try:
-            self.fileh = anyopen(self.filename, 'r')
+            self.fileh = anyopen(self.filename, 'rt')
         except Exception as ex:    #pragma: no cover
             logging.exception("ERROR: cannot open file %s" % filename)
         self.lineno = 0
