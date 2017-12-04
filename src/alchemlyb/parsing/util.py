@@ -9,7 +9,7 @@ import zipfile
 # need to do some backflips to support Python 2 bz2 behavior
 # bz2 in Python 2 doesn't have an open function, and in Python 3
 # the BZ2File class only does binary mode
-# need to do some backflips to support Python 2 gzip behavior
+# similar changes need to be made for gzip
 # gzip in Python 2 doesn't have a text mode, and in Python 3
 # gzip does have text mode
 try:
@@ -49,7 +49,7 @@ def anyopen(filename, mode='r'):
     """
     # opener for each type of file
     extensions = {'.bz2': bz2_open,
-                  '.gz': gzip.open,
+                  '.gz': gzip_open,
                   '.zip': zipfile.ZipFile}
 
     ext = os.path.splitext(filename)[1]
