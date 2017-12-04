@@ -9,19 +9,23 @@ import zipfile
 # need to do some backflips to support Python 2 bz2 behavior
 # bz2 in Python 2 doesn't have an open function, and in Python 3
 # the BZ2File class only does binary mode
-# similar changes need to be made for gzip
-# gzip in Python 2 doesn't have a text mode, and in Python 3
-# gzip does have text mode
 try:
     bz2.open
 except AttributeError:
     bz2_open = bz2.BZ2File
-    gzip_open = gzip.open
 else:
     def bz2_open(filename, mode):
         mode += 't'
         return bz2.open(filename, mode)
 
+# similar changes need to be made for gzip
+# gzip in Python 2 doesn't have a text mode, and in Python 3
+# gzip does have text mode
+try:
+    gzip.compress
+except AttributeError:
+    gzip_open = gzip.open
+else:
     def gzip_open(filename, mode):
         mode += 't'
         return gzip.open(filename, mode)
