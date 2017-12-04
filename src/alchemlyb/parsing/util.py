@@ -19,8 +19,9 @@ else:
         return bz2.open(filename, mode)
 
 # similar changes need to be made for gzip
-# gzip in Python 2 doesn't have a text mode, and in Python 3
-# gzip does have text mode
+# gzip in Python 2 assumes text mode when 'r' is
+# specified and in Python 3 gzip assumes binary mode when
+# 'r' is specified
 try:
     gzip.compress
 except AttributeError:
