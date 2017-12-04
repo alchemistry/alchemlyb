@@ -140,7 +140,7 @@ def _extract_state(xvg):
     """Extract information on state sampled, names of lambdas.
 
     """
-    with anyopen(xvg, 'rt') as f:
+    with anyopen(xvg, 'r') as f:
         for line in f:
             if ('subtitle' in line) and ('state' in line):
                 state = int(line.split('state')[1].split(':')[0])
@@ -155,7 +155,7 @@ def _extract_dataframe(xvg):
     """Extract a DataFrame from XVG data.
 
     """
-    with anyopen(xvg, 'rt') as f:
+    with anyopen(xvg, 'r') as f:
         names = []
         rows = []
         for line in f:
