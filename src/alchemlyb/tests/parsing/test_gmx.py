@@ -4,8 +4,6 @@
 
 from alchemlyb.parsing.gmx import extract_dHdl, extract_u_nk
 from alchemtest.gmx import load_benzene
-from alchemtest.gmx import load_expanded_ensemble_case_1
-from alchemlyb.parsing.util import anyopen
 
 
 def test_dHdl():
@@ -36,14 +34,3 @@ def test_u_nk():
                 assert u_nk.shape == (4001, 5)
             elif leg == 'VDW':
                     u_nk.shape == (4001, 16)
-
-def test_gzip():
-    """Test that gzip reads .gz files in the correct (text) mode.
-
-    """
-    dataset = load_expanded_ensemble_case_1()
-
-    for leg in dataset['data']:
-        for filename in dataset['data'][leg]:
-            with anyopen(filename, 'r') as f:
-                assert type(f.readline()) is str
