@@ -28,6 +28,30 @@ def gmx_benzene_vdw_dHdl():
 
     return dHdl
 
+def gmx_expanded_ensemble_case_1_dHdl():
+    dataset = alchemtest.gmx.load_expanded_ensemble_case_1()
+
+    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+                      for filename in dataset['data']['AllStates']])
+
+    return dHdl
+
+def gmx_expanded_ensemble_case_2_dHdl():
+    dataset = alchemtest.gmx.load_expanded_ensemble_case_2()
+
+    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+                      for filename in dataset['data']['AllStates']])
+
+    return dHdl
+
+def gmx_expanded_ensemble_case_3_dHdl():
+    dataset = alchemtest.gmx.load_expanded_ensemble_case_3()
+
+    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+                      for filename in dataset['data']['AllStates']])
+
+    return dHdl
+
 def amber_simplesolvated_charge_dHdl():
     dataset = alchemtest.amber.load_simplesolvated()
 
@@ -49,6 +73,9 @@ class TIestimatorMixin:
 
     @pytest.mark.parametrize('X_delta_f', ((gmx_benzene_coul_dHdl(), 3.089),
                                            (gmx_benzene_vdw_dHdl(), -3.056),
+                                           (gmx_expanded_ensemble_case_1_dHdl(), 76.220),
+                                           (gmx_expanded_ensemble_case_2_dHdl(), 76.247),
+                                           (gmx_expanded_ensemble_case_3_dHdl(), 76.387),
                                            (amber_simplesolvated_charge_dHdl(), -60.114),
                                            (amber_simplesolvated_vdw_dHdl(), 3.824)))
     def test_get_delta_f(self, X_delta_f):

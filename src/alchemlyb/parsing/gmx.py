@@ -65,11 +65,29 @@ def extract_u_nk(xvg, T):
                        index=pd.Float64Index(times.values, name='time'))
 
     # create columns for each lambda, indicating state each row sampled from
-    for i, l in enumerate(lambdas):
-        try:
-            u_k[l] = statevec[i]
-        except TypeError:
-            u_k[l] = statevec
+    # if state is None run as expanded ensemble data or REX
+    if state is None:
+        # if thermodynamic state is specified map thermodynamic
+        # state data to lambda values, else (for REX)
+        # define state based on the legend
+        if 'Thermodynamic state' in df:
+            ts_index = df.columns.get_loc('Thermodynamic state')
+            thermo_state = df[df.columns[ts_index]]
+            for i, l in enumerate(lambdas):
+                v = []
+                for t in thermo_state:
+                    v.append(statevec[int(t)][i])
+                u_k[l] = v
+        else:
+            state_legend = _extract_legend(xvg)
+            for i, l in enumerate(state_legend):
+                u_k[l] = state_legend[l]
+    else:
+        for i, l in enumerate(lambdas):
+            try:
+                u_k[l] = statevec[i]
+            except TypeError:
+                u_k[l] = statevec
 
     # set up new multi-index
     newind = ['time'] + lambdas
@@ -121,11 +139,29 @@ def extract_dHdl(xvg, T):
                         index=pd.Float64Index(times.values, name='time'))
 
     # create columns for each lambda, indicating state each row sampled from
-    for i, l in enumerate(lambdas):
-        try:
-            dHdl[l] = statevec[i]
-        except TypeError:
-            dHdl[l] = statevec
+    # if state is None run as expanded ensemble data or REX
+    if state is None:
+        # if thermodynamic state is specified map thermodynamic
+        # state data to lambda values, else (for REX)
+        # define state based on the legend
+        if 'Thermodynamic state' in df:
+            ts_index = df.columns.get_loc('Thermodynamic state')
+            thermo_state = df[df.columns[ts_index]]
+            for i, l in enumerate(lambdas):
+                v = []
+                for t in thermo_state:
+                    v.append(statevec[int(t)][i])
+                dHdl[l] = v
+        else:
+            state_legend = _extract_legend(xvg)
+            for i, l in enumerate(state_legend):
+                dHdl[l] = state_legend[l]
+    else:
+        for i, l in enumerate(lambdas):
+            try:
+                dHdl[l] = statevec[i]
+            except TypeError:
+                dHdl[l] = statevec
 
     # set up new multi-index
     newind = ['time'] + lambdas
@@ -140,6 +176,7 @@ def _extract_state(xvg):
     """Extract information on state sampled, names of lambdas.
 
     """
+    state = None
     with anyopen(xvg, 'r') as f:
         for line in f:
             if ('subtitle' in line) and ('state' in line):
@@ -148,7 +185,32 @@ def _extract_state(xvg):
                 statevec = eval(line.strip().split(' = ')[-1].strip('"'))
                 break
 
+    # if expanded ensemble data is used the state variable will never be assigned
+    # parsing expanded ensemble data
+    if state is None:
+        lambdas = []
+        statevec = []
+        with anyopen(xvg, 'r') as f:
+            for line in f:
+                if ('legend' in line) and ('lambda' in line):
+                    lambdas.append([word.strip(')(,') for word in line.split() if 'lambda' in word][0])
+                if ('legend' in line) and (' to ' in line):
+                    statevec.append(([float(i) for i in line.strip().split(' to ')[-1].strip('"()').split(',')]))
+
     return state, lambdas, statevec
+
+
+def _extract_legend(xvg):
+    """Extract information on state sampled for REX simulations.
+
+    """
+    state_legend = {}
+    with anyopen(xvg, 'r') as f:
+        for line in f:
+            if ('legend' in line) and ('lambda' in line):
+                state_legend[line.split()[4]] = float(line.split()[6].strip('"'))
+
+    return state_legend
 
 
 def _extract_dataframe(xvg):
@@ -172,7 +234,7 @@ def _extract_dataframe(xvg):
 
             # should catch non-numeric lines so we don't proceed in parsing
             # here
-            if line.startswith(('#', '@')) :
+            if line.startswith(('#', '@')):
                 continue
 
             if line.startswith('&'):  #pragma: no cover
