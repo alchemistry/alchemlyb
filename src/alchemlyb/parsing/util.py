@@ -18,6 +18,19 @@ else:
         mode += 't'
         return bz2.open(filename, mode)
 
+# similar changes need to be made for gzip
+# gzip in Python 2 assumes text mode when 'r' is
+# specified and in Python 3 gzip assumes binary mode when
+# 'r' is specified
+try:
+    gzip.compress
+except AttributeError:
+    gzip_open = gzip.open
+else:
+    def gzip_open(filename, mode):
+        mode += 't'
+        return gzip.open(filename, mode)
+
 
 def anyopen(filename, mode='r'):
     """Return a file stream for filename, even if compressed.
@@ -41,7 +54,7 @@ def anyopen(filename, mode='r'):
     """
     # opener for each type of file
     extensions = {'.bz2': bz2_open,
-                  '.gz': gzip.open,
+                  '.gz': gzip_open,
                   '.zip': zipfile.ZipFile}
 
     ext = os.path.splitext(filename)[1]
