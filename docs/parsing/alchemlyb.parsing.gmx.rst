@@ -20,6 +20,12 @@ To use TI-based estimators that require gradients, you will need to include thes
 
     dhdl-derivatives = yes         ; write derivatives of Hamiltonian with respect to lambda
 
+Additionally, the parsers can properly parse XVG files (containing Hamiltonian differences and/or Hamiltonian derivatives) produced during expanded ensemble simulations. To produce such a file during the simulation, use ``gmx mdrun -deffnm <name> -dhdl dhdl.xvg`` with your installation of `Gromacs`_.
+To run an expanded ensemble simulation you will need to use the following MDP option:
+
+.. code-block:: none
+
+    free_energy = expanded        ; turns on expanded ensemble simulation, lambda state becomes a dynamic variable
 
 .. _`Gromacs`: http://www.gromacs.org/
 .. _`MDP options`: 
