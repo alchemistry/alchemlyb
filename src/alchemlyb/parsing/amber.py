@@ -17,6 +17,7 @@ from .util import anyopen
 
 logger = logging.getLogger("alchemlyb.parsers.Amber")
 
+
 def convert_to_pandas(file_datum):
     """Convert the data structure from numpy to pandas format"""
     data_dic = {}
@@ -26,18 +27,20 @@ def convert_to_pandas(file_datum):
     for frame_index, frame_dhdl in enumerate(file_datum.gradients):
         data_dic["dHdl"].append(frame_dhdl)
         data_dic["lambdas"].append(file_datum.clambda)
-        #here we need to convert dt to ps unit from ns
-        frame_time = file_datum.t0 + (frame_index + 1) * file_datum.dt*1000
+        # here we need to convert dt to ps unit from ns
+        frame_time = file_datum.t0 + (frame_index + 1) * file_datum.dt * 1000
         data_dic["time"].append(frame_time)
     df = pd.DataFrame(data_dic["dHdl"], columns=["dHdl"],
-                      index =pd.Float64Index(data_dic["time"], name='time'))
+                      index=pd.Float64Index(data_dic["time"], name='time'))
     df["lambdas"] = data_dic["lambdas"][0]
     df = df.reset_index().set_index(['time'] + ['lambdas'])
     return df
 
+
 DVDL_COMPS = ['BOND', 'ANGLE', 'DIHED', '1-4 NB', '1-4 EEL', 'VDWAALS',
               'EELEC', 'RESTRAINT']
 _FP_RE = r'[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
+
 
 def any_none(sequence):
     """Check if any element of a sequence is None."""
@@ -48,6 +51,7 @@ def any_none(sequence):
 
     return False
 
+
 def _pre_gen(it, first):
     """A generator that returns first first if it exists."""
 
@@ -57,16 +61,18 @@ def _pre_gen(it, first):
     while it:
         yield next(it)
 
+
 class SectionParser(object):
     """
     A simple parser to extract data values from sections.
     """
+
     def __init__(self, filename):
         """Opens a file according to its file type."""
         self.filename = filename
         try:
             self.fileh = anyopen(self.filename, 'r')
-        except Exception as ex:    #pragma: no cover
+        except Exception as ex:  # pragma: no cover
             logging.exception("ERROR: cannot open file %s" % filename)
         self.lineno = 0
 
@@ -115,14 +121,14 @@ class SectionParser(object):
             if match:
                 value = match.group(1)
                 # FIXME: assumes fields are only integers or floats
-                if '*' in value:            # Fortran format overflow
-                    result.append(float('Inf') )
+                if '*' in value:  # Fortran format overflow
+                    result.append(float('Inf'))
                 # NOTE: check if this is a sufficient test for int
                 elif '.' not in value and re.search(r'\d+', value):
                     result.append(int(value))
                 else:
                     result.append(float(value))
-            else:                       # section may be incomplete
+            else:  # section may be incomplete
                 result.append(None)
         return result
 
@@ -134,7 +140,7 @@ class SectionParser(object):
         self.lineno += 1
         return next(self.fileh)
 
-    #make compatible with python 3.6
+    # make compatible with python 3.6
     __next__ = next
 
     def close(self):
@@ -147,11 +153,13 @@ class SectionParser(object):
     def __exit__(self, typ, value, traceback):
         self.close()
 
+
 class FEData(object):
     """A simple struct container to collect data from individual files."""
 
     __slots__ = ['clambda', 't0', 'dt', 'T', 'gradients',
-                 'component_gradients']
+                 'component_gradients', 'mbar_energies',
+                 'have_mbar', 'mbar_lambdas', 'mbar_lambda_idx']
 
     def __init__(self):
         self.clambda = -1.0
@@ -160,9 +168,15 @@ class FEData(object):
         self.T = -1.0
         self.gradients = []
         self.component_gradients = []
+        self.mbar_energies = []
+        self.have_mbar = False
+        self.mbar_lambdas = []
+        self.mbar_lambda_idx = -1
+
 
 def file_validation(outfile):
     """validate the energy output file """
+    file_datum = FEData()
     invalid = False
     with SectionParser(outfile) as secp:
         line = secp.skip_lines(5)
@@ -178,7 +192,7 @@ def file_validation(outfile):
         nstlim, dt = secp.extract_section('Molecular dynamics:', '^$',
                                           ['nstlim', 'dt'])
         T, = secp.extract_section('temperature regulation:', '^$',
-                                 ['temp0'])
+                                  ['temp0'])
         if not T:
             logging.error('ERROR: Non-constant temperature MD not '
                           'currently supported')
@@ -188,6 +202,32 @@ def file_validation(outfile):
         if clambda is None:
             logging.warning('  WARNING: no free energy section found, ignoring file')
             invalid = True
+
+        mbar_ndata = 0
+        have_mbar, mbar_ndata = secp.extract_section('^FEP MBAR options:',
+                                                      '^$',
+                                                      ['ifmbar',
+                                                        'bar_intervall'],
+                                                      '^---')
+        if have_mbar:
+            mbar_ndata = int(nstlim / mbar_ndata)
+            mbar_lambdas = _process_mbar_lambdas(secp)
+            file_datum.mbar_lambdas = mbar_lambdas
+            clambda_str = '%6.4f' % clambda
+
+            if clambda_str not in mbar_lambdas:
+                logging.warning('\n Warning: lamba %s not contained in set of '
+                                'MBAR lambas: %s\nNot using MBAR.' %
+                                (clambda_str, ', '.join(mbar_lambdas)))
+
+                have_mbar = False
+            else:
+                mbar_nlambda = len(mbar_lambdas)
+                mbar_lambda_idx = mbar_lambdas.index(clambda_str)
+                file_datum.mbar_lambda_idx = mbar_lambda_idx
+
+                for _ in range(mbar_nlambda):
+                    file_datum.mbar_energies.append([])
 
         if not secp.skip_after('^   3.  ATOMIC '):
             logging.warning('  WARNING: no ATOMIC section found, ignoring file\n')
@@ -199,12 +239,51 @@ def file_validation(outfile):
             invalid = True
     if invalid:
         return False
-    file_datum = FEData()
     file_datum.clambda = clambda
     file_datum.t0 = t0
     file_datum.dt = dt
     file_datum.T = T
+    file_datum.have_mbar = have_mbar
     return file_datum
+
+
+def extract_u_nk(outfile):
+    file_datum = file_validation(outfile)
+    if not file_validation(outfile):   # pragma: no cover
+        return None
+    if not file_datum.have_mbar:
+        raise Exception('ERROR: No MBAR energies found! Cannot parse file.')
+    with SectionParser(outfile) as secp:
+        line = secp.skip_lines(5)
+        high_E_cnt = 0
+        for line in secp:
+            if line.startswith('MBAR Energy analysis'):
+                mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
+                                            extra=line)
+
+                if any_none(mbar):
+                    continue
+
+                E_ref = mbar[file_datum.mbar_lambda_idx]
+
+                for lmbda, E in enumerate(mbar):
+                    if E > 0.0:
+                        high_E_cnt += 1
+
+                    file_datum.mbar_energies[lmbda].append(E - E_ref)
+
+        if high_E_cnt:
+            logger.warning('\n WARNING: %i MBAR energ%s > 0.0 kcal/mol' %
+                           (high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is'))
+
+        time = [file_datum.t0 + (frame_index + 1) * file_datum.dt * 1000
+                for frame_index in range(len(file_datum.mbar_energies[0]))]
+
+    return pd.DataFrame(file_datum.mbar_energies,
+                        columns=pd.MultiIndex.from_arrays([time, np.repeat(file_datum.clambda, len(time))],
+                                                          names=['time', 'lambdas']),
+                        index=file_datum.mbar_lambdas).T
+
 
 def extract_dHdl(outfile):
     """Return gradients ``dH/dl`` from Amber TI outputfile.
@@ -237,10 +316,10 @@ def extract_dHdl(outfile):
                 in_comps = True
             if line.startswith(' NSTEP'):
                 if in_comps:
-                    #CHECK the result
+                    # CHECK the result
                     result = secp.extract_section('^ NSTEP', '^ ---',
-                                                 ['NSTEP'] + DVDL_COMPS,
-                                                 extra=line)
+                                                  ['NSTEP'] + DVDL_COMPS,
+                                                  extra=line)
                     if result[0] != old_comp_nstep and not any_none(result):
                         comps.append([float(E) for E in result[1:]])
                         nenav += 1
@@ -258,13 +337,47 @@ def extract_dHdl(outfile):
             if line == '   5.  TIMINGS\n':
                 finished = True
                 break
-    if not finished:      #pragma: no cover
+    if not finished:  # pragma: no cover
         logging.warning('  WARNING: prematurely terminated run')
-    if not nensec:        #pragma: no cover
+    if not nensec:  # pragma: no cover
         logging.warning('  WARNING: File %s does not contain any DV/DL data',
                         outfile)
     logging.info('%i data points, %i DV/DL averages', nensec, nenav)
-    #at this step we get info stored in the FEData object for a given amber out file
+    # at this step we get info stored in the FEData object for a given amber out file
     file_datum.component_gradients.extend(comps)
-    #convert file_datum to the pandas format to make it identical to alchemlyb output format
+    # convert file_datum to the pandas format to make it identical to alchemlyb output format
     return convert_to_pandas(file_datum)
+
+
+def _process_mbar_lambdas(secp):
+    """
+    Extract the lambda points used to compute MBAR energies from an AMBER MDOUT file.
+    Parameters
+    ----------
+    secp: .out file from amber simulation.
+
+    Returns
+    -------
+    mbar_lambdas: lambda values used for MBAR energy collection in simulation.
+
+    """
+
+    in_mbar = False
+    mbar_lambdas = []
+
+    for line in secp:
+        if line.startswith('    MBAR - lambda values considered:'):
+            in_mbar = True
+            continue
+
+        if in_mbar:
+            if line.startswith('    Extra'):
+                break
+
+            if 'total' in line:
+                data = line.split()
+                mbar_lambdas.extend(data[2:])
+            else:
+                mbar_lambdas.extend(line.split())
+
+    return mbar_lambdas

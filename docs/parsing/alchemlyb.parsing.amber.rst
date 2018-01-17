@@ -17,4 +17,4 @@ API Reference
 This submodule includes these parsing functions:
 
 .. autofunction:: alchemlyb.parsing.amber.extract_dHdl
-
+.. autofunction:: alchemlyb.parsing.amber.extract_u_nk
