@@ -1,7 +1,7 @@
 alchemlyb: the simple alchemistry library
 =========================================
 
-|doi| |docs| |build| |cov| |gitter|
+|doi| |docs| |build| |cov|
 
 **Warning**: This library is young. It is **not** API stable. It is a
 nucleation point. By all means use and help improve it, but note that it will
@@ -56,9 +56,4 @@ independent, equilibrated samples [Chodera2016]_.
     :alt: Code coverage
     :scale: 100%
     :target: https://codecov.io/gh/alchemistry/alchemlyb
-
-.. |gitter| image:: https://badges.gitter.im/alchemistry/alchemlyb.png
-    :alt: Gitter chat
-    :scale: 100%
-    :target: https://gitter.im/alchemistry/alchemlyb
 

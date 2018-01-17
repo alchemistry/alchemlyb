@@ -74,7 +74,7 @@ Development model
 
 This is an open-source project, the hope of which is to produce a library with which the community is happy.
 To enable this, the library will be a community effort.
-Development is done in the open on GitHub, with a Gitter channel for discussion among developers for fast turnaround on ideas.
+Development is done in the open on GitHub.
 Software engineering best-practices will be used throughout, including continuous integration testing via Travis CI, up-to-date documentation, and regular releases.
 
 David Dotson (@dotsdl) is employed as a software engineer by Oliver Beckstein (@orbeckst), and this project is a primary point of focus for him in this position.
