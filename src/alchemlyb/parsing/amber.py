@@ -1,4 +1,5 @@
-"""Parsers for extracting alchemical data from Amber_ output files.
+"""Parsers for extracting alchemical data from `Amber <http://ambermd.org>`_ output files.
+
 Most of the file parsing parts are inherited from
 `alchemical-analysis`_.
 
@@ -248,6 +249,20 @@ def file_validation(outfile):
 
 
 def extract_u_nk(outfile):
+    """Return reduced potentials `u_nk` from Amber outputfile.
+
+    Parameters
+    ----------
+    outfile : str
+        Path to Amber .out file to extract data from.
+
+    Returns
+    -------
+    u_nk : DataFrame
+        Potential energy for each alchemical state (k) for each frame (n).
+
+    """
+
     file_datum = file_validation(outfile)
     if not file_validation(outfile):   # pragma: no cover
         return None
