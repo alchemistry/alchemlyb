@@ -54,12 +54,14 @@ class TI(BaseEstimator):
         means = dHdl.mean(level=dHdl.index.names[1:])
         variances = np.square(dHdl.sem(level=dHdl.index.names[1:]))
         
+        # get the lambda names
+        l_types = dHdl.index.names[1:]
+
         # obtain vector of delta lambdas between each state
         dl = means.reset_index()[means.index.names[:]].diff().iloc[1:].values
 
         # apply trapezoid rule to obtain DF between each adjacent state
         deltas = (dl * (means.iloc[:-1].values + means.iloc[1:].values)/2).sum(axis=1)
-        d_deltas = (dl**2 * (variances.iloc[:-1].values + variances.iloc[1:].values)/4).sum(axis=1)
 
         # build matrix of deltas between each state
         adelta = np.zeros((len(deltas)+1, len(deltas)+1))
@@ -70,8 +72,19 @@ class TI(BaseEstimator):
             dout = []
             for i in range(len(deltas) - j):
                 out.append(deltas[i] + deltas[i+1:i+j+1].sum())
-                dout.append(d_deltas[i] + d_deltas[i+1:i+j+1].sum())
 
+                # Define additional zero lambda
+                a = [0.0] * len(l_types)
+
+                # Define dl series' with additional zero lambda on the left and right
+                dll = np.insert(dl[i:i + j + 1], 0, [a], axis=0)
+                dlr = np.append(dl[i:i + j + 1], [a], axis=0)
+
+                # Get a series of the form: x1, x1 + x2, ..., x(n-1) + x(n), x(n)
+                dllr = dll + dlr
+
+                # Append deviation of free energy difference between state i and i+j+1
+                dout.append((dllr ** 2 * variances.iloc[i:i + j + 2].values / 4).sum(axis=1).sum())
             adelta += np.diagflat(np.array(out), k=j+1)
             ad_delta += np.diagflat(np.array(dout), k=j+1)
 
