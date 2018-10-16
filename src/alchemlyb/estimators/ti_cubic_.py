@@ -1,11 +1,12 @@
 import numpy as np
 import pandas as pd
+import scipy.interpolate
 
 from sklearn.base import BaseEstimator
 
 
-class TI(BaseEstimator):
-    """Thermodynamic integration (TI).
+class TICUBIC(BaseEstimator):
+    """Thermodynamic integration with cubic splines (TI-Cubic).
 
     Parameters
     ----------
@@ -20,7 +21,7 @@ class TI(BaseEstimator):
         The estimated dimensionless free energy difference between each state.
 
     d_delta_f_ : DataFrame
-        The estimated statistical uncertainty (one standard deviation) in 
+        The estimated statistical uncertainty (one standard deviation) in
         dimensionless free energy differences.
 
     states_ : list
@@ -38,7 +39,7 @@ class TI(BaseEstimator):
 
         Parameters
         ----------
-        dHdl : DataFrame 
+        dHdl : DataFrame
             dHdl[n,k] is the potential energy gradient with respect to lambda
             for each configuration n and lambda k.
 
@@ -53,26 +54,51 @@ class TI(BaseEstimator):
         # used to calculate mean
         means = dHdl.mean(level=dHdl.index.names[1:])
         variances = np.square(dHdl.sem(level=dHdl.index.names[1:]))
-        
+
         # get the lambda names
         l_types = dHdl.index.names[1:]
 
         # obtain vector of delta lambdas between each state
         dl = means.reset_index()[means.index.names[:]].diff().iloc[1:].values
+        ls = np.array(means.reset_index()[means.index.names[:]])
 
-        # apply trapezoid rule to obtain DF between each adjacent state
-        deltas = (dl * (means.iloc[:-1].values + means.iloc[1:].values)/2).sum(axis=1)
+        segements = []
+        segstart = 0
+        ill = [0] * len(l_types)
+        nl = 0
+        for i in range(len(ls)):
+            l = ls[i]
+            if (i < len(ls) - 1 and list(np.array(ls[i+1], dtype=bool)).count(True) > nl) or i == len(ls) - 1:
+                if nl > 0:
+                    inl = np.array(np.array(l, dtype=bool), dtype=int)
+                    l_name = l_types[list(inl - ill).index(1)]
+                    ill = inl
+                    segements.append((segstart, i + 1, l_name))
+
+                if i + 1 < len(ls):
+                    nl = list(np.array(ls[i+1], dtype=bool)).count(True)
+                segstart = i
+
+        deltas = np.array([])
+        for segstart, segend, l_name in segements:
+            ls = np.transpose(np.array(means.reset_index()[[l_name]]))[0][segstart:segend]
+            values = np.transpose(np.array(means[l_name[:-7]])[segstart:segend])
+            f = scipy.interpolate.CubicSpline(ls, values)
+
+
+            for i in range(len(ls) - 1):
+                deltas = np.append(deltas, f.integrate(ls[i], ls[i+1]))
+
 
         # build matrix of deltas between each state
-        adelta = np.zeros((len(deltas)+1, len(deltas)+1))
+        adelta = np.zeros((len(dl)+1, len(dl)+1))
         ad_delta = np.zeros_like(adelta)
 
-        for j in range(len(deltas)):
+        for j in range(len(dl)):
             out = []
             dout = []
-            for i in range(len(deltas) - j):
-                out.append(deltas[i] + deltas[i+1:i+j+1].sum())
-
+            for i in range(len(dl) - j):
+                out.append(deltas[i:i + j + 1].sum())
                 # Define additional zero lambda
                 a = [0.0] * len(l_types)
 
@@ -85,8 +111,9 @@ class TI(BaseEstimator):
 
                 # Append deviation of free energy difference between state i and i+j+1
                 dout.append((dllr ** 2 * variances.iloc[i:i + j + 2].values / 4).sum(axis=1).sum())
-            adelta += np.diagflat(np.array(out), k=j+1)
-            ad_delta += np.diagflat(np.array(dout), k=j+1)
+
+            adelta += np.diagflat(np.array(out), k=j + 1)
+            ad_delta += np.diagflat(np.array(dout), k=j + 1)
 
         # yield standard delta_f_ free energies between each state
         self.delta_f_ = pd.DataFrame(adelta - adelta.T,

@@ -58,7 +58,7 @@ def extract_u_nk(xvg, T):
     cols= list()
     for col in dH:
         u_col = eval(col.split('to')[1])
-        u_k[u_col] = beta * (dH[col].values + U.values + pV.values)
+        u_k[u_col] = beta * (dH[col].values)
         cols.append(u_col)
 
     u_k = pd.DataFrame(u_k, columns=cols,
