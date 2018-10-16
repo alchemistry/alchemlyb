@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import scipy.interpolate
-import matplotlib.pyplot as plt
 
 from sklearn.base import BaseEstimator
 
@@ -86,9 +85,6 @@ class TICUBIC(BaseEstimator):
             values = np.transpose(np.array(means[l_name[:-7]])[segstart:segend])
             f = scipy.interpolate.CubicSpline(ls, values)
 
-            x = np.arange(0.0, 1.0, 0.001)
-            plt.plot(x, f(x))
-            plt.show()
 
             for i in range(len(ls) - 1):
                 deltas = np.append(deltas, f.integrate(ls[i], ls[i+1]))
