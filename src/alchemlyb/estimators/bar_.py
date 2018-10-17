@@ -81,12 +81,12 @@ class BAR(BaseEstimator):
         deltas = np.array([])
         d_deltas = np.array([])
         for k in range(len(N_k) - 1):
-            # get us from labda step k
+            # get us from lambda step k
             uk = groups.get_group(self.states_[k])
             # get w_F
             w_f = uk.iloc[:, k+1] - uk.iloc[:, k]
 
-            # get us from labda step k+1
+            # get us from lambda step k+1
             uk1 = groups.get_group(self.states_[k+1])
             # get w_R
             w_r = uk1.iloc[:, k] - uk1.iloc[:, k+1]
