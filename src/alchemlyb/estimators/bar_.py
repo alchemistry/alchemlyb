@@ -9,7 +9,7 @@ from pymbar.mbar import DEFAULT_SUBSAMPLING_PROTOCOL
 
 
 class BAR(BaseEstimator):
-    """Multi-state Bennett acceptance ratio (MBAR).
+    """Bennett acceptance ratio (BAR).
 
     Parameters
     ----------
@@ -20,13 +20,9 @@ class BAR(BaseEstimator):
     relative_tolerance : float, optional
         Set to determine the relative tolerance convergence criteria.
 
-    initial_f_k : np.ndarray, float, shape=(K), optional
-        Set to the initial dimensionless free energies to use as a 
-        guess (default None, which sets all f_k = 0).
-
-    method : str, optional, default="hybr"
-        The optimization routine to use.  This can be any of the methods
-        available via scipy.optimize.minimize() or scipy.optimize.root().
+    method : str, optional, defualt='false-position'
+        choice of method to solve BAR nonlinear equations,
+        one of 'self-consistent-iteration' or 'false-position' (default: 'false-position')
 
     verbose : bool, optional
         Set to True if verbose debug output is desired.
@@ -49,13 +45,11 @@ class BAR(BaseEstimator):
 
     """
 
-    def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
-                 initial_f_k=None, method='hybr', verbose=False):
+    def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7, method='false-position', verbose=False):
 
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
-        self.initial_f_k = initial_f_k
-        self.method = (dict(method=method), )
+        self.method = method
         self.verbose = verbose
 
         # handle for pymbar.BAR object
@@ -90,15 +84,16 @@ class BAR(BaseEstimator):
             # get us from labda step k
             uk = groups.get_group(self.states_[k])
             # get w_F
-            w_F = uk.iloc[:, k+1] -  uk.iloc[:, k]
+            w_f = uk.iloc[:, k+1] - uk.iloc[:, k]
 
             # get us from labda step k+1
             uk1 = groups.get_group(self.states_[k+1])
             # get w_R
-            w_R = uk1.iloc[:, k] -  uk1.iloc[:, k+1]
+            w_r = uk1.iloc[:, k] - uk1.iloc[:, k+1]
 
             # now determine df and ddf using pymbar.BAR
-            df, ddf = BAR_(w_F, w_R,
+            df, ddf = BAR_(w_f, w_r,
+                             method=self.method,
                              maximum_iterations=self.maximum_iterations,
                              relative_tolerance=self.relative_tolerance,
                              verbose=self.verbose)
