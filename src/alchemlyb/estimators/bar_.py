@@ -63,7 +63,7 @@ class BAR(BaseEstimator):
 
     def fit(self, u_nk):
         """
-        Compute overlap matrix of reduced potentials using multi-state
+        Compute overlap matrix of reduced potentials using
         Bennett acceptance ratio.
 
         Parameters
