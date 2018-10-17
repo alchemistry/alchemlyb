@@ -37,9 +37,6 @@ class BAR(BaseEstimator):
         The estimated statistical uncertainty (one standard deviation) in
         dimensionless free energy differences.
 
-    theta_ : DataFrame
-        The theta matrix.
-
     states_ : list
         Lambda states for which free energy differences were obtained.
 
