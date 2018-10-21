@@ -29,7 +29,9 @@ def extract_u_nk(xvg, T):
 
     """
 
-    col_match = r"\xD\f{}H \xl\f{}"
+    h_col_match = r"\xD\f{}H \xl\f{}"
+    pv_col_match = 'pV'
+    u_col_match = 'Total Energy'
     beta = 1/(k_b * T)
 
     state, lambdas, statevec = _extract_state(xvg)
@@ -43,22 +45,31 @@ def extract_u_nk(xvg, T):
     times = df[df.columns[0]]
 
     # want to grab only dH columns
-    DHcols = [col for col in df.columns if (col_match in col)]
+    DHcols = [col for col in df.columns if (h_col_match in col)]
     dH = df[DHcols]
 
-    # not entirely sure if we need to get potentials relative to
-    # the state actually sampled, but perhaps needed to stack
-    # samples from all states?
-    U = df[df.columns[1]]
-
     # gromacs also gives us pV directly; need this for reduced potential
-    pV = df[df.columns[-1]]
+    pv_cols = [col for col in df.columns if (pv_col_match in col)]
+    pv = None
+    if pv_cols:
+        pv = df[pv_cols[0]]
+
+    # gromacs also gives us total energy U directly; need this for reduced potential
+    u_cols = [col for col in df.columns if (u_col_match in col)]
+    u = None
+    if u_cols:
+        u = df[u_cols[0]]
 
     u_k = dict()
-    cols= list()
+    cols = list()
     for col in dH:
         u_col = eval(col.split('to')[1])
-        u_k[u_col] = beta * (dH[col].values + U.values + pV.values)
+        # calculate reduced potential u_k = dH + pV + U
+        u_k[u_col] = beta * dH[col].values
+        if pv_cols:
+            u_k[u_col] += beta * pv.values
+        if u_cols:
+            u_k[u_col] += beta * u.values
         cols.append(u_col)
 
     u_k = pd.DataFrame(u_k, columns=cols,
