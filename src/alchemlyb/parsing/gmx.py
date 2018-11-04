@@ -31,7 +31,7 @@ def extract_u_nk(xvg, T):
 
     h_col_match = r"\xD\f{}H \xl\f{}"
     pv_col_match = 'pV'
-    u_col_match = 'Total Energy'
+    u_col_match = ['Total Energy', 'Potential Energy']
     beta = 1/(k_b * T)
 
     state, lambdas, statevec = _extract_state(xvg)
@@ -54,8 +54,8 @@ def extract_u_nk(xvg, T):
     if pv_cols:
         pv = df[pv_cols[0]]
 
-    # gromacs also gives us total energy U directly; need this for reduced potential
-    u_cols = [col for col in df.columns if (u_col_match in col)]
+    # gromacs also gives us total/potential energy U directly; need this for reduced potential
+    u_cols = [col for col in df.columns if any(single_u_col_match in col for single_u_col_match in u_col_match)]
     u = None
     if u_cols:
         u = df[u_cols[0]]
