@@ -5,6 +5,9 @@
 from alchemlyb.parsing.gmx import extract_dHdl, extract_u_nk
 from alchemtest.gmx import load_benzene
 from alchemtest.gmx import load_expanded_ensemble_case_1, load_expanded_ensemble_case_2, load_expanded_ensemble_case_3
+from alchemtest.gmx import load_water_particle_with_total_energy
+from alchemtest.gmx import load_water_particle_with_potential_energy
+from alchemtest.gmx import load_water_particle_without_energy
 
 
 def test_dHdl():
@@ -103,3 +106,65 @@ def test_dHdl_case3():
 
             assert dHdl.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
             assert dHdl.shape == (2500, 4)
+
+def test_u_nk_with_total_energy():
+    """Test that the reduced potential is calculated correctly when the total energy is given.
+
+    """
+
+    # Load dataset
+    dataset = load_water_particle_with_total_energy()
+
+    # Check if the sum of values on the diagonal has the correct value
+    assert _diag_sum(dataset) == 47611377946.58586
+
+    # Check one specific value in the dataframe
+    assert float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]) == -11250.643602869592
+
+def test_u_nk_with_potential_energy():
+    """Test that the reduced potential is calculated correctly when the potential energy is given.
+
+    """
+
+    # Load dataset
+    dataset = load_water_particle_with_potential_energy()
+
+    # Check if the sum of values on the diagonal has the correct value
+    assert _diag_sum(dataset) == 16674041445589.646
+
+    # Check one specific value in the dataframe
+    assert float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]) == -15659.655560881085
+
+
+def test_u_nk_without_energy():
+    """Test that the reduced potential is calculated correctly when no energy is given.
+
+    """
+
+    # Load dataset
+    dataset = load_water_particle_without_energy()
+
+    # Check if the sum of values on the diagonal has the correct value
+    assert _diag_sum(dataset) == 20572988148877.555
+
+    # Check one specific value in the dataframe
+    assert float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]) == 18.134225023007403
+
+
+def _diag_sum(dataset):
+    """Calculate the sum of diagonal elements (i, i)
+
+    """
+
+    # Initialize the sum variable
+    ds = 0.0
+
+    for leg in dataset['data']:
+        for filename in dataset['data'][leg]:
+            u_nk = extract_u_nk(filename, T=300)
+
+            # Calculate the sum of diagonal elements:
+            for i in range(len(dataset['data'][leg])):
+                ds += u_nk.iloc[i][i]
+
+    return ds
