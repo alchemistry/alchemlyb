@@ -38,7 +38,7 @@ def test_u_nk():
             if leg == 'Coulomb':
                 assert u_nk.shape == (4001, 5)
             elif leg == 'VDW':
-                    u_nk.shape == (4001, 16)
+                assert u_nk.shape == (4001, 16)
 
 def test_u_nk_case1():
     """Test that u_nk has the correct form when extracted from expanded ensemble files (case 1).
