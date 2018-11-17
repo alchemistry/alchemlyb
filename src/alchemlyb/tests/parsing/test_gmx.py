@@ -117,10 +117,14 @@ def test_u_nk_with_total_energy():
     dataset = load_water_particle_with_total_energy()
 
     # Check if the sum of values on the diagonal has the correct value
-    assert_almost_equal(_diag_sum(dataset), 47611377946.58586)
+    assert_almost_equal(_diag_sum(dataset), 47611377946.58586, decimal=6)
 
     # Check one specific value in the dataframe
-    assert_almost_equal(float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]), -11250.643602869592)
+    assert_almost_equal(
+        float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]),
+        -11250.643602869592,
+        decimal=6
+    )
 
 def test_u_nk_with_potential_energy():
     """Test that the reduced potential is calculated correctly when the potential energy is given.
@@ -131,10 +135,14 @@ def test_u_nk_with_potential_energy():
     dataset = load_water_particle_with_potential_energy()
 
     # Check if the sum of values on the diagonal has the correct value
-    assert_almost_equal(_diag_sum(dataset), 16674041445589.646)
+    assert_almost_equal(_diag_sum(dataset), 16674041445589.646, decimal=6)
 
     # Check one specific value in the dataframe
-    assert_almost_equal(float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]), -15659.655560881085)
+    assert_almost_equal(
+        float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]),
+        -15659.655560881085,
+        decimal=6
+    )
 
 
 def test_u_nk_without_energy():
@@ -146,10 +154,14 @@ def test_u_nk_without_energy():
     dataset = load_water_particle_without_energy()
 
     # Check if the sum of values on the diagonal has the correct value
-    assert_almost_equal(_diag_sum(dataset), 20572988148877.555)
+    assert_almost_equal(_diag_sum(dataset), 20572988148877.555, decimal=6)
 
     # Check one specific value in the dataframe
-    assert_almost_equal(float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]), 18.134225023007403)
+    assert_almost_equal(
+        float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]),
+        18.134225023007403,
+        decimal=6
+    )
 
 
 def _diag_sum(dataset):
