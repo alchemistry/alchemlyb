@@ -121,7 +121,7 @@ def test_u_nk_with_total_energy():
 
     # Check one specific value in the dataframe
     assert_almost_equal(
-        float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]),
+        extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0],
         -11211.578357345974,
         decimal=6
     )
@@ -139,7 +139,7 @@ def test_u_nk_with_potential_energy():
 
     # Check one specific value in the dataframe
     assert_almost_equal(
-        float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]),
+        extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0],
         -15656.558227621246,
         decimal=6
     )
@@ -158,7 +158,7 @@ def test_u_nk_without_energy():
 
     # Check one specific value in the dataframe
     assert_almost_equal(
-        float(extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0]),
+        extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0],
         0.0,
         decimal=6
     )
