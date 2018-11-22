@@ -52,6 +52,30 @@ def gmx_expanded_ensemble_case_3_dHdl():
 
     return dHdl
 
+def gmx_water_particle_with_total_energy_dHdl():
+    dataset = alchemtest.gmx.load_water_particle_with_total_energy()
+
+    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+                      for filename in dataset['data']['AllStates']])
+
+    return dHdl
+
+def gmx_water_particle_with_potential_energy_dHdl():
+    dataset = alchemtest.gmx.load_water_particle_with_potential_energy()
+
+    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+                      for filename in dataset['data']['AllStates']])
+
+    return dHdl
+
+def gmx_water_particle_without_energy_dHdl():
+    dataset = alchemtest.gmx.load_water_particle_without_energy()
+
+    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+                      for filename in dataset['data']['AllStates']])
+
+    return dHdl
+
 def amber_simplesolvated_charge_dHdl():
     dataset = alchemtest.amber.load_simplesolvated()
 
@@ -76,6 +100,9 @@ class TIestimatorMixin:
                                            (gmx_expanded_ensemble_case_1_dHdl(), 76.220, 0.15568),
                                            (gmx_expanded_ensemble_case_2_dHdl(), 76.247, 0.15889),
                                            (gmx_expanded_ensemble_case_3_dHdl(), 76.387, 0.12532),
+                                           (gmx_water_particle_with_total_energy_dHdl(), -11.696, 0.091775),
+                                           (gmx_water_particle_with_potential_energy_dHdl(), -11.751, 0.091149),
+                                           (gmx_water_particle_without_energy_dHdl(), -11.687, 0.091604),
                                            (amber_simplesolvated_charge_dHdl(), -60.114, 0.08186),
                                            (amber_simplesolvated_vdw_dHdl(), 3.824, 0.13254)))
     def test_get_delta_f(self, X_delta_f):
