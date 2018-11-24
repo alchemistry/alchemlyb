@@ -7,6 +7,7 @@ import pandas as pd
 
 from alchemlyb.parsing import gmx
 from alchemlyb.estimators import MBAR
+from alchemlyb.estimators import BAR
 import alchemtest.gmx
 
 
@@ -109,3 +110,29 @@ class TestMBAR(FEPestimatorMixin):
     ])
     def test_mbar(self, X_delta_f):
         self.compare_delta_f(X_delta_f)
+
+class TestBAR(FEPestimatorMixin):
+    """Tests for BAR.
+
+    """
+    cls = BAR
+
+    @pytest.mark.parametrize('X_delta_f', [
+        (gmx_benzene_coul_u_nk(), 3.044, 0.01640),
+        (gmx_benzene_vdw_u_nk(), -3.033, 0.03438),
+        (gmx_expanded_ensemble_case_1(), 75.993, 0.11056),
+        (gmx_expanded_ensemble_case_2(), 76.009, 0.11220),
+        (gmx_expanded_ensemble_case_3(), 76.219, 0.08886),
+        (gmx_water_particle_with_total_energy(), -11.675, 0.065055),
+        (gmx_water_particle_with_potential_energy(), -11.724, 0.064964),
+        (gmx_water_particle_without_energy(), -11.660, 0.064914)
+    ])
+    def test_bar(self, X_delta_f):
+        self.compare_delta_f(X_delta_f)
+
+    def get_delta_f(self, est):
+        ee = 0.0
+
+        for i in range(len(est.d_delta_f_) - 1):
+            ee += est.d_delta_f_.values[i][i+1]**2
+        return est.delta_f_.iloc[0, -1], ee**0.5
