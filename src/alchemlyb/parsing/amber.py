@@ -60,7 +60,10 @@ def _pre_gen(it, first):
         yield first
 
     while it:
-        yield next(it)
+        try:
+            yield next(it)
+        except StopIteration:
+            return
 
 
 class SectionParser(object):
