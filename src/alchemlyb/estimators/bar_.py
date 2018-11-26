@@ -4,8 +4,6 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 
 from pymbar import BAR as BAR_
-from pymbar.mbar import DEFAULT_SOLVER_PROTOCOL
-from pymbar.mbar import DEFAULT_SUBSAMPLING_PROTOCOL
 
 
 class BAR(BaseEstimator):
