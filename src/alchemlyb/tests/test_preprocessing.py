@@ -100,7 +100,7 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
                                  (True, gmx_benzene_dHdl(), 2001),  # 0.00:  g = 1.0559445620585415
                                  (True, gmx_benzene_u_nk(), 2001),  # 'fep': g = 1.0560203916559594
                                  (False, gmx_benzene_dHdl(), 3789),
-                                 (False, gmx_benzene_u_nk(), 3789),
+                                 (False, gmx_benzene_u_nk(), 3571),
                              ])
     def test_conservative(self, data, size, conservative):
         sliced = self.slicer(data, series=data.iloc[:, 0], conservative=conservative)
