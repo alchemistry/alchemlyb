@@ -114,7 +114,7 @@ class BAR(BaseEstimator):
                     dout.append(d_deltas[i:i + j + 1].sum())
                 # Other uncertainties are unknown at this point
                 else:
-                    dout.append(float('NaN'))
+                    dout.append(np.nan)
 
             adelta += np.diagflat(np.array(out), k=j + 1)
             ad_delta += np.diagflat(np.array(dout), k=j + 1)
@@ -130,6 +130,3 @@ class BAR(BaseEstimator):
                                        index=self.states_)
 
         return self
-
-    def predict(self, u_ln):
-        pass
