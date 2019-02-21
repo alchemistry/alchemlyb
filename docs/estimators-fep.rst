@@ -77,3 +77,4 @@ List of FEP-based estimators
     :toctree: estimators
 
     MBAR
+    BAR
