@@ -1,4 +1,4 @@
-"""Parsers for extracting alchemical data from `Namd <http://www.ks.uiuc.edu/Research/namd/>`_ output files.
+"""Parsers for extracting alchemical data from `NAMD <http://www.ks.uiuc.edu/Research/namd/>`_ output files.
 
 """
 import pandas as pd
@@ -10,7 +10,7 @@ def extract_u_nk(fep_file):
 
     Parameters
     ----------
-    fepout : str
+    fep_file : str
         Path to fepout file to extract data from.
 
     Returns
@@ -24,7 +24,7 @@ def extract_u_nk(fep_file):
     win_de = []
 
     # create dataframe for results
-    df = pd.DataFrame(columns=['timestep','fep-lambda'])
+    u_nk = pd.DataFrame(columns=['timestep','fep-lambda'])
 
     # boolean flag to parse data after equil time
     parsing = False
@@ -57,8 +57,8 @@ def extract_u_nk(fep_file):
                 lambda2:win_de_arr})
 
             # join the new window's df to existing df
-            df = pd.concat([df, tempDF])
-            df.fillna(0, inplace=True)
+            u_nk = pd.concat([u_nk, tempDF])
+            u_nk.fillna(0, inplace=True)
 
             # reset values for next window of fepout file
             win_de = []
@@ -78,27 +78,10 @@ def extract_u_nk(fep_file):
     tempDF = pd.DataFrame({
         'timestep':win_ts_arr,
         'fep-lambda': lambda2})
-    df = pd.concat([df, tempDF])
-    df.fillna(0, inplace=True)
+    u_nk = pd.concat([u_nk, tempDF])
+    u_nk.fillna(0, inplace=True)
 
-    df.set_index(['timestep','fep-lambda'], inplace=True)
-    return df
+    u_nk.set_index(['timestep','fep-lambda'], inplace=True)
 
+    return u_nk
 
-
-
-def extract_dHdl(fepout):
-    """Return gradients `dH/dl` from a NAMD TI fepout file.
-
-    Parameters
-    ----------
-    xvg : str
-        Path to fepout file to extract data from.
-
-    Returns
-    -------
-    dH/dl : Series
-        dH/dl as a function of time.
-
-    """
-    pass
