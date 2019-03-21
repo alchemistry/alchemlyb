@@ -18,7 +18,7 @@ class BAR(BaseEstimator):
     relative_tolerance : float, optional
         Set to determine the relative tolerance convergence criteria.
 
-    method : str, optional, defualt='false-position'
+    method : str, optional, default='false-position'
         choice of method to solve BAR nonlinear equations,
         one of 'self-consistent-iteration' or 'false-position' (default: 'false-position')
 
@@ -57,7 +57,7 @@ class BAR(BaseEstimator):
 
         Parameters
         ----------
-        u_nk : DataFrame 
+        u_nk : DataFrame
             u_nk[n,k] is the reduced potential energy of uncorrelated
             configuration n evaluated at state k.
 
