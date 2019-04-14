@@ -3,13 +3,15 @@
 """
 import pytest
 
+import numpy as np
 import pandas as pd
 
-from alchemlyb.parsing import gmx, amber
+from alchemlyb.parsing import gmx, amber, namd
 from alchemlyb.estimators import MBAR
 from alchemlyb.estimators import BAR
 import alchemtest.gmx
 import alchemtest.amber
+import alchemtest.namd
 
 def gmx_benzene_coul_u_nk():
     dataset = alchemtest.gmx.load_benzene()
@@ -82,6 +84,19 @@ def amber_bace_example_complex_vdw():
                       for filename in dataset['data']['complex']['vdw']])
     return u_nk
 
+def namd_tyr2ala():
+    dataset = alchemtest.namd.load_tyr2ala()
+    u_nk1 = namd.extract_u_nk(dataset['data']['forward'][0])
+    u_nk2 = namd.extract_u_nk(dataset['data']['backward'][0])
+
+    # combine dataframes of fwd and rev directions
+    u_nk1.replace(0, np.nan, inplace=True)
+    u_nk1[u_nk1.isnull()] = u_nk2
+    u_nk1.replace(np.nan, 0, inplace=True)
+    u_nk = u_nk1.sort_index(level=u_nk1.index.names[1:])
+
+    return u_nk
+
 class FEPestimatorMixin:
     """Mixin for all FEP Estimator test classes.
 
@@ -134,6 +149,7 @@ class TestBAR(FEPestimatorMixin):
         (gmx_water_particle_with_potential_energy(), -11.724, 0.064964),
         (gmx_water_particle_without_energy(), -11.660, 0.064914),
         (amber_bace_example_complex_vdw(), 2.37846, 0.050899),
+        (namd_tyr2ala(), 6.031269829, 0.069813058),
     ])
     def test_bar(self, X_delta_f):
         self.compare_delta_f(X_delta_f)
