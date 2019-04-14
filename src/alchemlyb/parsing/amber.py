@@ -18,6 +18,12 @@ from .util import anyopen
 
 logger = logging.getLogger("alchemlyb.parsers.Amber")
 
+# TODO: perhaps move constants elsewhere?
+# these are the units we need for dealing with Amber, which uses
+# kcal/mol for energies  http://ambermd.org/Questions/units.html
+# (kB in kcal/molK)
+k_b = 1.9872041e-3
+
 
 def convert_to_pandas(file_datum):
     """Convert the data structure from numpy to pandas format"""
@@ -251,20 +257,24 @@ def file_validation(outfile):
     return file_datum
 
 
-def extract_u_nk(outfile):
+def extract_u_nk(outfile, T):
     """Return reduced potentials `u_nk` from Amber outputfile.
 
     Parameters
     ----------
     outfile : str
         Path to Amber .out file to extract data from.
+    T : float
+        Temperature in Kelvin at which the simulations were performed;
+        needed to generated the reduced potential (in units of kT)
 
     Returns
     -------
     u_nk : DataFrame
-        Potential energy for each alchemical state (k) for each frame (n).
+        Reduced potential for each alchemical state (k) for each frame (n).
 
     """
+    beta = 1/(k_b * T)
 
     file_datum = file_validation(outfile)
     if not file_validation(outfile):   # pragma: no cover
@@ -288,7 +298,7 @@ def extract_u_nk(outfile):
                     if E > 0.0:
                         high_E_cnt += 1
 
-                    file_datum.mbar_energies[lmbda].append(E - E_ref)
+                    file_datum.mbar_energies[lmbda].append(beta * (E - E_ref))
 
         if high_E_cnt:
             logger.warning('\n WARNING: %i MBAR energ%s > 0.0 kcal/mol' %
@@ -303,19 +313,23 @@ def extract_u_nk(outfile):
                         index=file_datum.mbar_lambdas).T
 
 
-def extract_dHdl(outfile):
+def extract_dHdl(outfile, T):
     """Return gradients ``dH/dl`` from Amber TI outputfile.
 
     Parameters
     ----------
     outfile : str
         Path to Amber .out file to extract data from.
+    T : float
+        Temperature in Kelvin at which the simulations were performed
 
     Returns
     -------
     dH/dl : Series
         dH/dl as a function of time for this lambda window.
     """
+    beta = 1/(k_b * T)
+
     file_datum = file_validation(outfile)
     if not file_validation(outfile):
         return None
@@ -364,7 +378,9 @@ def extract_dHdl(outfile):
     # at this step we get info stored in the FEData object for a given amber out file
     file_datum.component_gradients.extend(comps)
     # convert file_datum to the pandas format to make it identical to alchemlyb output format
-    return convert_to_pandas(file_datum)
+    df = convert_to_pandas(file_datum)
+    df['dHdl'] *= beta
+    return df
 
 
 def _process_mbar_lambdas(secp):
