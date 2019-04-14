@@ -310,7 +310,7 @@ def extract_u_nk(outfile, T):
     return pd.DataFrame(file_datum.mbar_energies,
                         columns=pd.MultiIndex.from_arrays([time, np.repeat(file_datum.clambda, len(time))],
                                                           names=['time', 'lambdas']),
-                        index=file_datum.mbar_lambdas).T
+                        index=np.array(file_datum.mbar_lambdas, dtype=np.float64)).T
 
 
 def extract_dHdl(outfile, T):
