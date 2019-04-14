@@ -18,7 +18,7 @@ def test_u_nk(dataset, direction, shape):
     """Test that u_nk has the correct form when extracted from files.
     """
     for filename in dataset['data'][direction]:
-        u_nk = extract_u_nk(filename)
+        u_nk = extract_u_nk(filename, T=300)
 
         assert u_nk.index.names == ['timestep', 'fep-lambda']
         assert u_nk.shape == shape

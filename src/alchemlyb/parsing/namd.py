@@ -5,13 +5,22 @@ import pandas as pd
 import numpy as np
 from .util import anyopen
 
-def extract_u_nk(fep_file):
+# TODO: perhaps move constants elsewhere?
+# these are the units we need for dealing with NAMD, which uses
+# kcal/mol for energies  http://www.ks.uiuc.edu/Research/namd/2.13/ug/node12.html#SECTION00062200000000000000
+# (kB in kcal/molK)
+k_b = 1.9872041e-3
+
+
+def extract_u_nk(fep_file, T):
     """Return reduced potentials `u_nk` from NAMD fepout file.
 
     Parameters
     ----------
     fep_file : str
         Path to fepout file to extract data from.
+    T : float
+        Temperature in Kelvin at which the simulation was sampled.
 
     Returns
     -------
@@ -19,6 +28,8 @@ def extract_u_nk(fep_file):
         Potential energy for each alchemical state (k) for each frame (n).
 
     """
+    beta = 1/(k_b * T)
+
     # lists to get timesteps and work values of each window
     win_ts = []
     win_de = []
@@ -40,7 +51,7 @@ def extract_u_nk(fep_file):
         if '#Free' in l:
 
             # convert last window's work and timestep values to np arrays
-            win_de_arr = np.asarray(win_de)
+            win_de_arr = beta * np.asarray(win_de)
             win_ts_arr = np.asarray(win_ts)
 
             # extract lambda values for finished window
@@ -51,10 +62,10 @@ def extract_u_nk(fep_file):
             # create dataframe of timestep and work values
             # this window's data goes in row LAMBDA1 and column LAMBDA2
             tempDF = pd.DataFrame({
-                'timestep':win_ts_arr,
+                'timestep': win_ts_arr,
                 'fep-lambda': np.full(len(win_de_arr),lambda1),
-                lambda1:0,
-                lambda2:win_de_arr})
+                lambda1: 0,
+                lambda2: win_de_arr})
 
             # join the new window's df to existing df
             u_nk = pd.concat([u_nk, tempDF])

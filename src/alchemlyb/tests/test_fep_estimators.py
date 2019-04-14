@@ -86,8 +86,8 @@ def amber_bace_example_complex_vdw():
 
 def namd_tyr2ala():
     dataset = alchemtest.namd.load_tyr2ala()
-    u_nk1 = namd.extract_u_nk(dataset['data']['forward'][0])
-    u_nk2 = namd.extract_u_nk(dataset['data']['backward'][0])
+    u_nk1 = namd.extract_u_nk(dataset['data']['forward'][0], T=300)
+    u_nk2 = namd.extract_u_nk(dataset['data']['backward'][0], T=300)
 
     # combine dataframes of fwd and rev directions
     u_nk1.replace(0, np.nan, inplace=True)
@@ -139,6 +139,9 @@ class TestBAR(FEPestimatorMixin):
     """
     cls = BAR
 
+    T = 300
+    kT_NAMD = namd.k_b * T
+
     @pytest.mark.parametrize('X_delta_f', [
         (gmx_benzene_coul_u_nk(), 3.044, 0.01640),
         (gmx_benzene_vdw_u_nk(), -3.033, 0.03438),
@@ -149,7 +152,7 @@ class TestBAR(FEPestimatorMixin):
         (gmx_water_particle_with_potential_energy(), -11.724, 0.064964),
         (gmx_water_particle_without_energy(), -11.660, 0.064914),
         (amber_bace_example_complex_vdw(), 2.37846, 0.050899),
-        (namd_tyr2ala(), 6.031269829, 0.069813058),
+        (namd_tyr2ala(), 6.031269829/kT_NAMD, 0.069813058/kT_NAMD),
     ])
     def test_bar(self, X_delta_f):
         self.compare_delta_f(X_delta_f)
