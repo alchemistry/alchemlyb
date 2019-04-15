@@ -29,7 +29,7 @@ def test_dHdl(filename,
               names=('time', 'lambdas'),
               shape=(500, 1)):
     """Test that dHdl has the correct form when extracted from files."""
-    dHdl = extract_dHdl(filename)
+    dHdl = extract_dHdl(filename, T=300)
 
     assert dHdl.index.names == names
     assert dHdl.shape == shape
@@ -42,7 +42,7 @@ def test_dHdl(filename,
 def test_u_nk(mbar_filename,
               names=('time', 'lambdas')):
     """Test the u_nk has the correct form when extracted from files"""
-    u_nk = extract_u_nk(mbar_filename)
+    u_nk = extract_u_nk(mbar_filename, T=300)
 
     assert u_nk.index.names == names
 
@@ -55,7 +55,7 @@ def test_u_nk_improper(improper_filename,
                        names=('time', 'lambdas')):
     """Test the u_nk has the correct form when extracted from files"""
     try:
-        u_nk = extract_u_nk(improper_filename)
+        u_nk = extract_u_nk(improper_filename, T=300)
 
         assert u_nk.index.names == names
 
@@ -70,7 +70,7 @@ def test_invalidfiles(invalid_file):
 
 
 def test_dHdl_invalidfiles(invalid_file):
-    assert extract_dHdl(invalid_file) is None
+    assert extract_dHdl(invalid_file, T=300) is None
 
 
 def test_any_none():

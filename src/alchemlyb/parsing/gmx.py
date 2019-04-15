@@ -9,6 +9,7 @@ from .util import anyopen
 # TODO: perhaps move constants elsewhere?
 # these are the units we need for dealing with gromacs, so not
 # a bad place for it, honestly
+# (kB in kJ/molK)
 k_b = 8.3144621E-3
 
 
@@ -116,6 +117,8 @@ def extract_dHdl(xvg, T):
     ----------
     xvg : str
         Path to XVG file to extract data from.
+    T : float
+        Temperature in Kelvin the simulations sampled.
 
     Returns
     -------
