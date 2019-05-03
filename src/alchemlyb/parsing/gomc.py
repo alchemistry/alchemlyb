@@ -75,7 +75,7 @@ def extract_u_nk(file, T):
         cols.append(u_col)
 
     u_k = pd.DataFrame(u_k, columns=cols,
-                       index=pd.Float64Index(times.values, name='step'))
+                       index=pd.Float64Index(times.values, name='time'))
     # create columns for each lambda, indicating state each row sampled from
     for i, l in enumerate(lambdas):
         try:
@@ -84,7 +84,7 @@ def extract_u_nk(file, T):
             u_k[l] = statevec
 
     # set up new multi-index
-    newind = ['step'] + lambdas
+    newind = ['time'] + lambdas
     u_k = u_k.reset_index().set_index(newind)
 
     u_k.name = 'u_nk'
@@ -129,7 +129,7 @@ def extract_dHdl(file, T):
 
 
     dHdl = pd.DataFrame(dHdl.values, columns=lambdas,
-                        index=pd.Float64Index(times.values, name='step'))
+                        index=pd.Float64Index(times.values, name='time'))
 
     # Need to modify the lambda name
     cols = [l + "-lambda" for l in lambdas]
@@ -141,7 +141,7 @@ def extract_dHdl(file, T):
             dHdl[l] = statevec
 
     # set up new multi-index
-    newind = ['step'] + cols
+    newind = ['time'] + cols
     dHdl= dHdl.reset_index().set_index(newind)
 
     dHdl.name='dH/dl'
@@ -183,7 +183,7 @@ def _extract_dataframe(file):
     pv_col_match = 'PV'
     u_col_match = 'Total_En'
 
-    xaxis = "steps"
+    xaxis = "time"
     with anyopen(file, 'r') as f:
         names = []
         rows = []
