@@ -67,7 +67,6 @@ def extract_u_nk(fep_file, T):
 
                 # join the new window's df to existing df
                 u_nk = pd.concat([u_nk, tempDF], sort=True)
-                #u_nk.fillna(0, inplace=True)
 
                 # reset values for next window of fepout file
                 win_de = []
@@ -89,7 +88,6 @@ def extract_u_nk(fep_file, T):
         'fep-lambda': lambda2})
 
     u_nk = pd.concat([u_nk, tempDF], sort=True)
-    #u_nk.fillna(0, inplace=True)
 
     u_nk.set_index(['time','fep-lambda'], inplace=True)
 
