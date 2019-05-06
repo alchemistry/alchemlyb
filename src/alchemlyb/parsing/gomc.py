@@ -166,14 +166,6 @@ def _extract_state(file):
     return state, lambdas, statevec
 
 
-def _extract_legend(file):
-    """Extract information on state sampled for REX simulations.
-
-    """
-
-    raise NotImplementedError('{}: GOMC does not support REX!'.format(file))
-
-
 def _extract_dataframe(file):
     """Extract a DataFrame from free energy data.
 
