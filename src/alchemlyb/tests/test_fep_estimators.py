@@ -90,9 +90,7 @@ def namd_tyr2ala():
     u_nk2 = namd.extract_u_nk(dataset['data']['backward'][0], T=300)
 
     # combine dataframes of fwd and rev directions
-    u_nk1.replace(0, np.nan, inplace=True)
-    u_nk1[u_nk1.isnull()] = u_nk2
-    u_nk1.replace(np.nan, 0, inplace=True)
+    u_nk1[u_nk1.isnan()] = u_nk2
     u_nk = u_nk1.sort_index(level=u_nk1.index.names[1:])
 
     return u_nk
@@ -144,8 +142,9 @@ class TestBAR(FEPestimatorMixin):
     """
     cls = BAR
 
-    T = 300
-    kT_NAMD = namd.k_b * T
+    # NAMD data were generated at T=300 K and the reference values
+    # were provided in kcal/mol so we convert to reduced units
+    kT_NAMD = 300 * namd.k_b
 
     @pytest.fixture(scope="class",
                     params = [(gmx_benzene_coul_u_nk, 3.044, 0.01640),
