@@ -119,17 +119,22 @@ class TestMBAR(FEPestimatorMixin):
     """
     cls = MBAR
 
-    @pytest.mark.parametrize('X_delta_f', [
-        (gmx_benzene_coul_u_nk(), 3.041, 0.02088),
-        (gmx_benzene_vdw_u_nk(), -3.007, 0.04519),
-        (gmx_expanded_ensemble_case_1(), 75.923, 0.14124),
-        (gmx_expanded_ensemble_case_2(), 75.915, 0.14372),
-        (gmx_expanded_ensemble_case_3(), 76.173, 0.11345),
-        (gmx_water_particle_with_total_energy(), -11.680, 0.083655),
-        (gmx_water_particle_with_potential_energy(), -11.675, 0.083589),
-        (gmx_water_particle_without_energy(), -11.654, 0.083415),
-        (amber_bace_example_complex_vdw(), 2.40200, 0.0618453),
-    ])
+
+    @pytest.fixture(scope="class",
+                    params=[(gmx_benzene_coul_u_nk, 3.041, 0.02088),
+                            (gmx_benzene_vdw_u_nk, -3.007, 0.04519),
+                            (gmx_expanded_ensemble_case_1, 75.923, 0.14124),
+                            (gmx_expanded_ensemble_case_2, 75.915, 0.14372),
+                            (gmx_expanded_ensemble_case_3, 76.173, 0.11345),
+                            (gmx_water_particle_with_total_energy, -11.680, 0.083655),
+                            (gmx_water_particle_with_potential_energy, -11.675, 0.083589),
+                            (gmx_water_particle_without_energy, -11.654, 0.083415),
+                            (amber_bace_example_complex_vdw, 2.40200, 0.0618453),
+                    ])
+    def X_delta_f(self, request):
+        get_unk, E, dE = request.param
+        return get_unk(), E, dE
+
     def test_mbar(self, X_delta_f):
         self.compare_delta_f(X_delta_f)
 
@@ -142,18 +147,22 @@ class TestBAR(FEPestimatorMixin):
     T = 300
     kT_NAMD = namd.k_b * T
 
-    @pytest.mark.parametrize('X_delta_f', [
-        (gmx_benzene_coul_u_nk(), 3.044, 0.01640),
-        (gmx_benzene_vdw_u_nk(), -3.033, 0.03438),
-        (gmx_expanded_ensemble_case_1(), 75.993, 0.11056),
-        (gmx_expanded_ensemble_case_2(), 76.009, 0.11220),
-        (gmx_expanded_ensemble_case_3(), 76.219, 0.08886),
-        (gmx_water_particle_with_total_energy(), -11.675, 0.065055),
-        (gmx_water_particle_with_potential_energy(), -11.724, 0.064964),
-        (gmx_water_particle_without_energy(), -11.660, 0.064914),
-        (amber_bace_example_complex_vdw(), 2.37846, 0.050899),
-        (namd_tyr2ala(), 6.031269829/kT_NAMD, 0.069813058/kT_NAMD),
-    ])
+    @pytest.fixture(scope="class",
+                    params = [(gmx_benzene_coul_u_nk, 3.044, 0.01640),
+                              (gmx_benzene_vdw_u_nk, -3.033, 0.03438),
+                              (gmx_expanded_ensemble_case_1, 75.993, 0.11056),
+                              (gmx_expanded_ensemble_case_2, 76.009, 0.11220),
+                              (gmx_expanded_ensemble_case_3, 76.219, 0.08886),
+                              (gmx_water_particle_with_total_energy, -11.675, 0.065055),
+                              (gmx_water_particle_with_potential_energy, -11.724, 0.064964),
+                              (gmx_water_particle_without_energy, -11.660, 0.064914),
+                              (amber_bace_example_complex_vdw, 2.37846, 0.050899),
+                              (namd_tyr2ala, 6.031269829/kT_NAMD, 0.069813058/kT_NAMD),
+                    ])
+    def X_delta_f(self, request):
+        get_unk, E, dE = request.param
+        return get_unk(), E, dE
+
     def test_bar(self, X_delta_f):
         self.compare_delta_f(X_delta_f)
 
