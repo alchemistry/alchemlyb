@@ -2,6 +2,7 @@
 
 """
 import pandas as pd
+import numpy as np
 
 from .util import anyopen
 
@@ -128,10 +129,11 @@ def extract_dHdl(xvg, T):
     """
     beta = 1/(k_b * T)
 
-    state, lambdas, statevec = _extract_state(xvg)
+    headers = _get_headers(xvg)
+    state, lambdas, statevec = _extract_state(xvg, headers)
 
     # extract a DataFrame from XVG data
-    df = _extract_dataframe(xvg)
+    df = _extract_dataframe(xvg, headers)
 
     times = df[df.columns[0]]
 
@@ -186,30 +188,38 @@ def extract_dHdl(xvg, T):
     return dHdl
 
 
-def _extract_state(xvg):
+def _extract_state(xvg, headers=None):
     """Extract information on state sampled, names of lambdas.
+
+    Parameters
+    ----------
+    xvg : str
+        Path to XVG file to extract data from.
+    headers: dict
+       headers dictionary to search header information, reduced I/O by
+       reusing if it is already parsed, e.g. _extract_state and
+       _extract_dataframe in order need one-time header parsing
 
     """
     state = None
-    with anyopen(xvg, 'r') as f:
-        for line in f:
-            if ('subtitle' in line) and ('state' in line):
-                state = int(line.split('state')[1].split(':')[0])
-                lambdas = [word.strip(')(,') for word in line.split() if 'lambda' in word]
-                statevec = eval(line.strip().split(' = ')[-1].strip('"'))
-                break
+    if headers is None:
+        headers = _get_headers(xvg)
+    subtitle = _get_value_by_key(headers, 'subtitle')
+    if subtitle and 'state' in subtitle:
+        state = int(subtitle.split('state')[1].split(':')[0])
+        lambdas = [word.strip(')(,') for word in subtitle.split() if 'lambda' in word]
+        statevec = eval(subtitle.strip().split(' = ')[-1].strip('"'))
 
     # if expanded ensemble data is used the state variable will never be assigned
     # parsing expanded ensemble data
     if state is None:
         lambdas = []
         statevec = []
-        with anyopen(xvg, 'r') as f:
-            for line in f:
-                if ('legend' in line) and ('lambda' in line):
-                    lambdas.append([word.strip(')(,') for word in line.split() if 'lambda' in word][0])
-                if ('legend' in line) and (' to ' in line):
-                    statevec.append(([float(i) for i in line.strip().split(' to ')[-1].strip('"()').split(',')]))
+        for line in headers['_raw_lines']:
+            if ('legend' in line) and ('lambda' in line):
+                lambdas.append([word.strip(')(,') for word in line.split() if 'lambda' in word][0])
+            if ('legend' in line) and (' to ' in line):
+                statevec.append(([float(i) for i in line.strip().split(' to ')[-1].strip('"()').split(',')]))
 
     return state, lambdas, statevec
 
@@ -227,38 +237,113 @@ def _extract_legend(xvg):
     return state_legend
 
 
-def _extract_dataframe(xvg):
-    """Extract a DataFrame from XVG data.
+def _extract_dataframe(xvg, headers=None):
+    """Extract a DataFrame from XVG data using pd.read_csv.
+
+    Note. possible extra parameters for performance:
+        - usecols=[selected column names]
+
+    Note. error handling options:
+        - error_bad_lines=True (default); drops a line otherwise
+        - warn_bad_lines=False (default); throw a warning message each time
+   
+
+    Parameters
+    ----------
+    xvg: str
+       Path to XVG file to extract data from.
+    headers: dict
+       headers dictionary to search header information, reduced I/O by 
+       reusing if it is already parsed. Direct access by key name
 
     """
-    with anyopen(xvg, 'r') as f:
-        names = []
-        rows = []
+    if headers is None:
+        headers = _get_headers(xvg)
+    xaxis = _get_value_by_key(headers, 'xaxis', 'label')
+    names = [_get_value_by_key(headers, x, 'legend') for x in headers.keys() if 's' == x[0] and x[1].isdigit()]
+    cols = [xaxis] + names
+    header_cnt = len(headers['_raw_lines'])
+    df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
+            na_filter=True, memory_map=True, names=cols, dtype=np.float64)
+
+    return df
+
+
+def _parse_header(line, headers={}, depth=2):
+    """Build python dictionary for single line header in a binary format
+
+    '_val' key contains actual value to search in the dictionary.
+    Note. No return value but 'headers' dictionary will be updated
+
+    Parameters
+    ----------
+
+    line: str
+        header line to parse
+    headers: dict
+        headers dictionary to update, pass by reference
+    depth: int
+        depth of nested key and value store e.g.
+        x: y: z turns into { 'x': { 'y': {'_val': 'z' }}}
+    
+    """
+    # Remove a first character, i.e. @
+    s = line[1:].split(sep=None, maxsplit=1)
+    next_t = headers[s[0].decode('ascii')] = {}
+    for i in range(1, depth):
+        # ord('"') == 34
+        # no further parsing for quoted value
+        if len(s) > 1 and s[1][0] != 34:
+            s = s[1].split(sep=None, maxsplit=1)
+            next_t[s[0].decode('ascii')] = {}
+            next_t = next_t[s[0].decode('ascii')]
+        else:
+            break
+
+    next_t["_val"] = b''.join(s[1:]).rstrip().strip(b'"').decode('ascii')
+
+
+def _get_headers(xvg):
+    """Build python dictionary from header lines
+    
+    Build nested key and value store by reading header ('@') lines from a file.
+    Direct access to value provides reduced time complexity O(1).
+    '_raw_lines' keeps original text 
+
+    Note. 'rb' binary read for performance
+
+    Returns
+    -------
+    headers: dict
+
+    """
+    with anyopen(xvg, 'rb') as f:
+        headers = { '_raw_lines': [] }
         for line in f:
-            line = line.strip()
-            if len(line) == 0:
+            # '@'
+            if line[0] == 64:
+                _parse_header(line, headers)
+                headers['_raw_lines'].append(line.decode('ascii'))
+            # '#'
+            elif line[0] == 35:
+                headers['_raw_lines'].append(line.decode('ascii'))
                 continue
+            # assuming to start a body section
+            else:
+                break
 
-            if "label" in line and "xaxis" in line:
-                xaxis = line.split('"')[-2]
+    return headers
 
-            if line.startswith("@ s") and "subtitle" not in line:
-                name = line.split("legend ")[-1].replace('"','').strip()
-                names.append(name)
 
-            # should catch non-numeric lines so we don't proceed in parsing
-            # here
-            if line.startswith(('#', '@')):
-                continue
+def _get_value_by_key(headers, key1, key2=None):
+    """Return value by two-level keys where the second key is optional
 
-            if line.startswith('&'):  #pragma: no cover
-                raise NotImplementedError('{}: Multi-data not supported,'
-                                          'only simple NXY format.'.format(xvg))
-            # parse line as floats
-            row = map(float, line.split())
-            rows.append(row)
+    """
+    val = None
+    if key1 in headers:
+        if key2 is not None and key2 in headers[key1]:
+            val = headers[key1][key2]['_val']
+        else:
+            val = headers[key1]['_val']
 
-    cols = [xaxis]
-    cols.extend(names)
-
-    return pd.DataFrame(rows, columns=cols)
+    return val
