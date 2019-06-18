@@ -265,7 +265,8 @@ def _extract_dataframe(xvg, headers=None):
     cols = [xaxis] + names
     header_cnt = len(headers['_raw_lines'])
     df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
-            na_filter=True, memory_map=True, names=cols, dtype=np.float64)
+            na_filter=True, memory_map=True, names=cols, dtype=np.float64,
+            float_precision='high')
 
     # Dealing with duplicates
     # Pandas permits unique column names only, mangle_dupe_cols=False re-write
