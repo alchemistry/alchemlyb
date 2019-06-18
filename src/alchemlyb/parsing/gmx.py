@@ -260,11 +260,20 @@ def _extract_dataframe(xvg, headers=None):
     if headers is None:
         headers = _get_headers(xvg)
     xaxis = _get_value_by_key(headers, 'xaxis', 'label')
-    names = [_get_value_by_key(headers, x, 'legend') for x in headers.keys() if 's' == x[0] and x[1].isdigit()]
+    names = [_get_value_by_key(headers, 's{}'.format(x), 'legend') for x in
+            range(len(headers)) if 's{}'.format(x) in headers]
     cols = [xaxis] + names
     header_cnt = len(headers['_raw_lines'])
     df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
             na_filter=True, memory_map=True, names=cols, dtype=np.float64)
+
+    # Dealing with duplicates
+    # Pandas permits unique column names only, mangle_dupe_cols=False re-write
+    # deplicates (not implemented as of 0.24.2)
+    nlen = len(names)
+    nlen_uniq = len(set(names))
+    if nlen > nlen_uniq:
+        df = pd.DataFrame(df, columns=cols)
 
     return df
 
@@ -288,19 +297,19 @@ def _parse_header(line, headers={}, depth=2):
     
     """
     # Remove a first character, i.e. @
-    s = line[1:].split(sep=None, maxsplit=1)
-    next_t = headers[s[0].decode('ascii')] = {}
+    s = line[1:].split(None, 1)
+    next_t = headers[s[0]] = {}
     for i in range(1, depth):
         # ord('"') == 34
         # no further parsing for quoted value
-        if len(s) > 1 and s[1][0] != 34:
-            s = s[1].split(sep=None, maxsplit=1)
-            next_t[s[0].decode('ascii')] = {}
-            next_t = next_t[s[0].decode('ascii')]
+        if len(s) > 1 and s[1][0] != '"':
+            s = s[1].split(None, 1)
+            next_t[s[0]] = {}
+            next_t = next_t[s[0]]
         else:
             break
 
-    next_t["_val"] = b''.join(s[1:]).rstrip().strip(b'"').decode('ascii')
+    next_t["_val"] = ''.join(s[1:]).rstrip().strip('"')
 
 
 def _get_headers(xvg):
@@ -317,16 +326,14 @@ def _get_headers(xvg):
     headers: dict
 
     """
-    with anyopen(xvg, 'rb') as f:
+    with anyopen(xvg, 'r') as f:
         headers = { '_raw_lines': [] }
         for line in f:
-            # '@'
-            if line[0] == 64:
+            if line[0] == '@':
                 _parse_header(line, headers)
-                headers['_raw_lines'].append(line.decode('ascii'))
-            # '#'
-            elif line[0] == 35:
-                headers['_raw_lines'].append(line.decode('ascii'))
+                headers['_raw_lines'].append(line)
+            elif line[0] == '#':
+                headers['_raw_lines'].append(line)
                 continue
             # assuming to start a body section
             else:
