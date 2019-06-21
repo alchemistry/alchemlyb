@@ -238,15 +238,10 @@ def _extract_legend(xvg):
 
 
 def _extract_dataframe(xvg, headers=None):
-    """Extract a DataFrame from XVG data using pd.read_csv.
+    """Extract a DataFrame from XVG data using Pandas `read_csv()`.
 
-    Note. possible extra parameters for performance:
-        - usecols=[selected column names]
-
-    Note. error handling options:
-        - error_bad_lines=True (default); drops a line otherwise
-        - warn_bad_lines=False (default); throw a warning message each time
-   
+    pd.read_csv() shows the same behavior building pandas Dataframe with better
+    performance (approx. 2 to 4 times speed up). See Issue #81.
 
     Parameters
     ----------
@@ -280,10 +275,16 @@ def _extract_dataframe(xvg, headers=None):
 
 
 def _parse_header(line, headers={}, depth=2):
-    """Build python dictionary for single line header in a binary format
+    """Build python dictionary for single line header
 
-    '_val' key contains actual value to search in the dictionary.
-    Note. No return value but 'headers' dictionary will be updated
+    Update python dictionary to ``headers`` by reading ``line`` separated by
+    whitespace. If ``depth`` is given, at most ``depth`` nested key value store
+    is added. `_val` key is reserved which contain remaining words from
+    ``line``.
+
+    Note
+    ----
+    No return value but 'headers' dictionary will be updated.
 
     Parameters
     ----------
@@ -293,8 +294,16 @@ def _parse_header(line, headers={}, depth=2):
     headers: dict
         headers dictionary to update, pass by reference
     depth: int
-        depth of nested key and value store e.g.
-        x: y: z turns into { 'x': { 'y': {'_val': 'z' }}}
+        depth of nested key and value store 
+        
+    Examples
+    --------
+    "x y z" line turns into { 'x': { 'y': {'_val': 'z' }}}
+
+    >>> headers={}
+    >>> _parse_header('@ s0 legend "Potential Energy (kJ/mol)"', headers)
+    >>> headers
+    {'s0': {'legend': {'_val': 'Potential Energy (kJ/mol)'}}}
     
     """
     # Remove a first character, i.e. @
@@ -318,9 +327,53 @@ def _get_headers(xvg):
     
     Build nested key and value store by reading header ('@') lines from a file.
     Direct access to value provides reduced time complexity O(1).
-    '_raw_lines' keeps original text 
+    `_raw_lines` key is reserved to keep the original text.
 
-    Note. 'rb' binary read for performance
+    Example
+    -------
+
+    Given a xvg file containinig header lines like:
+
+        ...
+       @    title "dH/d\xl\f{} and \xD\f{}H"
+       @    xaxis  label "Time (ps)"
+       @    yaxis  label "dH/d\xl\f{} and \xD\f{}H (kJ/mol [\xl\f{}]\S-1\N)"
+       @TYPE xy
+       @ subtitle "T = 310 (K) \xl\f{} state 38: (coul-lambda, vdw-lambda) = (0.9500, 0.0000)"
+       @ view 0.15, 0.15, 0.75, 0.85
+       @ legend on
+       @ legend box on
+       @ legend loctype view
+       @ legend 0.78, 0.8
+       @ legend length 2
+       @ s0 legend "Potential Energy (kJ/mol)"
+       @ s1 legend "dH/d\xl\f{} coul-lambda = 0.9500"
+       @ s2 legend "dH/d\xl\f{} vdw-lambda = 0.0000"
+       ...
+
+    >>> _get_headers(xvg)
+    {'TYPE': {'xy': {'_val': ''}},
+      'subtitle': {'_val': 'T = 310 (K) \\xl\\f{} state 38: (coul-lambda, vdw-lambda) = (0.9500, 0.0000)'},
+      'title': {'_val': 'dH/d\\xl\\f{} and \\xD\\f{}H'},
+      'view': {'0.15,': {'_val': '0.15, 0.75, 0.85'}},
+      'xaxis': {'label': {'_val': 'Time (ps)'}},
+      'yaxis': {'label': {'_val': 'dH/d\\xl\\f{} and \\xD\\f{}H (kJ/mol [\\xl\\f{}]\\S-1\\N)'}},
+      ...(omitted)...
+      '_raw_lines': ['@    title "dH/d\\xl\\f{} and \\xD\\f{}H"',
+                    '@    xaxis  label "Time (ps)"',
+                    '@    yaxis  label "dH/d\\xl\\f{} and \\xD\\f{}H (kJ/mol [\\xl\\f{}]\\S-1\\N)"',
+                    '@TYPE xy',
+                    '@ subtitle "T = 310 (K) \\xl\\f{} state 38: (coul-lambda, vdw-lambda) = (0.9500, 0.0000)"',
+                    '@ view 0.15, 0.15, 0.75, 0.85',
+                    '@ legend on',
+                    '@ legend box on',
+                    '@ legend loctype view',
+                    '@ legend 0.78, 0.8',
+                    '@ legend length 2',
+                    '@ s0 legend "Potential Energy (kJ/mol)"',
+                    '@ s1 legend "dH/d\\xl\\f{} coul-lambda = 0.9500"',
+                    '@ s2 legend "dH/d\\xl\\f{} vdw-lambda = 0.0000"'],
+      }
 
     Returns
     -------
@@ -330,10 +383,13 @@ def _get_headers(xvg):
     with anyopen(xvg, 'r') as f:
         headers = { '_raw_lines': [] }
         for line in f:
-            if line[0] == '@':
+            line = line.strip()
+            if len(line) == 0:
+                continue
+            if line.startswith('@'):
                 _parse_header(line, headers)
                 headers['_raw_lines'].append(line)
-            elif line[0] == '#':
+            elif line.startswith('#'):
                 headers['_raw_lines'].append(line)
                 continue
             # assuming to start a body section
@@ -345,6 +401,18 @@ def _get_headers(xvg):
 
 def _get_value_by_key(headers, key1, key2=None):
     """Return value by two-level keys where the second key is optional
+
+    Example
+    -------
+
+    >>> headers
+    {'s0': {'legend': {'_val': 'Potential Energy (kJ/mol)'}}, 
+            'subtitle': {'_val': 'T = 310 (K) \\xl\\f{} state 38: (coul-lambda,
+                vdw-lambda) = (0.9500, 0.0000)'}}
+    >>> _get_value_by_key(header, 's0','legend')
+    'Potential Energy (kJ/mol)'
+    >>> _get_value_by_key(header, 'subtitle')
+    'T = 310 (K) \\xl\\f{} state 38: (coul-lambda, vdw-lambda) = (0.9500, 0.0000)'
 
     """
     val = None
