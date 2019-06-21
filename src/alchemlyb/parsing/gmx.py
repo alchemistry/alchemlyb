@@ -335,11 +335,11 @@ def _get_headers(xvg):
     Given a xvg file containinig header lines like:
 
         ...
-       @    title "dH/d\xl\f{} and \xD\f{}H"
+       @    title "dH/d\\xl\\f{} and \\xD\\f{}H"
        @    xaxis  label "Time (ps)"
-       @    yaxis  label "dH/d\xl\f{} and \xD\f{}H (kJ/mol [\xl\f{}]\S-1\N)"
+       @    yaxis  label "dH/d\\xl\\f{} and \\xD\\f{}H (kJ/mol [\\xl\\f{}]\\S-1\\N)"
        @TYPE xy
-       @ subtitle "T = 310 (K) \xl\f{} state 38: (coul-lambda, vdw-lambda) = (0.9500, 0.0000)"
+       @ subtitle "T = 310 (K) \\xl\\f{} state 38: (coul-lambda, vdw-lambda) = (0.9500, 0.0000)"
        @ view 0.15, 0.15, 0.75, 0.85
        @ legend on
        @ legend box on
@@ -347,8 +347,8 @@ def _get_headers(xvg):
        @ legend 0.78, 0.8
        @ legend length 2
        @ s0 legend "Potential Energy (kJ/mol)"
-       @ s1 legend "dH/d\xl\f{} coul-lambda = 0.9500"
-       @ s2 legend "dH/d\xl\f{} vdw-lambda = 0.0000"
+       @ s1 legend "dH/d\\xl\\f{} coul-lambda = 0.9500"
+       @ s2 legend "dH/d\\xl\\f{} vdw-lambda = 0.0000"
        ...
 
     >>> _get_headers(xvg)
