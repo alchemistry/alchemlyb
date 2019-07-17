@@ -90,7 +90,7 @@ def namd_tyr2ala():
     u_nk2 = namd.extract_u_nk(dataset['data']['backward'][0], T=300)
 
     # combine dataframes of fwd and rev directions
-    u_nk1[u_nk1.isnan()] = u_nk2
+    u_nk1[u_nk1.isna()] = u_nk2
     u_nk = u_nk1.sort_index(level=u_nk1.index.names[1:])
 
     return u_nk
@@ -117,7 +117,6 @@ class TestMBAR(FEPestimatorMixin):
     """
     cls = MBAR
 
-
     @pytest.fixture(scope="class",
                     params=[(gmx_benzene_coul_u_nk, 3.041, 0.02088),
                             (gmx_benzene_vdw_u_nk, -3.007, 0.04519),
@@ -136,15 +135,12 @@ class TestMBAR(FEPestimatorMixin):
     def test_mbar(self, X_delta_f):
         self.compare_delta_f(X_delta_f)
 
+
 class TestBAR(FEPestimatorMixin):
     """Tests for BAR.
 
     """
     cls = BAR
-
-    # NAMD data were generated at T=300 K and the reference values
-    # were provided in kcal/mol so we convert to reduced units
-    kT_NAMD = 300 * namd.k_b
 
     @pytest.fixture(scope="class",
                     params = [(gmx_benzene_coul_u_nk, 3.044, 0.01640),
@@ -156,7 +152,7 @@ class TestBAR(FEPestimatorMixin):
                               (gmx_water_particle_with_potential_energy, -11.724, 0.064964),
                               (gmx_water_particle_without_energy, -11.660, 0.064914),
                               (amber_bace_example_complex_vdw, 2.37846, 0.050899),
-                              (namd_tyr2ala, 6.031269829/kT_NAMD, 0.069813058/kT_NAMD),
+                              (namd_tyr2ala, 11.0044, 0.10235),
                     ])
     def X_delta_f(self, request):
         get_unk, E, dE = request.param
