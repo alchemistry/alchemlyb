@@ -1,0 +1,50 @@
+# -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8 -*-
+====================
+ alchemlyb CHANGELOG
+=====================
+
+The rules for this file:
+  * entries are sorted newest-first.
+  * summarize sets of changes - don't reproduce every git log comment here.
+  * don't ever delete anything.
+  * keep the format consistent (79 char width, M/D/Y date format) and do not
+    use tabs but use spaces for formatting
+  * accompany each entry with github issue/PR number (Issue #xyz)
+  * release numbers follow "Semantic Versioning" http://semver.org
+
+------------------------------------------------------------------------------
+
+*/*/2019 dotsdl, orbeckst, shuail, trje3733, brycestx, harlor, vtlim, lee212
+
+  * 0.2.0
+
+Enhancements
+  - Amber TI parser (#10)
+  - Amber FEP (MBAR) parser (#42)
+  - Gromacs extended ensemble parser (#14)
+  - BAR estimator (#40)
+  - enhanced performance of Gromacs parsers with pandas.read_csv() (#81)
+
+Deprecations
+
+Fixes
+  - fixed TI estimator (PR #61)
+  - correctly use pV and U in the Gromacs parser (#59)
+
+Changes
+  - defaults for statistical_inefficiency() are more conservative (#39)
+
+
+05/27/2017 dotsdl, ianmkenney, orbeckst
+
+  * 0.1.0
+
+First release
+
+Features:
+
+    - Parsers for GROMACS, including reduced potentials and gradients.
+    - Subsampler functions for slicing, statitistical inefficiency, equilibration detection.
+    - Minimally functional estimators for MBAR, TI.
+    - high test coverage (works with data in alchemistry/alchemtests)
+
