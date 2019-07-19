@@ -15,7 +15,7 @@ except AttributeError:
     bz2_open = bz2.BZ2File
 else:
     def bz2_open(filename, mode):
-        mode += 't'
+        mode += 't' if mode in ['r','w','a','x'] else ''
         return bz2.open(filename, mode)
 
 # similar changes need to be made for gzip
@@ -28,7 +28,7 @@ except AttributeError:
     gzip_open = gzip.open
 else:
     def gzip_open(filename, mode):
-        mode += 't'
+        mode += 't' if mode in ['r','w','a','x'] else ''
         return gzip.open(filename, mode)
 
 
