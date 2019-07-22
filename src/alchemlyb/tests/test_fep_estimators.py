@@ -5,11 +5,12 @@ import pytest
 
 import pandas as pd
 
-from alchemlyb.parsing import gmx, amber
+from alchemlyb.parsing import gmx, amber, gomc
 from alchemlyb.estimators import MBAR
 from alchemlyb.estimators import BAR
 import alchemtest.gmx
 import alchemtest.amber
+import alchemtest.gomc
 
 def gmx_benzene_coul_u_nk():
     dataset = alchemtest.gmx.load_benzene()
@@ -82,6 +83,14 @@ def amber_bace_example_complex_vdw():
                       for filename in dataset['data']['complex']['vdw']])
     return u_nk
 
+def gomc_benzene_u_nk():
+    dataset = alchemtest.gomc.load_benzene()
+
+    u_nk = pd.concat([gomc.extract_u_nk(filename, T=298)
+                      for filename in dataset['data']])
+
+    return u_nk
+
 class FEPestimatorMixin:
     """Mixin for all FEP Estimator test classes.
 
@@ -114,6 +123,7 @@ class TestMBAR(FEPestimatorMixin):
         (gmx_water_particle_with_potential_energy(), -11.675, 0.083589),
         (gmx_water_particle_without_energy(), -11.654, 0.083415),
         (amber_bace_example_complex_vdw(), 2.40200, 0.0618453),
+        (gomc_benzene_u_nk(), -0.79994, 0.054489),
     ])
     def test_mbar(self, X_delta_f):
         self.compare_delta_f(X_delta_f)
@@ -134,6 +144,7 @@ class TestBAR(FEPestimatorMixin):
         (gmx_water_particle_with_potential_energy(), -11.724, 0.064964),
         (gmx_water_particle_without_energy(), -11.660, 0.064914),
         (amber_bace_example_complex_vdw(), 2.37846, 0.050899),
+        (gomc_benzene_u_nk(), -0.87095, 0.071263),
     ])
     def test_bar(self, X_delta_f):
         self.compare_delta_f(X_delta_f)

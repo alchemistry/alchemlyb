@@ -29,3 +29,4 @@ def test_u_nk():
 
         assert u_nk.index.names == ['time', 'Coulomb', 'VDW']
         assert u_nk.shape == (1000, 23)
+

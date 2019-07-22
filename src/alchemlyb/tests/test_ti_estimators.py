@@ -7,9 +7,11 @@ import pandas as pd
 
 from alchemlyb.parsing import gmx
 from alchemlyb.parsing import amber
+from alchemlyb.parsing import gomc
 from alchemlyb.estimators import TI
 import alchemtest.gmx
 import alchemtest.amber
+import alchemtest.gomc
 
 
 def gmx_benzene_coul_dHdl():
@@ -92,6 +94,13 @@ def amber_simplesolvated_vdw_dHdl():
 
     return dHdl
 
+def gomc_benzene_dHdl():
+    dataset = alchemtest.gomc.load_benzene()
+
+    dHdl = pd.concat([gmx.extract_dHdl(filename, T=298)
+                      for filename in dataset['data']])
+
+    return dHdl
 
 
 class TIestimatorMixin:
@@ -107,7 +116,8 @@ class TIestimatorMixin:
                                            (gmx_water_particle_with_potential_energy_dHdl(), -11.751, 0.091149),
                                            (gmx_water_particle_without_energy_dHdl(), -11.687, 0.091604),
                                            (amber_simplesolvated_charge_dHdl(), -60.114/kT_amber, 0.08186/kT_amber),
-                                           (amber_simplesolvated_vdw_dHdl(), 3.824/kT_amber, 0.13254/kT_amber)))
+                                           (amber_simplesolvated_vdw_dHdl(), 3.824/kT_amber, 0.13254/kT_amber),
+                                           gomc_benzene_dHdl(), -0.89811, 0.071435))
     def test_get_delta_f(self, X_delta_f):
         est = self.cls().fit(X_delta_f[0])
         delta_f = est.delta_f_.iloc[0, -1]
