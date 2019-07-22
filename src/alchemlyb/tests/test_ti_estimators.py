@@ -117,7 +117,7 @@ class TIestimatorMixin:
                                            (gmx_water_particle_without_energy_dHdl(), -11.687, 0.091604),
                                            (amber_simplesolvated_charge_dHdl(), -60.114/kT_amber, 0.08186/kT_amber),
                                            (amber_simplesolvated_vdw_dHdl(), 3.824/kT_amber, 0.13254/kT_amber),
-                                           gomc_benzene_dHdl(), -0.89811, 0.071435))
+                                           (gomc_benzene_dHdl(), -0.89811, 0.071435)))
     def test_get_delta_f(self, X_delta_f):
         est = self.cls().fit(X_delta_f[0])
         delta_f = est.delta_f_.iloc[0, -1]
