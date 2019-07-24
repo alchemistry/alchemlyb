@@ -269,7 +269,7 @@ def _extract_dataframe(xvg, headers=None):
             na_filter=True, memory_map=True, names=cols, dtype=np.float64,
             float_precision='high')
 
-    # drop duplicated columns
+    # drop duplicated columns (see PR #86 https://github.com/alchemistry/alchemlyb/pull/86/)
     df = df[df.columns[~df.columns.str.endswith("[duplicated]")]]
 
     return df
