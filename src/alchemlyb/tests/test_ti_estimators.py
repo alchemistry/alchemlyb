@@ -97,7 +97,7 @@ def amber_simplesolvated_vdw_dHdl():
 def gomc_benzene_dHdl():
     dataset = alchemtest.gomc.load_benzene()
 
-    dHdl = pd.concat([gmx.extract_dHdl(filename, T=298)
+    dHdl = pd.concat([gomc.extract_dHdl(filename, T=298)
                       for filename in dataset['data']])
 
     return dHdl
