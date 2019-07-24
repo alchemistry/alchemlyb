@@ -136,7 +136,7 @@ class TestMBAR(FEPestimatorMixin):
                             (gmx_water_particle_with_potential_energy, -11.675, 0.083589),
                             (gmx_water_particle_without_energy, -11.654, 0.083415),
                             (amber_bace_example_complex_vdw, 2.40200, 0.0618453),
-                            (gomc_benzene_u_nk(), -0.79994, 0.054489),
+                            (gomc_benzene_u_nk, -0.79994, 0.054489),
                     ])
     def X_delta_f(self, request):
         get_unk, E, dE = request.param
@@ -163,7 +163,7 @@ class TestBAR(FEPestimatorMixin):
                               (gmx_water_particle_without_energy, -11.660, 0.064914),
                               (amber_bace_example_complex_vdw, 2.37846, 0.050899),
                               (namd_tyr2ala, 11.0044, 0.10235),
-                              (gomc_benzene_u_nk(), -0.87095, 0.071263),
+                              (gomc_benzene_u_nk, -0.87095, 0.071263),
                     ])
     def X_delta_f(self, request):
         get_unk, E, dE = request.param
