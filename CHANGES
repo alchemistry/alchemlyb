@@ -22,6 +22,7 @@ Enhancements
   - Amber TI parser (#10)
   - Amber FEP (MBAR) parser (#42)
   - Gromacs extended ensemble parser (#14)
+  - NAMD FEP parser (#7, #75)
   - BAR estimator (#40)
   - enhanced performance of Gromacs parsers with pandas.read_csv() (#81)
 
