@@ -254,22 +254,23 @@ def _extract_dataframe(xvg, headers=None):
     """
     if headers is None:
         headers = _get_headers(xvg)
+
     xaxis = _get_value_by_key(headers, 'xaxis', 'label')
     names = [_get_value_by_key(headers, 's{}'.format(x), 'legend') for x in
             range(len(headers)) if 's{}'.format(x) in headers]
     cols = [xaxis] + names
+
+    # march through column names, mark duplicates when found
+    cols = [col + "{}[duplicated]".format(i) if col in cols[:i] else col
+            for i, col, in enumerate(cols)]
+
     header_cnt = len(headers['_raw_lines'])
     df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
             na_filter=True, memory_map=True, names=cols, dtype=np.float64,
             float_precision='high')
 
-    # Dealing with duplicates
-    # Pandas permits unique column names only, mangle_dupe_cols=False re-write
-    # deplicates (not implemented as of 0.24.2)
-    nlen = len(names)
-    nlen_uniq = len(set(names))
-    if nlen > nlen_uniq:
-        df = pd.DataFrame(df, columns=cols)
+    # drop duplicated columns (see PR #86 https://github.com/alchemistry/alchemlyb/pull/86/)
+    df = df[df.columns[~df.columns.str.endswith("[duplicated]")]]
 
     return df
 
