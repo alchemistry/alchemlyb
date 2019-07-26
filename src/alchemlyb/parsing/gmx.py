@@ -41,9 +41,6 @@ def extract_u_nk(xvg, T):
     # extract a DataFrame from XVG data
     df = _extract_dataframe(xvg)
 
-    # drop duplicate columns if we (stupidly) have them
-    df = df.iloc[:, ~df.columns.duplicated()]
-
     times = df[df.columns[0]]
 
     # want to grab only dH columns
