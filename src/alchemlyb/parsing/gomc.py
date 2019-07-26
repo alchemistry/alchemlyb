@@ -1,4 +1,4 @@
-"""Parsers for extracting alchemical data from `GOMC <https://github.com/GOMC-WSU/GOMC/tree/FreeEnergy>`_ output files.
+"""Parsers for extracting alchemical data from `GOMC <http://gomc.eng.wayne.edu/>`_ output files.
 
 """
 import pandas as pd
@@ -13,15 +13,15 @@ from .util import anyopen
 k_b = 8.3144621E-3
 
 
-def extract_u_nk(file, T):
+def extract_u_nk(filename, T):
     """Return reduced potentials `u_nk` from a Hamiltonian differences dat file.
 
     Parameters
     ----------
-    file : str
+    filename : str
         Path to free energy file to extract data from.
     T : float
-        Temperature in Kelvin the simulations sampled.
+        Temperature in Kelvin at which the simulation was sampled.
 
     Returns
     -------
@@ -36,10 +36,10 @@ def extract_u_nk(file, T):
     u_col_match = ['Total_En']
     beta = 1/(k_b * T)
 
-    state, lambdas, statevec = _extract_state(file)
+    state, lambdas, statevec = _extract_state(filename)
 
     # extract a DataFrame from free energy file data
-    df = _extract_dataframe(file)
+    df = _extract_dataframe(filename)
 
     # drop duplicate columns if we (stupidly) have them
     df = df.iloc[:, ~df.columns.duplicated()]
@@ -50,7 +50,7 @@ def extract_u_nk(file, T):
     DHcols = [col for col in df.columns if (h_col_match in col)]
     dH = df[DHcols]
 
-    # gromacs also gives us pV directly; need this for reduced potential
+    # GOMC also gives us pV directly; need this for reduced potential
     pv_cols = [col for col in df.columns if (pv_col_match in col)]
     pv = None
     if pv_cols:
@@ -92,15 +92,15 @@ def extract_u_nk(file, T):
     return u_k
 
 
-def extract_dHdl(file, T):
+def extract_dHdl(filename, T):
     """Return gradients `dH/dl` from a Hamiltonian differences free energy file.
 
     Parameters
     ----------
-    file : str
+    filename : str
         Path to free energy file to extract data from.
     T : float
-        Temperature in Kelvin the simulations sampled.
+        Temperature in Kelvin at which the simulation was sampled.
 
     Returns
     -------
@@ -110,10 +110,10 @@ def extract_dHdl(file, T):
     """
     beta = 1/(k_b * T)
 
-    state, lambdas, statevec = _extract_state(file)
+    state, lambdas, statevec = _extract_state(filename)
 
     # extract a DataFrame from free energy data
-    df = _extract_dataframe(file)
+    df = _extract_dataframe(filename)
 
     times = df[df.columns[0]]
 
@@ -125,7 +125,7 @@ def extract_dHdl(file, T):
     dHdl = df[dHcols]
 
     # make dimensionless
-    dHdl = beta * dHdl
+    dHdl *= beta
 
 
     dHdl = pd.DataFrame(dHdl.values, columns=lambdas,
@@ -149,16 +149,16 @@ def extract_dHdl(file, T):
     return dHdl
 
 
-def _extract_state(file):
+def _extract_state(filename):
     """Extract information on state sampled, names of lambdas.
 
     """
     state = None
-    with anyopen(file, 'r') as f:
+    with anyopen(filename, 'r') as f:
         for line in f:
             if ('#' in line) and ('State' in line):
                 state = int(line.split('State')[1].split(':')[0])
-                # GOMC always print these two field
+                # GOMC always print these two fields
                 lambdas = ['Coulomb', 'VDW']
                 statevec = eval(line.strip().split(' = ')[-1])
                 break
@@ -166,7 +166,7 @@ def _extract_state(file):
     return state, lambdas, statevec
 
 
-def _extract_dataframe(file):
+def _extract_dataframe(filename):
     """Extract a DataFrame from free energy data.
 
     """
@@ -176,7 +176,7 @@ def _extract_dataframe(file):
     u_col_match = 'Total_En'
 
     xaxis = "time"
-    with anyopen(file, 'r') as f:
+    with anyopen(filename, 'r') as f:
         names = []
         rows = []
         for line in f:
