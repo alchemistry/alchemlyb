@@ -5,8 +5,7 @@ import pytest
 
 import pandas as pd
 
-from alchemlyb.parsing import gmx
-from alchemlyb.parsing import amber
+from alchemlyb.parsing import gmx, amber
 from alchemlyb.estimators import TI
 import alchemtest.gmx
 import alchemtest.amber
@@ -98,18 +97,19 @@ class TIestimatorMixin:
     T = 300
     kT_amber = amber.k_b * T
 
-    @pytest.mark.parametrize('X_delta_f', ((gmx_benzene_coul_dHdl(), 3.089, 0.02157),
-                                           (gmx_benzene_vdw_dHdl(), -3.056, 0.04863),
-                                           (gmx_expanded_ensemble_case_1_dHdl(), 76.220, 0.15568),
-                                           (gmx_expanded_ensemble_case_2_dHdl(), 76.247, 0.15889),
-                                           (gmx_expanded_ensemble_case_3_dHdl(), 76.387, 0.12532),
-                                           (gmx_water_particle_with_total_energy_dHdl(), -11.696, 0.091775),
-                                           (gmx_water_particle_with_potential_energy_dHdl(), -11.751, 0.091149),
-                                           (gmx_water_particle_without_energy_dHdl(), -11.687, 0.091604),
-                                           (amber_simplesolvated_charge_dHdl(), -60.114/kT_amber, 0.08186/kT_amber),
-                                           (amber_simplesolvated_vdw_dHdl(), 3.824/kT_amber, 0.13254/kT_amber)))
+    @pytest.mark.parametrize('X_delta_f', ((gmx_benzene_coul_dHdl, 3.089, 0.02157),
+                                           (gmx_benzene_vdw_dHdl, -3.056, 0.04863),
+                                           (gmx_expanded_ensemble_case_1_dHdl, 76.220, 0.15568),
+                                           (gmx_expanded_ensemble_case_2_dHdl, 76.247, 0.15889),
+                                           (gmx_expanded_ensemble_case_3_dHdl, 76.387, 0.12532),
+                                           (gmx_water_particle_with_total_energy_dHdl, -11.696, 0.091775),
+                                           (gmx_water_particle_with_potential_energy_dHdl, -11.751, 0.091149),
+                                           (gmx_water_particle_without_energy_dHdl, -11.687, 0.091604),
+                                           (amber_simplesolvated_charge_dHdl, -60.114/kT_amber, 0.08186/kT_amber),
+                                           (amber_simplesolvated_vdw_dHdl, 3.824/kT_amber, 0.13254/kT_amber)))
     def test_get_delta_f(self, X_delta_f):
-        est = self.cls().fit(X_delta_f[0])
+        dHdl = X_delta_f[0]()
+        est = self.cls().fit(dHdl)
         delta_f = est.delta_f_.iloc[0, -1]
         d_delta_f = est.d_delta_f_.iloc[0, -1]
 
