@@ -41,9 +41,6 @@ def extract_u_nk(filename, T):
     # extract a DataFrame from free energy file data
     df = _extract_dataframe(filename)
 
-    # drop duplicate columns if we (stupidly) have them
-    df = df.iloc[:, ~df.columns.duplicated()]
-
     times = df[df.columns[0]]
 
     # want to grab only dH columns
@@ -78,10 +75,7 @@ def extract_u_nk(filename, T):
                        index=pd.Float64Index(times.values, name='time'))
     # create columns for each lambda, indicating state each row sampled from
     for i, l in enumerate(lambdas):
-        try:
-            u_k[l] = statevec[i]
-        except TypeError:
-            u_k[l] = statevec
+        u_k[l] = statevec[i]
 
     # set up new multi-index
     newind = ['time'] + lambdas
@@ -135,10 +129,7 @@ def extract_dHdl(filename, T):
     cols = [l + "-lambda" for l in lambdas]
     # create columns for each lambda, indicating state each row sampled from
     for i, l in enumerate(cols):
-        try:
-            dHdl[l] = statevec[i]
-        except TypeError:
-            dHdl[l] = statevec
+        dHdl[l] = statevec[i]
 
     # set up new multi-index
     newind = ['time'] + cols
@@ -182,9 +173,13 @@ def _extract_dataframe(filename):
         for line in f:
             line = line.strip()
             if len(line) == 0:
+                # avoid parsing empty line
                 continue
-
-            if line.startswith("#Steps"):
+            elif line.startswith('#T'):
+                # this line has state information. No need to be parsed
+                continue
+            elif line.startswith("#Steps"):
+                # read the headers
                 element = line.split()
                 for i in range(len(element)):
                     if element[i].startswith(u_col_match):
@@ -195,15 +190,10 @@ def _extract_dataframe(filename):
                         names.append(element[i])
                     elif element[i].startswith(pv_col_match):
                         names.append(element[i])
-
-            # should catch non-numeric lines so we don't proceed in parsing
-            # here
-            if line.startswith('#'):
-                continue
-
-            # parse line as floats
-            row = map(float, line.split())
-            rows.append(row)
+            else:
+                # parse line as floats
+                row = map(float, line.split())
+                rows.append(row)
 
     cols = [xaxis]
     cols.extend(names)
