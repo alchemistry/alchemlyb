@@ -7,8 +7,7 @@ import numpy as np
 import pandas as pd
 
 from alchemlyb.parsing import gmx, amber, namd, gomc
-from alchemlyb.estimators import MBAR
-from alchemlyb.estimators import BAR
+from alchemlyb.estimators import MBAR, BAR
 import alchemtest.gmx
 import alchemtest.amber
 import alchemtest.gomc
