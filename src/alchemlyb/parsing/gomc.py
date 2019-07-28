@@ -127,7 +127,6 @@ def extract_dHdl(filename, T):
     # make dimensionless
     dHdl *= beta
 
-
     dHdl = pd.DataFrame(dHdl.values, columns=lambdas,
                         index=pd.Float64Index(times.values, name='time'))
 
@@ -185,16 +184,16 @@ def _extract_dataframe(filename):
                 continue
 
             if line.startswith("#Steps"):
-                element = line.split()
-                for i in range(len(element)):
-                    if element[i].startswith(u_col_match):
-                        names.append(element[i])
-                    elif element[i].startswith(dh_col_match):
-                        names.append(element[i])
-                    elif element[i].startswith(h_col_match):
-                        names.append(element[i])
-                    elif element[i].startswith(pv_col_match):
-                        names.append(element[i])
+                elements = line.split()
+                for i, element in enumerate(elements):
+                    if element.startswith(u_col_match):
+                        names.append(element)
+                    elif element.startswith(dh_col_match):
+                        names.append(element)
+                    elif element.startswith(h_col_match):
+                        names.append(element)
+                    elif element.startswith(pv_col_match):
+                        names.append(element)
 
             # should catch non-numeric lines so we don't proceed in parsing
             # here
