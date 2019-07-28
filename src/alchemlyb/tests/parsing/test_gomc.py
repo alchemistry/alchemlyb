@@ -27,6 +27,6 @@ def test_u_nk():
     for filename in dataset['data']:
         u_nk = extract_u_nk(filename, T=298)
 
-        assert u_nk.index.names == ['time', 'Coulomb', 'VDW']
+        assert u_nk.index.names == ['time', 'Coulomb-lambda', 'VDW-lambda']
         assert u_nk.shape == (1000, 23)
 
