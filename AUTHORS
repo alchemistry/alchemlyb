@@ -1,0 +1,35 @@
+.. -*- coding: utf-8 -*-
+
+======================
+ Authors of alchemlyb
+======================
+
+The alchemlyb project is led by Oliver Beckstein (@orbeckst), David
+Mobley (@davidlmobley), and Michal Shirts (@mrshirts). alchemlyb was
+originally created by David Dotson (@dotsdl).
+
+All contributing authors are listed in this file below. Full name and
+GitHub handle are preferred. The repository history at
+https://github.com/alchemistry/alchemlyb and the CHANGES file show
+individual code contributions.
+
+
+Chronological list of authors
+-----------------------------
+
+2016
+  - David Dotson (@dotsdl)
+  - Ian Kenney (@ianmkenney)
+
+2017
+  - Oliver Beckstein (@orbeckst)
+  - Shuai Liu (@shuail)
+  - Travis Jensen (@trje3733)
+
+2018
+  - Bryce Allen (@brycestx)
+  - Dominik Wille (@harlor)
+  
+2019
+  - Victoria Lim (@vlim)
+  - Hyungro Lee (@lee212)
