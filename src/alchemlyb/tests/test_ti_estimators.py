@@ -5,10 +5,11 @@ import pytest
 
 import pandas as pd
 
-from alchemlyb.parsing import gmx, amber
+from alchemlyb.parsing import gmx, amber, gomc
 from alchemlyb.estimators import TI
 import alchemtest.gmx
 import alchemtest.amber
+import alchemtest.gomc
 
 
 def gmx_benzene_coul_dHdl():
@@ -91,9 +92,17 @@ def amber_simplesolvated_vdw_dHdl():
 
     return dHdl
 
+def gomc_benzene_dHdl():
+    dataset = alchemtest.gomc.load_benzene()
+
+    dHdl = pd.concat([gomc.extract_dHdl(filename, T=298)
+                      for filename in dataset['data']])
+
+    return dHdl
 
 
 class TIestimatorMixin:
+
     def test_get_delta_f(self, X_delta_f):
         dHdl, E, dE = X_delta_f
         est = self.cls().fit(dHdl)
@@ -127,5 +136,3 @@ class TestTI(TIestimatorMixin):
     def X_delta_f(self, request):
         get_dHdl, E, dE = request.param
         return get_dHdl(), E, dE
-
-

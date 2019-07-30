@@ -6,10 +6,11 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from alchemlyb.parsing import gmx, amber, namd
+from alchemlyb.parsing import gmx, amber, namd, gomc
 from alchemlyb.estimators import MBAR, BAR
 import alchemtest.gmx
 import alchemtest.amber
+import alchemtest.gomc
 import alchemtest.namd
 
 def gmx_benzene_coul_u_nk():
@@ -83,6 +84,14 @@ def amber_bace_example_complex_vdw():
                       for filename in dataset['data']['complex']['vdw']])
     return u_nk
 
+def gomc_benzene_u_nk():
+    dataset = alchemtest.gomc.load_benzene()
+
+    u_nk = pd.concat([gomc.extract_u_nk(filename, T=298)
+                      for filename in dataset['data']])
+
+    return u_nk
+
 def namd_tyr2ala():
     dataset = alchemtest.namd.load_tyr2ala()
     u_nk1 = namd.extract_u_nk(dataset['data']['forward'][0], T=300)
@@ -126,6 +135,7 @@ class TestMBAR(FEPestimatorMixin):
                             (gmx_water_particle_with_potential_energy, -11.675, 0.083589),
                             (gmx_water_particle_without_energy, -11.654, 0.083415),
                             (amber_bace_example_complex_vdw, 2.40200, 0.0618453),
+                            (gomc_benzene_u_nk, -0.79994, 0.091579),
                     ])
     def X_delta_f(self, request):
         get_unk, E, dE = request.param
@@ -152,6 +162,7 @@ class TestBAR(FEPestimatorMixin):
                               (gmx_water_particle_without_energy, -11.660, 0.064914),
                               (amber_bace_example_complex_vdw, 2.37846, 0.050899),
                               (namd_tyr2ala, 11.0044, 0.10235),
+                              (gomc_benzene_u_nk, -0.87095, 0.071263),
                     ])
     def X_delta_f(self, request):
         get_unk, E, dE = request.param

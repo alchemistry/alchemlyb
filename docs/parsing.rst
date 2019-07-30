@@ -111,4 +111,5 @@ See the documentation for the package you are using for more details on parser u
     gmx
     amber
     namd
+    gomc
     

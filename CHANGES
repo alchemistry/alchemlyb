@@ -25,6 +25,7 @@ Enhancements
   - NAMD FEP parser (#7, #75)
   - BAR estimator (#40)
   - enhanced performance of Gromacs parsers with pandas.read_csv() (#81)
+  - GOMC TI and FEP parser (#77)
 
 Deprecations
 
