@@ -35,6 +35,7 @@ Fixes
 
 Changes
   - defaults for statistical_inefficiency() are more conservative (#39)
+  - API Proposal was upgraded to API Principles (and updated)
 
 (Note: release number 0.2.x was skipped.)
 

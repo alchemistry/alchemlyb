@@ -2,7 +2,9 @@ Amber parsing
 =============
 .. automodule:: alchemlyb.parsing.amber
 
-The parsers featured in this module are constructed to properly parse `Amber <http://ambermd.org/>`_ output files containing derivatives of the Hamiltonian and FEP (BAR/MBAR) data.
+The parsers featured in this module are constructed to properly parse `Amber MD`_ output files containing derivatives of the Hamiltonian and FEP (BAR/MBAR) data.
+
+.. _Amber MD: http://ambermd.org/
 
 .. TODO
    
