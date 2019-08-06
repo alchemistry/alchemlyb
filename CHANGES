@@ -14,9 +14,9 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
-*/*/2019 dotsdl, orbeckst, shuail, trje3733, brycestx, harlor, vtlim, lee212
+08/05/2019 dotsdl, orbeckst, shuail, trje3733, brycestx, harlor, vtlim, lee212
 
-  * 0.2.0
+  * 0.3.0
 
 Enhancements
   - Amber TI parser (#10)
@@ -35,6 +35,8 @@ Fixes
 
 Changes
   - defaults for statistical_inefficiency() are more conservative (#39)
+
+(Note: release number 0.2.x was skipped.)
 
 
 05/27/2017 dotsdl, ianmkenney, orbeckst
