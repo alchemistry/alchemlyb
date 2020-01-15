@@ -4,8 +4,6 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 
 from pymbar import MBAR as MBAR_
-from pymbar.mbar import DEFAULT_SOLVER_PROTOCOL
-from pymbar.mbar import DEFAULT_SUBSAMPLING_PROTOCOL
 
 
 class MBAR(BaseEstimator):
@@ -55,7 +53,7 @@ class MBAR(BaseEstimator):
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
         self.initial_f_k = initial_f_k
-        self.method = (dict(method=method), )
+        self.method = [dict(method=method)]
         self.verbose = verbose
 
         # handle for pymbar.MBAR object
@@ -89,7 +87,7 @@ class MBAR(BaseEstimator):
         self.states_ = u_nk.columns.values.tolist()
 
         # set attributes
-        out = self._mbar.getFreeEnergyDifferences()
+        out = self._mbar.getFreeEnergyDifferences(return_theta=True)
         attrs = [pd.DataFrame(i,
                               columns=self.states_,
                               index=self.states_) for i in out]
