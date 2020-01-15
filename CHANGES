@@ -14,6 +14,22 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
+
+01/14/2020 dotsdl
+
+* 0.3.1
+
+Enhancements
+
+Deprecations
+
+Fixes
+  - added explicit `return_theta=True` for call to pymbar.MBAR.getFreeEnergyDifferences,
+    as this was happening prior to changes in `pymbar` without the explicit call
+
+Changes
+
+
 08/05/2019 dotsdl, orbeckst, shuail, trje3733, brycestx, harlor, vtlim, lee212
 
   * 0.3.0
