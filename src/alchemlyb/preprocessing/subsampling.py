@@ -186,9 +186,6 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
     if series is not None:
         series = slicing(series, lower=lower, upper=upper, step=step)
 
-        # calculate statistical inefficiency of series
-        statinef  = statisticalInefficiency(series)
-
         # calculate statistical inefficiency of series, with equilibrium detection
         t, statinef, Neff_max  = detectEquilibration(series.values)
 
