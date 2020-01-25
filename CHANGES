@@ -15,6 +15,24 @@ The rules for this file:
 ------------------------------------------------------------------------------
 
 
+??/??/2020 wehs7661, dotsdl
+
+* 0.?.?
+
+Enhancements
+
+Deprecations
+
+Fixes
+  - removed redundant statistical inefficiency calculation in
+  `alchemlyb.preprocessing.subsampling.equilibrium_detection`
+
+
+Changes
+
+
+
+
 01/16/2020 dotsdl, orbeckst
 
 * 0.3.1
