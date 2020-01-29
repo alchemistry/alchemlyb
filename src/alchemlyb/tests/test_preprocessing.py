@@ -18,9 +18,21 @@ def gmx_benzene_dHdl():
     return gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
 
 
+def gmx_benzene_dHdl_duplicated():
+    dataset = alchemtest.gmx.load_benzene()
+    df = gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
+    return pd.concat([df, df])
+
+
 def gmx_benzene_u_nk():
     dataset = alchemtest.gmx.load_benzene()
     return gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
+
+
+def gmx_benzene_u_nk_duplicated():
+    dataset = alchemtest.gmx.load_benzene()
+    df = gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
+    return pd.concat([df, df])
 
 
 def gmx_benzene_dHdl_full():
@@ -31,6 +43,7 @@ def gmx_benzene_dHdl_full():
 def gmx_benzene_u_nk_full():
     dataset = alchemtest.gmx.load_benzene()
     return pd.concat([gmx.extract_u_nk(i, T=300) for i in dataset['data']['Coulomb']])
+
 
 class TestSlicing:
     """Test slicing functionality.
@@ -46,8 +59,8 @@ class TestSlicing:
 
     @pytest.mark.parametrize('data', [gmx_benzene_dHdl(),
                                       gmx_benzene_u_nk()])
-    def test_disordered_exception(self, data):
-        """Test that a shuffled DataFrame yields a KeyError.
+    def test_disordered(self, data):
+        """Test that a shuffled DataFrame yields same result as unshuffled.
 
         """
         indices = np.arange(len(data))
@@ -55,18 +68,16 @@ class TestSlicing:
 
         df = data.iloc[indices]
 
-        with pytest.raises(KeyError):
-            self.slicer(df, lower=200)
+        assert (self.slicer(df, lower=200) == self.slicer(data, lower=200)).all().all()
 
-    @pytest.mark.parametrize('data', [gmx_benzene_dHdl_full(),
-                                      gmx_benzene_u_nk_full()])
+    @pytest.mark.parametrize('data', [gmx_benzene_dHdl_duplicated(),
+                                      gmx_benzene_u_nk_duplicated()])
     def test_duplicated_exception(self, data):
         """Test that a DataFrame with duplicate times yields a KeyError.
 
         """
         with pytest.raises(KeyError):
-            self.slicer(data.sort_index(0), lower=200)
-
+            self.slicer(data, lower=200)
 
 class CorrelatedPreprocessors:
 
@@ -76,21 +87,10 @@ class CorrelatedPreprocessors:
         """Basic test for execution; resulting size of dataset sensitive to
         machine and depends on algorithm.
         """
-        assert len(self.slicer(data, series=data.iloc[:, 0])) <= size
-
-    @pytest.mark.parametrize('data', [gmx_benzene_dHdl(),
-                                      gmx_benzene_u_nk()])
-    def test_no_series(self, data):
-        """Check that we get the same result as simple slicing with no Series.
-
-        """
-        df_sub = self.slicer(data, lower=200, upper=5000, step=2)
-        df_sliced = slicing(data, lower=200, upper=5000, step=2)
-
-        assert np.all((df_sub == df_sliced))
+        assert len(self.slicer(data, data.columns[0])) <= size
 
 
-class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
+class TestStatisticalInefficiency(CorrelatedPreprocessors):
 
     def slicer(self, *args, **kwargs):
         return statistical_inefficiency(*args, **kwargs)
@@ -103,24 +103,14 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
                                  (False, gmx_benzene_u_nk(), 3571),
                              ])
     def test_conservative(self, data, size, conservative):
-        sliced = self.slicer(data, series=data.iloc[:, 0], conservative=conservative)
+        sliced = self.slicer(data, data.columns[0], conservative=conservative)
         # results can vary slightly with different machines
         # so possibly do
         # delta = 10
         # assert size - delta < len(sliced) < size + delta
         assert len(sliced) == size
 
-    @pytest.mark.parametrize('series', [
-        gmx_benzene_dHdl()['fep'][:20],   # wrong length
-        gmx_benzene_dHdl()['fep'][::-1],  # wrong time stamps (reversed)
-        ])
-    def test_raise_ValueError_for_mismatched_data(self, series):
-        data = gmx_benzene_dHdl()
-        with pytest.raises(ValueError):
-            self.slicer(data, series=series)
-
-
-class TestEquilibriumDetection(TestSlicing, CorrelatedPreprocessors):
+class TestEquilibriumDetection(CorrelatedPreprocessors):
 
     def slicer(self, *args, **kwargs):
         return equilibrium_detection(*args, **kwargs)
