@@ -8,11 +8,11 @@ import pandas as pd
 from pymbar import timeseries
 
 
-def _check_multiple_times(df):
-    return df.sort_index(0).reset_index(0).duplicated('time').any()
+def _check_multiple_times(data):
+    return data.sort_index(0).reset_index(0).duplicated('time').any()
 
 
-def slicing(df, lower=None, upper=None, step=None, force=False):
+def slicing(data, lower=None, upper=None, step=None, force=False):
     """Subsample an alchemlyb DataFrame using slicing on the outermost index (time).
 
     Slicing will be performed separately on groups of rows corresponding to
@@ -21,7 +21,7 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
 
     Parameters
     ----------
-    df : DataFrame
+    data : DataFrame
         DataFrame to subsample.
     lower : float
         Lower time to slice from.
@@ -35,16 +35,16 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
     Returns
     -------
     DataFrame
-        `df` subsampled.
+        `data` subsampled.
 
     """
     # we always start with a full index sort on the whole dataframe
-    df = df.sort_index()
+    data = data.sort_index()
 
-    index_names = list(df.index.names[1:])
-    resdf = list()
+    index_names = list(data.index.names[1:])
+    resdata = list()
 
-    for name, group in df.groupby(level=index_names):
+    for name, group in data.groupby(level=index_names):
         group_s = group.loc[lower:upper:step]
 
         if not force and _check_multiple_times(group_s):
@@ -52,12 +52,12 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
                            "to use slicing on DataFrames with unique time values "
                            "for each row. Use `force=True` to ignore this error.")
 
-        resdf.append(group_s)
+        resdata.append(group_s)
 
-    return pd.concat(resdf)
+    return pd.concat(resdata)
 
 
-def statistical_inefficiency(df, column, lower=None, upper=None, step=None,
+def statistical_inefficiency(data, how='auto', column=None, lower=None, upper=None, step=None,
                              conservative=True, return_calculated=False, force=False):
     """Subsample an alchemlyb DataFrame based on the calculated statistical inefficiency
     of one of its columns.
@@ -67,12 +67,49 @@ def statistical_inefficiency(df, column, lower=None, upper=None, step=None,
     values present in the DataFrame's index. Each group will be sorted on the
     outermost (time) index prior to any calculation.
 
+    The `how` parameter determines the observable used for calculating the
+    correlations within each group of samples. The options are as follows:
+
+        'auto' 
+            The default; the approach is chosen from the below approaches based
+            on the `alchemform` of the data (either 'dHdl' or 'u_nk'). Use this
+            if in doubt.
+        'right'
+            The default for 'u_nk' datasets; the column immediately to the
+            right of the column corresponding to the group's lambda index value
+            is used. If there is no column to the right, then the column to the left is used.
+            If there is no column corresponding to the group's lambda index
+            value, then 'random' is used (see below).
+        'left'
+            The opposite of the 'right' approach; the column immediately to the
+            left of the column corresponding to the group's lambda index value
+            is used. If there is no column to the left, then the column to the
+            right is used.  If there is no column corresponding to the group's
+            lambda index value, then 'random' is used for that group (see below).
+        'random'
+            A column is chosen at random from the set of columns available in
+            the group. If the correlation calculation fails, then another
+            column is tried. This process continues until success or until all
+            columns have been attempted without success.
+        'sum'
+            The default for 'dHdl' datasets; the columns are simply summed, and
+            the resulting `Series` is used.
+
+    Specifying the 'column' parameter overrides the behavior of 'how'. This
+    allows the user to use a particular column or a specially-crafted `Series`
+    for correlation calculation.
+
     Parameters
     ----------
-    df : DataFrame
+    data : DataFrame
         DataFrame to subsample according statistical inefficiency of `series`.
-    column : label
+    how : {'auto', 'right', 'left', 'random', 'sum'}
+        The approach used to choose the observable on which correlations are
+        calculated. See explanation above.
+    column : label or `pandas.Series`
         Label of column to use for calculating statistical inefficiency.
+        Overrides `how`; can also take a `Series` object, but the index of the
+        `Series` *must* match that of `data` exactly.
     lower : float
         Lower time to pre-slice data from.
     upper : float
@@ -93,7 +130,7 @@ def statistical_inefficiency(df, column, lower=None, upper=None, step=None,
     Returns
     -------
     DataFrame
-        `df` subsampled according to subsampled `column`.
+        `data` subsampled according to subsampled `column`.
 
     Note
     ----
@@ -124,15 +161,17 @@ def statistical_inefficiency(df, column, lower=None, upper=None, step=None,
 
     """
     # we always start with a full index sort on the whole dataframe
-    df = df.sort_index()
+    data = data.sort_index()
 
-    index_names = list(df.index.names[1:])
-    resdf = list()
+    index_names = list(data.index.names[1:])
+    resdata = list()
 
     if return_calculated:
         calculated = defaultdict(dict)
 
-    for name, group in df.groupby(level=index_names):
+    if column:
+
+    for name, group in data.groupby(level=index_names):
             
         group_s = slicing(group, lower=lower, upper=upper, step=step)
 
@@ -148,18 +187,18 @@ def statistical_inefficiency(df, column, lower=None, upper=None, step=None,
         indices = timeseries.subsampleCorrelatedData(group_s[column], g=statinef,
                                       conservative=conservative)
 
-        resdf.append(group_s.iloc[indices])
+        resdata.append(group_s.iloc[indices])
 
         if return_calculated:
             calculated['statinef'][name] = statinef
     
     if return_calculated:
-        return pd.concat(resdf), calculated
+        return pd.concat(resdata), calculated
     else:
-        return pd.concat(resdf)
+        return pd.concat(resdata)
 
 
-def equilibrium_detection(df, column, lower=None, upper=None, step=None,
+def equilibrium_detection(data, how='auto', column=None, lower=None, upper=None, step=None,
                           conservative=True, return_calculated=False, force=False):
     """Subsample a DataFrame using automated equilibrium detection on one of
     its columns.
@@ -169,12 +208,49 @@ def equilibrium_detection(df, column, lower=None, upper=None, step=None,
     present in the DataFrame's index. Each group will be sorted on the
     outermost (time) index prior to any calculation.
 
+    The `how` parameter determines the observable used for calculating the
+    correlations within each group of samples. The options are as follows:
+
+        'auto' 
+            The default; the approach is chosen from the below approaches based
+            on the `alchemform` of the data (either 'dHdl' or 'u_nk'). Use this
+            if in doubt.
+        'right'
+            The default for 'u_nk' datasets; the column immediately to the
+            right of the column corresponding to the group's lambda index value
+            is used. If there is no column to the right, then the column to the left is used.
+            If there is no column corresponding to the group's lambda index
+            value, then 'random' is used (see below).
+        'left'
+            The opposite of the 'right' approach; the column immediately to the
+            left of the column corresponding to the group's lambda index value
+            is used. If there is no column to the left, then the column to the
+            right is used.  If there is no column corresponding to the group's
+            lambda index value, then 'random' is used for that group (see below).
+        'random'
+            A column is chosen at random from the set of columns available in
+            the group. If the correlation calculation fails, then another
+            column is tried. This process continues until success or until all
+            columns have been attempted without success.
+        'sum'
+            The default for 'dHdl' datasets; the columns are simply summed, and
+            the resulting `Series` is used.
+
+    Specifying the 'column' parameter overrides the behavior of 'how'. This
+    allows the user to use a particular column or a specially-crafted `Series`
+    for correlation calculation.
+
     Parameters
     ----------
-    df : DataFrame
+    data : DataFrame
         DataFrame to subsample according to equilibrium detection on `series`.
-    column : label
-        Label of column to use for equilibrium detection.
+    how : {'auto', 'right', 'left', 'random', 'sum'}
+        The approach used to choose the observable on which correlations are
+        calculated. See explanation above.
+    column : label or `pandas.Series`
+        Label of column to use for calculating statistical inefficiency.
+        Overrides `how`; can also take a `Series` object, but the index of the
+        `Series` *must* match that of `data` exactly.
     lower : float
         Lower time to pre-slice data from.
     upper : float
@@ -195,7 +271,7 @@ def equilibrium_detection(df, column, lower=None, upper=None, step=None,
     Returns
     -------
     DataFrame
-        `df` subsampled according to subsampled `column`.
+        `data` subsampled according to subsampled `column`.
 
     Note
     ----
@@ -226,15 +302,15 @@ def equilibrium_detection(df, column, lower=None, upper=None, step=None,
 
     """
     # we always start with a full index sort on the whole dataframe
-    df = df.sort_index()
+    data = data.sort_index()
 
-    index_names = list(df.index.names[1:])
-    resdf = list()
+    index_names = list(data.index.names[1:])
+    resdata = list()
 
     if return_calculated:
         calculated = defaultdict(dict)
 
-    for name, group in df.groupby(level=index_names):
+    for name, group in data.groupby(level=index_names):
         group_s = slicing(group, lower=lower, upper=upper, step=step)
 
         if not force and _check_multiple_times(group):
@@ -252,7 +328,7 @@ def equilibrium_detection(df, column, lower=None, upper=None, step=None,
         indices = timeseries.subsampleCorrelatedData(group_s[column], g=statinef,
                                       conservative=conservative)
 
-        resdf.append(group_s.iloc[indices])
+        resdata.append(group_s.iloc[indices])
 
         if return_calculated:
             calculated['t'][name] = statinef
@@ -260,6 +336,6 @@ def equilibrium_detection(df, column, lower=None, upper=None, step=None,
             calculated['Neff_max'][name] = statinef
 
     if return_calculated:
-        return pd.concat(resdf), calculated
+        return pd.concat(resdata), calculated
     else:
-        return pd.concat(resdf)
+        return pd.concat(resdata)
