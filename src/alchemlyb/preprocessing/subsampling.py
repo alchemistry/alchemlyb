@@ -1,15 +1,67 @@
 """Functions for subsampling datasets.
 
 """
+import random
 
 from collections import defaultdict
 import numpy as np
 import pandas as pd
 from pymbar import timeseries
+from pymbar.utils import ParameterError
+
+
+class CorrelationError(Exception):
+    pass
 
 
 def _check_multiple_times(data):
-    return data.sort_index(0).reset_index(0).duplicated('time').any()
+    return data.index.levels[0].duplicated().any()
+
+
+def _how_lr(name, group, direction):
+
+    # first, get column index of column `name`, if it exists
+    # if it does exist, increment or decrement position by one based on
+    # `direction`
+    try:
+        pos = group.columns.get_loc(name)
+    except KeyError:
+        raise KeyError("No column with label '{}'".format(name))
+    else:
+        if direction == 'right':
+            pos += 1
+        elif direction == 'left':
+            pos -= 1
+        else:
+            raise ValueError("`direction` must be either 'right' or 'left'")
+    
+    # handle cases where we are dealing with the leftmost column or rightmost
+    # column
+    if pos == -1:
+        pos += 2
+    elif pos == len(group.columns):
+        pos -= 2
+    elif (pos < -1) or (pos > len(group.columns)):
+        raise IndexError("Position of selected column is outside of all expected bounds")
+
+    return group[group.columns[pos]]
+
+
+def _how_random(name, group, tried=None):
+
+    candidates = set(group.columns) - (set(tried) + {name})
+
+    if not candidates:
+        raise CorrelationError("No column in the dataset could be used"
+                " successfully for decorrelation")
+    else:
+        selection = random.choice(candidates)
+
+    return group[selection], selection 
+
+
+def _how_sum(name, group):
+    return group.sum(axis=1)
 
 
 def slicing(data, lower=None, upper=None, step=None, force=False):
@@ -87,10 +139,12 @@ def statistical_inefficiency(data, how='auto', column=None, lower=None, upper=No
             right is used.  If there is no column corresponding to the group's
             lambda index value, then 'random' is used for that group (see below).
         'random'
-            A column is chosen at random from the set of columns available in
-            the group. If the correlation calculation fails, then another
-            column is tried. This process continues until success or until all
-            columns have been attempted without success.
+            A column is chosen uniformly at random from the set of columns
+            available in the group, with the column corresponding to the
+            group's lambda index value excluded, if present. If the correlation
+            calculation fails, then another column is tried. This process
+            continues until success or until all columns have been attempted
+            without success (in which case, ``CorrelationError`` is raised).
         'sum'
             The default for 'dHdl' datasets; the columns are simply summed, and
             the resulting `Series` is used.
@@ -132,6 +186,11 @@ def statistical_inefficiency(data, how='auto', column=None, lower=None, upper=No
     DataFrame
         `data` subsampled according to subsampled `column`.
 
+    Raises
+    ------
+    CorrelationError
+        If correlation removal fails irrecoverably.
+
     Note
     ----
     For a non-integer statistical ineffciency :math:`g`, the default value
@@ -161,6 +220,7 @@ def statistical_inefficiency(data, how='auto', column=None, lower=None, upper=No
 
     """
     # we always start with a full index sort on the whole dataframe
+    # should produce a copy
     data = data.sort_index()
 
     index_names = list(data.index.names[1:])
@@ -170,23 +230,74 @@ def statistical_inefficiency(data, how='auto', column=None, lower=None, upper=No
         calculated = defaultdict(dict)
 
     if column:
+        if isinstance(column, pd.Series):
+            #TODO: check equality of index between Series, data
+            pass
+
+    # assign specific `how` settings if ``how == 'auto'``
+    if how == 'auto':
+        if data.attrs['alchemform'] == 'u_nk':
+            how = 'right'
+        if data.attrs['alchemform'] == 'dHdl':
+            how = 'sum'
+
+    def subsample(group_c, group):
+        group_cs = slicing(group_c, lower=lower, upper=upper, step=step)
+
+        # calculate statistical inefficiency of column (could use fft=True but needs test)
+        statinef = timeseries.statisticalInefficiency(group_cs, fast=False)
+
+        # use the subsampleCorrelatedData function to get the subsample index
+        indices = timeseries.subsampleCorrelatedData(group_cs, g=statinef,
+                                      conservative=conservative)
+
+        return indices
+
+    def random_selection(name, group):
+        tried = set()
+        while True:
+            group_c, selection = _how_random(name, group, tried=tried)
+            try:
+                indices = subsample(group_c, group)
+            except:
+                tried.add(selection)
+            else:
+                break
+
+        return indices
 
     for name, group in data.groupby(level=index_names):
-            
-        group_s = slicing(group, lower=lower, upper=upper, step=step)
 
         if not force and _check_multiple_times(group):
             raise KeyError("Duplicate time values found; statistical inefficiency"
                            "is only meaningful for a single, contiguous, "
-                           "and sorted timeseries.")
+                           "and sorted timeseries")
 
-        # calculate statistical inefficiency of column (could use fft=True but needs test)
-        statinef = timeseries.statisticalInefficiency(group_s[column], fast=False)
+        if column:
+            if isinstance(column, pd.Series):
+                group_c = column.groupby(level=index_names).get_group(name)
+                indices = subsample(group_c, group)
+            elif isinstance(column, basestring):
+                group_c = group[column]
+                indices = subsample(group_c, group)
+        else:
+            if (how == 'right') or (how == 'left'):
+                try:
+                    group_c = _how_lr(name, group, how)
+                except KeyError:
+                    indices = random_selection(name, group)
+                else:
+                    indices = subsample(group_c, group)
+            elif how == 'random':
+                indices = random_selection(name, group)
+            elif how == 'sum':
+                group_c = _how_sum(name, group)
+                indices = subsample(group_c, group)
+            else:
+                raise ValueError("`how` cannot be '{}';"
+                " see docstring for available options".format(how))
 
-        # use the subsampleCorrelatedData function to get the subsample index
-        indices = timeseries.subsampleCorrelatedData(group_s[column], g=statinef,
-                                      conservative=conservative)
-
+        group_s = slicing(group, lower=lower, upper=upper, step=step)
         resdata.append(group_s.iloc[indices])
 
         if return_calculated:
@@ -313,10 +424,10 @@ def equilibrium_detection(data, how='auto', column=None, lower=None, upper=None,
     for name, group in data.groupby(level=index_names):
         group_s = slicing(group, lower=lower, upper=upper, step=step)
 
-        if not force and _check_multiple_times(group):
+        if not force and _check_multiple_times(group_s):
             raise KeyError("Duplicate time values found; equilibrium detection "
                            "is only meaningful for a single, contiguous, "
-                           "and sorted timeseries.")
+                           "and sorted timeseries")
 
         # calculate statistical inefficiency of series, with equilibrium detection
         t, statinef, Neff_max  = timeseries.detectEquilibration(group_s[column])
