@@ -15,7 +15,7 @@ class CorrelationError(Exception):
 
 
 def _check_multiple_times(data):
-    return data.index.levels[0].duplicated().any()
+    return data.index.get_level_values(0).duplicated().any()
 
 
 def _how_lr(name, group, direction):
@@ -109,10 +109,11 @@ def slicing(data, lower=None, upper=None, step=None, force=False):
     return pd.concat(resdata)
 
 
-def statistical_inefficiency(data, how='auto', column=None, lower=None, upper=None, step=None,
-                             conservative=True, return_calculated=False, force=False):
-    """Subsample an alchemlyb DataFrame based on the calculated statistical inefficiency
-    of one of its columns.
+def statistical_inefficiency(data, how='auto', column=None, lower=None,
+        upper=None, step=None, conservative=True, return_calculated=False,
+        force=False, random_state=None):
+    """Subsample an alchemlyb DataFrame based on the calculated statistical
+    inefficiency of one of its columns.
 
     Calculation of statistical inefficiency and subsequent subsampling will be
     performed separately on groups of rows corresponding to each set of lambda
@@ -129,9 +130,9 @@ def statistical_inefficiency(data, how='auto', column=None, lower=None, upper=No
         'right'
             The default for 'u_nk' datasets; the column immediately to the
             right of the column corresponding to the group's lambda index value
-            is used. If there is no column to the right, then the column to the left is used.
-            If there is no column corresponding to the group's lambda index
-            value, then 'random' is used (see below).
+            is used. If there is no column to the right, then the column to the
+            left is used.  If there is no column corresponding to the group's
+            lambda index value, then 'random' is used (see below).
         'left'
             The opposite of the 'right' approach; the column immediately to the
             left of the column corresponding to the group's lambda index value
@@ -171,15 +172,19 @@ def statistical_inefficiency(data, how='auto', column=None, lower=None, upper=No
     step : int
         Step between rows to pre-slice by.
     conservative : bool
-        ``True`` use ``ceil(statistical_inefficiency)`` to slice the data in uniform
-        intervals (the default). ``False`` will sample at non-uniform intervals to
-        closely match the (fractional) statistical_inefficieny, as implemented
-        in :func:`pymbar.timeseries.subsampleCorrelatedData`.
+        ``True`` use ``ceil(statistical_inefficiency)`` to slice the data in
+        uniform intervals (the default). ``False`` will sample at non-uniform
+        intervals to closely match the (fractional) statistical_inefficieny, as
+        implemented in :func:`pymbar.timeseries.subsampleCorrelatedData`.
     return_calculated : bool
         ``True`` return a tuple, with the second item a dict giving, e.g. `statinef`
         for each group.
     force : bool
         Ignore checks that DataFrame is in proper form for expected behavior.
+    random_state : int, optional
+        Integer between 0 and 2**32 -1 inclusive; fed to `numpy.random.seed`.
+        Running this function on the same data with a specific random seed will
+        produce the same result each time.
 
     Returns
     -------
@@ -214,11 +219,13 @@ def statistical_inefficiency(data, how='auto', column=None, lower=None, upper=No
 
     .. versionchanged:: 0.2.0
        The ``conservative`` keyword was added and the method is now using
-       ``pymbar.timeseries.subsampleCorrelatedData()``; previously, the statistical
-       inefficiency was _rounded_ (instead of ``ceil()``) and thus one could
-       end up with correlated data.
+       ``pymbar.timeseries.subsampleCorrelatedData()``; previously, the
+       statistical inefficiency was _rounded_ (instead of ``ceil()``) and thus
+       one could end up with correlated data.
 
     """
+    np.random.seed(random_state)
+
     # we always start with a full index sort on the whole dataframe
     # should produce a copy
     data = data.sort_index()

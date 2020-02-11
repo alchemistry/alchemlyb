@@ -16,16 +16,16 @@ from . import test_fep_estimators as tfep
 import alchemtest.gmx
 
 @pytest.fixture(scope="module",
-                params = [(tti.gmx_benzene_coul_dHdl, "single", 0),
-                          (tti.gmx_benzene_vdw_dHdl, "single", 0),
-                          (tti.gmx_expanded_ensemble_case_1_dHdl, "single", 1),
-                          (tti.gmx_expanded_ensemble_case_2_dHdl, "repeat", 1),
-                          (tti.gmx_expanded_ensemble_case_3_dHdl, "repeat", 1),
-                          (tti.gmx_water_particle_with_total_energy_dHdl, "single", 0),
-                          (tti.gmx_water_particle_with_potential_energy_dHdl, "single", 0),
-                          (tti.gmx_water_particle_without_energy_dHdl, "single", 0),
-                          (tti.amber_simplesolvated_charge_dHdl, "single", 0),
-                          (tti.amber_simplesolvated_vdw_dHdl, "single", 0)
+                params = [(tti.gmx_benzene_coul_dHdl, "single"),
+                          (tti.gmx_benzene_vdw_dHdl, "single"),
+                          (tti.gmx_expanded_ensemble_case_1_dHdl, "single"),
+                          (tti.gmx_expanded_ensemble_case_2_dHdl, "repeat"),
+                          (tti.gmx_expanded_ensemble_case_3_dHdl, "repeat"),
+                          (tti.gmx_water_particle_with_total_energy_dHdl, "single"),
+                          (tti.gmx_water_particle_with_potential_energy_dHdl, "single"),
+                          (tti.gmx_water_particle_without_energy_dHdl, "single"),
+                          (tti.amber_simplesolvated_charge_dHdl, "single"),
+                          (tti.amber_simplesolvated_vdw_dHdl, "single")
                 ],
                 ids = ["tti.gmx_benzene_coul_dHdl",
                        "tti.gmx_benzene_vdw_dHdl",
@@ -39,21 +39,21 @@ import alchemtest.gmx
                        "tti.amber_simplesolvated_vdw_dHdl",
                 ])
 def dHdl(request):
-    get_dHdl, nsims, column_index = request.param
-    return get_dHdl(), nsims, column_index
+    get_dHdl, nsims = request.param
+    return get_dHdl(), nsims
 
 
 @pytest.fixture(scope="class",
-                params=[(tfep.gmx_benzene_coul_u_nk, "single", 0),
-                        (tfep.gmx_benzene_vdw_u_nk, "single", 0),
-                        (tfep.gmx_expanded_ensemble_case_1, "single", 0),
-                        (tfep.gmx_expanded_ensemble_case_2, "repeat", 0),
-                        (tfep.gmx_expanded_ensemble_case_3, "repeat", 0),
-                        (tfep.gmx_water_particle_with_total_energy, "single", 0),
-                        (tfep.gmx_water_particle_with_potential_energy, "single", 0),
-                        (tfep.gmx_water_particle_without_energy, "single", -1),
-                        (tfep.amber_bace_example_complex_vdw, "single", -1),
-                        (tfep.gomc_benzene_u_nk, "single", 0),
+                params=[(tfep.gmx_benzene_coul_u_nk, "single"),
+                        (tfep.gmx_benzene_vdw_u_nk, "single"),
+                        (tfep.gmx_expanded_ensemble_case_1, "single"),
+                        (tfep.gmx_expanded_ensemble_case_2, "repeat"),
+                        (tfep.gmx_expanded_ensemble_case_3, "repeat"),
+                        (tfep.gmx_water_particle_with_total_energy, "single"),
+                        (tfep.gmx_water_particle_with_potential_energy, "single"),
+                        (tfep.gmx_water_particle_without_energy, "single"),
+                        (tfep.amber_bace_example_complex_vdw, "single"),
+                        (tfep.gomc_benzene_u_nk, "single"),
                 ],
                 ids = ["tfep.gmx_benzene_coul_u_nk",
                        "tfep.gmx_benzene_vdw_u_nk",
@@ -67,40 +67,64 @@ def dHdl(request):
                        "tfep.gomc_benzene_u_nk",
                 ])
 def u_nk(request):
-    get_unk, nsims, column_index = request.param
-    return get_unk(), nsims, column_index
+    get_unk, nsims = request.param
+    return get_unk(), nsims
 
 
 def gmx_benzene_dHdl():
     dataset = alchemtest.gmx.load_benzene()
-    return gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
+    dHdl = gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
+
+    dHdl.attrs['alchemform'] = 'dHdl'
+
+    return dHdl
 
 
 def gmx_benzene_dHdl_duplicated():
     dataset = alchemtest.gmx.load_benzene()
     df = gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
-    return pd.concat([df, df])
+    dHdl = pd.concat([df, df])
+
+    dHdl.attrs['alchemform'] = 'dHdl'
+
+    return dHdl
 
 
 def gmx_benzene_u_nk():
     dataset = alchemtest.gmx.load_benzene()
-    return gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
+    u_nk = gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
+
+    u_nk.attrs['alchemform'] = 'u_nk'
+
+    return u_nk
 
 
 def gmx_benzene_u_nk_duplicated():
     dataset = alchemtest.gmx.load_benzene()
     df = gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
-    return pd.concat([df, df])
+    u_nk = pd.concat([df, df])
+
+    u_nk.attrs['alchemform'] = 'u_nk'
+
+    return u_nk
 
 
 def gmx_benzene_dHdl_full():
     dataset = alchemtest.gmx.load_benzene()
-    return pd.concat([gmx.extract_dHdl(i, T=300) for i in dataset['data']['Coulomb']])
+    dHdl = pd.concat([gmx.extract_dHdl(i, T=300) for i in dataset['data']['Coulomb']])
+
+    dHdl.attrs['alchemform'] = 'dHdl'
+
+    return dHdl
 
 
 def gmx_benzene_u_nk_full():
     dataset = alchemtest.gmx.load_benzene()
     return pd.concat([gmx.extract_u_nk(i, T=300) for i in dataset['data']['Coulomb']])
+
+    u_nk.attrs['alchemform'] = 'u_nk'
+
+    return u_nk
 
 
 class TestSlicing:
@@ -139,7 +163,7 @@ class TestSlicing:
             self.subsampler(data, lower=200)
 
     def test_slicing_dHdl(self, dHdl):
-        data, nsims, column_index = dHdl
+        data, nsims = dHdl
 
         if nsims == "single":
             dHdl_s = self.subsampler(data)
@@ -148,7 +172,7 @@ class TestSlicing:
                 dHdl_s = self.subsampler(data)
 
     def test_slicing_u_nk(self, u_nk):
-        data, nsims, column_index = u_nk 
+        data, nsims = u_nk 
         
         if nsims == "single":
             u_nk_s = self.subsampler(data)
@@ -165,27 +189,27 @@ class CorrelatedPreprocessors:
         """Basic test for execution; resulting size of dataset sensitive to
         machine and depends on algorithm.
         """
-        assert len(self.subsampler(data, data.columns[0])) <= size
+        assert len(self.subsampler(data)) <= size
 
     def test_subsampling_dHdl(self, dHdl):
-        data, nsims, column_index = dHdl
+        data, nsims = dHdl
 
         if nsims == "single":
-            dHdl_s = self.subsampler(data, data.columns[column_index])
-            assert len(dHdl_s) < data
+            dHdl_s = self.subsampler(data)
+            assert len(dHdl_s) < len(data)
         elif nsims == "repeat":
             with pytest.raises(KeyError):
-                dHdl_s = self.subsampler(data, data.columns[column_index])
+                dHdl_s = self.subsampler(data)
 
     def test_subsampling_u_nk(self, u_nk):
-        data, nsims, column_index = u_nk 
+        data, nsims = u_nk 
 
         if nsims == "single":
-            u_nk_s = self.subsampler(data, data.columns[column_index])
-            assert len(u_nk_s) < data
+            u_nk_s = self.subsampler(data)
+            assert len(u_nk_s) < len(data)
         elif nsims == "repeat":
             with pytest.raises(KeyError):
-                u_nk_s = self.subsampler(data, data.columns[column_index])
+                u_nk_s = self.subsampler(data)
 
 
 class TestStatisticalInefficiency(CorrelatedPreprocessors):
@@ -198,17 +222,18 @@ class TestStatisticalInefficiency(CorrelatedPreprocessors):
                                  (True, gmx_benzene_dHdl(), 2001),  # 0.00:  g = 1.0559445620585415
                                  (True, gmx_benzene_u_nk(), 2001),  # 'fep': g = 1.0560203916559594
                                  (False, gmx_benzene_dHdl(), 3789),
-                                 (False, gmx_benzene_u_nk(), 3571),
+                                 (False, gmx_benzene_u_nk(), 3788),
                              ])
     def test_conservative(self, data, size, conservative):
-        sliced = self.subsampler(data, data.columns[0], conservative=conservative)
+        sliced = self.subsampler(data, conservative=conservative)
         # results can vary slightly with different machines
         # so possibly do
         # delta = 10
         # assert size - delta < len(sliced) < size + delta
         assert len(sliced) == size
 
-class TestEquilibriumDetection(CorrelatedPreprocessors):
+
+class TestEquilibriumDetection():
 
     def subsampler(self, *args, **kwargs):
         return equilibrium_detection(*args, **kwargs)

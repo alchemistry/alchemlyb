@@ -18,6 +18,8 @@ def gmx_benzene_coul_dHdl():
     dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['Coulomb']])
 
+    dHdl.attrs['alchemform'] = 'dHdl'
+
     return dHdl
 
 def gmx_benzene_vdw_dHdl():
@@ -25,6 +27,8 @@ def gmx_benzene_vdw_dHdl():
 
     dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['VDW']])
+
+    dHdl.attrs['alchemform'] = 'dHdl'
 
     return dHdl
 
@@ -34,6 +38,8 @@ def gmx_expanded_ensemble_case_1_dHdl():
     dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
+    dHdl.attrs['alchemform'] = 'dHdl'
+
     return dHdl
 
 def gmx_expanded_ensemble_case_2_dHdl():
@@ -41,6 +47,8 @@ def gmx_expanded_ensemble_case_2_dHdl():
 
     dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
+
+    dHdl.attrs['alchemform'] = 'dHdl'
 
     return dHdl
 
@@ -50,6 +58,8 @@ def gmx_expanded_ensemble_case_3_dHdl():
     dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
+    dHdl.attrs['alchemform'] = 'dHdl'
+
     return dHdl
 
 def gmx_water_particle_with_total_energy_dHdl():
@@ -57,6 +67,8 @@ def gmx_water_particle_with_total_energy_dHdl():
 
     dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
+
+    dHdl.attrs['alchemform'] = 'dHdl'
 
     return dHdl
 
@@ -66,6 +78,8 @@ def gmx_water_particle_with_potential_energy_dHdl():
     dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
+    dHdl.attrs['alchemform'] = 'dHdl'
+
     return dHdl
 
 def gmx_water_particle_without_energy_dHdl():
@@ -73,6 +87,8 @@ def gmx_water_particle_without_energy_dHdl():
 
     dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
+
+    dHdl.attrs['alchemform'] = 'dHdl'
 
     return dHdl
 
@@ -82,6 +98,8 @@ def amber_simplesolvated_charge_dHdl():
     dHdl = pd.concat([amber.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['charge']])
 
+    dHdl.attrs['alchemform'] = 'dHdl'
+
     return dHdl
 
 def amber_simplesolvated_vdw_dHdl():
@@ -90,6 +108,8 @@ def amber_simplesolvated_vdw_dHdl():
     dHdl = pd.concat([amber.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['vdw']])
 
+    dHdl.attrs['alchemform'] = 'dHdl'
+
     return dHdl
 
 def gomc_benzene_dHdl():
@@ -97,6 +117,8 @@ def gomc_benzene_dHdl():
 
     dHdl = pd.concat([gomc.extract_dHdl(filename, T=298)
                       for filename in dataset['data']])
+
+    dHdl.attrs['alchemform'] = 'dHdl'
 
     return dHdl
 
