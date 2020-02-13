@@ -109,7 +109,91 @@ def slicing(data, lower=None, upper=None, step=None, force=False):
     return pd.concat(resdata)
 
 
-def statistical_inefficiency(data, how='auto', column=None, lower=None,
+def _decorrelator(subsample, data, how='auto', column=None, lower=None,
+        upper=None, step=None, conservative=True, return_calculated=False,
+        force=False, random_state=None):
+
+    np.random.seed(random_state)
+
+    # we always start with a full index sort on the whole dataframe
+    # should produce a copy
+    data = data.sort_index()
+
+    index_names = list(data.index.names[1:])
+    resdata = list()
+
+    if return_calculated:
+        calculated = defaultdict(dict)
+
+    if column:
+        if isinstance(column, pd.Series):
+            #TODO: check equality of index between Series, data
+            pass
+
+    # assign specific `how` settings if ``how == 'auto'``
+    if how == 'auto':
+        if data.attrs['alchemform'] == 'u_nk':
+            how = 'right'
+        if data.attrs['alchemform'] == 'dHdl':
+            how = 'sum'
+
+    def random_selection(name, group):
+        tried = set()
+        while True:
+            group_c, selection = _how_random(name, group, tried=tried)
+            try:
+                indices, calculated = subsample(group_c, group)
+            except:
+                tried.add(selection)
+            else:
+                break
+
+        return indices, calculated
+
+    for name, group in data.groupby(level=index_names):
+
+        if not force and _check_multiple_times(group):
+            raise KeyError("Duplicate time values found; decorrelation "
+                           "is only meaningful for a single, contiguous, "
+                           "and sorted timeseries")
+
+        if column:
+            if isinstance(column, pd.Series):
+                group_c = column.groupby(level=index_names).get_group(name)
+                indices, calc = subsample(group_c, group)
+            elif isinstance(column, basestring):
+                group_c = group[column]
+                indices, calc = subsample(group_c, group)
+        else:
+            if (how == 'right') or (how == 'left'):
+                try:
+                    group_c = _how_lr(name, group, how)
+                except KeyError:
+                    indices, calc = random_selection(name, group)
+                else:
+                    indices, calc = subsample(group_c, group)
+            elif how == 'random':
+                indices, calc = random_selection(name, group)
+            elif how == 'sum':
+                group_c = _how_sum(name, group)
+                indices, calc = subsample(group_c, group)
+            else:
+                raise ValueError("`how` cannot be '{}';"
+                " see docstring for available options".format(how))
+
+        group_s = slicing(group, lower=lower, upper=upper, step=step)
+        resdata.append(group_s.iloc[indices])
+
+        if return_calculated:
+            calculated[name] = calc
+    
+    if return_calculated:
+        return pd.concat(resdata), pd.DataFrame(calculated)
+    else:
+        return pd.concat(resdata)
+
+
+def statistical_inefficiency(data, column=None, how='auto', lower=None,
         upper=None, step=None, conservative=True, return_calculated=False,
         force=False, random_state=None):
     """Subsample an alchemlyb DataFrame based on the calculated statistical
@@ -224,29 +308,6 @@ def statistical_inefficiency(data, how='auto', column=None, lower=None,
        one could end up with correlated data.
 
     """
-    np.random.seed(random_state)
-
-    # we always start with a full index sort on the whole dataframe
-    # should produce a copy
-    data = data.sort_index()
-
-    index_names = list(data.index.names[1:])
-    resdata = list()
-
-    if return_calculated:
-        calculated = defaultdict(dict)
-
-    if column:
-        if isinstance(column, pd.Series):
-            #TODO: check equality of index between Series, data
-            pass
-
-    # assign specific `how` settings if ``how == 'auto'``
-    if how == 'auto':
-        if data.attrs['alchemform'] == 'u_nk':
-            how = 'right'
-        if data.attrs['alchemform'] == 'dHdl':
-            how = 'sum'
 
     def subsample(group_c, group):
         group_cs = slicing(group_c, lower=lower, upper=upper, step=step)
@@ -258,66 +319,28 @@ def statistical_inefficiency(data, how='auto', column=None, lower=None,
         indices = timeseries.subsampleCorrelatedData(group_cs, g=statinef,
                                       conservative=conservative)
 
-        return indices
+        calculated = dict()
+        calculated['statinef'] = statinef
 
-    def random_selection(name, group):
-        tried = set()
-        while True:
-            group_c, selection = _how_random(name, group, tried=tried)
-            try:
-                indices = subsample(group_c, group)
-            except:
-                tried.add(selection)
-            else:
-                break
+        return indices, calculated
 
-        return indices
+    return _decorrelator(
+            subsample=subsample,
+            data=data,
+            how=how,
+            column=column,
+            lower=lower,
+            upper=upper,
+            step=step,
+            conservative=conservative,
+            return_calculated=return_calculated,
+            force=force,
+            random_state=random_state)
+                        
 
-    for name, group in data.groupby(level=index_names):
-
-        if not force and _check_multiple_times(group):
-            raise KeyError("Duplicate time values found; statistical inefficiency"
-                           "is only meaningful for a single, contiguous, "
-                           "and sorted timeseries")
-
-        if column:
-            if isinstance(column, pd.Series):
-                group_c = column.groupby(level=index_names).get_group(name)
-                indices = subsample(group_c, group)
-            elif isinstance(column, basestring):
-                group_c = group[column]
-                indices = subsample(group_c, group)
-        else:
-            if (how == 'right') or (how == 'left'):
-                try:
-                    group_c = _how_lr(name, group, how)
-                except KeyError:
-                    indices = random_selection(name, group)
-                else:
-                    indices = subsample(group_c, group)
-            elif how == 'random':
-                indices = random_selection(name, group)
-            elif how == 'sum':
-                group_c = _how_sum(name, group)
-                indices = subsample(group_c, group)
-            else:
-                raise ValueError("`how` cannot be '{}';"
-                " see docstring for available options".format(how))
-
-        group_s = slicing(group, lower=lower, upper=upper, step=step)
-        resdata.append(group_s.iloc[indices])
-
-        if return_calculated:
-            calculated['statinef'][name] = statinef
-    
-    if return_calculated:
-        return pd.concat(resdata), calculated
-    else:
-        return pd.concat(resdata)
-
-
-def equilibrium_detection(data, how='auto', column=None, lower=None, upper=None, step=None,
-                          conservative=True, return_calculated=False, force=False):
+def equilibrium_detection(data, column=None, how='auto', lower=None,
+        upper=None, step=None, conservative=True, return_calculated=False,
+        force=False, random_state=None):
     """Subsample a DataFrame using automated equilibrium detection on one of
     its columns.
 
@@ -419,41 +442,36 @@ def equilibrium_detection(data, how='auto', column=None, lower=None, upper=None,
        end up with correlated data.
 
     """
-    # we always start with a full index sort on the whole dataframe
-    data = data.sort_index()
 
-    index_names = list(data.index.names[1:])
-    resdata = list()
-
-    if return_calculated:
-        calculated = defaultdict(dict)
-
-    for name, group in data.groupby(level=index_names):
-        group_s = slicing(group, lower=lower, upper=upper, step=step)
-
-        if not force and _check_multiple_times(group_s):
-            raise KeyError("Duplicate time values found; equilibrium detection "
-                           "is only meaningful for a single, contiguous, "
-                           "and sorted timeseries")
+    def subsample(group_c, group):
+        group_cs = slicing(group_c, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series, with equilibrium detection
-        t, statinef, Neff_max  = timeseries.detectEquilibration(group_s[column])
+        t, statinef, Neff_max  = timeseries.detectEquilibration(group_cs)
 
         # only keep values past `t`
-        group_s = group_s.iloc[t:]
+        group_cs = group_cs.iloc[t:]
 
         # use the subsampleCorrelatedData function to get the subsample index
-        indices = timeseries.subsampleCorrelatedData(group_s[column], g=statinef,
+        indices = timeseries.subsampleCorrelatedData(group_cs, g=statinef,
                                       conservative=conservative)
 
-        resdata.append(group_s.iloc[indices])
+        calculated = dict()
+        calculated['t'] = t
+        calculated['statinef'] = statinef
+        calculated['Neff_max'] = Neff_max
 
-        if return_calculated:
-            calculated['t'][name] = statinef
-            calculated['statinef'][name] = statinef
-            calculated['Neff_max'][name] = statinef
+        return indices, calculated
 
-    if return_calculated:
-        return pd.concat(resdata), calculated
-    else:
-        return pd.concat(resdata)
+    return _decorrelator(
+            subsample=subsample,
+            data=data,
+            how=how,
+            column=column,
+            lower=lower,
+            upper=upper,
+            step=step,
+            conservative=conservative,
+            return_calculated=return_calculated,
+            force=force,
+            random_state=random_state)

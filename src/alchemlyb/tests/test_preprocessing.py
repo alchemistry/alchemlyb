@@ -233,7 +233,7 @@ class TestStatisticalInefficiency(CorrelatedPreprocessors):
         assert len(sliced) == size
 
 
-class TestEquilibriumDetection():
+class TestEquilibriumDetection(CorrelatedPreprocessors):
 
     def subsampler(self, *args, **kwargs):
         return equilibrium_detection(*args, **kwargs)
