@@ -1,4 +1,4 @@
-.. _reference-doc:
+.. _overview:
 
 Overview of the alchemlyb library
 =================================

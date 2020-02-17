@@ -59,6 +59,7 @@ Contributions are very welcome. If you have bug reports or feature requests or q
 
     install
     tutorials
+    examples
 
 .. toctree::
     :maxdepth: 1
