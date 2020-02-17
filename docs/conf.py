@@ -179,3 +179,5 @@ intersphinx_mapping = {'https://docs.python.org/': None,
 
 # generate stub pages where directed with autosummary
 #autosummary_generate = True
+
+nbsphinx_allow_errors = True

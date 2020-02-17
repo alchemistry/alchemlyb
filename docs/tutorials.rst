@@ -1,8 +1,8 @@
-Getting Started
-===============
+Tutorials
+=========
 
 Welcome to alchemlyb!
-If you are new to the library, this *Getting Started* content is designed to get you up and running with the library as quickly as possible.
+If you are new to the library, this content is designed to get you up and running with the library as quickly as possible.
 
 The tutorials included here are intended to be run through in the order given below.
 They go to great lengths to explain what is being done, but may gloss over some technical details in order to prioritize pedagogical value.

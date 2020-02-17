@@ -55,8 +55,9 @@ Contributions are very welcome. If you have bug reports or feature requests or q
 
 .. toctree::
     :maxdepth: 1
-    :caption: Tutorials
+    :caption: Getting Started
 
+    install
     tutorials
 
 .. toctree::
@@ -64,7 +65,6 @@ Contributions are very welcome. If you have bug reports or feature requests or q
     :caption: Package Documentation
 
     overview
-    install
     parsing
     preprocessing
     estimators
