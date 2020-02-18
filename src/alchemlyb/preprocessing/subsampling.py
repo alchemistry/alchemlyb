@@ -109,7 +109,7 @@ def slicing(data, lower=None, upper=None, step=None, force=False):
     return pd.concat(resdata)
 
 
-def _decorrelator(subsample, data, how='auto', column=None, lower=None,
+def _decorrelator(subsample, data, column=None, how='auto', lower=None,
         upper=None, step=None, conservative=True, return_calculated=False,
         force=False, random_state=None):
 
@@ -125,13 +125,20 @@ def _decorrelator(subsample, data, how='auto', column=None, lower=None,
     if return_calculated:
         calculated = defaultdict(dict)
 
+    # input checks
     if column:
         if isinstance(column, pd.Series):
-            #TODO: check equality of index between Series, data
+            if ~(data.index == column.index).all():
+                raise ValueError("The index of `column` must match the index of `data` exactly"
+                                 " to be used for decorrelation.")
+        elif column in group.columns:
             pass
+        else:
+            raise ValueError("`column` must give either an existing column label in `data`"
+                             " or a Series object with a matching index.")
 
+    elif how == 'auto':
     # assign specific `how` settings if ``how == 'auto'``
-    if how == 'auto':
         if data.attrs['alchemform'] == 'u_nk':
             how = 'right'
         if data.attrs['alchemform'] == 'dHdl':
@@ -161,7 +168,7 @@ def _decorrelator(subsample, data, how='auto', column=None, lower=None,
             if isinstance(column, pd.Series):
                 group_c = column.groupby(level=index_names).get_group(name)
                 indices, calc = subsample(group_c, group)
-            elif isinstance(column, basestring):
+            elif column in group.columns:
                 group_c = group[column]
                 indices, calc = subsample(group_c, group)
         else:
@@ -242,13 +249,13 @@ def statistical_inefficiency(data, column=None, how='auto', lower=None,
     ----------
     data : DataFrame
         DataFrame to subsample according statistical inefficiency of `series`.
-    how : {'auto', 'right', 'left', 'random', 'sum'}
-        The approach used to choose the observable on which correlations are
-        calculated. See explanation above.
     column : label or `pandas.Series`
         Label of column to use for calculating statistical inefficiency.
         Overrides `how`; can also take a `Series` object, but the index of the
         `Series` *must* match that of `data` exactly.
+    how : {'auto', 'right', 'left', 'random', 'sum'}
+        The approach used to choose the observable on which correlations are
+        calculated. See explanation above.
     lower : float
         Lower time to pre-slice data from.
     upper : float
@@ -327,8 +334,8 @@ def statistical_inefficiency(data, column=None, how='auto', lower=None,
     return _decorrelator(
             subsample=subsample,
             data=data,
-            how=how,
             column=column,
+            how=how,
             lower=lower,
             upper=upper,
             step=step,
@@ -385,13 +392,13 @@ def equilibrium_detection(data, column=None, how='auto', lower=None,
     ----------
     data : DataFrame
         DataFrame to subsample according to equilibrium detection on `series`.
-    how : {'auto', 'right', 'left', 'random', 'sum'}
-        The approach used to choose the observable on which correlations are
-        calculated. See explanation above.
     column : label or `pandas.Series`
         Label of column to use for calculating statistical inefficiency.
         Overrides `how`; can also take a `Series` object, but the index of the
         `Series` *must* match that of `data` exactly.
+    how : {'auto', 'right', 'left', 'random', 'sum'}
+        The approach used to choose the observable on which correlations are
+        calculated. See explanation above.
     lower : float
         Lower time to pre-slice data from.
     upper : float
@@ -466,8 +473,8 @@ def equilibrium_detection(data, column=None, how='auto', lower=None,
     return _decorrelator(
             subsample=subsample,
             data=data,
-            how=how,
             column=column,
+            how=how,
             lower=lower,
             upper=upper,
             step=step,
