@@ -186,6 +186,12 @@ class CorrelatedPreprocessors:
     def test_subsampling_column(self, data, size, column):
         assert len(self.subsampler(data, column=data.columns[column])) <= size
 
+    @pytest.mark.parametrize(('data', 'size', 'column'),
+                             [(gmx_benzene_dHdl(), 20005, 0),
+                              (gmx_benzene_u_nk(), 20005, 0)])
+    def test_subsampling_series(self, data, size, column):
+        assert len(self.subsampler(data, column=data[data.columns[column]])) <= size
+
     def test_subsampling_dHdl(self, dHdl):
         data, nsims = dHdl
 
@@ -247,18 +253,27 @@ class TestStatisticalInefficiency(CorrelatedPreprocessors):
         # assert size - delta < len(sliced) < size + delta
         assert len(sliced) == size
 
+    @pytest.mark.parametrize(('data', 'size', 'how'),
+                             [(gmx_benzene_dHdl(), 4001, 'sum',),
+                              (gmx_benzene_u_nk(), 4001, 'right')])
+    def test_subsampling_return_calc(self, data, size, how):
+        data_s, calculated = self.subsampler(data, how=how, return_calculated=True)
+
+        assert all(i in calculated.index for i in ['statinef'])
+        assert len(calculated.columns) == len(data.groupby(level=list(data.index.names[1:])))
+
 
 class TestEquilibriumDetection(CorrelatedPreprocessors):
 
     def subsampler(self, *args, **kwargs):
-        return equilibrium_detection(*args, **kwargs)
+        return equilibrium_detection(*args, nskip=5, **kwargs)
 
     @pytest.mark.parametrize(('conservative', 'data', 'size', 'how'),
                              [
-                                 (True, gmx_benzene_dHdl(), 1979, 'sum'),  # 0.00:  g = 1.0559445620585415
-                                 (True, gmx_benzene_u_nk(), 1979, 'right'),  # 'fep': g = 1.0560203916559594
-                                 (False, gmx_benzene_dHdl(), 2848, 'sum'),
-                                 (False, gmx_benzene_u_nk(), 2849, 'right'),
+                                 (True, gmx_benzene_dHdl(), 2001, 'sum'),  # 0.00:  g = 1.0559445620585415
+                                 (True, gmx_benzene_u_nk(), 2001, 'right'),  # 'fep': g = 1.0560203916559594
+                                 (False, gmx_benzene_dHdl(), 2844, 'sum'),
+                                 (False, gmx_benzene_u_nk(), 2845, 'right'),
                              ])
     def test_conservative(self, data, size, conservative, how):
         sliced = self.subsampler(data, how=how, conservative=conservative)
@@ -267,3 +282,12 @@ class TestEquilibriumDetection(CorrelatedPreprocessors):
         # delta = 10
         # assert size - delta < len(sliced) < size + delta
         assert len(sliced) == size
+
+    @pytest.mark.parametrize(('data', 'size', 'how'),
+                             [(gmx_benzene_dHdl(), 4001, 'sum',),
+                              (gmx_benzene_u_nk(), 4001, 'right')])
+    def test_subsampling_return_calc(self, data, size, how):
+        data_s, calculated = self.subsampler(data, how=how, return_calculated=True)
+
+        assert all(i in calculated.index for i in ['t', 'statinef', 'Neff_max'])
+        assert len(calculated.columns) == len(data.groupby(level=list(data.index.names[1:])))
