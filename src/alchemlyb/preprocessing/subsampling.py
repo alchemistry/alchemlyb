@@ -49,13 +49,13 @@ def _how_lr(name, group, direction):
 
 def _how_random(name, group, tried=None):
 
-    candidates = set(group.columns) - (set(tried) + {name})
+    candidates = set(group.columns) - (set(tried) | {name})
 
     if not candidates:
         raise CorrelationError("No column in the dataset could be used"
                 " successfully for decorrelation")
     else:
-        selection = random.choice(candidates)
+        selection = random.choice(list(candidates))
 
     return group[selection], selection 
 
@@ -109,9 +109,25 @@ def slicing(data, lower=None, upper=None, step=None, force=False):
     return pd.concat(resdata)
 
 
-def _decorrelator(subsample, data, column=None, how='auto', lower=None,
+def _decorrelator(subsample, data, column=None, how=None, lower=None,
         upper=None, step=None, conservative=True, return_calculated=False,
         force=False, random_state=None):
+
+    # input checks
+    if column is not None:
+        if isinstance(column, pd.Series):
+            if not (data.index == column.index).all():
+                raise ValueError("The index of `column` must match the index of `data` exactly"
+                                 " to be used for decorrelation.")
+        elif column in data.columns:
+            pass
+        else:
+            raise ValueError("`column` must give either an existing column label in `data`"
+                             " or a Series object with a matching index.")
+    elif how is not None:
+        pass
+    else:
+        raise ValueError("One of `column` or `how` must be set")
 
     np.random.seed(random_state)
 
@@ -124,25 +140,6 @@ def _decorrelator(subsample, data, column=None, how='auto', lower=None,
 
     if return_calculated:
         calculated = defaultdict(dict)
-
-    # input checks
-    if column:
-        if isinstance(column, pd.Series):
-            if ~(data.index == column.index).all():
-                raise ValueError("The index of `column` must match the index of `data` exactly"
-                                 " to be used for decorrelation.")
-        elif column in group.columns:
-            pass
-        else:
-            raise ValueError("`column` must give either an existing column label in `data`"
-                             " or a Series object with a matching index.")
-
-    elif how == 'auto':
-    # assign specific `how` settings if ``how == 'auto'``
-        if data.attrs['alchemform'] == 'u_nk':
-            how = 'right'
-        if data.attrs['alchemform'] == 'dHdl':
-            how = 'sum'
 
     def random_selection(name, group):
         tried = set()
@@ -164,14 +161,14 @@ def _decorrelator(subsample, data, column=None, how='auto', lower=None,
                            "is only meaningful for a single, contiguous, "
                            "and sorted timeseries")
 
-        if column:
+        if column is not None:
             if isinstance(column, pd.Series):
                 group_c = column.groupby(level=index_names).get_group(name)
                 indices, calc = subsample(group_c, group)
             elif column in group.columns:
                 group_c = group[column]
                 indices, calc = subsample(group_c, group)
-        else:
+        elif how is not None:
             if (how == 'right') or (how == 'left'):
                 try:
                     group_c = _how_lr(name, group, how)
@@ -200,7 +197,7 @@ def _decorrelator(subsample, data, column=None, how='auto', lower=None,
         return pd.concat(resdata)
 
 
-def statistical_inefficiency(data, column=None, how='auto', lower=None,
+def statistical_inefficiency(data, column=None, how=None, lower=None,
         upper=None, step=None, conservative=True, return_calculated=False,
         force=False, random_state=None):
     """Subsample an alchemlyb DataFrame based on the calculated statistical
@@ -214,16 +211,12 @@ def statistical_inefficiency(data, column=None, how='auto', lower=None,
     The `how` parameter determines the observable used for calculating the
     correlations within each group of samples. The options are as follows:
 
-        'auto' 
-            The default; the approach is chosen from the below approaches based
-            on the `alchemform` of the data (either 'dHdl' or 'u_nk'). Use this
-            if in doubt.
         'right'
-            The default for 'u_nk' datasets; the column immediately to the
-            right of the column corresponding to the group's lambda index value
-            is used. If there is no column to the right, then the column to the
-            left is used.  If there is no column corresponding to the group's
-            lambda index value, then 'random' is used (see below).
+            The recommended setting for 'u_nk' datasets; the column immediately
+            to the right of the column corresponding to the group's lambda
+            index value is used. If there is no column to the right, then the
+            column to the left is used.  If there is no column corresponding to
+            the group's lambda index value, then 'random' is used (see below).
         'left'
             The opposite of the 'right' approach; the column immediately to the
             left of the column corresponding to the group's lambda index value
@@ -238,8 +231,8 @@ def statistical_inefficiency(data, column=None, how='auto', lower=None,
             continues until success or until all columns have been attempted
             without success (in which case, ``CorrelationError`` is raised).
         'sum'
-            The default for 'dHdl' datasets; the columns are simply summed, and
-            the resulting `Series` is used.
+            The recommended setting for 'dHdl' datasets; the columns are simply
+            summed, and the resulting `Series` is used.
 
     Specifying the 'column' parameter overrides the behavior of 'how'. This
     allows the user to use a particular column or a specially-crafted `Series`
@@ -253,7 +246,7 @@ def statistical_inefficiency(data, column=None, how='auto', lower=None,
         Label of column to use for calculating statistical inefficiency.
         Overrides `how`; can also take a `Series` object, but the index of the
         `Series` *must* match that of `data` exactly.
-    how : {'auto', 'right', 'left', 'random', 'sum'}
+    how : {'right', 'left', 'random', 'sum'}
         The approach used to choose the observable on which correlations are
         calculated. See explanation above.
     lower : float
@@ -272,7 +265,7 @@ def statistical_inefficiency(data, column=None, how='auto', lower=None,
         for each group.
     force : bool
         Ignore checks that DataFrame is in proper form for expected behavior.
-    random_state : int, optional
+    random_state : int
         Integer between 0 and 2**32 -1 inclusive; fed to `numpy.random.seed`.
         Running this function on the same data with a specific random seed will
         produce the same result each time.
@@ -296,6 +289,12 @@ def statistical_inefficiency(data, column=None, how='auto', lower=None,
     difference. For small numbers of data points, ``conservative=True``
     decreases a false sense of accuracy and is deemed the more careful and
     conservative approach.
+
+    References
+    ----------
+    [1] J. D. Chodera, W. C. Swope, J. W. Pitera, C. Seok, and K. A. Dill. Use of the weighted
+        histogram analysis method for the analysis of simulated and parallel tempering simulations.
+        JCTC 3(1):26-41, 2007.
 
     See Also
     --------
@@ -345,9 +344,9 @@ def statistical_inefficiency(data, column=None, how='auto', lower=None,
             random_state=random_state)
                         
 
-def equilibrium_detection(data, column=None, how='auto', lower=None,
+def equilibrium_detection(data, column=None, how=None, lower=None,
         upper=None, step=None, conservative=True, return_calculated=False,
-        force=False, random_state=None):
+        force=False, random_state=None, nskip=1):
     """Subsample a DataFrame using automated equilibrium detection on one of
     its columns.
 
@@ -359,16 +358,12 @@ def equilibrium_detection(data, column=None, how='auto', lower=None,
     The `how` parameter determines the observable used for calculating the
     correlations within each group of samples. The options are as follows:
 
-        'auto' 
-            The default; the approach is chosen from the below approaches based
-            on the `alchemform` of the data (either 'dHdl' or 'u_nk'). Use this
-            if in doubt.
         'right'
-            The default for 'u_nk' datasets; the column immediately to the
-            right of the column corresponding to the group's lambda index value
-            is used. If there is no column to the right, then the column to the left is used.
-            If there is no column corresponding to the group's lambda index
-            value, then 'random' is used (see below).
+            The recommended setting for 'u_nk' datasets; the column immediately
+            to the right of the column corresponding to the group's lambda
+            index value is used. If there is no column to the right, then the
+            column to the left is used.  If there is no column corresponding to
+            the group's lambda index value, then 'random' is used (see below).
         'left'
             The opposite of the 'right' approach; the column immediately to the
             left of the column corresponding to the group's lambda index value
@@ -381,8 +376,8 @@ def equilibrium_detection(data, column=None, how='auto', lower=None,
             column is tried. This process continues until success or until all
             columns have been attempted without success.
         'sum'
-            The default for 'dHdl' datasets; the columns are simply summed, and
-            the resulting `Series` is used.
+            The recommended setting for 'dHdl' datasets; the columns are simply
+            summed, and the resulting `Series` is used.
 
     Specifying the 'column' parameter overrides the behavior of 'how'. This
     allows the user to use a particular column or a specially-crafted `Series`
@@ -396,7 +391,7 @@ def equilibrium_detection(data, column=None, how='auto', lower=None,
         Label of column to use for calculating statistical inefficiency.
         Overrides `how`; can also take a `Series` object, but the index of the
         `Series` *must* match that of `data` exactly.
-    how : {'auto', 'right', 'left', 'random', 'sum'}
+    how : {'right', 'left', 'random', 'sum'}
         The approach used to choose the observable on which correlations are
         calculated. See explanation above.
     lower : float
@@ -415,6 +410,14 @@ def equilibrium_detection(data, column=None, how='auto', lower=None,
         for each group.
     force : bool
         Ignore checks that DataFrame is in proper form for expected behavior.
+    random_state : int
+        Integer between 0 and 2**32 -1 inclusive; fed to `numpy.random.seed`.
+        Running this function on the same data with a specific random seed will
+        produce the same result each time.
+    nskip : int
+        Number of samples to skip when walking through dataset; for long
+        trajectories, can offer substantial speedups at the cost of possibly
+        discarding slightly more data.
 
     Returns
     -------
@@ -430,6 +433,16 @@ def equilibrium_detection(data, column=None, how='auto', lower=None,
     difference. For small numbers of data points, ``conservative=True``
     decreases a false sense of accuracy and is deemed the more careful and
     conservative approach.
+
+    References
+    ----------
+    [1] J. D. Chodera, W. C. Swope, J. W. Pitera, C. Seok, and K. A. Dill. Use of the weighted
+        histogram analysis method for the analysis of simulated and parallel tempering simulations.
+        JCTC 3(1):26-41, 2007.
+    [2] John D. Chodera. A simple method for automated
+        equilibration detection in molecular simulations.
+        Journal of Chemical Theory and Computation,
+        12:1799, 2016.
 
     See Also
     --------
@@ -454,7 +467,7 @@ def equilibrium_detection(data, column=None, how='auto', lower=None,
         group_cs = slicing(group_c, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series, with equilibrium detection
-        t, statinef, Neff_max  = timeseries.detectEquilibration(group_cs)
+        t, statinef, Neff_max  = timeseries.detectEquilibration(group_cs, nskip=nskip)
 
         # only keep values past `t`
         group_cs = group_cs.iloc[t:]

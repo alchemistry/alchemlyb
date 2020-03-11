@@ -75,8 +75,6 @@ def gmx_benzene_dHdl():
     dataset = alchemtest.gmx.load_benzene()
     dHdl = gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
 
-    dHdl.attrs['alchemform'] = 'dHdl'
-
     return dHdl
 
 
@@ -85,16 +83,12 @@ def gmx_benzene_dHdl_duplicated():
     df = gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
     dHdl = pd.concat([df, df])
 
-    dHdl.attrs['alchemform'] = 'dHdl'
-
     return dHdl
 
 
 def gmx_benzene_u_nk():
     dataset = alchemtest.gmx.load_benzene()
     u_nk = gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
-
-    u_nk.attrs['alchemform'] = 'u_nk'
 
     return u_nk
 
@@ -104,8 +98,6 @@ def gmx_benzene_u_nk_duplicated():
     df = gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
     u_nk = pd.concat([df, df])
 
-    u_nk.attrs['alchemform'] = 'u_nk'
-
     return u_nk
 
 
@@ -113,16 +105,12 @@ def gmx_benzene_dHdl_full():
     dataset = alchemtest.gmx.load_benzene()
     dHdl = pd.concat([gmx.extract_dHdl(i, T=300) for i in dataset['data']['Coulomb']])
 
-    dHdl.attrs['alchemform'] = 'dHdl'
-
     return dHdl
 
 
 def gmx_benzene_u_nk_full():
     dataset = alchemtest.gmx.load_benzene()
-    return pd.concat([gmx.extract_u_nk(i, T=300) for i in dataset['data']['Coulomb']])
-
-    u_nk.attrs['alchemform'] = 'u_nk'
+    u_nk = pd.concat([gmx.extract_u_nk(i, T=300) for i in dataset['data']['Coulomb']])
 
     return u_nk
 
@@ -183,33 +171,60 @@ class TestSlicing:
 
 class CorrelatedPreprocessors:
 
-    @pytest.mark.parametrize(('data', 'size'), [(gmx_benzene_dHdl(), 4001),
-                                                (gmx_benzene_u_nk(), 4001)])
-    def test_subsampling(self, data, size):
+    @pytest.mark.parametrize(('data', 'size', 'how'),
+                             [(gmx_benzene_dHdl(), 4001, 'sum',),
+                              (gmx_benzene_u_nk(), 4001, 'right')])
+    def test_subsampling(self, data, size, how):
         """Basic test for execution; resulting size of dataset sensitive to
         machine and depends on algorithm.
         """
-        assert len(self.subsampler(data)) <= size
+        assert len(self.subsampler(data, how=how)) <= size
+
+    @pytest.mark.parametrize(('data', 'size', 'column'),
+                             [(gmx_benzene_dHdl(), 20005, 0),
+                              (gmx_benzene_u_nk(), 20005, 0)])
+    def test_subsampling_column(self, data, size, column):
+        assert len(self.subsampler(data, column=data.columns[column])) <= size
 
     def test_subsampling_dHdl(self, dHdl):
         data, nsims = dHdl
 
         if nsims == "single":
-            dHdl_s = self.subsampler(data)
+            dHdl_s = self.subsampler(data, how='sum')
             assert len(dHdl_s) < len(data)
         elif nsims == "repeat":
             with pytest.raises(KeyError):
-                dHdl_s = self.subsampler(data)
+                dHdl_s = self.subsampler(data, how='sum')
 
     def test_subsampling_u_nk(self, u_nk):
         data, nsims = u_nk 
 
         if nsims == "single":
-            u_nk_s = self.subsampler(data)
+            u_nk_s = self.subsampler(data, how='right')
             assert len(u_nk_s) < len(data)
         elif nsims == "repeat":
             with pytest.raises(KeyError):
-                u_nk_s = self.subsampler(data)
+                u_nk_s = self.subsampler(data, how='right')
+
+    def test_subsampling_u_nk_left(self, u_nk):
+        data, nsims = u_nk 
+
+        if nsims == "single":
+            u_nk_s = self.subsampler(data, how='left')
+            assert len(u_nk_s) < len(data)
+        elif nsims == "repeat":
+            with pytest.raises(KeyError):
+                u_nk_s = self.subsampler(data, how='left')
+
+    def test_subsampling_u_nk_random(self, u_nk):
+        data, nsims = u_nk 
+
+        if nsims == "single":
+            u_nk_s = self.subsampler(data, how='random', random_state=42)
+            assert len(u_nk_s) < len(data)
+        elif nsims == "repeat":
+            with pytest.raises(KeyError):
+                u_nk_s = self.subsampler(data, how='random', random_state=42)
 
 
 class TestStatisticalInefficiency(CorrelatedPreprocessors):
@@ -217,15 +232,15 @@ class TestStatisticalInefficiency(CorrelatedPreprocessors):
     def subsampler(self, *args, **kwargs):
         return statistical_inefficiency(*args, **kwargs)
 
-    @pytest.mark.parametrize(('conservative', 'data', 'size'),
+    @pytest.mark.parametrize(('conservative', 'data', 'size', 'how'),
                              [
-                                 (True, gmx_benzene_dHdl(), 2001),  # 0.00:  g = 1.0559445620585415
-                                 (True, gmx_benzene_u_nk(), 2001),  # 'fep': g = 1.0560203916559594
-                                 (False, gmx_benzene_dHdl(), 3789),
-                                 (False, gmx_benzene_u_nk(), 3788),
+                                 (True, gmx_benzene_dHdl(), 2001, 'sum'),  # 0.00:  g = 1.0559445620585415
+                                 (True, gmx_benzene_u_nk(), 2001, 'right'),  # 'fep': g = 1.0560203916559594
+                                 (False, gmx_benzene_dHdl(), 3789, 'sum'),
+                                 (False, gmx_benzene_u_nk(), 3788, 'right'),
                              ])
-    def test_conservative(self, data, size, conservative):
-        sliced = self.subsampler(data, conservative=conservative)
+    def test_conservative(self, data, size, conservative, how):
+        sliced = self.subsampler(data, how=how, conservative=conservative)
         # results can vary slightly with different machines
         # so possibly do
         # delta = 10
@@ -237,3 +252,18 @@ class TestEquilibriumDetection(CorrelatedPreprocessors):
 
     def subsampler(self, *args, **kwargs):
         return equilibrium_detection(*args, **kwargs)
+
+    @pytest.mark.parametrize(('conservative', 'data', 'size', 'how'),
+                             [
+                                 (True, gmx_benzene_dHdl(), 1979, 'sum'),  # 0.00:  g = 1.0559445620585415
+                                 (True, gmx_benzene_u_nk(), 1979, 'right'),  # 'fep': g = 1.0560203916559594
+                                 (False, gmx_benzene_dHdl(), 2848, 'sum'),
+                                 (False, gmx_benzene_u_nk(), 2849, 'right'),
+                             ])
+    def test_conservative(self, data, size, conservative, how):
+        sliced = self.subsampler(data, how=how, conservative=conservative)
+        # results can vary slightly with different machines
+        # so possibly do
+        # delta = 10
+        # assert size - delta < len(sliced) < size + delta
+        assert len(sliced) == size

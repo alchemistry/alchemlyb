@@ -19,8 +19,6 @@ def gmx_benzene_coul_u_nk():
     u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['Coulomb']])
 
-    u_nk.attrs['alchemform'] = 'u_nk'
-
     return u_nk
 
 def gmx_benzene_vdw_u_nk():
@@ -28,8 +26,6 @@ def gmx_benzene_vdw_u_nk():
 
     u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['VDW']])
-
-    u_nk.attrs['alchemform'] = 'u_nk'
 
     return u_nk
 
@@ -39,8 +35,6 @@ def gmx_expanded_ensemble_case_1():
     u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
-    u_nk.attrs['alchemform'] = 'u_nk'
-
     return u_nk
 
 def gmx_expanded_ensemble_case_2():
@@ -48,8 +42,6 @@ def gmx_expanded_ensemble_case_2():
 
     u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
-
-    u_nk.attrs['alchemform'] = 'u_nk'
 
     return u_nk
 
@@ -59,8 +51,6 @@ def gmx_expanded_ensemble_case_3():
     u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
-    u_nk.attrs['alchemform'] = 'u_nk'
-
     return u_nk
 
 def gmx_water_particle_with_total_energy():
@@ -68,8 +58,6 @@ def gmx_water_particle_with_total_energy():
 
     u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
-
-    u_nk.attrs['alchemform'] = 'u_nk'
 
     return u_nk
 
@@ -79,8 +67,6 @@ def gmx_water_particle_with_potential_energy():
     u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
-    u_nk.attrs['alchemform'] = 'u_nk'
-
     return u_nk
 
 def gmx_water_particle_without_energy():
@@ -89,8 +75,6 @@ def gmx_water_particle_without_energy():
     u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
-    u_nk.attrs['alchemform'] = 'u_nk'
-
     return u_nk
 
 def amber_bace_example_complex_vdw():
@@ -98,8 +82,6 @@ def amber_bace_example_complex_vdw():
 
     u_nk = pd.concat([amber.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['complex']['vdw']])
-    u_nk.attrs['alchemform'] = 'u_nk'
-
     return u_nk
 
 def gomc_benzene_u_nk():
@@ -107,8 +89,6 @@ def gomc_benzene_u_nk():
 
     u_nk = pd.concat([gomc.extract_u_nk(filename, T=298)
                       for filename in dataset['data']])
-
-    u_nk.attrs['alchemform'] = 'u_nk'
 
     return u_nk
 
@@ -120,8 +100,6 @@ def namd_tyr2ala():
     # combine dataframes of fwd and rev directions
     u_nk1[u_nk1.isna()] = u_nk2
     u_nk = u_nk1.sort_index(level=u_nk1.index.names[1:])
-
-    u_nk.attrs['alchemform'] = 'u_nk'
 
     return u_nk
 
