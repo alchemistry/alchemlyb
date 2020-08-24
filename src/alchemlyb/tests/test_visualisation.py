@@ -15,3 +15,9 @@ def test_plot_mbar_omatrix():
     plot_mbar_omatrix(mbar_coul.overlap_maxtrix)
     plot_mbar_omatrix(mbar_coul.overlap_maxtrix, [1,])
 
+    # Bump up coverage
+    overlap_maxtrix = mbar_coul.overlap_maxtrix
+    overlap_maxtrix[0,0] = 0.0025
+    overlap_maxtrix[-1, -1] = 0.9975
+    plot_mbar_omatrix(overlap_maxtrix)
+
