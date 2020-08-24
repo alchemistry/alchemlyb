@@ -45,6 +45,9 @@ class MBAR(BaseEstimator):
     states_ : list
         Lambda states for which free energy differences were obtained.
 
+    overlap_maxtrix: DataFrame
+        The overlap matrix.
+
     """
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
@@ -85,6 +88,7 @@ class MBAR(BaseEstimator):
                            verbose=self.verbose)
 
         self.states_ = u_nk.columns.values.tolist()
+        self.overlap_maxtrix = self._mbar.computeOverlap()['matrix']
 
         # set attributes
         out = self._mbar.getFreeEnergyDifferences(return_theta=True)
