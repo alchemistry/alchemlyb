@@ -2,6 +2,8 @@
 
 """
 from __future__ import division
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 def plot_mbar_omatrix(matrix, skip_lambda_index=[], ax=None):
