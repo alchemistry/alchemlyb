@@ -11,7 +11,7 @@ The accuracy of the :class:`~alchemlyb.estimators.MBAR` estimator depends on
 the overlap between different lambda states. The overlap matrix from the
 :class:`~alchemlyb.estimators.MBAR` estimator could be plotted to check
 the degree of overlap. It is recommended that there should be at least
-**0.05** overlap between neighboring states. ::
+**0.03** [Klimovich2015]_ overlap between neighboring states. ::
 
     >>> import pandas as pd
     >>> from alchemtest.gmx import load_benzene
@@ -26,3 +26,7 @@ the degree of overlap. It is recommended that there should be at least
     >>> from alchemlyb.visualisation.mbar_martix import plot_mbar_omatrix
     >>> ax = plot_mbar_omatrix(mbar_coul.overlap_maxtrix)
     >>> ax.figure.savefig('O_MBAR.pdf', bbox_inches='tight', pad_inches=0.0)
+
+.. [Klimovich2015] Klimovich, P.V., Shirts, M.R. & Mobley, D.L. Guidelines for
+   the analysis of free energy calculations. J Comput Aided Mol Des 29, 397–411
+   (2015). https://doi.org/10.1007/s10822-015-9840-9
