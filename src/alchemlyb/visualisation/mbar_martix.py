@@ -1,6 +1,7 @@
 """Functions for Plotting the overlay matrix for the Mbar estimator.
 
 """
+from __future__ import division
 import matplotlib.pyplot as plt
 import numpy as np
 def plot_mbar_omatrix(matrix, skip_lambda_index=[], ax=None):
