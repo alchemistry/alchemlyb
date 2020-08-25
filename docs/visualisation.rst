@@ -5,11 +5,13 @@ confidence on the computed free energy. **alchemlyb** provides various
 visualisation tools to help user to judge the estimate.
 
 .. _plot_overlap_matrix:
+
 Overlap Matrix of the MBAR
 --------------------------
 The accuracy of the :class:`~alchemlyb.estimators.MBAR` estimator depends on
 the overlap between different lambda states. The overlap matrix from the
-:class:`~alchemlyb.estimators.MBAR` estimator could be plotted to check
+:class:`~alchemlyb.estimators.MBAR` estimator could be plotted using
+:func:`~alchemlyb.visualisation.plot_mbar_overlap_matrix` to check
 the degree of overlap. It is recommended that there should be at least
 **0.03** [Klimovich2015]_ overlap between neighboring states. ::
 
@@ -23,9 +25,12 @@ the degree of overlap. It is recommended that there should be at least
     >>> mbar_coul = MBAR()
     >>> mbar_coul.fit(u_nk_coul)
 
-    >>> from alchemlyb.visualisation.mbar_martix import plot_mbar_omatrix
-    >>> ax = plot_mbar_omatrix(mbar_coul.overlap_maxtrix)
+    >>> from alchemlyb.visualisation import plot_mbar_overlap_matrix
+    >>> ax = plot_mbar_overlap_matrix(mbar_coul.overlap_matrix)
     >>> ax.figure.savefig('O_MBAR.pdf', bbox_inches='tight', pad_inches=0.0)
+
+
+Will give a plot looks like this .. image:: images/O_MBAR.png
 
 .. [Klimovich2015] Klimovich, P.V., Shirts, M.R. & Mobley, D.L. Guidelines for
    the analysis of free energy calculations. J Comput Aided Mol Des 29, 397–411

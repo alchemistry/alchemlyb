@@ -60,6 +60,7 @@ Contributions are very welcome. If you have bug reports or feature requests or q
     parsing
     preprocessing
     estimators
+    visualisation
 
 .. toctree::
    :maxdepth: 1

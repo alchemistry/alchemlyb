@@ -1,1 +1,1 @@
-from .mbar_martix import plot_mbar_omatrix
+from .mbar_matrix import plot_mbar_overlap_matrix

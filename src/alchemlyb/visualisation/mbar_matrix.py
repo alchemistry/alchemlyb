@@ -2,18 +2,18 @@
 
 """
 from __future__ import division
-import matplotlib
-matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 import numpy as np
-def plot_mbar_omatrix(matrix, skip_lambda_index=[], ax=None):
+
+def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
     '''Plot the MBar overlap matrix.
 
     Parameters
     ----------
     matrix : DataFrame
         DataFrame of the overlap matrix obtained from
-        :attr:`~alchemlyb.estimators.MABR.overlap_maxtrix`
+        :attr:`~alchemlyb.estimators.MBAR.overlap_matrix`
     skip_lambda_index : List
         list of lambda indices to be omitted from plotting process.
         Default: [].
