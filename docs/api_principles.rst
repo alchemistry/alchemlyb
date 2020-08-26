@@ -1,5 +1,5 @@
 API principles
-============
+==============
 
 The following is an overview over the guiding principles and ideas that underpin the API of alchemlyb.
 

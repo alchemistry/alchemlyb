@@ -45,6 +45,9 @@ class MBAR(BaseEstimator):
     states_ : list
         Lambda states for which free energy differences were obtained.
 
+    overlap_matrix: numpy.matrix
+        The overlap matrix.
+
     """
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
@@ -98,3 +101,19 @@ class MBAR(BaseEstimator):
 
     def predict(self, u_ln):
         pass
+
+    @property
+    def overlap_matrix(self):
+        r"""MBAR overlap matrix.
+        
+        The estimated state overlap matrix :math:`O_{ij}` is an estimate of the probability 
+        of observing a sample from state :math:`i` in state :math:`j`.
+        
+        The :attr:`overlap_matrix` is computed on-the-fly. Assign it to a variable if
+        you plan to re-use it.
+        
+        See Also
+        ---------
+        pymbar.mbar.MBAR.computeOverlap
+        """
+        return self._mbar.computeOverlap()['matrix']

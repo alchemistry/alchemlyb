@@ -2,6 +2,10 @@ language: python
 sudo: required
 dist: xenial
 
+env:
+  global:
+    - MPLBACKEND=agg
+
 python:
    - "2.7"
    - "3.5"
