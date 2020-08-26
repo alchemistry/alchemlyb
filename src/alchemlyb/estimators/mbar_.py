@@ -102,8 +102,18 @@ class MBAR(BaseEstimator):
     def predict(self, u_ln):
         pass
 
-    def _get_overlap_matrix(self):
+    @property
+    def overlap_matrix(self):
+        r"""MBAR overlap matrix.
+        
+        The estimated state overlap matrix :math:`O_{ij}` is an estimate of the probability 
+        of observing a sample from state :math:`i` in state :math:`j`.
+        
+        The :attr:`overlap_matrix` is computed on-the-fly. Assign it to a variable if
+        you plan to re-use it.
+        
+        See Also
+        ---------
+        pymbar.mbar.MBAR.computeOverlap
+        """
         return self._mbar.computeOverlap()['matrix']
-
-    overlap_matrix = property(_get_overlap_matrix)
-
