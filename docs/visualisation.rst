@@ -30,7 +30,9 @@ the degree of overlap. It is recommended that there should be at least
     >>> ax.figure.savefig('O_MBAR.pdf', bbox_inches='tight', pad_inches=0.0)
 
 
-Will give a plot looks like this .. image:: images/O_MBAR.png
+Will give a plot looks like this
+
+.. image:: images/O_MBAR.png
 
 .. [Klimovich2015] Klimovich, P.V., Shirts, M.R. & Mobley, D.L. Guidelines for
    the analysis of free energy calculations. J Comput Aided Mol Des 29, 397–411

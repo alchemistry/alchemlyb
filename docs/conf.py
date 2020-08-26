@@ -50,8 +50,10 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'alchemlyb'
-author = u'David Dotson and contributors'
-copyright = u'2017-2019, ' + author
+author = u'''David Dotson, Ian Kenney, Oliver Beckstein, Shuai Liu,
+Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Hyungro Lee,
+Mohammad S. Barhaghi, Zhiyi Wu'''
+copyright = u'2017-2020, ' + author
 
 
 # The version info for the project you're documenting, acts as replacement for
