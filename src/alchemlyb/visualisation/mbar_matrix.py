@@ -19,7 +19,7 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
 
     Parameters
     ----------
-    matrix : DataFrame
+    matrix : numpy.matrix
         DataFrame of the overlap matrix obtained from
         :attr:`~alchemlyb.estimators.MBAR.overlap_matrix`
     skip_lambda_index : List
@@ -38,7 +38,7 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
     -----
     The code is taken and modified from
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
-    
+
     '''
     # Compute the size of the figure, if ax is not given.
     max_prob = matrix.max()

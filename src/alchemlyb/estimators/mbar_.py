@@ -45,7 +45,7 @@ class MBAR(BaseEstimator):
     states_ : list
         Lambda states for which free energy differences were obtained.
 
-    overlap_matrix: DataFrame
+    overlap_matrix: numpy.matrix
         The overlap matrix.
 
     """
