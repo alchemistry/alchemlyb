@@ -20,7 +20,7 @@ The rules for this file:
 * 0.?.?
 
 Enhancements
-  - Allow the overlap matrix of the MBAR estimated to be plotted. (PR #107)
+  - Allow the overlap matrix of the MBAR estimator to be plotted. (PR #107)
 
 Deprecations
 
