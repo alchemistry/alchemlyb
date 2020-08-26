@@ -1,4 +1,12 @@
-"""Functions for Plotting the overlay matrix for the Mbar estimator.
+"""Functions for Plotting the overlay matrix for the MBAR estimator.
+
+To assess the quality of the MBAR estimator, the overlap matrix between
+the lambda states can be computed and the more overlap is observed between
+the states, the more reliable the estimate is. One way of accessing the
+quality of the overlap matrix is by plotting it.
+
+The code for producing the overlap matrix plot is taken from
+: `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
 """
 from __future__ import division
@@ -7,7 +15,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
-    '''Plot the MBar overlap matrix.
+    '''Plot the MBAR overlap matrix.
 
     Parameters
     ----------
@@ -25,6 +33,12 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
     -------
     matplotlib.axes.Axes
         An axes with the overlap matrix drawn.
+
+    Notes
+    -----
+    The code is taken and modified from
+    : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
+    
     '''
     # Compute the size of the figure, if ax is not given.
     max_prob = matrix.max()
