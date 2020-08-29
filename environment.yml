@@ -1,8 +1,9 @@
 name: alchemlyb
 dependencies:
-- python=3.5
+- python=3.7
 - numpy
 - scipy
 - pandas
 - scikit-learn
+- matplotlib
 - sphinx
