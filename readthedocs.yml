@@ -15,5 +15,3 @@ python:
 
 conda:
     environment: environment.yml
-
-
