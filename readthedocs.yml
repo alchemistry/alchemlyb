@@ -1,6 +1,17 @@
 ---
-conda:
-    file: environment.yml
+version: 2
+
+sphinx:
+  configuration: docs/conf.py
+
+formats:
+  - pdf
 
 python:
-    setup_py_install: true
+  version: 3.7
+  install:
+    - method: pip
+      path: .
+
+conda:
+    environment: environment.yml
