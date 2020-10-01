@@ -1,4 +1,5 @@
 import matplotlib
+import matplotlib.pyplot as plt
 import pandas as pd
 
 from alchemtest.gmx import load_benzene
@@ -34,6 +35,9 @@ def test_plot_ti_dhdl():
     ti_coul.fit(dHdl_coul)
     assert isinstance(plot_ti_dhdl(ti_coul),
                matplotlib.axes.Axes)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    assert isinstance(plot_ti_dhdl(ti_coul, ax=ax),
+               matplotlib.axes.Axes)
     assert isinstance(plot_ti_dhdl(ti_coul, labels=['Coul']),
                matplotlib.axes.Axes)
     assert isinstance(plot_ti_dhdl(ti_coul, labels=['Coul'], colors=['r']),
@@ -42,4 +46,9 @@ def test_plot_ti_dhdl():
     ti_vdw = TI().fit(dHdl_vdw)
     assert isinstance(plot_ti_dhdl([ti_coul, ti_vdw]),
                       matplotlib.axes.Axes)
+    dHdl_coul = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb'][:3]])
+    ti_coul = TI()
+    ti_coul.fit(dHdl_coul)
+    assert isinstance(plot_ti_dhdl(ti_coul),
+               matplotlib.axes.Axes)
 
