@@ -89,7 +89,6 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
         max_y = max(y.max(), max_y)
 
         for i in range(len(x) - 1):
-            # pl.plot(x,y)
             if i % 2 == 0:
                 ax.fill_between(x[i:i + 2] + ndx, 0, y[i:i + 2],
                                 color=colors[ndx], alpha=1.0)
@@ -100,14 +99,10 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
         xlegend = [-100 * wnum for wnum in range(len(lv_names2))]
         ax.plot(xlegend, [0 * wnum for wnum in xlegend], ls='-',
                 color=colors[ndx],
-                label=lv_names2[ndx])  ## for the paper
+                label=lv_names2[ndx])
         xs += (x + ndx).tolist()[1:]
         ndx += 1
-    #
-    #
-    # min_dl = dlam[dlam != 0].min()
-    # S = int(0.4 / min_dl)
-    #
+
     # Make sure the tick labels are not overcrowded.
     xs = np.array(xs)
     dl_mat = np.array([xs - i for i in xs])
