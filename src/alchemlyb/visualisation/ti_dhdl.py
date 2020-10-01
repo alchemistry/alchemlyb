@@ -118,7 +118,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
         min_dl = ndx * 0.02 * 2 ** (primo > 10)
         if dl_mat[primo].max() < min_dl:
             return z
-        for i in r:
+        for i in r:  # pragma: no cover
             for j in range(len(xs)):
                 if dl_mat[i, j] > min_dl:
                     z.append(j)
@@ -155,7 +155,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
     if ndx > 1:
         lenticks = len(ax.get_ymajorticklabels()) - 1
         if min_y < 0: lenticks -= 1
-        if lenticks < 5:
+        if lenticks < 5:  # pragma: no cover
             from matplotlib.ticker import AutoMinorLocator as AML
             ax.yaxis.set_minor_locator(AML())
     ax.grid(which='both', color='w', lw=0.25, axis='y', zorder=12)
