@@ -81,10 +81,8 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
     # Get the real data out
     xs, ndx, dx = [0], 0, 0.001
     min_y, max_y = 0, 0
-    K = -1
     for dhdl in dhdl_data:
         x = dhdl.dhdl.index.values
-        K += len(x)
         y = dhdl.dhdl.values.ravel()
 
         min_y = min(y.min(), min_y)
@@ -126,9 +124,14 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
                     z.append(j)
                     return getInd(ri[j:], z)
 
-    xt = [i if (i in getInd()) else '' for i in range(K)]
-    ax.set_xticks(xs[1:],)
-    ax.set_xticklabels(xt[1:], fontsize=10)
+    xt = []
+    for i in range(len(xs)):
+        if i in getInd():
+            xt.append(i)
+        else:
+            xt.append('')
+
+    plt.xticks(xs[1:], xt[1:], fontsize=10)
     ax.yaxis.label.set_size(10)
 
     # Remove the abscissa ticks and set up the axes limits.
