@@ -36,7 +36,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
     Returns
     -------
     matplotlib.axes.Axes
-        An axes with the overlap matrix drawn.
+        An axes with the TI dhdl drawn.
 
     Notes
     -----

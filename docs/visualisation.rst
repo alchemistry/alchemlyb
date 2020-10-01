@@ -49,7 +49,7 @@ dhdl Plot of the TI
 In order for the :class:`~alchemlyb.estimators.TI` estimator to work reliably,
 the change in the dhdl between lambda state 0 and lambda state 1 should be
 adequately sampled. The function :func:`~alchemlyb.visualisation.plot_ti_dhdl`
-can be used to access the change of the dhdl across the lambda states.
+can be used to assess the change of the dhdl across the lambda states.
 
 More than one :class:`~alchemlyb.estimators.TI` estimators can be plotted
 together as well. ::
