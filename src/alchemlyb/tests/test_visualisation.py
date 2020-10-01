@@ -1,6 +1,7 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 from alchemtest.gmx import load_benzene
 from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
@@ -46,9 +47,10 @@ def test_plot_ti_dhdl():
     ti_vdw = TI().fit(dHdl_vdw)
     assert isinstance(plot_ti_dhdl([ti_coul, ti_vdw]),
                       matplotlib.axes.Axes)
-    dHdl_coul = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb'][:3]])
-    ti_coul = TI()
-    ti_coul.fit(dHdl_coul)
+    ti_coul.dhdl = pd.DataFrame.from_dict(
+        {'fep': range(100)},
+        orient='index',
+        columns=np.arange(100)/100).T
     assert isinstance(plot_ti_dhdl(ti_coul),
                matplotlib.axes.Axes)
 
