@@ -69,15 +69,23 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
             # Assume that the dhdl has only one columns
             lv_names2.append(dhdl.dhdl.columns.values[0].capitalize())
     else:
-        assert len(labels) == len(dhdl_data), \
-            'Length of labels ({}) should be the same as the number of data ({})'.format(len(labels), len(dhdl_data))
-        lv_names2 = labels
+        if len(labels) == len(dhdl_data):
+            lv_names2 = labels
+        else: # pragma: no cover
+            raise ValueError(
+                'Length of labels ({}) should be the same as the number of data ({})'.format(
+                    len(labels), len(dhdl_data)))
 
     if colors is None:
         colors = ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
     else:
-        assert len(colors) >= len(dhdl_data), \
-            'Number of colors ({}) should be larger than the number of data ({})'.format(len(labels), len(dhdl_data))
+        if len(colors) >= len(dhdl_data):
+            pass
+        else: # pragma: no cover
+            raise ValueError(
+                'Number of colors ({}) should be larger than the number of data ({})'.format(
+                    len(labels), len(dhdl_data)))
+        
     # Get the real data out
     xs, ndx, dx = [0], 0, 0.001
     min_y, max_y = 0, 0
