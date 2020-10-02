@@ -26,6 +26,9 @@ class TI(BaseEstimator):
     states_ : list
         Lambda states for which free energy differences were obtained.
 
+    dhdl : DataFrame
+        The estimated dhdl of each state.
+
     """
 
     def __init__(self, verbose=False):
@@ -92,6 +95,7 @@ class TI(BaseEstimator):
         self.delta_f_ = pd.DataFrame(adelta - adelta.T,
                                      columns=means.index.values,
                                      index=means.index.values)
+        self.dhdl = means
 
         # yield standard deviation d_delta_f_ between each state
         self.d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),

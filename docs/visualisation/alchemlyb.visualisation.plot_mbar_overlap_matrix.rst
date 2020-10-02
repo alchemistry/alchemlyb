@@ -1,4 +1,4 @@
-.. _plot_overlap:
+.. _visualisation_plot_mbar_overlap_matrix:
 
 Plot Overlap Matrix from MBAR
 =============================

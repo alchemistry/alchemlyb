@@ -21,6 +21,7 @@ The rules for this file:
 
 Enhancements
   - Allow the overlap matrix of the MBAR estimator to be plotted. (PR #107)
+  - Allow the dhdl of the TI estimator to be plotted. (PR #110)
 
 Deprecations
 
