@@ -56,7 +56,7 @@ def test_plot_ti_dhdl():
     assert isinstance(plot_ti_dhdl(ti_coul),
                matplotlib.axes.Axes)
 
-def test_plot_ti_dhdl():
+def test_plot_dF_state():
     '''Just test if the plot runs'''
     bz = load_benzene().data
     u_nk_coul = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
