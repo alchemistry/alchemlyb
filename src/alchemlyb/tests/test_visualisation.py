@@ -2,12 +2,14 @@ import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import pytest
 
 from alchemtest.gmx import load_benzene
 from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
-from alchemlyb.estimators import MBAR, TI
+from alchemlyb.estimators import MBAR, TI, BAR
 from alchemlyb.visualisation.mbar_matrix import plot_mbar_overlap_matrix
 from alchemlyb.visualisation.ti_dhdl import plot_ti_dhdl
+from alchemlyb.visualisation.dF_state import plot_dF_state
 
 def test_plot_mbar_omatrix():
     '''Just test if the plot runs'''
@@ -54,3 +56,39 @@ def test_plot_ti_dhdl():
     assert isinstance(plot_ti_dhdl(ti_coul),
                matplotlib.axes.Axes)
 
+def test_plot_ti_dhdl():
+    '''Just test if the plot runs'''
+    bz = load_benzene().data
+    u_nk_coul = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
+    dHdl_coul = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+    u_nk_vdw = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['VDW']])
+    dHdl_vdw = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
+
+    ti_coul = TI().fit(dHdl_coul)
+    ti_vdw = TI().fit(dHdl_vdw)
+    bar_coul = BAR().fit(u_nk_coul)
+    bar_vdw = BAR().fit(u_nk_vdw)
+    mbar_coul = MBAR().fit(u_nk_coul)
+    mbar_vdw = MBAR().fit(u_nk_vdw)
+
+    dhdl_data = [(ti_coul, ti_vdw),
+                 (bar_coul, bar_vdw),
+                 (mbar_coul, mbar_vdw), ]
+    fig = plot_dF_state(dhdl_data, orientation='portrait')
+    assert isinstance(fig, matplotlib.figure.Figure)
+    fig = plot_dF_state(dhdl_data, orientation='landscape')
+    assert isinstance(fig, matplotlib.figure.Figure)
+    fig = plot_dF_state(dhdl_data, labels=['MBAR', 'TI', 'BAR'])
+    assert isinstance(fig, matplotlib.figure.Figure)
+    with pytest.raises(ValueError):
+        fig = plot_dF_state(dhdl_data, labels=['MBAR', 'TI',])
+    fig = plot_dF_state(dhdl_data, colors=['#C45AEC', '#33CC33', '#F87431'])
+    assert isinstance(fig, matplotlib.figure.Figure)
+    with pytest.raises(ValueError):
+        fig = plot_dF_state(dhdl_data, colors=['#C45AEC', '#33CC33'])
+    fig = plot_dF_state(ti_coul)
+    assert isinstance(fig, matplotlib.figure.Figure)
+    fig = plot_dF_state([ti_coul, bar_coul])
+    assert isinstance(fig, matplotlib.figure.Figure)
+    fig = plot_dF_state([(ti_coul, ti_vdw)])
+    assert isinstance(fig, matplotlib.figure.Figure)
