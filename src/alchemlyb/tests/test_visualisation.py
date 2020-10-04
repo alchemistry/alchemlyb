@@ -86,6 +86,8 @@ def test_plot_ti_dhdl():
     assert isinstance(fig, matplotlib.figure.Figure)
     with pytest.raises(ValueError):
         fig = plot_dF_state(dhdl_data, colors=['#C45AEC', '#33CC33'])
+    with pytest.raises(NameError):
+        fig = plot_dF_state(dhdl_data, orientation='xxx')
     fig = plot_dF_state(ti_coul, orientation='landscape')
     assert isinstance(fig, matplotlib.figure.Figure)
     fig = plot_dF_state([ti_coul, bar_coul])
