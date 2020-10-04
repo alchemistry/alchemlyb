@@ -95,6 +95,8 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
             xs = np.array_split(np.arange(max_length), max_length / nb + 1)
             fig, axs = plt.subplots(nrows=len(xs), figsize=(8, 6))
         mnb = max([len(i) for i in xs])
+    else:
+        raise NameError("Not recognising {}, only supports 'landscape' or 'portrait'.".format(orientation))
 
     # Sort out the colors
     if colors is None:
@@ -111,6 +113,8 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
                 colors.append(colors_dict['BAR'])
             elif isinstance(dhdl, MBAR):
                 colors.append(colors_dict['MBAR'])
+            else:  # pragma: no cover
+                pass
     else:
         if len(colors) >= len(dhdl_data):
             pass
@@ -130,6 +134,8 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
                 labels.append('BAR')
             elif isinstance(dhdl, MBAR):
                 labels.append('MBAR')
+            else:  # pragma: no cover
+                pass
     else:
         if len(labels) == len(dhdl_data):
             pass
@@ -151,6 +157,8 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
                 lw = 0.1 * elw
             elif orientation == 'portrait':
                 lw = 0.05 * elw
+            else:  # pragma: no cover
+                pass
             line = ax.bar(x + len(lines) * width, y, width,
                            color=colors[i], yerr=ye, lw=lw,
                           error_kw=dict(elinewidth=elw, ecolor='black',
@@ -176,6 +184,8 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
                             size=10, textcoords='offset points', va='top',
                             ha='center')
             ax.set_xlim(x[0]-width, x[-1]+len(lines)*width + (mnb - len(x)))
+        else:  # pragma: no cover
+            pass
         ndx += 1
     x = np.arange(max_length)
 
@@ -194,6 +204,8 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
                         prop=FP(size=8),
                         title='$\mathrm{\Delta G\/%s\/}\mathit{vs.}\/\mathrm{lambda\/pair}$' % units,
                         fancybox=True)
+    else:  # pragma: no cover
+        pass
 
     leg.get_frame().set_alpha(0.5)
     return fig
