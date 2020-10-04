@@ -90,6 +90,8 @@ def test_plot_dF_state():
         fig = plot_dF_state(dhdl_data, orientation='xxx')
     fig = plot_dF_state(ti_coul, orientation='landscape')
     assert isinstance(fig, matplotlib.figure.Figure)
+    fig = plot_dF_state(ti_coul, orientation='portrait')
+    assert isinstance(fig, matplotlib.figure.Figure)
     fig = plot_dF_state([ti_coul, bar_coul])
     assert isinstance(fig, matplotlib.figure.Figure)
     fig = plot_dF_state([(ti_coul, ti_vdw)])

@@ -81,7 +81,7 @@ dF States Plots between Different estimators
 --------------------------------------------
 Another way of assessing the quality of free energy estimate would be comparing
 the free energy difference between adjacent lambda states (dF) using different
-estimators. The function :func:`~alchemlyb.visualisation.plot_dF_state` can
+estimators [Klimovich2015]_. The function :func:`~alchemlyb.visualisation.plot_dF_state` can
 be used, for example, to compare the dF of both Coulombic and VDW
 transformations using :class:`~alchemlyb.estimators.TI`,
 :class:`~alchemlyb.estimators.BAR` and :class:`~alchemlyb.estimators.MBAR`
