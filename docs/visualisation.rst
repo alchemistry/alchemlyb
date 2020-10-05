@@ -41,7 +41,12 @@ the degree of overlap. It is recommended that there should be at least
 
 Will give a plot looks like this
 
-.. image:: images/O_MBAR.png
+.. figure:: images/O_MBAR.png
+
+   Overlap between the distributions of potential energy differences is
+   essential for accurate free energy calculations and can be quantified by
+   computing the overlap matrix 𝐎. Its elements 𝑂𝑖𝑗 are the probabilities of
+   observing a sample from state i (𝑖 th row) in state j (𝑗 th column).
 
 .. _plot_TI_dhdl:
 
@@ -73,7 +78,13 @@ together as well. ::
 
 Will give a plot looks like this
 
-.. image:: images/dhdl_TI.png
+.. figure:: images/dhdl_TI.png
+
+   A plot of ⟨∂𝑈/∂𝜆⟩ versus 𝜆 for thermodynamic integration, with filled areas
+   indicating free energy estimates from the trapezoid rule. Different 𝛥𝐺
+   components are shown in distinct colors: in red is the electrostatic 𝛥𝐺
+   component (𝜆 indices 0–4), while in green is the van der Waals 𝛥𝐺 component
+   (𝜆 indices 5–19). Color intensity alternates with increasing 𝜆 index.
 
 .. _plot_dF_states:
 
@@ -117,7 +128,8 @@ Will give a plot looks like this
 
 .. figure:: images/dF_states.png
 
-   Free energy change breakdown (into lambda-pair dFs)
+   A bar plot of the free energy differences evaluated between pairs of adjacent
+   states via several methods, with corresponding error estimates for each method.
 
 
 .. [Klimovich2015] Klimovich, P.V., Shirts, M.R. & Mobley, D.L. Guidelines for
