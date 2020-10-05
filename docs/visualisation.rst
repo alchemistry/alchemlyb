@@ -11,6 +11,7 @@ visualisation tools to help user to judge the estimate.
 
     plot_mbar_overlap_matrix
     plot_ti_dhdl
+    plot_dF_state
 
 .. _plot_overlap_matrix:
 
@@ -40,7 +41,12 @@ the degree of overlap. It is recommended that there should be at least
 
 Will give a plot looks like this
 
-.. image:: images/O_MBAR.png
+.. figure:: images/O_MBAR.png
+
+   Overlap between the distributions of potential energy differences is
+   essential for accurate free energy calculations and can be quantified by
+   computing the overlap matrix 𝐎. Its elements 𝑂𝑖𝑗 are the probabilities of
+   observing a sample from state i (𝑖 th row) in state j (𝑗 th column).
 
 .. _plot_TI_dhdl:
 
@@ -72,7 +78,59 @@ together as well. ::
 
 Will give a plot looks like this
 
-.. image:: images/dhdl_TI.png
+.. figure:: images/dhdl_TI.png
+
+   A plot of ⟨∂𝑈/∂𝜆⟩ versus 𝜆 for thermodynamic integration, with filled areas
+   indicating free energy estimates from the trapezoid rule. Different 𝛥𝐺
+   components are shown in distinct colors: in red is the electrostatic 𝛥𝐺
+   component (𝜆 indices 0–4), while in green is the van der Waals 𝛥𝐺 component
+   (𝜆 indices 5–19). Color intensity alternates with increasing 𝜆 index.
+
+.. _plot_dF_states:
+
+dF States Plots between Different estimators
+--------------------------------------------
+Another way of assessing the quality of free energy estimate would be comparing
+the free energy difference between adjacent lambda states (dF) using different
+estimators [Klimovich2015]_. The function :func:`~alchemlyb.visualisation.plot_dF_state` can
+be used, for example, to compare the dF of both Coulombic and VDW
+transformations using :class:`~alchemlyb.estimators.TI`,
+:class:`~alchemlyb.estimators.BAR` and :class:`~alchemlyb.estimators.MBAR`
+estimators. ::
+
+    >>> from alchemtest.gmx import load_benzene
+    >>> from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
+    >>> from alchemlyb.estimators import MBAR, TI, BAR
+    >>> import matplotlib.pyplot as plt
+    >>> import pandas as pd
+    >>> from alchemlyb.visualisation.dF_state import plot_dF_state
+    >>> bz = load_benzene().data
+    >>> u_nk_coul = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
+    >>> dHdl_coul = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+    >>> u_nk_vdw = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['VDW']])
+    >>> dHdl_vdw = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
+    >>> ti_coul = TI().fit(dHdl_coul)
+    >>> ti_vdw = TI().fit(dHdl_vdw)
+    >>> bar_coul = BAR().fit(u_nk_coul)
+    >>> bar_vdw = BAR().fit(u_nk_vdw)
+    >>> mbar_coul = MBAR().fit(u_nk_coul)
+    >>> mbar_vdw = MBAR().fit(u_nk_vdw)
+
+    >>> estimators = [(ti_coul, ti_vdw),
+                     (bar_coul, bar_vdw),
+                     (mbar_coul, mbar_vdw),]
+
+    >>> fig = plot_dF_state(estimators, orientation='portrait')
+    >>> fig.savefig('dF_state.pdf', bbox_inches='tight')
+
+
+Will give a plot looks like this
+
+.. figure:: images/dF_states.png
+
+   A bar plot of the free energy differences evaluated between pairs of adjacent
+   states via several methods, with corresponding error estimates for each method.
+
 
 .. [Klimovich2015] Klimovich, P.V., Shirts, M.R. & Mobley, D.L. Guidelines for
    the analysis of free energy calculations. J Comput Aided Mol Des 29, 397–411
