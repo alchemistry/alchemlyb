@@ -115,7 +115,10 @@ estimators. ::
 
 Will give a plot looks like this
 
-.. image:: images/dF_states.png
+.. figure:: images/dF_states.png
+
+   Free energy change breakdown (into lambda-pair dFs)
+
 
 .. [Klimovich2015] Klimovich, P.V., Shirts, M.R. & Mobley, D.L. Guidelines for
    the analysis of free energy calculations. J Comput Aided Mol Des 29, 397–411
