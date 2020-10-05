@@ -14,13 +14,13 @@ import numpy as np
 
 from ..estimators import TI, BAR, MBAR
 
-def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
+def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
                   orientation='portrait', nb=10):
     '''Plot the dhdl of TI.
 
     Parameters
     ----------
-    dhdl_data : :class:`~alchemlyb.estimators` or list
+    estimators : :class:`~alchemlyb.estimators` or list
         One or more :class:`~alchemlyb.estimators`, where the
         dhdl value will be taken from. For more than one estimators
         with more than one alchemical transformation, a list of list format
@@ -48,24 +48,24 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
 
     '''
     try:
-        len(dhdl_data)
+        len(estimators)
     except TypeError:
-        dhdl_data = [dhdl_data, ]
+        estimators = [estimators, ]
 
     formatted_data = []
-    for dhdl in dhdl_data:
+    for dhdl in estimators:
         try:
             len(dhdl)
             formatted_data.append(dhdl)
         except TypeError:
             formatted_data.append([dhdl, ])
-    dhdl_data = formatted_data
+    estimators = formatted_data
 
     # Get the dF
     dF_list = []
     error_list = []
     max_length = 0
-    for dhdl_list in dhdl_data:
+    for dhdl_list in estimators:
         len_dF = sum([len(dhdl.delta_f_) - 1 for dhdl in dhdl_list])
         if len_dF > max_length:
             max_length = len_dF
@@ -105,7 +105,7 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
                        'GDEL': '#347235', 'BAR': '#6698FF', 'UBAR': '#817339',
                        'RBAR': '#C11B17', 'MBAR': '#F9B7FF'}
         colors = []
-        for dhdl in dhdl_data:
+        for dhdl in estimators:
             dhdl = dhdl[0]
             if isinstance(dhdl, TI):
                 colors.append(colors_dict['TI'])
@@ -113,20 +113,18 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
                 colors.append(colors_dict['BAR'])
             elif isinstance(dhdl, MBAR):
                 colors.append(colors_dict['MBAR'])
-            else:  # pragma: no cover
-                pass
     else:
-        if len(colors) >= len(dhdl_data):
+        if len(colors) >= len(estimators):
             pass
-        else: # pragma: no cover
+        else:
             raise ValueError(
                 'Number of colors ({}) should be larger than the number of data ({})'.format(
-                    len(colors), len(dhdl_data)))
+                    len(colors), len(estimators)))
 
     # Sort out the labels
     if labels is None:
         labels = []
-        for dhdl in dhdl_data:
+        for dhdl in estimators:
             dhdl = dhdl[0]
             if isinstance(dhdl, TI):
                 labels.append('TI')
@@ -134,18 +132,16 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
                 labels.append('BAR')
             elif isinstance(dhdl, MBAR):
                 labels.append('MBAR')
-            else:  # pragma: no cover
-                pass
     else:
-        if len(labels) == len(dhdl_data):
+        if len(labels) == len(estimators):
             pass
-        else: # pragma: no cover
+        else:
             raise ValueError(
                 'Length of labels ({}) should be the same as the number of data ({})'.format(
-                    len(labels), len(dhdl_data)))
+                    len(labels), len(estimators)))
 
     # Plot the figure
-    width = 1. / (len(dhdl_data) + 1)
+    width = 1. / (len(estimators) + 1)
     elw = 30 * width
     ndx = 1
     for x, ax in zip(xs, axs):
@@ -157,8 +153,6 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
                 lw = 0.1 * elw
             elif orientation == 'portrait':
                 lw = 0.05 * elw
-            else:  # pragma: no cover
-                pass
             line = ax.bar(x + len(lines) * width, y, width,
                            color=colors[i], yerr=ye, lw=lw,
                           error_kw=dict(elinewidth=elw, ecolor='black',
@@ -173,19 +167,17 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
         if orientation == 'landscape':
             plt.yticks(fontsize=8)
             ax.set_xlim(x[0]-width, x[-1] + len(lines) * width)
-            plt.xticks(x + 0.5 * width * len(dhdl_data),
+            plt.xticks(x + 0.5 * width * len(estimators),
                        tuple(['%d--%d' % (i, i + 1) for i in x]), fontsize=8)
         elif orientation == 'portrait':
             plt.yticks(fontsize=10)
             ax.xaxis.set_ticks([])
-            for i in x + 0.5 * width * len(dhdl_data):
+            for i in x + 0.5 * width * len(estimators):
                 ax.annotate('$\mathrm{%d-%d}$' % (i, i + 1), xy=(i, 0),
                             xycoords=('data', 'axes fraction'), xytext=(0, -2),
                             size=10, textcoords='offset points', va='top',
                             ha='center')
             ax.set_xlim(x[0]-width, x[-1]+len(lines)*width + (mnb - len(x)))
-        else:  # pragma: no cover
-            pass
         ndx += 1
     x = np.arange(max_length)
 
@@ -204,8 +196,6 @@ def plot_dF_state(dhdl_data, labels=None, colors=None, units='kcal/mol',
                         prop=FP(size=8),
                         title='$\mathrm{\Delta G\/%s\/}\mathit{vs.}\/\mathrm{lambda\/pair}$' % units,
                         fancybox=True)
-    else:  # pragma: no cover
-        pass
 
     leg.get_frame().set_alpha(0.5)
     return fig

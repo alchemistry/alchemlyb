@@ -105,11 +105,11 @@ estimators. ::
     >>> mbar_coul = MBAR().fit(u_nk_coul)
     >>> mbar_vdw = MBAR().fit(u_nk_vdw)
 
-    >>> dhdl_data = [(ti_coul, ti_vdw),
+    >>> estimators = [(ti_coul, ti_vdw),
                      (bar_coul, bar_vdw),
                      (mbar_coul, mbar_vdw),]
 
-    >>> fig = plot_dF_state(dhdl_data, orientation='portrait')
+    >>> fig = plot_dF_state(estimators, orientation='portrait')
     >>> fig.savefig('dF_state.pdf', bbox_inches='tight')
 
 
