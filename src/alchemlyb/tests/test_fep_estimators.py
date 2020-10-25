@@ -103,6 +103,7 @@ def namd_tyr2ala():
 
     return u_nk
 
+
 class FEPestimatorMixin:
     """Mixin for all FEP Estimator test classes.
 
