@@ -2,14 +2,17 @@
 
 """
 import numpy as np
+import pandas as pd
 from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
 
 
 def _check_multiple_times(df):
-    return df.sort_index(0).reset_index(0).duplicated('time').any()
-
+    if isinstance(df, pd.Series):
+        return df.sort_index(0).reset_index('time', name='').duplicated('time').any()
+    else:
+        return df.sort_index(0).reset_index('time').duplicated('time').any()
 
 def _check_sorted(df):
     return df.reset_index(0)['time'].is_monotonic_increasing

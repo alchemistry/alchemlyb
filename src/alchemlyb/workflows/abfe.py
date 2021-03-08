@@ -9,7 +9,8 @@ from ..estimators import MBAR, BAR, TI
 class ABFE():
     def __init__(self, software='Gromacs', dir='./', prefix='dhdl',
                  suffix='xvg', T=298, skiptime=None, uncorr=None,
-                 threshold=50, estimator=None, out='./', forwrev=0):
+                 threshold=50, estimator=None, out='./', forwrev=0, log='result.log'):
+        logging.basicConfig(filename=log, level=logging.DEBUG)
         self.logger = logging.getLogger('alchemlyb.workflows.ABFE')
         self.logger.info('Initialise Alchemlyb ABFE Workflow')
         self.logger.info('Finding files with prefix: {}, suffix: {} under '
@@ -91,7 +92,8 @@ class ABFE():
 
             self.u_nk_sample_list = []
             for index, u_nk in enumerate(self.u_nk_list):
-                # Get rid of the skiptime
+                # Find the starting frame
+
                 u_nk = u_nk[u_nk.index.get_level_values('time')>skiptime]
                 if uncorr == 'dhdl':
                     # Find the current column index
@@ -100,7 +102,7 @@ class ABFE():
                     col = u_nk[key]
                     subsample = statistical_inefficiency(u_nk, u_nk[key])
                 elif uncorr == 'dhdl_all':
-                    subsample = statistical_inefficiency(u_nk, u_nk.sum())
+                    subsample = statistical_inefficiency(u_nk, u_nk.sum(axis=1))
                 elif uncorr == 'dE':
                     # Using the same logic as alchemical-analysis
                     key = u_nk.index.values[0][1:]
@@ -131,7 +133,7 @@ class ABFE():
             self.dHdl_sample_list = []
             for index, dHdl in enumerate(self.dHdl_list):
                 dHdl = dHdl[dHdl.index.get_level_values('time') > skiptime]
-                subsample = statistical_inefficiency(dHdl, dHdl)
+                subsample = statistical_inefficiency(dHdl, dHdl.sum(axis=1))
                 if len(subsample) < threshold:
                     self.logger.warning('Number of dHdl {} for state {} is '
                                         'less than the threshold {}.'.format(
