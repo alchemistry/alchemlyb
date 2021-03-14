@@ -14,8 +14,8 @@ import numpy as np
 
 from ..estimators import TI, BAR, MBAR
 
-def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
-                  orientation='portrait', nb=10):
+def plot_dF_state(estimators, labels=None, colors=None, units='kBT',
+                  scaling_factor=1, orientation='portrait', nb=10):
     '''Plot the dhdl of TI.
 
     Parameters
@@ -31,6 +31,8 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
         list of colors for plotting different estimators.
     units : str
         The unit of the estimate. Default: 'kcal/mol'
+    scaling_factor : float
+        The scaling factor to change the energy from kBT to the desired unit.
     orientation : string
         The orientation of the figure. Can be `portrait` or `landscape`
     nb : int
@@ -45,6 +47,10 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
     -----
     The code is taken and modified from
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
+
+    The units variable is for labelling only. Changing it doesn't change the
+    unit of the underlying variable, which is in the unit of kBT. The
+    scaling_factor is used to change the number to the desired unit.
 
     '''
     try:

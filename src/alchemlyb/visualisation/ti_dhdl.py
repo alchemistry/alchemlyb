@@ -14,7 +14,8 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
-def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None):
+def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kBT',
+                 scaling_factor=1, ax=None):
     '''Plot the dhdl of TI.
 
     Parameters
@@ -28,7 +29,9 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
         list of colors for plotting all the alchemical transformations.
         Default: ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
     units : str
-        The unit of the estimate. Default: 'kcal/mol'
+        The label for the unit of the estimate. Default: 'kBT'
+    scaling_factor : float
+        The scaling factor to change the energy from kBT to the desired unit.
     ax : matplotlib.axes.Axes
         Matplotlib axes object where the plot will be drawn on. If ax=None,
         a new axes will be generated.
@@ -43,12 +46,21 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
     The code is taken and modified from
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 
+    The units variable is for labelling only. Changing it doesn't change the
+    unit of the underlying variable, which is in the unit of kBT. The
+    scaling_factor is used to change the number to the desired unit.
+
     '''
+    # Fix unit
+
+
     # Make it into a list
-    try:
-        len(dhdl_data)
-    except TypeError:
-        dhdl_data = [dhdl_data, ]
+    if not isinstance(dhdl_data, list):
+        dhdl_list = dhdl_data.separate_dhdl()
+    else:
+        dhdl_list = []
+        for dhdl in dhdl_data:
+            dhdl_list.extend(dhdl.separate_dhdl())
 
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))
@@ -65,33 +77,33 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
     # Make level names
     if labels is None:
         lv_names2 = []
-        for dhdl in dhdl_data:
+        for dhdl in dhdl_list:
             # Assume that the dhdl has only one columns
-            lv_names2.append(dhdl.dhdl.columns.values[0].capitalize())
+            lv_names2.append(dhdl.name.capitalize())
     else:
-        if len(labels) == len(dhdl_data):
+        if len(labels) == len(dhdl_list):
             lv_names2 = labels
         else: # pragma: no cover
             raise ValueError(
                 'Length of labels ({}) should be the same as the number of data ({})'.format(
-                    len(labels), len(dhdl_data)))
+                    len(labels), len(dhdl_list)))
 
     if colors is None:
         colors = ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
     else:
-        if len(colors) >= len(dhdl_data):
+        if len(colors) >= len(dhdl_list):
             pass
         else: # pragma: no cover
             raise ValueError(
                 'Number of colors ({}) should be larger than the number of data ({})'.format(
-                    len(labels), len(dhdl_data)))
+                    len(labels), len(dhdl_list)))
         
     # Get the real data out
     xs, ndx, dx = [0], 0, 0.001
     min_y, max_y = 0, 0
-    for dhdl in dhdl_data:
-        x = dhdl.dhdl.index.values
-        y = dhdl.dhdl.values.ravel()
+    for dhdl in dhdl_list:
+        x = dhdl.index.values
+        y = dhdl.values.ravel() * scaling_factor
 
         min_y = min(y.min(), min_y)
         max_y = max(y.max(), max_y)
@@ -152,8 +164,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
     for i, j in zip(xs[1:], xt[1:]):
         ax.annotate(
             ('%.2f' % (i - 1.0 if i > 1.0 else i) if not j == '' else ''),
-            xy=(i, 0), xytext=(i, 0.01), size=10, rotation=90,
-            textcoords=('data', 'axes fraction'), va='bottom', ha='center',
+            xy=(i, 0), size=10, rotation=90, va='bottom', ha='center',
             color='#151B54')
     if ndx > 1:
         lenticks = len(ax.get_ymajorticklabels()) - 1
