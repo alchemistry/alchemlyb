@@ -14,11 +14,76 @@ from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
 
 
 class ABFE():
+    '''Alchemical Analysis style automatic workflow.
+
+    Parameters
+    ----------
+    units : str
+        The unit used for printing and plotting results. {'kcal/mol', 'kJ/mol',
+        'kBT'}
+    software : str
+        The software used for generating input. {'Gromacs', 'amber', 'namd',
+        'gomc'}
+    dir : str
+        Directory in which data files are stored. Default: './'.
+    prefix : str
+        Prefix for datafile sets. Default: 'dhdl'.
+    suffix : str
+        Suffix for datafile sets. Default: 'xvg'.
+    T : float
+        Temperature in K. Default: 298.
+    skiptime : float
+        Discard data prior to this specified time as 'equilibration' data. Units
+        picoseconds. Default: 0.
+    uncorr : str
+        The observable to be used for the autocorrelation analysis; either
+        'dhdl_all' (obtained as a sum over all energy components) or 'dhdl'
+        (obtained as a sum over those energy components that are changing) or
+        'dE'. In the latter case the energy differences dE_{i,i+1} (dE_{i,i-1}
+        for the last lambda) are used. Default: None (skipping this step).
+    threshold : int
+        Proceed with correlated samples if the number of uncorrelated samples is
+        found to be less than this number. If 0 is given, the time series
+        analysis will not be performed at all. Default: 50.
+    methods : str
+        A list of the methods to esitimate the free energy with. Default: None.
+    out : str
+        Directory in which the output files produced by this script will be
+        stored. Default: './'.
+    resultfilename : str
+        custom defined result filename. Default: None. (not writing the result)
+    overlap : str
+        The filename for the plot of overlap matrix. Default: None. (not
+        plotting).
+    breakdown : bool
+        Plot the free energy differences evaluated for each pair of adjacent
+        states for all methods, including the dH/dlambda curve for TI. Default:
+        None. (not plotting).
+    forwrev : int
+        Plot the free energy change as a function of time in both directions,
+        with the specified number of points in the time plot. The number of time
+        points (an integer) must be provided. Default: None. (not doing
+        convergence analysis).
+    log : str
+        The filename of the log file. Default: 'result.log'
+
+    Attributes
+    ----------
+    logger : Logger
+        The logging object.
+    file_list : list
+        The list of filenames sorted by the lambda state.
+    u_nk_list : list
+        The list of u_nk read from the files.
+    dHdl_list : list
+        The list of dHdl read from the files.
+    '''
     def __init__(self, units='kcal/mol', software='Gromacs', dir='./',
-                 prefix='dhdl', suffix='xvg', T=298, skiptime=None, uncorr=None,
-                 threshold=50, estimator=None, out='./', resultfilename=None,
+                 prefix='dhdl', suffix='xvg', T=298, skiptime=0, uncorr=None,
+                 threshold=50, methods=None, out='./', resultfilename=None,
                  overlap=None, breakdown=None, forwrev=None,
                  log='result.log'):
+
         logging.basicConfig(filename=log, level=logging.INFO)
         self.logger = logging.getLogger('alchemlyb.workflows.ABFE')
         self.logger.info('Initialise Alchemlyb ABFE Workflow')
@@ -27,7 +92,7 @@ class ABFE():
         self.T = T
         self.out = out
 
-        self._update_units(units)
+        self.update_units(units)
 
         self.logger.info('Finding files with prefix: {}, suffix: {} under '
                          'directory {} produced by {}'.format(prefix, suffix,
@@ -103,14 +168,14 @@ class ABFE():
         self.u_nk_list = [u_nk_list[i] for i in index_list]
         self.dHdl_list = [dHdl_list[i] for i in index_list]
 
-        if skiptime is not None and uncorr is not None:
+        if uncorr is not None:
             self.preprocess(skiptime=skiptime, uncorr=uncorr,
                                threshold=threshold)
-        if estimator is not None:
-            self.estimate(estimator)
+        if methods is not None:
+            self.estimate(methods)
 
         if resultfilename is not None:
-            self.write(estimator, resultfilename=resultfilename, units=units)
+            self.write(resultfilename=resultfilename)
 
         if overlap is not None:
             self.plot_overlap_matrix(overlap)
@@ -121,8 +186,28 @@ class ABFE():
             self.plot_dF_state(dF_state='dF_state_long.pdf',
                                orientation='landscape')
 
+        if forwrev is not None:
+            self.check_convergence(forwrev, estimator='mbar', dF_t='dF_t.pdf')
 
-    def _update_units(self, units):
+    def update_units(self, units):
+        '''Update the plot and text output to the selected unit.
+
+        Parameters
+        ----------
+        units : str
+            The unit used for printing and plotting results. {'kcal/mol',
+            'kJ/mol', 'kBT'}
+
+        Attributes
+        ----------
+        scaling_factor : float
+            The scaling factor to change the unit from kBT to the selected unit.
+
+        Note
+        ----
+        The internal representations are all in kBT. This function only changes
+        the unit when outputting text file or plotting the results.
+        '''
         if units is not None:
             self.logger.info('Set unit to {}.'.format(units))
             if units == 'kBT':
@@ -139,6 +224,32 @@ class ABFE():
             self.units = units
 
     def preprocess(self, skiptime=0, uncorr='dhdl', threshold=50):
+        '''Preprocess the data by removing the equilibration time and
+        decorrelate the date.
+
+        Parameters
+        ----------
+        skiptime : float
+            Discard data prior to this specified time as 'equilibration' data.
+            Units picoseconds. Default: 0.
+        uncorr : str
+            The observable to be used for the autocorrelation analysis; either
+            'dhdl_all' (obtained as a sum over all energy components) or 'dhdl'
+            (obtained as a sum over those energy components that are changing)
+            or 'dE'. In the latter case the energy differences dE_{i,i+1}
+            (dE_{i,i-1} for the last lambda) are used. Default: `dhdl`
+        threshold : int
+            Proceed with correlated samples if the number of uncorrelated
+            samples is found to be less than this number. If 0 is given, the
+            time series analysis will not be performed at all. Default: 50.
+
+        Attributes
+        ----------
+        u_nk_sample_list : list
+            The list of u_nk after decorrelation.
+        dHdl_sample_list : list
+            The list of dHdl after decorrelation.
+        '''
         self.logger.info('Start preprocessing with skiptime of {} '
                          'uncorrelation method of {} and '
                          'threshold of {}'.format(skiptime, uncorr, threshold))
@@ -202,13 +313,26 @@ class ABFE():
                                      '{}.'.format(len(subsample), index))
                     self.dHdl_sample_list.append(dHdl)
 
-    def estimate(self, estimators=('mbar', 'bar', 'ti')):
+    def estimate(self, methods=('mbar', 'bar', 'ti')):
+        '''Estimate the free energy using the selected estimator.
+
+        Parameters
+        ----------
+        methods : str
+            A list of the methods to esitimate the free energy with. Default:
+            ['TI', 'BAR', 'MBAR'].
+
+        Attributes
+        ----------
+        estimator : list
+            The list of estimators.
+        '''
         # Make estimators into a tuple
-        if isinstance(estimators, str):
-            estimators = (estimators, )
+        if isinstance(methods, str):
+            methods = (methods, )
 
         self.logger.info(
-            'Start running estimator: {}.'.format(','.join(estimators)))
+            'Start running estimator: {}.'.format(','.join(methods)))
         self.estimator = {}
         # Use unprocessed data if preprocess is not performed.
         try:
@@ -227,7 +351,7 @@ class ABFE():
         self.logger.info(
             'A total {} lines of u_nk is used.'.format(len(u_nk)))
 
-        for estimator in estimators:
+        for estimator in methods:
             if estimator.lower() == 'mbar' and len(u_nk) > 0:
                 self.logger.info('Run MBAR estimator.')
                 self.estimator['mbar'] = MBAR().fit(u_nk)
@@ -243,8 +367,15 @@ class ABFE():
                 self.logger.warning(
                     '{} is not a valid estimator.'.format(estimator))
 
-    def write(self, resultfilename='result.out', units=None):
-        self._update_units(units)
+    def write(self, resultfilename='result.out'):
+        '''Write the result into a text file.
+
+        Parameters
+        ----------
+        resultfilename : str
+            A list of the methods to esitimate the free energy with. Default:
+            ['TI', 'BAR', 'MBAR'].
+        '''
 
         # Write estimate
         self.logger.info('Write the estimate as txt file to {} under {} '
@@ -328,6 +459,22 @@ class ABFE():
             f.write('\n'.join([' '.join(line) for line in result_out]))
 
     def plot_overlap_matrix(self, overlap='O_MBAR.pdf', ax=None):
+        '''Plot the overlap matrix for MBAR estimator using
+        :func:`~alchemlyb.visualisation.plot_mbar_overlap_matrix`.
+
+        Parameters
+        ----------
+        overlap : str
+            The filename for the plot of overlap matrix. Default: 'O_MBAR.pdf'
+        ax : matplotlib.axes.Axes
+            Matplotlib axes object where the plot will be drawn on. If ax=None,
+            a new axes will be generated.
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+            An axes with the overlap matrix drawn.
+        '''
         self.logger.info('Plot overlap matrix.')
         if 'mbar' in self.estimator:
             ax = plot_mbar_overlap_matrix(self.estimator['mbar'].overlap_matrix,
@@ -340,9 +487,29 @@ class ABFE():
             self.logger.warning('MBAR estimator not found. '
                                 'Overlap matrix not plotted.')
 
-    def plot_ti_dhdl(self, dhdl_TI='dhdl_TI.pdf', units=None, labels=None,
-                     colors=None, ax=None):
-        self._update_units(units)
+    def plot_ti_dhdl(self, dhdl_TI='dhdl_TI.pdf', labels=None, colors=None,
+                     ax=None):
+        '''Plot the dHdl for TI estimator using
+        :func:`~alchemlyb.visualisation.plot_ti_dhdl`.
+
+        Parameters
+        ----------
+        dhdl_TI : str
+            The filename for the plot of TI dHdl. Default: 'dhdl_TI.pdf'
+        labels : List
+            list of labels for labelling all the alchemical transformations.
+        colors : List
+            list of colors for plotting all the alchemical transformations.
+            Default: ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
+        ax : matplotlib.axes.Axes
+            Matplotlib axes object where the plot will be drawn on. If ax=None,
+            a new axes will be generated.
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+            An axes with the TI dhdl drawn.
+        '''
         self.logger.info('Plot TI dHdl.')
         if 'ti' in self.estimator:
             ax = plot_ti_dhdl(self.estimator['ti'], units=self.units,
@@ -353,8 +520,28 @@ class ABFE():
                              ''.format(dhdl_TI, self.out))
 
     def plot_dF_state(self, dF_state='dF_state.pdf', labels=None, colors=None,
-                      units=None, orientation='portrait', nb=10):
-        self._update_units(units)
+                      orientation='portrait', nb=10):
+        '''Plot the dF states using
+        :func:`~alchemlyb.visualisation.plot_dF_state`.
+
+        Parameters
+        ----------
+        dF_state : str
+            The filename for the plot of dF states. Default: 'dF_state.pdf'
+        labels : List
+            list of labels for labelling different estimators.
+        colors : List
+            list of colors for plotting different estimators.
+        orientation : string
+            The orientation of the figure. Can be `portrait` or `landscape`
+        nb : int
+            Maximum number of dF states in one row in the `portrait` mode
+
+        Returns
+        -------
+        matplotlib.figure.Figure
+            An Figure with the dF states drawn.
+        '''
         self.logger.info('Plot dF states.')
         fig = plot_dF_state(self.estimator.values(), labels=labels, colors=colors,
                             units=self.units,
@@ -365,8 +552,46 @@ class ABFE():
                          ''.format(dF_state, self.out))
 
     def check_convergence(self, forwrev, estimator='mbar', dF_t='dF_t.pdf',
-                          units=None):
-        self._update_units(units)
+                     ax=None):
+        '''Compute the forward and backward convergence and plotted with
+        :func:`~alchemlyb.visualisation.plot_convergence`.
+
+        Parameters
+        ----------
+        forwrev : int
+            Plot the free energy change as a function of time in both
+            directions, with the specified number of points in the time plot.
+            The number of time points (an integer) must be provided.
+        estimator : str
+            The estimator used for convergence analysis. Default: 'mbar'
+        dF_t : str
+            The filename for the plot of convergence. Default: 'dF_t.pdf'
+        ax : matplotlib.axes.Axes
+            Matplotlib axes object where the plot will be drawn on. If ax=None,
+            a new axes will be generated.
+
+        Attributes
+        ----------
+        convergence : DataFrame
+            The DataFrame with convergence data. ::
+
+                   Forward (kBT)  F. Error (kBT)  Backward (kBT)  B. Error (kBT)
+                0      33.988935        0.334676       35.666128        0.324426
+                1      35.075489        0.232150       35.382850        0.230944
+                2      34.919988        0.190424       35.156028        0.189489
+                3      34.929927        0.165316       35.242255        0.164400
+                4      34.957007        0.147852       35.247704        0.147191
+                5      35.003660        0.134952       35.214658        0.134458
+                6      35.070199        0.124956       35.178422        0.124664
+                7      35.019853        0.116970       35.096870        0.116783
+                8      35.035123        0.110147       35.225907        0.109742
+                9      35.113417        0.104280       35.113417        0.104280
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+            An axes with the convergence drawn.
+        '''
         self.logger.info('Start convergence analysis.')
         self.logger.info('Check data availability.')
 
@@ -469,3 +694,4 @@ class ABFE():
                               np.array(backward_error_list) * self.scaling_factor,
                               units=self.units)
         ax.figure.savefig(join(self.out, dF_t))
+        return ax

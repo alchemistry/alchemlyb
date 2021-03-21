@@ -3,3 +3,5 @@
 *.DS_Store
 build
 .idea
+docs/_build/
+src/alchemlyb.egg-info/

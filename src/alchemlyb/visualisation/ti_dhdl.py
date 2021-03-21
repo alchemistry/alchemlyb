@@ -41,8 +41,8 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kBT',
     matplotlib.axes.Axes
         An axes with the TI dhdl drawn.
 
-    Notes
-    -----
+    Note
+    ----
     The code is taken and modified from
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 

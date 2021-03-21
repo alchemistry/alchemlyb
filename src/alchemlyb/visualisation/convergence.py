@@ -4,8 +4,34 @@ import numpy as np
 
 def plot_convergence(forward, forward_error, backward, backward_error,
                      units='kBT', ax=None):
-    """Plots the free energy change computed using the equilibrated snapshots between the proper target time frames (f_ts and r_ts)
-    in both forward (data points are stored in F_df and F_ddf) and reverse (data points are stored in R_df and R_ddf) directions."""
+    """Plot the forward and backward convergence.
+
+    Parameters
+    ----------
+    forward : List
+        A list of free energy estimate from the first X% of data.
+    forward_error : List
+        A list of error from the first X% of data.
+    backward : List
+        A list of free energy estimate from the last X% of data.
+    backward_error : List
+        A list of error from the last X% of data.
+    units : str
+        The label for the unit of the estimate. Default: 'kBT'
+    ax : matplotlib.axes.Axes
+        Matplotlib axes object where the plot will be drawn on. If ax=None,
+        a new axes will be generated.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        An axes with the forward and backward convergence drawn.
+
+    Note
+    ----
+    The code is taken and modified from
+    : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
+    """
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))
 

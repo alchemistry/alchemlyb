@@ -43,8 +43,8 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kBT',
     matplotlib.figure.Figure
         An Figure with the dF states drawn.
 
-    Notes
-    -----
+    Note
+    ----
     The code is taken and modified from
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 

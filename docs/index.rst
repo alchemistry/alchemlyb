@@ -57,6 +57,7 @@ Contributions are very welcome. If you have bug reports or feature requests or q
     :caption: User Documentation
 
     install
+    workflow
     parsing
     preprocessing
     estimators
