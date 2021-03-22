@@ -48,7 +48,9 @@ class MBAR(BaseEstimator):
     """
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
-                 initial_f_k=None, method='hybr', verbose=False):
+                 initial_f_k=None, method='adaptive', verbose=False):
+        # method='adaptive' is used as it is more stable
+        # https://github.com/choderalab/pymbar/issues/419
 
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
