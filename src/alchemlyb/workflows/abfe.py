@@ -267,8 +267,13 @@ class ABFE():
                     # Find the current column index
                     # Select the first row and remove the first column (Time)
                     key = u_nk.index.values[0][1:]
-                    col = u_nk[key]
-                    subsample = statistical_inefficiency(u_nk, u_nk[key])
+                    if len(key) > 1:
+                        # Multiple keys
+                        col = u_nk[key]
+                    else:
+                        # Single key
+                        col = u_nk[key[0]]
+                    subsample = statistical_inefficiency(u_nk, col)
                 elif uncorr == 'dhdl_all':
                     subsample = statistical_inefficiency(u_nk, u_nk.sum(axis=1))
                 elif uncorr == 'dE':
@@ -335,21 +340,23 @@ class ABFE():
             'Start running estimator: {}.'.format(','.join(methods)))
         self.estimator = {}
         # Use unprocessed data if preprocess is not performed.
-        try:
-            dHdl = pd.concat(self.dHdl_sample_list)
-        except AttributeError:
-            dHdl = pd.concat(self.dHdl_list)
-            self.logger.warning('dHdl has not been preprocessed.')
-        self.logger.info(
-            'A total {} lines of dHdl is used.'.format(len(dHdl)))
+        if 'ti' in methods:
+            try:
+                dHdl = pd.concat(self.dHdl_sample_list)
+            except (AttributeError, ValueError):
+                dHdl = pd.concat(self.dHdl_list)
+                self.logger.warning('dHdl has not been preprocessed.')
+            self.logger.info(
+                'A total {} lines of dHdl is used.'.format(len(dHdl)))
 
-        try:
-            u_nk = pd.concat(self.u_nk_sample_list)
-        except AttributeError:
-            u_nk = pd.concat(self.u_nk_list)
-            self.logger.warning('u_nk has not been preprocessed.')
-        self.logger.info(
-            'A total {} lines of u_nk is used.'.format(len(u_nk)))
+        if 'bar' in methods or 'mbar' in methods:
+            try:
+                u_nk = pd.concat(self.u_nk_sample_list)
+            except (AttributeError, ValueError):
+                u_nk = pd.concat(self.u_nk_list)
+                self.logger.warning('u_nk has not been preprocessed.')
+            self.logger.info(
+                'A total {} lines of u_nk is used.'.format(len(u_nk)))
 
         for estimator in methods:
             if estimator.lower() == 'mbar' and len(u_nk) > 0:
@@ -426,10 +433,25 @@ class ABFE():
             self.logger.info('write the staged result from estimator {}'.format(
                 estimator_name))
             for index, stage in enumerate(stages):
-                start = list(reversed(
-                    [state[index] for state in estimator.states_])).index(0)
-                start = num_states - start - 1
-                end = [state[index] for state in estimator.states_].index(1)
+                if len(stages) == 1:
+                    start = 0
+                    end = len(estimator.states_) - 1
+                else:
+                    # Get the start and the end of the state
+                    lambda_min = min(
+                        [state[index] for state in estimator.states_])
+                    lambda_max = max(
+                        [state[index] for state in estimator.states_])
+                    if lambda_min == lambda_max:
+                        # Deal with the case where a certain lambda is used but
+                        # not perturbed
+                        start = 0
+                        end = 0
+                    else:
+                        states = [state[index] for state in estimator.states_]
+                        start = list(reversed(states)).index(lambda_min)
+                        start = num_states - start - 1
+                        end = states.index(lambda_max)
                 self.logger.info(
                     'Stage {} is from state {} to state {}.'.format(
                         stage, start, end))

@@ -115,14 +115,16 @@ class TI(BaseEstimator):
         Returns
         ----------
         dHdl_list : list
-            A list of DataFrame such that dHdl_list[k][n] is the potential
+            A list of Series such that dHdl_list[k][n] is the potential
             energy gradient with respect to lambda for each configuration n and
             lambda k.
 
         """
         if len(self.dhdl.index.names) == 1:
-            # If only one column is present
-            return [self.dhdl, ]
+            # If only one column is present convert to series
+            assert len(self.dhdl.columns) == 1
+            name = self.dhdl.columns[0]
+            return [self.dhdl[name], ]
         else:
             dhdl_list = []
             # get the lambda names
@@ -135,10 +137,14 @@ class TI(BaseEstimator):
             # Make sure that the start point is set to true as well
             diff[:-1, :] = diff[:-1, :] | diff[1:, :]
             for i in range(len(l_types)):
-                new = self.dhdl.iloc[diff[:,i], i]
-                # drop all other index
-                for l in l_types:
-                    if l != l_types[i]:
-                        new = new.reset_index(l, drop=True)
-                dhdl_list.append(new)
+                if any(diff[:,i]) == False:
+                    # Skip if not pertubed
+                    pass
+                else:
+                    new = self.dhdl.iloc[diff[:,i], i]
+                    # drop all other index
+                    for l in l_types:
+                        if l != l_types[i]:
+                            new = new.reset_index(l, drop=True)
+                    dhdl_list.append(new)
             return dhdl_list

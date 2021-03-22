@@ -2,6 +2,6 @@
 .vscode
 *.DS_Store
 build
-.idea
+.idea/
 docs/_build/
 src/alchemlyb.egg-info/
