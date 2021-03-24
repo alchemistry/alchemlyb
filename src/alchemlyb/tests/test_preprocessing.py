@@ -18,6 +18,12 @@ def gmx_benzene_dHdl():
     return gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
 
 
+@pytest.fixture()
+def gmx_ABFE():
+    dataset = alchemtest.gmx.load_ABFE()
+    return gmx.extract_u_nk(dataset['data']['complex'][0], T=300)
+
+
 def gmx_benzene_u_nk():
     dataset = alchemtest.gmx.load_benzene()
     return gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
@@ -66,6 +72,11 @@ class TestSlicing:
         """
         with pytest.raises(KeyError):
             self.slicer(data.sort_index(0), lower=200)
+
+    def test_multiindex_duplicated(self, gmx_ABFE):
+        subsample = statistical_inefficiency(gmx_ABFE,
+                                             gmx_ABFE.sum(axis=1))
+        assert len(subsample) == 501
 
 
 class CorrelatedPreprocessors:
