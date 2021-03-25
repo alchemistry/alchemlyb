@@ -52,11 +52,20 @@ Contributions are very welcome. If you have bug reports or feature requests or q
 .. _`Issue Tracker`: https://github.com/alchemistry/alchemlyb/issues
 .. _`alchemistry/alchemlyb`: https://github.com/alchemistry/alchemlyb
 
+
 .. toctree::
     :maxdepth: 1
-    :caption: User Documentation
+    :caption: Getting Started
 
     install
+    tutorials
+    examples
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Package Documentation
+
+    overview
     parsing
     preprocessing
     estimators
