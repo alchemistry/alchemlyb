@@ -168,13 +168,6 @@ class Test_automatic_benzene():
         assert all([len(u_nk) == 4001 for u_nk in workflow.u_nk_list])
         assert all([len(dHdl) == 4001 for dHdl in workflow.dHdl_list])
 
-    def test_subsample(self, workflow):
-        '''Test if the data has been shrinked by subsampling.'''
-        assert len(workflow.u_nk_sample_list) == 5
-        assert len(workflow.dHdl_sample_list) == 5
-        assert all([len(u_nk) < 4001 for u_nk in workflow.u_nk_sample_list])
-        assert all([len(dHdl) < 4001 for dHdl in workflow.dHdl_sample_list])
-
     def test_estomator(self, workflow):
         '''Test if all three estimator has been used.'''
         assert len(workflow.estimator) == 3
