@@ -130,16 +130,18 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
                 drop_duplicates_series = df.reset_index('time', name='').\
                     drop_duplicates('time')
                 # Rest the time index
-                lambda_names = drop_duplicates_series.index.names
+                lambda_names = ['time',]
+                lambda_names.extend(drop_duplicates_series.index.names)
                 df = drop_duplicates_series.set_index('time', append=True).\
-                    reorder_levels(['time', *lambda_names])
+                    reorder_levels(lambda_names)
             else:
                 # remove the duplicate based on time
                 drop_duplicates_df = df.reset_index('time').drop_duplicates('time')
                 # Rest the time index
-                lambda_names = drop_duplicates_df.index.names
+                lambda_names = ['time',]
+                lambda_names.extend(drop_duplicates_df.index.names)
                 df = drop_duplicates_df.set_index('time', append=True).\
-                    reorder_levels(['time', *lambda_names])
+                    reorder_levels(lambda_names)
 
             # Do the same withing with the series
             if series is not None:
@@ -147,9 +149,10 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
                 drop_duplicates_series = series.reset_index('time', name='').\
                     drop_duplicates('time')
                 # Rest the time index
-                lambda_names = drop_duplicates_series.index.names
+                lambda_names = ['time',]
+                lambda_names.extend(drop_duplicates_series.index.names)
                 series = drop_duplicates_series.set_index('time', append=True).\
-                    reorder_levels(['time', *lambda_names])
+                    reorder_levels(lambda_names)
 
         else:
             raise KeyError("Duplicate time values found; statistical inefficiency "
