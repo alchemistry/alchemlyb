@@ -1,11 +1,9 @@
-import pandas as pd
 import numpy as np
 import pytest
 import os
 
 from alchemlyb.workflows import ABFE
 from alchemtest.gmx import load_ABFE, load_benzene
-from alchemtest.namd import load_tyr2ala
 
 class Test_automatic_ABFE():
     '''Test the full automatic workflow for load_ABFE from alchemtest.gmx for

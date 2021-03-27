@@ -1,11 +1,10 @@
-import os
 from os.path import join
 from glob import glob
 import pandas as pd
 import numpy as np
 import logging
 
-from ..parsing import gmx, amber, namd, gomc
+from ..parsing import gmx
 from ..preprocessing.subsampling import statistical_inefficiency
 from ..estimators import MBAR, BAR, TI
 from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
