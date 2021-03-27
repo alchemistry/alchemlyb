@@ -55,8 +55,6 @@ def plot_convergence(forward, forward_error, backward, backward_error,
                         lw=3, zorder=3, marker='o',
                         mfc='w', mew=2.5, mec='#C11B17', ms=12, )
 
-    # ax.set_xlim(0,0.5)
-
     plt.xticks(r_ts[::2], fontsize=10)
     plt.yticks(fontsize=10)
 

@@ -120,12 +120,12 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
     """
     if _check_multiple_times(df):
         raise KeyError("Duplicate time values found; statistical inefficiency "
-                        "only works on a single, contiguous, "
-                        "and sorted timeseries.")
+                       "only works on a single, contiguous, "
+                       "and sorted timeseries.")
 
     if not _check_sorted(df):
         raise KeyError("Statistical inefficiency only works as expected if "
-                        "values are sorted by time, increasing.")
+                       "values are sorted by time, increasing.")
 
     if series is not None:
         series = slicing(series, lower=lower, upper=upper, step=step)
