@@ -104,6 +104,12 @@ class TestSlicing:
                                              drop_duplicates=True)
         assert len(subsample) < 1000
 
+        # Test series
+        subsample = statistical_inefficiency(duplicated.sum(axis=1),
+                                             duplicated.sum(axis=1),
+                                             drop_duplicates=True)
+        assert len(subsample) < 1000
+
 class CorrelatedPreprocessors:
 
     @pytest.mark.parametrize(('data', 'size'), [(gmx_benzene_dHdl(), 4001),

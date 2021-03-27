@@ -161,7 +161,7 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
 
     if not _check_sorted(df):
         if sort:
-            df = df.sort_values('time')
+            df = df.sort_index(level='time')
 
             if series is not None:
                 series = series.sort_index(level='time')
