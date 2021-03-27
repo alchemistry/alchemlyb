@@ -3,7 +3,6 @@ from os.path import join
 from glob import glob
 import pandas as pd
 import numpy as np
-import scipy
 import logging
 
 from ..parsing import gmx, amber, namd, gomc
@@ -11,6 +10,7 @@ from ..preprocessing.subsampling import statistical_inefficiency
 from ..estimators import MBAR, BAR, TI
 from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
                              plot_dF_state, plot_convergence)
+from ..constants import k, N_A, kJ2kcal
 
 
 class ABFE():
@@ -213,12 +213,9 @@ class ABFE():
             if units == 'kBT':
                 self.scaling_factor = 1
             elif units == 'kJ/mol':
-                self.scaling_factor = scipy.constants.k * self.T * scipy.constants.N_A / \
-                              1000
+                self.scaling_factor = k * self.T * N_A / 1000
             elif units == 'kcal/mol':
-                kJ2kcal = 0.239006
-                self.scaling_factor = scipy.constants.k * self.T * scipy.constants.N_A / \
-                              1000 * kJ2kcal
+                self.scaling_factor = k * self.T * N_A / 1000 * kJ2kcal
             else:
                 raise NameError('{} is not a valid unit.'.format(units))
             self.units = units

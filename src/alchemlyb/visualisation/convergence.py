@@ -49,10 +49,10 @@ def plot_convergence(forward, forward_error, backward, backward_error,
                             backward[-1] + backward_error[-1], color='#D2B9D3',
                              zorder=1)
     line1 = ax.errorbar(f_ts, forward, yerr=forward_error, color='#736AFF',
-                        lw=3, solid_capstyle='round', zorder=2, marker='o',
+                        lw=3, zorder=2, marker='o',
                         mfc='w', mew=2.5, mec='#736AFF', ms=12,)
     line2 = ax.errorbar(r_ts, backward, yerr=backward_error, color='#C11B17',
-                        lw=3, solid_capstyle='round', zorder=3, marker='o',
+                        lw=3, zorder=3, marker='o',
                         mfc='w', mew=2.5, mec='#C11B17', ms=12, )
 
     # ax.set_xlim(0,0.5)
