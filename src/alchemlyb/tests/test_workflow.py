@@ -308,3 +308,9 @@ class Test_methods():
         workflow.check_convergence(10, estimator='bar')
         assert os.path.isfile('dF_t.pdf')
         os.remove('dF_t.pdf')
+
+    def test_unprocessed_n_uk(self, workflow):
+        workflow.u_nk_sample_list = []
+        workflow.estimate()
+        assert len(workflow.estimator) == 3
+        assert 'mbar' in workflow.estimator

@@ -108,7 +108,7 @@ class ABFE():
                 software))
             extract_u_nk = gmx.extract_u_nk
             extract_dHdl = gmx.extract_dHdl
-        else:
+        else: # pragma: no cover
             raise NameError('{} parser not found.'.format(software))
 
         u_nk_list = []
@@ -256,7 +256,7 @@ class ABFE():
                         # Single key
                         col = u_nk[key[0]]
                     subsample = statistical_inefficiency(u_nk, col)
-                else:
+                else: # pragma: no cover
                     # The dhdl_all and dE will be implemented here when #48 is
                     # merged
                     raise NameError(
@@ -339,9 +339,9 @@ class ABFE():
             elif estimator.lower() == 'ti' and len(dHdl) > 0:
                 self.logger.info('Run TI estimator.')
                 self.estimator['ti'] = TI().fit(dHdl)
-            elif estimator.lower() == 'mbar' or estimator.lower() == 'bar':
+            elif estimator.lower() == 'mbar' or estimator.lower() == 'bar': # pragma: no cover
                 self.logger.warning('MBAR or BAR estimator require u_nk')
-            else:
+            else: # pragma: no cover
                 self.logger.warning(
                     '{} is not a valid estimator.'.format(estimator))
 
