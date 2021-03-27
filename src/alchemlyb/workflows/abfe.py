@@ -108,21 +108,6 @@ class ABFE():
                 software))
             extract_u_nk = gmx.extract_u_nk
             extract_dHdl = gmx.extract_dHdl
-        elif software.lower() == 'amber':
-            self.logger.info('Using {} parser to read the data.'.format(
-                software))
-            extract_u_nk = amber.extract_u_nk
-            extract_dHdl = amber.extract_dHdl
-        elif software.lower() == 'namd':
-            self.logger.info('Using {} parser to read the data.'.format(
-                software))
-            extract_u_nk = namd.extract_u_nk
-            self.logger.warning('No dHdl reader available for NAMD.')
-        elif software.lower() == 'gomc':
-            self.logger.info('Using {} parser to read the data.'.format(
-                software))
-            extract_u_nk = gomc.extract_u_nk
-            extract_dHdl = gomc.extract_dHdl
         else:
             raise NameError('{} parser not found.'.format(software))
 
@@ -134,7 +119,7 @@ class ABFE():
                 self.logger.info(
                     'Reading {} lines of u_nk from {}'.format(len(u_nk), xvg))
                 u_nk_list.append(u_nk)
-            except:
+            except: # pragma: no cover
                 self.logger.warning(
                     'Error reading read u_nk from {}.'.format(xvg))
 
@@ -143,7 +128,7 @@ class ABFE():
                 self.logger.info(
                     'Reading {} lines of dhdl from {}'.format(len(dhdl), xvg))
                 dHdl_list.append(dhdl)
-            except:
+            except: # pragma: no cover
                 self.logger.warning(
                     'Error reading read dhdl from {}.'.format(xvg))
 
@@ -259,7 +244,7 @@ class ABFE():
             for index, u_nk in enumerate(self.u_nk_list):
                 # Find the starting frame
 
-                u_nk = u_nk[u_nk.index.get_level_values('time')>skiptime]
+                u_nk = u_nk[u_nk.index.get_level_values('time') >= skiptime]
                 if uncorr == 'dhdl':
                     # Find the current column index
                     # Select the first row and remove the first column (Time)
@@ -271,21 +256,9 @@ class ABFE():
                         # Single key
                         col = u_nk[key[0]]
                     subsample = statistical_inefficiency(u_nk, col)
-                elif uncorr == 'dhdl_all':
-                    subsample = statistical_inefficiency(u_nk, u_nk.sum(axis=1))
-                elif uncorr == 'dE':
-                    # Using the same logic as alchemical-analysis
-                    key = u_nk.index.values[0][1:]
-                    index = u_nk.columns.values.tolist().index(key)
-                    # for the state that is not the last state, take the state+1
-                    if index + 1 < len(u_nk.columns):
-                        subsample = statistical_inefficiency(
-                            u_nk, u_nk.iloc[:, index + 1])
-                    # for the state that is the last state, take the state-1
-                    else:
-                        subsample = statistical_inefficiency(
-                            u_nk, u_nk.iloc[:, index - 1])
                 else:
+                    # The dhdl_all and dE will be implemented here when #48 is
+                    # merged
                     raise NameError(
                         'Decorrelation method {} not found.'.format(uncorr))
 
@@ -294,26 +267,26 @@ class ABFE():
                                         'less than the threshold {}.'.format(
                         len(subsample), index, threshold))
                     self.logger.info('Take all the u_nk for state {}.'.format(index))
-                    self.u_nk_sample_list.append(subsample)
+                    self.u_nk_sample_list.append(u_nk)
                 else:
                     self.logger.info('Take {} uncorrelated u_nk for state '
                                      '{}.'.format(len(subsample), index))
-                    self.u_nk_sample_list.append(u_nk)
+                    self.u_nk_sample_list.append(subsample)
 
             self.dHdl_sample_list = []
             for index, dHdl in enumerate(self.dHdl_list):
-                dHdl = dHdl[dHdl.index.get_level_values('time') > skiptime]
+                dHdl = dHdl[dHdl.index.get_level_values('time') >= skiptime]
                 subsample = statistical_inefficiency(dHdl, dHdl.sum(axis=1))
                 if len(subsample) < threshold:
                     self.logger.warning('Number of dHdl {} for state {} is '
                                         'less than the threshold {}.'.format(
                         len(subsample), index, threshold))
                     self.logger.info('Take all the dHdl for state {}.'.format(index))
-                    self.dHdl_sample_list.append(subsample)
+                    self.dHdl_sample_list.append(dHdl)
                 else:
                     self.logger.info('Take {} uncorrelated dHdl for state '
                                      '{}.'.format(len(subsample), index))
-                    self.dHdl_sample_list.append(dHdl)
+                    self.dHdl_sample_list.append(subsample)
 
     def estimate(self, methods=('mbar', 'bar', 'ti')):
         '''Estimate the free energy using the selected estimator.
@@ -405,7 +378,7 @@ class ABFE():
                 dHdl = self.dHdl_list[0]
                 stages = dHdl.reset_index('time').index.names
                 self.logger.info('use the stage name from dHdl')
-            except:
+            except: # pragma: no cover
                 stages = []
                 self.logger.warning('No stage name found in dHdl or u_nk')
         for stage in stages:
@@ -503,7 +476,7 @@ class ABFE():
             self.logger.info('Plot overlap matrix to {} under {}.'
                              ''.format(self.out, overlap))
             return ax
-        else:
+        else: # pragma: no cover
             self.logger.warning('MBAR estimator not found. '
                                 'Overlap matrix not plotted.')
 
@@ -623,7 +596,7 @@ class ABFE():
                 dHdl_list = self.dHdl_list
                 self.logger.info('Subsampled dHdl not available, '
                                  'use original data instead.')
-            except AttributeError:
+            except AttributeError: # pragma: no cover
                 self.logger.warning('dHdl is not available.')
 
         try:
@@ -634,7 +607,7 @@ class ABFE():
                 u_nk_list = self.u_nk_list
                 self.logger.info('Subsampled u_nk not available, '
                                  'use original data instead.')
-            except AttributeError:
+            except AttributeError: # pragma: no cover
                 self.logger.warning('u_nk is not available.')
 
         if estimator.lower() == 'mbar':
@@ -646,7 +619,7 @@ class ABFE():
         elif estimator.lower() == 'ti':
             self.logger.info('Use TI estimator for convergence analysis.')
             estimator_fit = TI().fit
-        else:
+        else: # pragma: no cover
             self.logger.warning(
                 '{} is not a valid estimator.'.format(estimator))
 

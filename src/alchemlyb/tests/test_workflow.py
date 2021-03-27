@@ -5,6 +5,7 @@ import os
 
 from alchemlyb.workflows import ABFE
 from alchemtest.gmx import load_ABFE, load_benzene
+from alchemtest.namd import load_tyr2ala
 
 class Test_automatic_ABFE():
     '''Test the full automatic workflow for load_ABFE from alchemtest.gmx for
@@ -271,4 +272,46 @@ Where only fep-lambda changes but the bonded-lambda is always 0.
         os.remove('dF_t.pdf')
         assert len(workflow.convergence) == 10
 
+class Test_methods():
+    '''Test various methods.'''
 
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def workflow():
+        dir = os.path.dirname(os.path.dirname(
+            load_benzene()['data']['Coulomb'][0]))
+        dir = os.path.join(dir, '*')
+        workflow = ABFE(software='Gromacs', dir=dir, prefix='dhdl',
+                        suffix='bz2', T=310)
+        return workflow
+
+    def test_change_unit(self, workflow):
+        workflow.update_units('kBT')
+        assert workflow.scaling_factor == 1
+        workflow.update_units('kcal/mol')
+        assert np.isclose(workflow.scaling_factor, 0.6, atol=0.1)
+        workflow.update_units('kJ/mol')
+        assert np.isclose(workflow.scaling_factor, 2.6, atol=0.1)
+        with pytest.raises(NameError):
+            workflow.update_units('aaa')
+
+    def test_uncorr_threshold(self, workflow):
+        original_u_nk = workflow.u_nk_list
+        original_dHdl = workflow.dHdl_list
+        workflow.u_nk_list = [u_nk[:40] for u_nk in original_u_nk]
+        workflow.dHdl_list = [dHdl[:40] for dHdl in original_dHdl]
+        workflow.preprocess(threshold=50)
+        assert all([len(u_nk) == 40 for u_nk in workflow.u_nk_sample_list])
+        assert all([len(dHdl) == 40 for dHdl in workflow.dHdl_sample_list])
+        workflow.u_nk_list = original_u_nk
+        workflow.dHdl_list = original_dHdl
+
+    def test_single_estimator(self, workflow):
+        workflow.estimate(methods='mbar')
+        assert len(workflow.estimator) == 1
+        assert 'mbar' in workflow.estimator
+
+    def test_bar_convergence(self, workflow):
+        workflow.check_convergence(10, estimator='bar')
+        assert os.path.isfile('dF_t.pdf')
+        os.remove('dF_t.pdf')

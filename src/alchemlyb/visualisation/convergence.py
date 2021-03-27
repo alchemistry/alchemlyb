@@ -32,7 +32,7 @@ def plot_convergence(forward, forward_error, backward, backward_error,
     The code is taken and modified from
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
     """
-    if ax is None:
+    if ax is None: # pragma: no cover
         fig, ax = plt.subplots(figsize=(8, 6))
 
     plt.setp(ax.spines['bottom'], color='#D2B9D3', lw=3, zorder=-2)
