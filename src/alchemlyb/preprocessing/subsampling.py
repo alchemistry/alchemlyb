@@ -58,7 +58,7 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
 
 
 def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
-                             conservative=True):
+                             conservative=True, drop_duplicates=True, sort=True):
     """Subsample a DataFrame based on the calculated statistical inefficiency
     of a timeseries.
 
@@ -83,6 +83,10 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
         intervals (the default). ``False`` will sample at non-uniform intervals to
         closely match the (fractional) statistical_inefficieny, as implemented
         in :func:`pymbar.timeseries.subsampleCorrelatedData`.
+    drop_duplicates : bool
+        Drop the duplicated lines based on time.
+    sort : bool
+        Sort the Dataframe based on the time column.
 
     Returns
     -------
@@ -120,13 +124,47 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
 
     """
     if _check_multiple_times(df):
-        raise KeyError("Duplicate time values found; statistical inefficiency "
-                       "only works on a single, contiguous, "
-                       "and sorted timeseries.")
+        if drop_duplicates:
+            if isinstance(df, pd.Series):
+                # remove the duplicate based on time
+                drop_duplicates_series = df.reset_index('time', name='').\
+                    drop_duplicates('time')
+                # Rest the time index
+                lambda_names = drop_duplicates_series.index.names
+                df = drop_duplicates_series.set_index('time', append=True).\
+                    reorder_levels(['time', *lambda_names])
+            else:
+                # remove the duplicate based on time
+                drop_duplicates_df = df.reset_index('time').drop_duplicates('time')
+                # Rest the time index
+                lambda_names = drop_duplicates_df.index.names
+                df = drop_duplicates_df.set_index('time', append=True).\
+                    reorder_levels(['time', *lambda_names])
+
+            # Do the same withing with the series
+            if series is not None:
+                # remove the duplicate based on time
+                drop_duplicates_series = series.reset_index('time', name='').\
+                    drop_duplicates('time')
+                # Rest the time index
+                lambda_names = drop_duplicates_series.index.names
+                series = drop_duplicates_series.set_index('time', append=True).\
+                    reorder_levels(['time', *lambda_names])
+
+        else:
+            raise KeyError("Duplicate time values found; statistical inefficiency "
+                           "only works on a single, contiguous, "
+                           "and sorted timeseries.")
 
     if not _check_sorted(df):
-        raise KeyError("Statistical inefficiency only works as expected if "
-                       "values are sorted by time, increasing.")
+        if sort:
+            df = df.sort_values('time')
+
+            if series is not None:
+                series = series.sort_index(level='time')
+        else:
+            raise KeyError("Statistical inefficiency only works as expected if "
+                           "values are sorted by time, increasing.")
 
     if series is not None:
         series = slicing(series, lower=lower, upper=upper, step=step)

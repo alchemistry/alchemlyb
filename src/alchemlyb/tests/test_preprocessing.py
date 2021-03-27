@@ -78,6 +78,31 @@ class TestSlicing:
                                              gmx_ABFE.sum(axis=1))
         assert len(subsample) == 501
 
+    def test_sort(self, gmx_ABFE):
+        unsorted = pd.concat([gmx_ABFE[-500:], gmx_ABFE[:500]])
+        # No sort
+        with pytest.raises(KeyError):
+            statistical_inefficiency(unsorted,
+                                     unsorted.sum(axis=1),
+                                     sort=False)
+        # sort
+        subsample = statistical_inefficiency(unsorted,
+                                             unsorted.sum(axis=1),
+                                             sort=True)
+        assert subsample.reset_index(0)['time'].is_monotonic_increasing
+
+    def test_duplication(self, gmx_ABFE):
+        duplicated = pd.concat([gmx_ABFE, gmx_ABFE])
+        # No sort
+        with pytest.raises(KeyError):
+            statistical_inefficiency(duplicated,
+                                     duplicated.sum(axis=1),
+                                     drop_duplicates=False)
+        # sort
+        subsample = statistical_inefficiency(duplicated,
+                                             duplicated.sum(axis=1),
+                                             drop_duplicates=True)
+        assert len(subsample) < 1000
 
 class CorrelatedPreprocessors:
 
@@ -135,3 +160,4 @@ class TestEquilibriumDetection(TestSlicing, CorrelatedPreprocessors):
 
     def slicer(self, *args, **kwargs):
         return equilibrium_detection(*args, **kwargs)
+
