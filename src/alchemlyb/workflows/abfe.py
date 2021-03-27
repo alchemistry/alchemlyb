@@ -329,8 +329,9 @@ class ABFE():
 
         Attributes
         ----------
-        estimator : list
-            The list of estimators.
+        estimator : dict
+            The dictionary of estimators. The key for MBAR is 'mbar', for BAR is
+            'bar' and for TI is 'ti'.
         '''
         # Make estimators into a tuple
         if isinstance(methods, str):
@@ -714,6 +715,6 @@ class ABFE():
                               np.array(forward_error_list) * self.scaling_factor,
                               np.array(backward_list) * self.scaling_factor,
                               np.array(backward_error_list) * self.scaling_factor,
-                              units=self.units)
+                              units=self.units, ax=ax)
         ax.figure.savefig(join(self.out, dF_t))
         return ax

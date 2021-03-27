@@ -104,7 +104,6 @@ def extract_u_nk(xvg, T):
     u_k = u_k.reset_index().set_index(newind)
 
     u_k.name = 'u_nk'
-    u_k.attrs['state'] = state
 
     return u_k
 
@@ -182,7 +181,6 @@ def extract_dHdl(xvg, T):
     dHdl= dHdl.reset_index().set_index(newind)
 
     dHdl.name='dH/dl'
-    dHdl.attrs['state'] = state
 
     return dHdl
 
