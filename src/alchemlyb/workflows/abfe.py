@@ -84,26 +84,26 @@ class ABFE():
                  log='result.log'):
 
         logging.basicConfig(filename=log, level=logging.INFO)
-        logger = logging.getLogger('alchemlyb.workflows.ABFE')
-        logger.info('Initialise Alchemlyb ABFE Workflow')
+        self.logger = logging.getLogger('alchemlyb.workflows.ABFE')
+        self.logger.info('Initialise Alchemlyb ABFE Workflow')
 
-        logger.info('Set temperature to {} K.'.format(T))
+        self.logger.info('Set temperature to {} K.'.format(T))
         self.T = T
         self.out = out
 
         self.update_units(units)
 
-        logger.info('Finding files with prefix: {}, suffix: {} under '
+        self.logger.info('Finding files with prefix: {}, suffix: {} under '
                          'directory {} produced by {}'.format(prefix, suffix,
                                                               dir, software))
         file_list = glob(join(dir, prefix + '*' + suffix))
 
-        logger.info('Found {} xvg files.'.format(len(file_list)))
-        logger.info('Unsorted file list: \n{}'.format('\n'.join(
+        self.logger.info('Found {} xvg files.'.format(len(file_list)))
+        self.logger.info('Unsorted file list: \n{}'.format('\n'.join(
             file_list)))
 
         if software.lower() == 'gromacs':
-            logger.info('Using {} parser to read the data.'.format(
+            self.logger.info('Using {} parser to read the data.'.format(
                 software))
             extract_u_nk = gmx.extract_u_nk
             extract_dHdl = gmx.extract_dHdl
@@ -115,31 +115,31 @@ class ABFE():
         for xvg in file_list:
             try:
                 u_nk = extract_u_nk(xvg, T=T)
-                logger.info(
+                self.logger.info(
                     'Reading {} lines of u_nk from {}'.format(len(u_nk), xvg))
                 u_nk_list.append(u_nk)
             except: # pragma: no cover
-                logger.warning(
+                self.logger.warning(
                     'Error reading read u_nk from {}.'.format(xvg))
 
             try:
                 dhdl = extract_dHdl(xvg, T=T)
-                logger.info(
+                self.logger.info(
                     'Reading {} lines of dhdl from {}'.format(len(dhdl), xvg))
                 dHdl_list.append(dhdl)
             except: # pragma: no cover
-                logger.warning(
+                self.logger.warning(
                     'Error reading read dhdl from {}.'.format(xvg))
 
         # # Sort the files according to the state
         if len(u_nk_list) > 0:
-            logger.info('Sort files according to the u_nk.')
+            self.logger.info('Sort files according to the u_nk.')
             column_names = u_nk_list[0].columns.values.tolist()
             index_list = sorted(range(len(file_list)),
                 key=lambda x:column_names.index(
                     u_nk_list[x].reset_index('time').index.values[0]))
         else:
-            logger.info('Sort files according to the dHdl.')
+            self.logger.info('Sort files according to the dHdl.')
             column_names = sorted([dHdl.reset_index('time').index.values[0]
                                    for dHdl in dHdl_list])
             index_list = sorted(range(len(file_list)),
@@ -147,7 +147,7 @@ class ABFE():
                     dHdl_list[x].reset_index('time').index.values[0]))
 
         self.file_list = [file_list[i] for i in index_list]
-        logger.info('Sorted file list: \n{}'.format('\n'.join(
+        self.logger.info('Sorted file list: \n{}'.format('\n'.join(
             self.file_list)))
         self.u_nk_list = [u_nk_list[i] for i in index_list]
         self.dHdl_list = [dHdl_list[i] for i in index_list]
@@ -193,7 +193,7 @@ class ABFE():
         the unit when outputting text file or plotting the results.
         '''
         if units is not None:
-            logger.info('Set unit to {}.'.format(units))
+            self.logger.info('Set unit to {}.'.format(units))
             if units == 'kBT':
                 self.scaling_factor = 1
             elif units == 'kJ/mol':
@@ -231,11 +231,11 @@ class ABFE():
         dHdl_sample_list : list
             The list of dHdl after decorrelation.
         '''
-        logger.info('Start preprocessing with skiptime of {} '
+        self.logger.info('Start preprocessing with skiptime of {} '
                          'uncorrelation method of {} and '
                          'threshold of {}'.format(skiptime, uncorr, threshold))
         if len(self.u_nk_list) > 0:
-            logger.info(
+            self.logger.info(
                 'Processing the u_nk data set with skiptime of {}.'.format(
                     skiptime))
 
@@ -262,13 +262,13 @@ class ABFE():
                         'Decorrelation method {} not found.'.format(uncorr))
 
                 if len(subsample) < threshold:
-                    logger.warning('Number of u_nk {} for state {} is '
+                    self.logger.warning('Number of u_nk {} for state {} is '
                                         'less than the threshold {}.'.format(
                         len(subsample), index, threshold))
-                    logger.info('Take all the u_nk for state {}.'.format(index))
+                    self.logger.info('Take all the u_nk for state {}.'.format(index))
                     self.u_nk_sample_list.append(u_nk)
                 else:
-                    logger.info('Take {} uncorrelated u_nk for state '
+                    self.logger.info('Take {} uncorrelated u_nk for state '
                                      '{}.'.format(len(subsample), index))
                     self.u_nk_sample_list.append(subsample)
 
@@ -277,13 +277,13 @@ class ABFE():
                 dHdl = dHdl[dHdl.index.get_level_values('time') >= skiptime]
                 subsample = statistical_inefficiency(dHdl, dHdl.sum(axis=1))
                 if len(subsample) < threshold:
-                    logger.warning('Number of dHdl {} for state {} is '
+                    self.logger.warning('Number of dHdl {} for state {} is '
                                         'less than the threshold {}.'.format(
                         len(subsample), index, threshold))
-                    logger.info('Take all the dHdl for state {}.'.format(index))
+                    self.logger.info('Take all the dHdl for state {}.'.format(index))
                     self.dHdl_sample_list.append(dHdl)
                 else:
-                    logger.info('Take {} uncorrelated dHdl for state '
+                    self.logger.info('Take {} uncorrelated dHdl for state '
                                      '{}.'.format(len(subsample), index))
                     self.dHdl_sample_list.append(subsample)
 
@@ -306,7 +306,7 @@ class ABFE():
         if isinstance(methods, str):
             methods = (methods, )
 
-        logger.info(
+        self.logger.info(
             'Start running estimator: {}.'.format(','.join(methods)))
         self.estimator = {}
         # Use unprocessed data if preprocess is not performed.
@@ -315,8 +315,8 @@ class ABFE():
                 dHdl = pd.concat(self.dHdl_sample_list)
             except (AttributeError, ValueError):
                 dHdl = pd.concat(self.dHdl_list)
-                logger.warning('dHdl has not been preprocessed.')
-            logger.info(
+                self.logger.warning('dHdl has not been preprocessed.')
+            self.logger.info(
                 'A total {} lines of dHdl is used.'.format(len(dHdl)))
 
         if 'bar' in methods or 'mbar' in methods:
@@ -324,24 +324,24 @@ class ABFE():
                 u_nk = pd.concat(self.u_nk_sample_list)
             except (AttributeError, ValueError):
                 u_nk = pd.concat(self.u_nk_list)
-                logger.warning('u_nk has not been preprocessed.')
-            logger.info(
+                self.logger.warning('u_nk has not been preprocessed.')
+            self.logger.info(
                 'A total {} lines of u_nk is used.'.format(len(u_nk)))
 
         for estimator in methods:
             if estimator.lower() == 'mbar' and len(u_nk) > 0:
-                logger.info('Run MBAR estimator.')
+                self.logger.info('Run MBAR estimator.')
                 self.estimator['mbar'] = MBAR().fit(u_nk)
             elif estimator.lower() == 'bar' and len(u_nk) > 0:
-                logger.info('Run BAR estimator.')
+                self.logger.info('Run BAR estimator.')
                 self.estimator['bar'] = BAR().fit(u_nk)
             elif estimator.lower() == 'ti' and len(dHdl) > 0:
-                logger.info('Run TI estimator.')
+                self.logger.info('Run TI estimator.')
                 self.estimator['ti'] = TI().fit(dHdl)
             elif estimator.lower() == 'mbar' or estimator.lower() == 'bar': # pragma: no cover
-                logger.warning('MBAR or BAR estimator require u_nk')
+                self.logger.warning('MBAR or BAR estimator require u_nk')
             else: # pragma: no cover
-                logger.warning(
+                self.logger.warning(
                     '{} is not a valid estimator.'.format(estimator))
 
     def write(self, resultfilename='result.out'):
@@ -355,11 +355,11 @@ class ABFE():
         '''
 
         # Write estimate
-        logger.info('Write the estimate as txt file to {} under {} '
+        self.logger.info('Write the estimate as txt file to {} under {} '
                          'with unit {}.'.format(
             resultfilename, self.out, self.units))
         # Make the header name
-        logger.info('Write the header names.')
+        self.logger.info('Write the header names.')
         result_out = [['------------', ],
                       ['   States   ', ],
                       ['------------', ],]
@@ -371,21 +371,21 @@ class ABFE():
         try:
             u_nk = self.u_nk_list[0]
             stages = u_nk.reset_index('time').index.names
-            logger.info('use the stage name from u_nk')
+            self.logger.info('use the stage name from u_nk')
         except:
             try:
                 dHdl = self.dHdl_list[0]
                 stages = dHdl.reset_index('time').index.names
-                logger.info('use the stage name from dHdl')
+                self.logger.info('use the stage name from dHdl')
             except: # pragma: no cover
                 stages = []
-                logger.warning('No stage name found in dHdl or u_nk')
+                self.logger.warning('No stage name found in dHdl or u_nk')
         for stage in stages:
             result_out.append([stage.split('-')[0][:9].rjust(9)+':  ', ])
         result_out.append(['TOTAL'.rjust(9) + ':  ', ])
 
         for estimator_name, estimator in self.estimator.items():
-            logger.info('write the result from estimator {}'.format(
+            self.logger.info('write the result from estimator {}'.format(
                 estimator_name))
             # Write the estimator header
             result_out[0].append('---------------------')
@@ -400,7 +400,7 @@ class ABFE():
 
             result_out[2+num_states].append('---------------------')
 
-            logger.info('write the staged result from estimator {}'.format(
+            self.logger.info('write the staged result from estimator {}'.format(
                 estimator_name))
             for index, stage in enumerate(stages):
                 if len(stages) == 1:
@@ -422,7 +422,7 @@ class ABFE():
                         start = list(reversed(states)).index(lambda_min)
                         start = num_states - start - 1
                         end = states.index(lambda_max)
-                logger.info(
+                self.logger.info(
                     'Stage {} is from state {} to state {}.'.format(
                         stage, start, end))
                 result = estimator.delta_f_.iloc[start, end]*self.scaling_factor
@@ -445,7 +445,7 @@ class ABFE():
                      for i in range(num_states - 1)])) * self.scaling_factor
             result_out[3 + num_states + len(stages)].append(
                 '{:.3f}  +-  {:.3f}'.format(result, error, ).rjust(21))
-        logger.info('Write results:\n'+
+        self.logger.info('Write results:\n'+
                          '\n'.join([' '.join(line) for line in result_out]))
         with open(join(self.out, resultfilename), 'w') as f:
             f.write('\n'.join([' '.join(line) for line in result_out]))
@@ -467,16 +467,16 @@ class ABFE():
         matplotlib.axes.Axes
             An axes with the overlap matrix drawn.
         '''
-        logger.info('Plot overlap matrix.')
+        self.logger.info('Plot overlap matrix.')
         if 'mbar' in self.estimator:
             ax = plot_mbar_overlap_matrix(self.estimator['mbar'].overlap_matrix,
                                           ax=ax)
             ax.figure.savefig(join(self.out, overlap))
-            logger.info('Plot overlap matrix to {} under {}.'
+            self.logger.info('Plot overlap matrix to {} under {}.'
                              ''.format(self.out, overlap))
             return ax
         else: # pragma: no cover
-            logger.warning('MBAR estimator not found. '
+            self.logger.warning('MBAR estimator not found. '
                                 'Overlap matrix not plotted.')
 
     def plot_ti_dhdl(self, dhdl_TI='dhdl_TI.pdf', labels=None, colors=None,
@@ -502,13 +502,13 @@ class ABFE():
         matplotlib.axes.Axes
             An axes with the TI dhdl drawn.
         '''
-        logger.info('Plot TI dHdl.')
+        self.logger.info('Plot TI dHdl.')
         if 'ti' in self.estimator:
             ax = plot_ti_dhdl(self.estimator['ti'], units=self.units,
                               labels=labels, colors=colors, ax=ax,
                               scaling_factor=self.scaling_factor)
             ax.figure.savefig(join(self.out, dhdl_TI))
-            logger.info('Plot TI dHdl to {} under {}.'
+            self.logger.info('Plot TI dHdl to {} under {}.'
                              ''.format(dhdl_TI, self.out))
 
     def plot_dF_state(self, dF_state='dF_state.pdf', labels=None, colors=None,
@@ -534,13 +534,13 @@ class ABFE():
         matplotlib.figure.Figure
             An Figure with the dF states drawn.
         '''
-        logger.info('Plot dF states.')
+        self.logger.info('Plot dF states.')
         fig = plot_dF_state(self.estimator.values(), labels=labels, colors=colors,
                             units=self.units,
                             scaling_factor=self.scaling_factor,
                             orientation=orientation, nb=nb)
         fig.savefig(join(self.out, dF_state))
-        logger.info('Plot dF state to {} under {}.'
+        self.logger.info('Plot dF state to {} under {}.'
                          ''.format(dF_state, self.out))
 
     def check_convergence(self, forwrev, estimator='mbar', dF_t='dF_t.pdf',
@@ -584,49 +584,49 @@ class ABFE():
         matplotlib.axes.Axes
             An axes with the convergence drawn.
         '''
-        logger.info('Start convergence analysis.')
-        logger.info('Check data availability.')
+        self.logger.info('Start convergence analysis.')
+        self.logger.info('Check data availability.')
 
         try:
             dHdl_list = self.dHdl_sample_list
-            logger.info('Subsampled dHdl is available.')
+            self.logger.info('Subsampled dHdl is available.')
         except AttributeError:
             try:
                 dHdl_list = self.dHdl_list
-                logger.info('Subsampled dHdl not available, '
+                self.logger.info('Subsampled dHdl not available, '
                                  'use original data instead.')
             except AttributeError: # pragma: no cover
-                logger.warning('dHdl is not available.')
+                self.logger.warning('dHdl is not available.')
 
         try:
             u_nk_list = self.u_nk_sample_list
-            logger.info('Subsampled u_nk is available.')
+            self.logger.info('Subsampled u_nk is available.')
         except AttributeError:
             try:
                 u_nk_list = self.u_nk_list
-                logger.info('Subsampled u_nk not available, '
+                self.logger.info('Subsampled u_nk not available, '
                                  'use original data instead.')
             except AttributeError: # pragma: no cover
-                logger.warning('u_nk is not available.')
+                self.logger.warning('u_nk is not available.')
 
         if estimator.lower() == 'mbar':
-            logger.info('Use MBAR estimator for convergence analysis.')
+            self.logger.info('Use MBAR estimator for convergence analysis.')
             estimator_fit = MBAR().fit
         elif estimator.lower() == 'bar':
-            logger.info('Use BAR estimator for convergence analysis.')
+            self.logger.info('Use BAR estimator for convergence analysis.')
             estimator_fit = BAR().fit
         elif estimator.lower() == 'ti':
-            logger.info('Use TI estimator for convergence analysis.')
+            self.logger.info('Use TI estimator for convergence analysis.')
             estimator_fit = TI().fit
         else: # pragma: no cover
-            logger.warning(
+            self.logger.warning(
                 '{} is not a valid estimator.'.format(estimator))
 
-        logger.info('Begin forward analysis')
+        self.logger.info('Begin forward analysis')
         forward_list = []
         forward_error_list = []
         for i in range(1, forwrev + 1):
-            logger.info('Forward analysis: {:.2f}%'.format(i / forwrev))
+            self.logger.info('Forward analysis: {:.2f}%'.format(i / forwrev))
             sample = []
             if estimator.lower() in ['mbar', 'bar']:
                 for data in u_nk_list:
@@ -644,14 +644,14 @@ class ABFE():
                 forward_error_list.append(error)
             else:
                 forward_error_list.append(result.d_delta_f_.iloc[0, -1])
-            logger.info('{:.2f} +/- {:.2f} kBT'.format(forward_list[-1],
+            self.logger.info('{:.2f} +/- {:.2f} kBT'.format(forward_list[-1],
                                                         forward_error_list[-1]))
 
-        logger.info('Begin backward analysis')
+        self.logger.info('Begin backward analysis')
         backward_list = []
         backward_error_list = []
         for i in range(1, forwrev + 1):
-            logger.info('Backward analysis: {:.2f}%'.format(i / forwrev))
+            self.logger.info('Backward analysis: {:.2f}%'.format(i / forwrev))
             sample = []
             if estimator.lower() in ['mbar', 'bar']:
                 for data in u_nk_list:
@@ -669,7 +669,7 @@ class ABFE():
                 backward_error_list.append(error)
             else:
                 backward_error_list.append(result.d_delta_f_.iloc[0, -1])
-            logger.info('{:.2f} +/- {:.2f} kBT'.format(backward_list[-1],
+            self.logger.info('{:.2f} +/- {:.2f} kBT'.format(backward_list[-1],
                                                         backward_error_list[-1]))
 
         convergence = pd.DataFrame({'Forward (kBT)': forward_list,
@@ -678,7 +678,7 @@ class ABFE():
                                     'B. Error (kBT)': backward_error_list})
 
         self.convergence = convergence
-        logger.info('Plot convergence analysis to {} under {}.'
+        self.logger.info('Plot convergence analysis to {} under {}.'
                          ''.format(dF_t, self.out))
         ax = plot_convergence(np.array(forward_list) * self.scaling_factor,
                               np.array(forward_error_list) * self.scaling_factor,
