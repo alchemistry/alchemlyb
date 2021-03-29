@@ -9,7 +9,7 @@ computed using the equilibrated snapshots between the proper target time frames
 in both forward (data points are stored in `forward` and `forward_error`) and
 reverse (data points are stored in `backward` and `backward_error`) directions.
 The unit in the y axis could be labelled to other units by setting *units*,
-which by default is kBT. The user can pass :class:`matplotlib.axes.Axes` into
+which by default is :math:`kBT`. The user can pass :class:`matplotlib.axes.Axes` into
 the function to have the convergence drawn on a specific axes.
 
 Please check :ref:`How to plot convergence <plot_convergence>` for usage.
