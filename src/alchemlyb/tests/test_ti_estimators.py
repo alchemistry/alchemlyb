@@ -137,7 +137,12 @@ class TestTI(TIestimatorMixin):
         get_dHdl, E, dE = request.param
         return get_dHdl(), E, dE
 
-def test_TI_separate_dhdl():
+def test_TI_separate_dhdl_multiple_column():
     dHdl = gomc_benzene_dHdl()
+    estimator = TI().fit(dHdl)
+    assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()])
+
+def test_TI_separate_dhdl_single_column():
+    dHdl = gmx_benzene_coul_dHdl()
     estimator = TI().fit(dHdl)
     assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()])

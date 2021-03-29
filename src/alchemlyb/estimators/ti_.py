@@ -135,7 +135,7 @@ class TI(BaseEstimator):
             # Make sure that the start point is set to true as well
             diff[:-1, :] = diff[:-1, :] | diff[1:, :]
             for i in range(len(l_types)):
-                if any(diff[:,i]) == False:
+                if any(diff[:,i]) == False: # pragma: no cover
                     # Skip if not pertubed
                     pass
                 else:
