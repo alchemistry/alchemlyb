@@ -131,6 +131,7 @@ Will give a plot looks like this
    A bar plot of the free energy differences evaluated between pairs of adjacent
    states via several methods, with corresponding error estimates for each method.
 
+
 .. [Klimovich2015] Klimovich, P.V., Shirts, M.R. & Mobley, D.L. Guidelines for
    the analysis of free energy calculations. J Comput Aided Mol Des 29, 397–411
    (2015). https://doi.org/10.1007/s10822-015-9840-9
