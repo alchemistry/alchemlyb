@@ -29,9 +29,10 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kBT',
         list of colors for plotting all the alchemical transformations.
         Default: ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
     units : str
-        The label for the unit of the estimate. Default: 'kBT'
+        The label for the unit of the estimate. Default: :math:`kBT`
     scaling_factor : float
-        The scaling factor to change the energy from kBT to the desired unit.
+        The scaling factor to change the energy from :math:`kBT` to the
+        desired unit.
     ax : matplotlib.axes.Axes
         Matplotlib axes object where the plot will be drawn on. If ax=None,
         a new axes will be generated.

@@ -30,9 +30,10 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kBT',
     colors : List
         list of colors for plotting different estimators.
     units : str
-        The unit of the estimate. Default: 'kcal/mol'
+        The unit of the estimate. Default: :math:`kBT`
     scaling_factor : float
-        The scaling factor to change the energy from kBT to the desired unit.
+        The scaling factor to change the energy from :math:`kBT` to the
+        desired unit.
     orientation : string
         The orientation of the figure. Can be `portrait` or `landscape`
     nb : int

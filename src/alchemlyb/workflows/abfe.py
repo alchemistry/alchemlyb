@@ -9,7 +9,7 @@ from ..preprocessing.subsampling import statistical_inefficiency
 from ..estimators import MBAR, BAR, TI
 from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
                              plot_dF_state, plot_convergence)
-from ..constants import k, N_A, kJ2kcal
+from ..constants import Boltzmann_constant, Avogadro_constant, kJ2kcal
 
 
 class ABFE():
@@ -197,9 +197,11 @@ class ABFE():
             if units == 'kBT':
                 self.scaling_factor = 1
             elif units == 'kJ/mol':
-                self.scaling_factor = k * self.T * N_A / 1000
+                self.scaling_factor = Boltzmann_constant * self.T * \
+                                      Avogadro_constant / 1000
             elif units == 'kcal/mol':
-                self.scaling_factor = k * self.T * N_A / 1000 * kJ2kcal
+                self.scaling_factor = Boltzmann_constant * self.T * \
+                                      Avogadro_constant / 1000 * kJ2kcal
             else:
                 raise NameError('{} is not a valid unit.'.format(units))
             self.units = units

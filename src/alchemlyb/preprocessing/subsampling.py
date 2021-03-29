@@ -14,6 +14,7 @@ def _check_multiple_times(df):
     else:
         return df.sort_index(0).reset_index('time').duplicated('time').any()
 
+
 def _check_sorted(df):
     return df.reset_index(0)['time'].is_monotonic_increasing
 
