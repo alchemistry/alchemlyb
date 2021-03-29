@@ -105,3 +105,45 @@ class TI(BaseEstimator):
         self.states_ = means.index.values.tolist()
 
         return self
+
+    def separate_dhdl(self):
+        """
+        For transitions with multiple lambda, this function will separate the
+        dhdl with multiple columns into a list of Dataframe with a single column
+        (single lambda).
+        Returns
+        ----------
+        dHdl_list : list
+            A list of Series such that dHdl_list[k][n] is the potential
+            energy gradient with respect to lambda for each configuration n and
+            lambda k.
+        """
+        if len(self.dhdl.index.names) == 1:
+            # If only one column is present convert to series
+            assert len(self.dhdl.columns) == 1
+            name = self.dhdl.columns[0]
+            return [self.dhdl[name], ]
+        else:
+            dhdl_list = []
+            # get the lambda names
+            l_types = self.dhdl.index.names
+            # obtain bool of changed lambdas between each state
+            lambdas = self.dhdl.reset_index()[l_types]
+            diff = lambdas.diff().to_numpy(dtype='bool')
+            # diff will give the first row as NaN so need to fix that
+            diff[0, :] = diff[1, :]
+            # Make sure that the start point is set to true as well
+            diff[:-1, :] = diff[:-1, :] | diff[1:, :]
+            for i in range(len(l_types)):
+                if any(diff[:,i]) == False:
+                    # Skip if not pertubed
+                    pass
+                else:
+                    new = self.dhdl.iloc[diff[:,i], i]
+                    # drop all other index
+                    for l in l_types:
+                        if l != l_types[i]:
+                            new = new.reset_index(l, drop=True)
+                    dhdl_list.append(new)
+            return dhdl_list
+

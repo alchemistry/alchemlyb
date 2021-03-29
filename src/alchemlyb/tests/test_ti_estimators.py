@@ -136,3 +136,8 @@ class TestTI(TIestimatorMixin):
     def X_delta_f(self, request):
         get_dHdl, E, dE = request.param
         return get_dHdl(), E, dE
+
+def test_TI_separate_dhdl():
+    dHdl = gomc_benzene_dHdl()
+    estimator = TI().fit(dHdl)
+    assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()])
