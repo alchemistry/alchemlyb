@@ -141,8 +141,10 @@ def test_TI_separate_dhdl_multiple_column():
     dHdl = gomc_benzene_dHdl()
     estimator = TI().fit(dHdl)
     assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()])
+    assert sorted([len(dhdl) for dhdl in estimator.separate_dhdl()]) == [8, 16]
 
 def test_TI_separate_dhdl_single_column():
     dHdl = gmx_benzene_coul_dHdl()
     estimator = TI().fit(dHdl)
     assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()])
+    assert [len(dhdl) for dhdl in estimator.separate_dhdl()] == [5, ]

@@ -108,21 +108,29 @@ class TI(BaseEstimator):
 
     def separate_dhdl(self):
         """
-        For transitions with multiple lambda, this function will separate the
-        dhdl with multiple columns into a list of Dataframe with a single column
-        (single lambda).
+        For transitions with multiple lambda, the `dhdl` attribute would return
+        a DataFrame which gives the dHdl for all the lambda states, regardless
+        of whether it is perturbed or not. This function creates a list of
+        Series for each lambda, where each Series describes the the potential
+        energy gradient for the lambdas state that it is pertubed.
+
         Returns
         ----------
         dHdl_list : list
-            A list of Series such that dHdl_list[k][n] is the potential
-            energy gradient with respect to lambda for each configuration n and
-            lambda k.
+            A list of Series such that dHdl_list[k] is the potential
+            energy gradient with respect to lambda for each configuration that
+            lambda k is perturbed.
         """
         if len(self.dhdl.index.names) == 1:
             # If only one column is present convert to series
-            assert len(self.dhdl.columns) == 1
-            name = self.dhdl.columns[0]
-            return [self.dhdl[name], ]
+            if len(self.dhdl.columns) == 1:
+                name = self.dhdl.columns[0]
+                return [self.dhdl[name], ]
+            else: # pragma: no cover
+                raise ValueError('The index column and value column should have'
+                                 ' the same length. Index: {}; Value: {}'
+                                 ''.format(len(self.dhdl.index.names),
+                                           len(self.dhdl.columns)))
         else:
             dhdl_list = []
             # get the lambda names
@@ -135,10 +143,7 @@ class TI(BaseEstimator):
             # Make sure that the start point is set to true as well
             diff[:-1, :] = diff[:-1, :] | diff[1:, :]
             for i in range(len(l_types)):
-                if any(diff[:,i]) == False: # pragma: no cover
-                    # Skip if not pertubed
-                    pass
-                else:
+                if any(diff[:,i]) == True:
                     new = self.dhdl.iloc[diff[:,i], i]
                     # drop all other index
                     for l in l_types:
