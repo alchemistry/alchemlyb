@@ -111,8 +111,8 @@ class TI(BaseEstimator):
         For transitions with multiple lambda, the `dhdl` attribute would return
         a DataFrame which gives the dHdl for all the lambda states, regardless
         of whether it is perturbed or not. This function creates a list of
-        Series for each lambda, where each Series describes the the potential
-        energy gradient for the lambdas state that it is pertubed.
+        Series for each lambda, where each Series describes the potential energy
+        gradient for the lambdas state that is perturbed.
 
         Returns
         ----------
