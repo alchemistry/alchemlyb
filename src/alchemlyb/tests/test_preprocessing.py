@@ -92,6 +92,13 @@ class TestSlicing:
                                              sort=True)
         assert subsample.reset_index(0)['time'].is_monotonic_increasing
 
+    def test_sort_on_noseries(self, gmx_ABFE):
+        unsorted = pd.concat([gmx_ABFE[-500:], gmx_ABFE[:500]])
+        subsample = statistical_inefficiency(unsorted,
+                                             None,
+                                             sort=True)
+        assert subsample.reset_index(0)['time'].is_monotonic_increasing
+
     def test_duplication_off(self, gmx_ABFE):
         duplicated = pd.concat([gmx_ABFE, gmx_ABFE])
         with pytest.raises(KeyError):
