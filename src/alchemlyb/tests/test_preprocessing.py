@@ -106,12 +106,26 @@ class TestSlicing:
                                              drop_duplicates=True)
         assert len(subsample) < 1000
 
+    def test_duplication_on_dataframe_noseries(self, gmx_ABFE):
+        duplicated = pd.concat([gmx_ABFE, gmx_ABFE])
+        subsample = statistical_inefficiency(duplicated,
+                                             None,
+                                             drop_duplicates=True)
+        assert len(subsample) == 1001
+
     def test_duplication_on_series(self, gmx_ABFE):
         duplicated = pd.concat([gmx_ABFE, gmx_ABFE])
         subsample = statistical_inefficiency(duplicated.sum(axis=1),
                                              duplicated.sum(axis=1),
                                              drop_duplicates=True)
         assert len(subsample) < 1000
+
+    def test_duplication_on_series_noseries(self, gmx_ABFE):
+        duplicated = pd.concat([gmx_ABFE, gmx_ABFE])
+        subsample = statistical_inefficiency(duplicated.sum(axis=1),
+                                             None,
+                                             drop_duplicates=True)
+        assert len(subsample) == 1001
 
 class CorrelatedPreprocessors:
 
