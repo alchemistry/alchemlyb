@@ -20,6 +20,8 @@ The rules for this file:
 * 0.?.?
 
 Enhancements
+  - Allow the dhdl from TI estimator to be separated for multiple lambda 
+  (PR #121).
   - Allow statistical_inefficiency to work on multiindex series. (issue #116,
   PR #117)
   - Allow the overlap matrix of the MBAR estimator to be plotted. (issue #73,
