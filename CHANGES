@@ -20,6 +20,8 @@ The rules for this file:
 * 0.?.?
 
 Enhancements
+  - Allow automatic sorting and duplication removal during subsampling
+  (issue #118, PR #119).
   - Allow statistical_inefficiency to work on multiindex series. (issue #116,
   PR #117)
   - Allow the overlap matrix of the MBAR estimator to be plotted. (issue #73,
