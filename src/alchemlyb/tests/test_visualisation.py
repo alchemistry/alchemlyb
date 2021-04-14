@@ -10,6 +10,7 @@ from alchemlyb.estimators import MBAR, TI, BAR
 from alchemlyb.visualisation.mbar_matrix import plot_mbar_overlap_matrix
 from alchemlyb.visualisation.ti_dhdl import plot_ti_dhdl
 from alchemlyb.visualisation.dF_state import plot_dF_state
+from alchemlyb.visualisation import plot_convergence
 
 def test_plot_mbar_omatrix():
     '''Just test if the plot runs'''
@@ -96,3 +97,29 @@ def test_plot_dF_state():
     assert isinstance(fig, matplotlib.figure.Figure)
     fig = plot_dF_state([(ti_coul, ti_vdw)])
     assert isinstance(fig, matplotlib.figure.Figure)
+
+def test_plot_convergence():
+    bz = load_benzene().data
+    data_list = [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']]
+    forward = []
+    forward_error = []
+    backward = []
+    backward_error = []
+    num_points = 10
+    for i in range(1, num_points+1):
+        # Do the forward
+        slice = int(len(data_list[0])/num_points*i)
+        u_nk_coul = pd.concat([data[:slice] for data in data_list])
+        estimate = MBAR().fit(u_nk_coul)
+        forward.append(estimate.delta_f_.iloc[0,-1])
+        forward_error.append(estimate.d_delta_f_.iloc[0,-1])
+        # Do the backward
+        u_nk_coul = pd.concat([data[-slice:] for data in data_list])
+        estimate = MBAR().fit(u_nk_coul)
+        backward.append(estimate.delta_f_.iloc[0,-1])
+        backward_error.append(estimate.d_delta_f_.iloc[0,-1])
+
+    assert isinstance(
+        plot_convergence(forward, forward_error, backward, backward_error),
+        matplotlib.axes.Axes)
+
