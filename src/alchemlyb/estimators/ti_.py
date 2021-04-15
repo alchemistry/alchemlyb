@@ -125,24 +125,23 @@ class TI(BaseEstimator):
         if len(self.dhdl.index.names) == 1:
             name = self.dhdl.columns[0]
             return [self.dhdl[name], ]
-        else:
-            dhdl_list = []
-            # get the lambda names
-            l_types = self.dhdl.index.names
-            # obtain bool of changed lambdas between each state
-            lambdas = self.dhdl.reset_index()[l_types]
-            diff = lambdas.diff().to_numpy(dtype='bool')
-            # diff will give the first row as NaN so need to fix that
-            diff[0, :] = diff[1, :]
-            # Make sure that the start point is set to true as well
-            diff[:-1, :] = diff[:-1, :] | diff[1:, :]
-            for i in range(len(l_types)):
-                if any(diff[:,i]) == True:
-                    new = self.dhdl.iloc[diff[:,i], i]
-                    # drop all other index
-                    for l in l_types:
-                        if l != l_types[i]:
-                            new = new.reset_index(l, drop=True)
-                    dhdl_list.append(new)
-            return dhdl_list
+        dhdl_list = []
+        # get the lambda names
+        l_types = self.dhdl.index.names
+        # obtain bool of changed lambdas between each state
+        lambdas = self.dhdl.reset_index()[l_types]
+        diff = lambdas.diff().to_numpy(dtype='bool')
+        # diff will give the first row as NaN so need to fix that
+        diff[0, :] = diff[1, :]
+        # Make sure that the start point is set to true as well
+        diff[:-1, :] = diff[:-1, :] | diff[1:, :]
+        for i in range(len(l_types)):
+            if any(diff[:,i]) == True:
+                new = self.dhdl.iloc[diff[:,i], i]
+                # drop all other index
+                for l in l_types:
+                    if l != l_types[i]:
+                        new = new.reset_index(l, drop=True)
+                dhdl_list.append(new)
+        return dhdl_list
 
