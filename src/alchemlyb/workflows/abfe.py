@@ -202,6 +202,8 @@ class ABFE():
             else:
                 raise NameError('{} is not a valid unit.'.format(units))
             self.units = units
+        else: # pragma: no cover
+            pass
 
     def preprocess(self, skiptime=0, uncorr='dhdl', threshold=50):
         '''Preprocess the data by removing the equilibration time and
@@ -269,7 +271,10 @@ class ABFE():
                     self.logger.info('Take {} uncorrelated u_nk for state '
                                      '{}.'.format(len(subsample), index))
                     self.u_nk_sample_list.append(subsample)
+        else: # pragma: no cover
+            self.logger.info('No u_nk data being subsampled')
 
+        if len(self.dHdl_list) > 0:
             self.dHdl_sample_list = []
             for index, dHdl in enumerate(self.dHdl_list):
                 dHdl = dHdl[dHdl.index.get_level_values('time') >= skiptime]
@@ -284,6 +289,8 @@ class ABFE():
                     self.logger.info('Take {} uncorrelated dHdl for state '
                                      '{}.'.format(len(subsample), index))
                     self.dHdl_sample_list.append(subsample)
+        else: # pragma: no cover
+            self.logger.info('No dHdl data being subsampled')
 
     def estimate(self, methods=('mbar', 'bar', 'ti')):
         '''Estimate the free energy using the selected estimator.
@@ -632,6 +639,9 @@ class ABFE():
             elif estimator.lower() == 'ti':
                 for data in dHdl_list:
                     sample.append(data[:len(data) // forwrev * i])
+            else:  # pragma: no cover
+                raise NameError(
+                    '{} is not a valid estimator.'.format(estimator))
             sample = pd.concat(sample)
             result = estimator_fit(sample)
             forward_list.append(result.delta_f_.iloc[0, -1])
@@ -657,6 +667,9 @@ class ABFE():
             elif estimator.lower() == 'ti':
                 for data in dHdl_list:
                     sample.append(data[-len(data) // forwrev * i:])
+            else:  # pragma: no cover
+                raise NameError(
+                    '{} is not a valid estimator.'.format(estimator))
             sample = pd.concat(sample)
             result = estimator_fit(sample)
             backward_list.append(result.delta_f_.iloc[0, -1])
