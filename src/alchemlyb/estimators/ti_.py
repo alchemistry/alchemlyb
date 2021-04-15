@@ -105,3 +105,43 @@ class TI(BaseEstimator):
         self.states_ = means.index.values.tolist()
 
         return self
+
+    def separate_dhdl(self):
+        """
+        For transitions with multiple lambda, the attr:`dhdl` would return
+        a :class:`~pandas.DataFrame` which gives the dHdl for all the lambda
+        states, regardless of whether it is perturbed or not. This function
+        creates a list of :class:`pandas.Series` for each lambda, where each
+        :class:`pandas.Series` describes the potential energy gradient for the
+        lambdas state that is perturbed.
+
+        Returns
+        ----------
+        dHdl_list : list
+            A list of :class:`pandas.Series` such that ``dHdl_list[k]`` is the
+            potential energy gradient with respect to lambda for each
+            configuration that lambda k is perturbed.
+        """
+        if len(self.dhdl.index.names) == 1:
+            name = self.dhdl.columns[0]
+            return [self.dhdl[name], ]
+        dhdl_list = []
+        # get the lambda names
+        l_types = self.dhdl.index.names
+        # obtain bool of changed lambdas between each state
+        lambdas = self.dhdl.reset_index()[l_types]
+        diff = lambdas.diff().to_numpy(dtype='bool')
+        # diff will give the first row as NaN so need to fix that
+        diff[0, :] = diff[1, :]
+        # Make sure that the start point is set to true as well
+        diff[:-1, :] = diff[:-1, :] | diff[1:, :]
+        for i in range(len(l_types)):
+            if any(diff[:,i]):
+                new = self.dhdl.iloc[diff[:,i], i]
+                # drop all other index
+                for l in l_types:
+                    if l != l_types[i]:
+                        new = new.reset_index(l, drop=True)
+                dhdl_list.append(new)
+        return dhdl_list
+
