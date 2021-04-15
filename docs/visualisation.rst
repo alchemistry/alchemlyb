@@ -12,6 +12,7 @@ visualisation tools to help user to judge the estimate.
     plot_mbar_overlap_matrix
     plot_ti_dhdl
     plot_dF_state
+    plot_convergence
 
 .. _plot_overlap_matrix:
 
@@ -131,6 +132,53 @@ Will give a plot looks like this
    A bar plot of the free energy differences evaluated between pairs of adjacent
    states via several methods, with corresponding error estimates for each method.
 
+.. _plot_convergence:
+
+Forward and Backward Convergence
+--------------------------------
+One way of determining the simulation end point is to plot the forward and
+backward convergence of the estimate using
+:func:`~alchemlyb.visualisation.plot_convergence`.
+
+Note that this is just a plotting function to plot [Klimovich2015]_ style
+convergence plot. The user need to provide the forward and backward data list
+and the corresponding error. ::
+
+    >>> import pandas as pd
+    >>> from alchemtest.gmx import load_benzene
+    >>> from alchemlyb.parsing.gmx import extract_u_nk
+    >>> from alchemlyb.estimators import MBAR
+
+    >>> bz = load_benzene().data
+    >>> data_list = [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']]
+    >>> forward = []
+    >>> forward_error = []
+    >>> backward = []
+    >>> backward_error = []
+    >>> num_points = 10
+    >>> for i in range(1, num_points+1):
+    >>>     # Do the forward
+    >>>     slice = int(len(data_list[0])/num_points*i)
+    >>>     u_nk_coul = pd.concat([data[:slice] for data in data_list])
+    >>>     estimate = MBAR().fit(u_nk_coul)
+    >>>     forward.append(estimate.delta_f_.iloc[0,-1])
+    >>>     forward_error.append(estimate.d_delta_f_.iloc[0,-1])
+    >>>     # Do the backward
+    >>>     u_nk_coul = pd.concat([data[-slice:] for data in data_list])
+    >>>     estimate = MBAR().fit(u_nk_coul)
+    >>>     backward.append(estimate.delta_f_.iloc[0,-1])
+    >>>     backward_error.append(estimate.d_delta_f_.iloc[0,-1])
+
+    >>> from alchemlyb.visualisation import plot_convergence
+    >>> ax = plot_convergence(forward, forward_error, backward, backward_error)
+    >>> ax.figure.savefig('dF_t.pdf')
+
+Will give a plot looks like this
+
+.. figure:: images/dF_t.png
+
+   A convergence plot of showing that the forward and backward has converged
+   fully.
 
 .. [Klimovich2015] Klimovich, P.V., Shirts, M.R. & Mobley, D.L. Guidelines for
    the analysis of free energy calculations. J Comput Aided Mol Des 29, 397–411
