@@ -141,6 +141,21 @@ class Test_manual_ABFE():
         os.remove('dF_t.pdf')
         assert len(workflow.convergence) == 10
 
+    def test_convergence_TI(self, workflow):
+        '''test if the dF_state.pdf has been plotted.'''
+        workflow.check_convergence(10, estimator='ti', dF_t='dF_t.pdf')
+        assert os.path.isfile('dF_t.pdf')
+        os.remove('dF_t.pdf')
+        assert len(workflow.convergence) == 10
+
+    def test_dhdl_TI_noTI(self, workflow):
+        '''Test to plot the dhdl_TI when ti estimator is not there'''
+        full_estimator = workflow.estimator
+        workflow.estimator.pop('ti')
+        workflow.plot_ti_dhdl(dhdl_TI='dhdl_TI.pdf')
+        assert os.path.isfile('dhdl_TI.pdf') == False
+        workflow.estimator = full_estimator
+
 class Test_automatic_benzene():
     '''Test the full automatic workflow for load_benzene from alchemtest.gmx for
     single stage transformation.'''
@@ -277,7 +292,7 @@ class Test_methods():
         return workflow
 
     def test_change_unit(self, workflow):
-        workflow.update_units('kBT')
+        workflow.update_units('kT')
         assert workflow.scaling_factor == 1
         workflow.update_units('kcal/mol')
         assert np.isclose(workflow.scaling_factor, 0.6, atol=0.1)

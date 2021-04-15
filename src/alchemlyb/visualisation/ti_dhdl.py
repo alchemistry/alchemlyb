@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
-def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kBT',
+def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
                  scaling_factor=1, ax=None):
     '''Plot the dhdl of TI.
 
@@ -29,9 +29,9 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kBT',
         list of colors for plotting all the alchemical transformations.
         Default: ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
     units : str
-        The label for the unit of the estimate. Default: :math:`kBT`
+        The label for the unit of the estimate. Default: `kT`
     scaling_factor : float
-        The scaling factor to change the energy from :math:`kBT` to the
+        The scaling factor to change the energy from :math:`kT` to the
         desired unit.
     ax : matplotlib.axes.Axes
         Matplotlib axes object where the plot will be drawn on. If ax=None,
@@ -48,7 +48,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kBT',
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 
     The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of kBT. The
+    unit of the underlying variable, which is in the unit of kT. The
     scaling_factor is used to change the number to the desired unit.
 
     '''

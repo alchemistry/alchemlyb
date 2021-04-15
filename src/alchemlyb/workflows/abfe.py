@@ -19,10 +19,9 @@ class ABFE():
     ----------
     units : str
         The unit used for printing and plotting results. {'kcal/mol', 'kJ/mol',
-        'kBT'}
+        'kT'}
     software : str
-        The software used for generating input. {'Gromacs', 'amber', 'namd',
-        'gomc'}
+        The software used for generating input. {'Gromacs', }
     dir : str
         Directory in which data files are stored. Default: './'.
     prefix : str
@@ -35,11 +34,9 @@ class ABFE():
         Discard data prior to this specified time as 'equilibration' data. Units
         picoseconds. Default: 0.
     uncorr : str
-        The observable to be used for the autocorrelation analysis; either
-        'dhdl_all' (obtained as a sum over all energy components) or 'dhdl'
-        (obtained as a sum over those energy components that are changing) or
-        'dE'. In the latter case the energy differences dE_{i,i+1} (dE_{i,i-1}
-        for the last lambda) are used. Default: None (skipping this step).
+        The observable to be used for the autocorrelation analysis; 'dhdl'
+        (obtained as a sum over those energy components that are changing).
+        Default: `dhdl`
     threshold : int
         Proceed with correlated samples if the number of uncorrelated samples is
         found to be less than this number. If 0 is given, the time series
@@ -131,7 +128,7 @@ class ABFE():
                 self.logger.warning(
                     'Error reading read dhdl from {}.'.format(xvg))
 
-        # # Sort the files according to the state
+        # Sort the files according to the state
         if len(u_nk_list) > 0:
             self.logger.info('Sort files according to the u_nk.')
             column_names = u_nk_list[0].columns.values.tolist()
@@ -180,21 +177,21 @@ class ABFE():
         ----------
         units : str
             The unit used for printing and plotting results. {'kcal/mol',
-            'kJ/mol', 'kBT'}
+            'kJ/mol', 'kT'}
 
         Attributes
         ----------
         scaling_factor : float
-            The scaling factor to change the unit from kBT to the selected unit.
+            The scaling factor to change the unit from kT to the selected unit.
 
         Note
         ----
-        The internal representations are all in kBT. This function only changes
+        The internal representations are all in kT. This function only changes
         the unit when outputting text file or plotting the results.
         '''
         if units is not None:
             self.logger.info('Set unit to {}.'.format(units))
-            if units == 'kBT':
+            if units == 'kT':
                 self.scaling_factor = 1
             elif units == 'kJ/mol':
                 self.scaling_factor = Boltzmann_constant * self.T * \
@@ -216,11 +213,9 @@ class ABFE():
             Discard data prior to this specified time as 'equilibration' data.
             Units picoseconds. Default: 0.
         uncorr : str
-            The observable to be used for the autocorrelation analysis; either
-            'dhdl_all' (obtained as a sum over all energy components) or 'dhdl'
-            (obtained as a sum over those energy components that are changing)
-            or 'dE'. In the latter case the energy differences dE_{i,i+1}
-            (dE_{i,i-1} for the last lambda) are used. Default: `dhdl`
+            The observable to be used for the autocorrelation analysis; 'dhdl'
+            (obtained as a sum over those energy components that are changing).
+            Default: `dhdl`
         threshold : int
             Proceed with correlated samples if the number of uncorrelated
             samples is found to be less than this number. If 0 is given, the
@@ -256,7 +251,8 @@ class ABFE():
                     else:
                         # Single key
                         col = u_nk[key[0]]
-                    subsample = statistical_inefficiency(u_nk, col)
+                    subsample = statistical_inefficiency(u_nk, col, sort=True,
+                                                         drop_duplicates=True)
                 else: # pragma: no cover
                     # The dhdl_all and dE will be implemented here when #48 is
                     # merged
@@ -569,7 +565,7 @@ class ABFE():
         convergence : DataFrame
             The DataFrame with convergence data. ::
 
-                   Forward (kBT)  F. Error (kBT)  Backward (kBT)  B. Error (kBT)
+                   Forward (kT)  F. Error (kT)  Backward (kT)  B. Error (kT)
                 0      33.988935        0.334676       35.666128        0.324426
                 1      35.075489        0.232150       35.382850        0.230944
                 2      34.919988        0.190424       35.156028        0.189489
@@ -646,7 +642,7 @@ class ABFE():
                 forward_error_list.append(error)
             else:
                 forward_error_list.append(result.d_delta_f_.iloc[0, -1])
-            self.logger.info('{:.2f} +/- {:.2f} kBT'.format(forward_list[-1],
+            self.logger.info('{:.2f} +/- {:.2f} kT'.format(forward_list[-1],
                                                         forward_error_list[-1]))
 
         self.logger.info('Begin backward analysis')
@@ -671,13 +667,13 @@ class ABFE():
                 backward_error_list.append(error)
             else:
                 backward_error_list.append(result.d_delta_f_.iloc[0, -1])
-            self.logger.info('{:.2f} +/- {:.2f} kBT'.format(backward_list[-1],
+            self.logger.info('{:.2f} +/- {:.2f} kT'.format(backward_list[-1],
                                                         backward_error_list[-1]))
 
-        convergence = pd.DataFrame({'Forward (kBT)': forward_list,
-                                    'F. Error (kBT)': forward_error_list,
-                                    'Backward (kBT)': backward_list,
-                                    'B. Error (kBT)': backward_error_list})
+        convergence = pd.DataFrame({'Forward (kT)': forward_list,
+                                    'F. Error (kT)': forward_error_list,
+                                    'Backward (kT)': backward_list,
+                                    'B. Error (kT)': backward_error_list})
 
         self.convergence = convergence
         self.logger.info('Plot convergence analysis to {} under {}.'

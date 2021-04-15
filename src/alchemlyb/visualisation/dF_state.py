@@ -14,7 +14,7 @@ import numpy as np
 
 from ..estimators import TI, BAR, MBAR
 
-def plot_dF_state(estimators, labels=None, colors=None, units='kBT',
+def plot_dF_state(estimators, labels=None, colors=None, units='kT',
                   scaling_factor=1, orientation='portrait', nb=10):
     '''Plot the dhdl of TI.
 
@@ -30,9 +30,9 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kBT',
     colors : List
         list of colors for plotting different estimators.
     units : str
-        The unit of the estimate. Default: :math:`kBT`
+        The unit of the estimate. Default: `kT`
     scaling_factor : float
-        The scaling factor to change the energy from :math:`kBT` to the
+        The scaling factor to change the energy from :math:`kT` to the
         desired unit.
     orientation : string
         The orientation of the figure. Can be `portrait` or `landscape`
@@ -50,7 +50,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kBT',
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 
     The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of kBT. The
+    unit of the underlying variable, which is in the unit of kT. The
     scaling_factor is used to change the number to the desired unit.
 
     '''
