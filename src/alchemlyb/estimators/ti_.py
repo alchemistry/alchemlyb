@@ -136,7 +136,7 @@ class TI(BaseEstimator):
         # Make sure that the start point is set to true as well
         diff[:-1, :] = diff[:-1, :] | diff[1:, :]
         for i in range(len(l_types)):
-            if any(diff[:,i]) == True:
+            if any(diff[:,i]):
                 new = self.dhdl.iloc[diff[:,i], i]
                 # drop all other index
                 for l in l_types:
