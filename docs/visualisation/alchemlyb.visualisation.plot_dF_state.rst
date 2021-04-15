@@ -25,7 +25,7 @@ The figure could be plotted in *portrait* or *landscape* mode by setting the
 The user could pass a list of strings to `labels` to name the
 :class:`~alchemlyb.estimators` or a list of strings to `colors` to color
 the estimators differently. The unit in the y axis could be labelled to other
-units by setting `units`, which by default is :math:`kBT`.
+units by setting `units`, which by default is :math:`kT`.
 
 Please check :ref:`How to plot dF states <plot_dF_states>` for a complete
 example.
