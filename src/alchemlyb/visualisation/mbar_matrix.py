@@ -34,8 +34,8 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
     matplotlib.axes.Axes
         An axes with the overlap matrix drawn.
 
-    Notes
-    -----
+    Note
+    ----
     The code is taken and modified from
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 
