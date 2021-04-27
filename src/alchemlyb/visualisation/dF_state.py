@@ -82,8 +82,8 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
             for i in range(len(dhdl.delta_f_) - 1):
                 dF.append(dhdl.delta_f_.iloc[i, i+1])
                 error.append(dhdl.d_delta_f_.iloc[i, i+1])
-        dF_list.append(dF)
-        error_list.append(error)
+        dF_list.append(dF * scaling_factor)
+        error_list.append(error * scaling_factor)
 
     # Get the determine orientation
     if orientation == 'landscape':
