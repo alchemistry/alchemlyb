@@ -15,28 +15,29 @@ The rules for this file:
 ------------------------------------------------------------------------------
 
 
-??/??/2020 wehs7661, dotsdl, xiki-tempula
+04/27/2021 wehs7661, dotsdl, xiki-tempula, orbeckst
 
-* 0.?.?
+* 0.4.0
 
 Enhancements
   - Allow the dhdl from TI estimator to be separated for multiple lambda 
-  (PR #121).
+    (PR #121).
   - Allow the convergence to be plotted. (PR #121)
   - Allow automatic sorting and duplication removal during subsampling
-  (issue #118, PR #119).
+    (issue #118, PR #119).
   - Allow statistical_inefficiency to work on multiindex series. (issue #116,
-  PR #117)
+    PR #117)
   - Allow the overlap matrix of the MBAR estimator to be plotted. (issue #73,
-  PR #107)
+    PR #107)
   - Allow the dhdl of the TI estimator to be plotted. (issue #73, PR #110)
   - Allow the dF states to be plotted. (issue #73, PR #112)
 
 Deprecations
+  - Last version that is tested against Python 3.5 and 2.7.
 
 Fixes
   - removed redundant statistical inefficiency calculation in
-  `alchemlyb.preprocessing.subsampling.equilibrium_detection`
+    `alchemlyb.preprocessing.subsampling.equilibrium_detection`
 
 
 Changes
