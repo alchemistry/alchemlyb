@@ -33,6 +33,7 @@ Enhancements
   - Allow the dF states to be plotted. (issue #73, PR #112)
 
 Deprecations
+  - Last version that is tested against Python 3.5 and 2.7.
 
 Fixes
   - removed redundant statistical inefficiency calculation in
