@@ -22,6 +22,8 @@ Enhancements
 Deprecations
 
 Fixes
+  - The plotting function assumes that the default unit is kcal/mol where it is
+  kt (issue #124, PR #123).
 
 Changes
 

@@ -15,7 +15,7 @@ from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
 def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
-                 scaling_factor=1, ax=None):
+                 ax=None):
     '''Plot the dhdl of TI.
 
     Parameters
@@ -30,9 +30,6 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
         Default: ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
     units : str
         The label for the unit of the estimate. Default: `kT`
-    scaling_factor : float
-        The scaling factor to change the energy from :math:`kT` to the
-        desired unit.
     ax : matplotlib.axes.Axes
         Matplotlib axes object where the plot will be drawn on. If ax=None,
         a new axes will be generated.
@@ -48,14 +45,13 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 
     The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of kT. The
-    scaling_factor is used to change the number to the desired unit.
+    unit of the underlying variable, which is in the unit of kT.
 
     '''
-    # Fix unit
-
-
     # Make it into a list
+    # separate_dhdl method is used so that the input for the actual plotting
+    # Function are a uniformed list of series object which only contains one
+    # lambda.
     if not isinstance(dhdl_data, list):
         dhdl_list = dhdl_data.separate_dhdl()
     else:
@@ -104,7 +100,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
     min_y, max_y = 0, 0
     for dhdl in dhdl_list:
         x = dhdl.index.values
-        y = dhdl.values.ravel() * scaling_factor
+        y = dhdl.values.ravel()
 
         min_y = min(y.min(), min_y)
         max_y = max(y.max(), max_y)

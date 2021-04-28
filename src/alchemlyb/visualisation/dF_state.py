@@ -15,7 +15,7 @@ import numpy as np
 from ..estimators import TI, BAR, MBAR
 
 def plot_dF_state(estimators, labels=None, colors=None, units='kT',
-                  scaling_factor=1, orientation='portrait', nb=10):
+                  orientation='portrait', nb=10):
     '''Plot the dhdl of TI.
 
     Parameters
@@ -31,9 +31,6 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
         list of colors for plotting different estimators.
     units : str
         The unit of the estimate. Default: `kT`
-    scaling_factor : float
-        The scaling factor to change the energy from :math:`kT` to the
-        desired unit.
     orientation : string
         The orientation of the figure. Can be `portrait` or `landscape`
     nb : int
@@ -50,8 +47,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 
     The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of kT. The
-    scaling_factor is used to change the number to the desired unit.
+    unit of the underlying variable, which is in the unit of kT.
 
     '''
     try:
@@ -82,8 +78,8 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
             for i in range(len(dhdl.delta_f_) - 1):
                 dF.append(dhdl.delta_f_.iloc[i, i+1])
                 error.append(dhdl.d_delta_f_.iloc[i, i+1])
-        dF_list.append(dF * scaling_factor)
-        error_list.append(error * scaling_factor)
+        dF_list.append(dF)
+        error_list.append(error)
 
     # Get the determine orientation
     if orientation == 'landscape':
