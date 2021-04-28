@@ -13,11 +13,22 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" http://semver.org
 
 ------------------------------------------------------------------------------
+??/??/2021 
+
+  * 0.4.1
+
+Enhancements
+
+Deprecations
+
+Fixes
+
+Changes
 
 
 04/27/2021 wehs7661, dotsdl, xiki-tempula, orbeckst
 
-* 0.4.0
+  * 0.4.0
 
 Enhancements
   - Allow the dhdl from TI estimator to be separated for multiple lambda 
@@ -39,15 +50,12 @@ Fixes
   - removed redundant statistical inefficiency calculation in
     `alchemlyb.preprocessing.subsampling.equilibrium_detection`
 
-
 Changes
-
-
 
 
 01/16/2020 dotsdl, orbeckst
 
-* 0.3.1
+  * 0.3.1
 
 Enhancements
 
