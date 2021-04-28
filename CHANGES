@@ -13,7 +13,7 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" http://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2021 
+??/??/2021 xiki-tempula
 
   * 0.4.1
 
@@ -23,7 +23,7 @@ Deprecations
 
 Fixes
   - The plotting function assumes that the default unit is kcal/mol where it is
-  kt (issue #124, PR #123).
+  kT (issue #124, PR #123).
 
 Changes
 
