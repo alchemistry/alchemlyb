@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
+from ..postprocessors.units import to_kcalmol, to_kJmol, to_kT
+
 def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
                  ax=None):
     '''Plot the dhdl of TI.
@@ -59,6 +61,19 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
         for dhdl in dhdl_data:
             dhdl_list.extend(dhdl.separate_dhdl())
 
+    # Convert unit
+    new_unit = []
+    for dhdl in dhdl_list:
+        if units == 'kT':
+            new_unit.append(to_kT(dhdl))
+        elif units == 'kJ/mol':
+            new_unit.append(to_kJmol(dhdl))
+        elif units == 'kcal/mol':
+            new_unit.append(to_kcalmol(dhdl))
+        else:
+            raise NameError('energy_unit {} can only be kT, kJ/mol or ' \
+                            'kcal/mol.'.format(units))
+    dhdl_list = new_unit
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))
 

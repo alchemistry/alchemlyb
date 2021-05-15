@@ -13,6 +13,7 @@ from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
 from ..estimators import TI, BAR, MBAR
+from ..postprocessors.units import to_kcalmol, to_kJmol, to_kT
 
 def plot_dF_state(estimators, labels=None, colors=None, units='kT',
                   orientation='portrait', nb=10):
@@ -76,8 +77,19 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
         error = []
         for dhdl in dhdl_list:
             for i in range(len(dhdl.delta_f_) - 1):
-                dF.append(dhdl.delta_f_.iloc[i, i+1])
-                error.append(dhdl.d_delta_f_.iloc[i, i+1])
+                if units == 'kT':
+                    dF.append(to_kT(dhdl.delta_f_).iloc[i, i + 1])
+                    error.append(to_kT(dhdl.d_delta_f_).iloc[i, i + 1])
+                elif units == 'kJ/mol':
+                    dF.append(to_kJmol(dhdl.delta_f_).iloc[i, i + 1])
+                    error.append(to_kJmol(dhdl.d_delta_f_).iloc[i, i + 1])
+                elif units == 'kcal/mol':
+                    dF.append(to_kcalmol(dhdl.delta_f_).iloc[i, i + 1])
+                    error.append(to_kcalmol(dhdl.d_delta_f_).iloc[i, i + 1])
+                else:
+                    raise NameError('energy_unit {} can only be kT, kJ/mol '
+                                    'or kcal/mol.'.format(units))
+
         dF_list.append(dF)
         error_list.append(error)
 

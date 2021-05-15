@@ -105,6 +105,9 @@ def extract_u_nk(xvg, T):
 
     u_k.name = 'u_nk'
 
+    u_k.attrs['temperature'] = T
+    u_k.attrs['energy_unit'] = 'kT'
+
     return u_k
 
 
@@ -181,6 +184,9 @@ def extract_dHdl(xvg, T):
     dHdl= dHdl.reset_index().set_index(newind)
 
     dHdl.name='dH/dl'
+
+    dHdl.attrs['temperature'] = T
+    dHdl.attrs['energy_unit'] = 'kT'
 
     return dHdl
 

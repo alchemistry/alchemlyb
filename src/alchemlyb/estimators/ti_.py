@@ -104,6 +104,10 @@ class TI(BaseEstimator):
 
         self.states_ = means.index.values.tolist()
 
+        self.delta_f_.attrs = dHdl.attrs
+        self.d_delta_f_.attrs = dHdl.attrs
+        self.dhdl.attrs = dHdl.attrs
+
         return self
 
     def separate_dhdl(self):
@@ -142,6 +146,8 @@ class TI(BaseEstimator):
                 for l in l_types:
                     if l != l_types[i]:
                         new = new.reset_index(l, drop=True)
+
+                new.attrs = self.dhdl.attrs
                 dhdl_list.append(new)
         return dhdl_list
 

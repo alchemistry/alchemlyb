@@ -92,7 +92,10 @@ class MBAR(BaseEstimator):
                               columns=self.states_,
                               index=self.states_) for i in out]
 
-        (self.delta_f_, self.d_delta_f_, self.theta_) = attrs 
+        (self.delta_f_, self.d_delta_f_, self.theta_) = attrs
+
+        self.delta_f_.attrs = u_nk.attrs
+        self.d_delta_f_.attrs = u_nk.attrs
         
         return self
 
