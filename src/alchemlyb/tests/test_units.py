@@ -8,6 +8,7 @@ from alchemtest.gmx import load_benzene
 from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
 from alchemlyb.preprocessing import (slicing, statistical_inefficiency,
                                      equilibrium_detection)
+from alchemlyb.postprocessors.units import to_kcalmol, to_kT, to_kJmol
 from alchemlyb.estimators import MBAR, TI, BAR
 from alchemlyb.visualisation import plot_dF_state, plot_ti_dhdl
 
@@ -34,6 +35,25 @@ class Test_preprocessing():
         dataset = load_benzene()
         dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
         return dhdl
+
+    def test_kt2kt(self, dhdl):
+        new_dhdl = to_kT(dhdl)
+        assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_kj2kt(self, dhdl):
+        dhdl.attrs['energy_unit'] = 'kJ/mol'
+        new_dhdl = to_kT(dhdl)
+        assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_kcal2kt(self, dhdl):
+        dhdl.attrs['energy_unit'] = 'kcal/mol'
+        new_dhdl = to_kT(dhdl)
+        assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_unknown2kt(self, dhdl):
+        with pytest.raises(NameError):
+            dhdl.attrs['energy_unit'] = 'ddd'
+            new_dhdl = to_kT(dhdl)
 
     def test_slicing(self, dhdl):
         '''Test if extract_u_nk assign the attr correctly'''
@@ -138,6 +158,10 @@ class Test_visualisation():
         fig = plot_dF_state(estimaters, units='kcal/mol')
         assert isinstance(fig, matplotlib.figure.Figure)
 
+    def test_plot_dF_state_unknown(self, estimaters):
+        with pytest.raises(NameError):
+            fig = plot_dF_state(estimaters, units='ddd')
+
     def test_plot_ti_dhdl_kT(self, estimaters):
         ti, mbar = estimaters
         fig = plot_ti_dhdl(ti, units='kT')
@@ -152,4 +176,9 @@ class Test_visualisation():
         ti, mbar = estimaters
         fig = plot_ti_dhdl(ti, units='kcal/mol')
         assert isinstance(fig, matplotlib.axes.Axes)
+
+    def test_plot_ti_dhdl_unknown(self, estimaters):
+        ti, mbar = estimaters
+        with pytest.raises(NameError):
+            fig = plot_ti_dhdl(ti, units='ddd')
 

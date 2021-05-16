@@ -31,13 +31,13 @@ def to_kT(df):
         new_df = df.copy()
         new_df = new_df / (Boltzmann_constant * df.attrs['temperature'] *
                            Avogadro_constant / 1000)
-        new_df.attrs['energy_unit'] = 'kJ/mol'
+        new_df.attrs['energy_unit'] = 'kT'
         return new_df
     elif df.attrs['energy_unit'] == 'kcal/mol':
         new_df = df.copy()
         new_df = new_df / (Boltzmann_constant * df.attrs['temperature'] *
                            Avogadro_constant / 1000 * kJ2kcal)
-        new_df.attrs['energy_unit'] = 'kcal/mol'
+        new_df.attrs['energy_unit'] = 'kT'
         return new_df
     else:
         raise NameError('energy_unit {} can only be kT, kJ/mol or ' \
