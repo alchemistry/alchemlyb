@@ -27,10 +27,6 @@ setup(name='alchemlyb',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: Microsoft :: Windows ',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
@@ -46,5 +42,5 @@ setup(name='alchemlyb',
       license='BSD',
       long_description=open('README.rst').read(),
       tests_require = ['pytest', 'alchemtest'],
-      install_requires=['numpy', 'pandas>=0.23.0', 'pymbar>=3.0.5,<4', 'scipy', 'scikit-learn', 'matplotlib']
+      install_requires=['numpy', 'pandas>=1.0', 'pymbar>=3.0.5,<4', 'scipy', 'scikit-learn', 'matplotlib']
       )
