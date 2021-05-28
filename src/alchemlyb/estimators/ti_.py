@@ -128,7 +128,9 @@ class TI(BaseEstimator):
         """
         if len(self.dhdl.index.names) == 1:
             name = self.dhdl.columns[0]
-            return [self.dhdl[name], ]
+            new = self.dhdl[name]
+            new.attrs = self.dhdl.attrs
+            return [new, ]
         dhdl_list = []
         # get the lambda names
         l_types = self.dhdl.index.names
