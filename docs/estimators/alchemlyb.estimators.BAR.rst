@@ -1,15 +1,25 @@
-.. _estimators_BAR:
+﻿alchemlyb.estimators.BAR
+========================
 
-BAR
-===
-The :class:`~alchemlyb.estimators.BAR` estimator is a light wrapper around the implementation of the Bennett Acceptance Ratio (BAR) method from :mod:`pymbar` (:class:`pymbar.mbar.BAR`).
-It uses information from neighboring sampled states to generate an estimate for the free energy difference between these state.
+.. currentmodule:: alchemlyb.estimators
 
-.. SeeAlso::
-   :class:`alchemlyb.estimators.MBAR`
+.. autoclass:: BAR
 
-API Reference
--------------
-.. autoclass:: alchemlyb.estimators.BAR
-    :members:
-    :inherited-members:
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~BAR.__init__
+      ~BAR.fit
+      ~BAR.get_params
+      ~BAR.set_params
+   
+   
+
+   
+   
+   

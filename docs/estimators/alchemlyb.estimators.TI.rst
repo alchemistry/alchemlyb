@@ -1,11 +1,26 @@
-.. _estimatators_TI:
+﻿alchemlyb.estimators.TI
+=======================
 
-TI
-==
-The :class:`~alchemlyb.estimators.TI` estimator is a simple implementation of `thermodynamic integration <https://en.wikipedia.org/wiki/Thermodynamic_integration>`_ that uses the trapezoid rule for integrating the space between :math:`\left<\frac{dH}{d\lambda}\right>` values for each :math:`\lambda` sampled.
+.. currentmodule:: alchemlyb.estimators
 
-API Reference
--------------
-.. autoclass:: alchemlyb.estimators.TI
-    :members:
-    :inherited-members:
+.. autoclass:: TI
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~TI.__init__
+      ~TI.fit
+      ~TI.get_params
+      ~TI.separate_dhdl
+      ~TI.set_params
+   
+   
+
+   
+   
+   
