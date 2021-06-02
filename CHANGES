@@ -18,8 +18,10 @@ The rules for this file:
   * 0.4.1
 
 Enhancements
+  - Bump the minimum pandas version to 1.0 (issue #130, PR #131).
 
 Deprecations
+  - Deprecate py2 and py35 (issue #130, PR #131).
 
 Fixes
   - The plotting function assumes that the default unit is kcal/mol where it is
