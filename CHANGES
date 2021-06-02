@@ -13,17 +13,19 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" http://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2021 xiki-tempula
+06/01/2021 xiki-tempula, orbeckst
 
   * 0.4.1
 
 Enhancements
 
 Deprecations
+  - Last release that supports Python 3.5 and 2.7.
 
 Fixes
   - The plotting function assumes that the default unit is kcal/mol where it is
     kT (issue #124, PR #123).
+  - invalid escape sequence in plotting annotations (issue #133)
 
 Changes
 
