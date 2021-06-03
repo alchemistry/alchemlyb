@@ -15,15 +15,32 @@ The rules for this file:
 ------------------------------------------------------------------------------
 ??/??/2021 xiki-tempula
 
-  * 0.4.1
+  * 0.5.0
 
 Enhancements
 
 Deprecations
 
 Fixes
+
+Changes
+  - Removed support for Python 2.7 and 3.5 (issue #130).
+  - Bump the minimum pandas version to 1.0 (issue #130).
+  
+
+06/01/2021 xiki-tempula, orbeckst
+
+  * 0.4.1
+
+Enhancements
+
+Deprecations
+  - Last release that supports Python 3.5 and 2.7.
+
+Fixes
   - The plotting function assumes that the default unit is kcal/mol where it is
     kT (issue #124, PR #123).
+  - invalid escape sequence in plotting annotations (issue #133)
 
 Changes
 

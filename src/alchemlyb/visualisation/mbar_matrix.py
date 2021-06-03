@@ -6,10 +6,9 @@ the states, the more reliable the estimate is. One way of accessing the
 quality of the overlap matrix is by plotting it.
 
 The code for producing the overlap matrix plot is taken from
-: `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
+`Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
 """
-from __future__ import division
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,9 +23,9 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
         :attr:`~alchemlyb.estimators.MBAR.overlap_matrix`
     skip_lambda_index : List
         list of lambda indices to be omitted from plotting process.
-        Default: [].
+        Default: ``[]``.
     ax : matplotlib.axes.Axes
-        Matplotlib axes object where the plot will be drawn on. If ax=None,
+        Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
         a new axes will be generated.
 
     Returns
@@ -37,7 +36,10 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
     Note
     ----
     The code is taken and modified from
-    : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
+    `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
+
+
+    .. versionadded:: 0.4.0
 
     '''
     # Compute the size of the figure, if ax is not given.
@@ -60,8 +62,11 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
             else:
                 ii = ("{:.2f}".format(matrix[j, i])[1:])
             alf = matrix[j, i] / max_prob
-            ax.fill_between([i, i + 1], [size - j, size - j], [size - (j + 1), size - (j + 1)], color='k', alpha=alf)
-            ax.annotate(ii, xy=(i, j), xytext=(i + 0.5, size - (j + 0.5)), size=8, textcoords='data', va='center',
+            ax.fill_between([i, i + 1], [size - j, size - j],
+                            [size - (j + 1), size - (j + 1)], color='k',
+                            alpha=alf)
+            ax.annotate(ii, xy=(i, j), xytext=(i + 0.5, size - (j + 0.5)),
+                        size=8, textcoords='data', va='center',
                         ha='center', color=('k' if alf < 0.5 else 'w'))
 
     if skip_lambda_index:
@@ -70,11 +75,16 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
     else:
         ks = range(size)
     for i in range(size):
-        ax.annotate(ks[i], xy=(i + 0.5, 1), xytext=(i + 0.5, size + 0.5), size=10, textcoords=('data', 'data'),
+        ax.annotate(ks[i], xy=(i + 0.5, 1), xytext=(i + 0.5, size + 0.5),
+                    size=10, textcoords=('data', 'data'),
                     va='center', ha='center', color='k')
-        ax.annotate(ks[i], xy=(-0.5, size - (size - 0.5)), xytext=(-0.5, size - (i + 0.5)), size=10, textcoords=('data', 'data'),
+        ax.annotate(ks[i], xy=(-0.5, size - (size - 0.5)),
+                    xytext=(-0.5, size - (i + 0.5)),
+                    size=10, textcoords=('data', 'data'),
                     va='center', ha='center', color='k')
-    ax.annotate('$\lambda$', xy=(-0.5, size - (size - 0.5)), xytext=(-0.5, size + 0.5), size=10, textcoords=('data', 'data'),
+    ax.annotate(r'$\lambda$', xy=(-0.5, size - (size - 0.5)),
+                xytext=(-0.5, size + 0.5),
+                size=10, textcoords=('data', 'data'),
                 va='center', ha='center', color='k')
     ax.plot([0, size], [0, 0], 'k-', lw=4.0, solid_capstyle='butt')
     ax.plot([size, size], [0, size], 'k-', lw=4.0, solid_capstyle='butt')

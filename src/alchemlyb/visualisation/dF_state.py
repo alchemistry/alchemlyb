@@ -4,7 +4,7 @@ To assess the quality of the free energy estimation, The dF between adjacent
 lambda states can be ploted to assess the quality of the estimation.
 
 The code for producing the dF states plot is modified based on
-: `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
+`Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
 """
 
@@ -31,7 +31,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     colors : List
         list of colors for plotting different estimators.
     units : str
-        The unit of the estimate. Default: `kT`
+        The unit of the estimate. Default: "kT"
     orientation : string
         The orientation of the figure. Can be `portrait` or `landscape`
     nb : int
@@ -45,11 +45,13 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     Note
     ----
     The code is taken and modified from
-    : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
+    `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
     The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of kT.
+    unit of the underlying variable, which is in the unit of :math:`kT`.
 
+
+    .. versionadded:: 0.4.0
     '''
     try:
         len(estimators)
@@ -188,7 +190,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
             plt.yticks(fontsize=10)
             ax.xaxis.set_ticks([])
             for i in x + 0.5 * width * len(estimators):
-                ax.annotate('$\mathrm{%d-%d}$' % (i, i + 1), xy=(i, 0),
+                ax.annotate(r'$\mathrm{%d-%d}$' % (i, i + 1), xy=(i, 0),
                             xycoords=('data', 'axes fraction'), xytext=(0, -2),
                             size=10, textcoords='offset points', va='top',
                             ha='center')
@@ -205,11 +207,12 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
                          fancybox=True)
         plt.title('The free energy change breakdown', fontsize=12)
         plt.xlabel('States', fontsize=12, color='#151B54')
-        plt.ylabel('$\Delta G$ ' + units, fontsize=12, color='#151B54')
+        plt.ylabel(r'$\Delta G$ ({})'.format(units), fontsize=12, color='#151B54')
     elif orientation == 'portrait':
         leg = ax.legend(lines, labels, loc=0, ncol=2,
                         prop=FP(size=8),
-                        title='$\mathrm{\Delta G\/%s\/}\mathit{vs.}\/\mathrm{lambda\/pair}$' % units,
+                        title=r'$\Delta G$ ({})'.format(units) +
+                              r'$\mathit{vs.}$ lambda pair',
                         fancybox=True)
 
     leg.get_frame().set_alpha(0.5)

@@ -5,10 +5,9 @@ to lambda state 1 can plotted to assess if the change in dhdl is sampled
 thoroughly.
 
 The code for producing the dhdl plot is modified based on
-: `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
+`Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
 """
-from __future__ import division
 
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties as FP
@@ -31,9 +30,9 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
         list of colors for plotting all the alchemical transformations.
         Default: ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
     units : str
-        The label for the unit of the estimate. Default: `kT`
+        The label for the unit of the estimate. Default: "kT"
     ax : matplotlib.axes.Axes
-        Matplotlib axes object where the plot will be drawn on. If ax=None,
+        Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
         a new axes will be generated.
 
     Returns
@@ -44,11 +43,13 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
     Note
     ----
     The code is taken and modified from
-    : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
+    `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
     The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of kT.
+    unit of the underlying variable, which is in the unit of :math:`kT`.
 
+
+    .. versionadded:: 0.4.0
     '''
     # Make it into a list
     # separate_dhdl method is used so that the input for the actual plotting
@@ -109,7 +110,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
             raise ValueError(
                 'Number of colors ({}) should be larger than the number of data ({})'.format(
                     len(labels), len(dhdl_list)))
-        
+
     # Get the real data out
     xs, ndx, dx = [0], 0, 0.001
     min_y, max_y = 0, 0
@@ -186,9 +187,10 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
             ax.yaxis.set_minor_locator(AML())
     ax.grid(which='both', color='w', lw=0.25, axis='y', zorder=12)
     ax.set_ylabel(
-        r'$\mathrm{\langle{\frac{ \partial U } { \partial \lambda }}\rangle_{\lambda}\/%s}$' % units,
+        r'$\langle{\frac{\partial U}{\partial\lambda}}\rangle_{\lambda}$' +
+        '({})'.format(units),
         fontsize=20, color='#151B54')
-    ax.annotate('$\mathit{\lambda}$', xy=(0, 0), xytext=(0.5, -0.05), size=18,
+    ax.annotate(r'$\mathit{\lambda}$', xy=(0, 0), xytext=(0.5, -0.05), size=18,
                 textcoords='axes fraction', va='top', ha='center',
                 color='#151B54')
     lege = ax.legend(prop=FP(size=14), frameon=False, loc=1)
