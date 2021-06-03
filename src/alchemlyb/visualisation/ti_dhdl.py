@@ -8,7 +8,6 @@ The code for producing the dhdl plot is modified based on
 `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
 """
-from __future__ import division
 
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties as FP

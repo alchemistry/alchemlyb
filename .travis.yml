@@ -20,7 +20,7 @@ branches:
 install:
     - pip install --upgrade pip setuptools wheel
     - pip install --upgrade pytest
-    - pip install six codecov pytest-cov pytest-pep8
+    - pip install codecov pytest-cov pytest-pep8
     - pip install --only-binary=numpy numpy # Otherwise this would take ages
     - pip install https://github.com/alchemistry/alchemtest/archive/master.zip
     - pip install -e .
