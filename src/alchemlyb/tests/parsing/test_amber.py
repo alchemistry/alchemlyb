@@ -3,8 +3,6 @@
 """
 import pytest
 
-from six.moves import zip
-
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemlyb.parsing.amber import extract_u_nk
 from alchemlyb.parsing.amber import file_validation
