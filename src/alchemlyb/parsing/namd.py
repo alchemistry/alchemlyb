@@ -121,8 +121,8 @@ def extract_u_nk(fep_files, T):
                 if '#STARTING' in l:
                     parsing = True
 
-    # TODO test if lambda2 is already in dataframe instead of test below
-    if (lambda2 == 1):
+    if (lambda2 == '1.00' or lambda2 == '0.00'):
+        # this excludes the IDWS case where a dataframe already exists for both endpoints
         # create last dataframe for fep-lambda at last LAMBDA2
         tempDF = pd.DataFrame({
             'time': win_ts_arr,
