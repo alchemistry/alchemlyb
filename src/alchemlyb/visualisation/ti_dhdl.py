@@ -65,15 +65,16 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
     # Convert unit
     new_unit = []
     for dhdl in dhdl_list:
-        if units == 'kT':
-            new_unit.append(to_kT(dhdl))
-        elif units == 'kJ/mol':
-            new_unit.append(to_kJmol(dhdl))
-        elif units == 'kcal/mol':
-            new_unit.append(to_kcalmol(dhdl))
-        else:
-            raise NameError('energy_unit {} can only be kT, kJ/mol or ' \
-                            'kcal/mol.'.format(units))
+        _converters = {'kT': to_kT, 'kJ/mol': to_kJmol,
+                       'kcal/mol': to_kcalmol}
+        try:
+            convert = _converters[units]
+        except KeyError:
+            raise ValueError(
+                f"Energy unit {units} is not supported, "
+                f"choose one of {list(_converters.keys())}")
+        new_unit.append(convert(dhdl))
+
     dhdl_list = new_unit
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))

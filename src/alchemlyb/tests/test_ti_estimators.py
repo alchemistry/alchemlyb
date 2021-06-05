@@ -10,6 +10,8 @@ from alchemlyb.estimators import TI
 import alchemtest.gmx
 import alchemtest.amber
 import alchemtest.gomc
+from alchemtest.gmx import load_benzene
+from alchemlyb.parsing.gmx import extract_dHdl
 
 
 def gmx_benzene_coul_dHdl():
@@ -158,3 +160,30 @@ def test_TI_separate_dhdl_no_pertubed():
     estimator = TI().fit(dHdl)
     assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()])
     assert [len(dhdl) for dhdl in estimator.separate_dhdl()] == [5, ]
+
+class Test_Units():
+    '''Test the units.'''
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def dhdl():
+        bz = load_benzene().data
+        dHdl_coul = pd.concat(
+            [extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+        dHdl_coul.attrs = extract_dHdl(load_benzene().data['Coulomb'][0], T=300).attrs
+        return dHdl_coul
+
+    def test_ti(self, dhdl):
+        ti = TI().fit(dhdl)
+        assert ti.delta_f_.attrs['temperature'] == 300
+        assert ti.delta_f_.attrs['energy_unit'] == 'kT'
+        assert ti.d_delta_f_.attrs['temperature'] == 300
+        assert ti.d_delta_f_.attrs['energy_unit'] == 'kT'
+        assert ti.dhdl.attrs['temperature'] == 300
+        assert ti.dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_ti_separate_dhdl(self, dhdl):
+        ti = TI().fit(dhdl)
+        dhdl_list = ti.separate_dhdl()
+        for dhdl in dhdl_list:
+            assert dhdl.attrs['temperature'] == 300
+            assert dhdl.attrs['energy_unit'] == 'kT'

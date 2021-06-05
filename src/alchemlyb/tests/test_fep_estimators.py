@@ -12,6 +12,8 @@ import alchemtest.gmx
 import alchemtest.amber
 import alchemtest.gomc
 import alchemtest.namd
+from alchemtest.gmx import load_benzene
+from alchemlyb.parsing.gmx import extract_u_nk
 
 def gmx_benzene_coul_u_nk():
     dataset = alchemtest.gmx.load_benzene()
@@ -177,3 +179,29 @@ class TestBAR(FEPestimatorMixin):
         for i in range(len(est.d_delta_f_) - 1):
             ee += est.d_delta_f_.values[i][i+1]**2
         return est.delta_f_.iloc[0, -1], ee**0.5
+
+class Test_Units():
+    '''Test the units.'''
+
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def u_nk():
+        bz = load_benzene().data
+        u_nk_coul = pd.concat(
+            [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
+        u_nk_coul.attrs = extract_u_nk(load_benzene().data['Coulomb'][0], T=300).attrs
+        return u_nk_coul
+
+    def test_bar(self, u_nk):
+        bar = BAR().fit(u_nk)
+        assert bar.delta_f_.attrs['temperature'] == 300
+        assert bar.delta_f_.attrs['energy_unit'] == 'kT'
+        assert bar.d_delta_f_.attrs['temperature'] == 300
+        assert bar.d_delta_f_.attrs['energy_unit'] == 'kT'
+
+    def test_mbar(self, u_nk):
+        mbar = MBAR().fit(u_nk)
+        assert mbar.delta_f_.attrs['temperature'] == 300
+        assert mbar.delta_f_.attrs['energy_unit'] == 'kT'
+        assert mbar.d_delta_f_.attrs['temperature'] == 300
+        assert mbar.d_delta_f_.attrs['energy_unit'] == 'kT'

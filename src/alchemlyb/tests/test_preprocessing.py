@@ -9,6 +9,9 @@ import numpy as np
 from alchemlyb.parsing import gmx
 from alchemlyb.preprocessing import (slicing, statistical_inefficiency,
                                      equilibrium_detection,)
+from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
+from alchemtest.gmx import load_benzene
+from alchemlyb.postprocessors.units import to_kcalmol, to_kT, to_kJmol
 
 import alchemtest.gmx
 
@@ -191,3 +194,54 @@ class TestEquilibriumDetection(TestSlicing, CorrelatedPreprocessors):
     def slicer(self, *args, **kwargs):
         return equilibrium_detection(*args, **kwargs)
 
+class Test_Units():
+    '''Test the preprocessing module.'''
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def dhdl():
+        dataset = load_benzene()
+        dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
+        return dhdl
+
+    def test_kt2kt(self, dhdl):
+        new_dhdl = to_kT(dhdl)
+        assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_kj2kt(self, dhdl):
+        dhdl.attrs['energy_unit'] = 'kJ/mol'
+        new_dhdl = to_kT(dhdl)
+        assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_kcal2kt(self, dhdl):
+        dhdl.attrs['energy_unit'] = 'kcal/mol'
+        new_dhdl = to_kT(dhdl)
+        assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_unknown2kt(self, dhdl):
+        with pytest.raises(ValueError):
+            dhdl.attrs['energy_unit'] = 'ddd'
+            new_dhdl = to_kT(dhdl)
+
+    def test_slicing(self, dhdl):
+        '''Test if extract_u_nk assign the attr correctly'''
+        dataset = load_benzene()
+        u_nk = extract_u_nk(dataset['data']['Coulomb'][0], 310)
+        new_u_nk = slicing(u_nk)
+        assert new_u_nk.attrs['temperature'] == 310
+        assert new_u_nk.attrs['energy_unit'] == 'kT'
+
+    def test_statistical_inefficiency(self, dhdl):
+        '''Test if extract_u_nk assign the attr correctly'''
+        dataset = load_benzene()
+        dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
+        new_dhdl = statistical_inefficiency(dhdl)
+        assert new_dhdl.attrs['temperature'] == 310
+        assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_equilibrium_detection(self, dhdl):
+        '''Test if extract_u_nk assign the attr correctly'''
+        dataset = load_benzene()
+        dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
+        new_dhdl = equilibrium_detection(dhdl)
+        assert new_dhdl.attrs['temperature'] == 310
+        assert new_dhdl.attrs['energy_unit'] == 'kT'

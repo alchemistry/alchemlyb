@@ -134,3 +134,55 @@ def test_plot_convergence():
         plot_convergence(forward, forward_error, backward, backward_error),
         matplotlib.axes.Axes)
 
+class Test_Units():
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def estimaters():
+        bz = load_benzene().data
+        dHdl_coul = pd.concat(
+            [extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+        dHdl_coul.attrs = extract_dHdl(load_benzene().data['Coulomb'][0], T=300).attrs
+        ti = TI().fit(dHdl_coul)
+
+        u_nk_coul = pd.concat(
+            [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
+        u_nk_coul.attrs = extract_dHdl(load_benzene().data['Coulomb'][0], T=300).attrs
+        mbar = MBAR().fit(u_nk_coul)
+
+        return ti, mbar
+
+    def test_plot_dF_state_kT(self, estimaters):
+        fig = plot_dF_state(estimaters, units='kT')
+        assert isinstance(fig, matplotlib.figure.Figure)
+
+    def test_plot_dF_state_kJ(self, estimaters):
+        fig = plot_dF_state(estimaters, units='kJ/mol')
+        assert isinstance(fig, matplotlib.figure.Figure)
+
+    def test_plot_dF_state_kcal(self, estimaters):
+        fig = plot_dF_state(estimaters, units='kcal/mol')
+        assert isinstance(fig, matplotlib.figure.Figure)
+
+    def test_plot_dF_state_unknown(self, estimaters):
+        with pytest.raises(ValueError):
+            fig = plot_dF_state(estimaters, units='ddd')
+
+    def test_plot_ti_dhdl_kT(self, estimaters):
+        ti, mbar = estimaters
+        fig = plot_ti_dhdl(ti, units='kT')
+        assert isinstance(fig, matplotlib.axes.Axes)
+
+    def test_plot_ti_dhdl_kJ(self, estimaters):
+        ti, mbar = estimaters
+        fig = plot_ti_dhdl(ti, units='kJ/mol')
+        assert isinstance(fig, matplotlib.axes.Axes)
+
+    def test_plot_ti_dhdl_kcal(self, estimaters):
+        ti, mbar = estimaters
+        fig = plot_ti_dhdl(ti, units='kcal/mol')
+        assert isinstance(fig, matplotlib.axes.Axes)
+
+    def test_plot_ti_dhdl_unknown(self, estimaters):
+        ti, mbar = estimaters
+        with pytest.raises(ValueError):
+            fig = plot_ti_dhdl(ti, units='ddd')

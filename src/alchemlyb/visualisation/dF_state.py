@@ -79,18 +79,17 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
         error = []
         for dhdl in dhdl_list:
             for i in range(len(dhdl.delta_f_) - 1):
-                if units == 'kT':
-                    dF.append(to_kT(dhdl.delta_f_).iloc[i, i + 1])
-                    error.append(to_kT(dhdl.d_delta_f_).iloc[i, i + 1])
-                elif units == 'kJ/mol':
-                    dF.append(to_kJmol(dhdl.delta_f_).iloc[i, i + 1])
-                    error.append(to_kJmol(dhdl.d_delta_f_).iloc[i, i + 1])
-                elif units == 'kcal/mol':
-                    dF.append(to_kcalmol(dhdl.delta_f_).iloc[i, i + 1])
-                    error.append(to_kcalmol(dhdl.d_delta_f_).iloc[i, i + 1])
-                else:
-                    raise NameError('energy_unit {} can only be kT, kJ/mol '
-                                    'or kcal/mol.'.format(units))
+                _converters = {'kT': to_kT, 'kJ/mol': to_kJmol,
+                               'kcal/mol': to_kcalmol}
+                try:
+                    convert = _converters[units]
+                except KeyError:
+                    raise ValueError(
+                        f"Energy unit {units} is not supported, "
+                        f"choose one of {list(_converters.keys())}")
+
+                dF.append(convert(dhdl.delta_f_).iloc[i, i + 1])
+                error.append(convert(dhdl.d_delta_f_).iloc[i, i + 1])
 
         dF_list.append(dF)
         error_list.append(error)
