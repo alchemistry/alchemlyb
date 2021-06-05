@@ -181,3 +181,17 @@ def _diag_sum(dataset):
                 ds += u_nk.iloc[i][i]
 
     return ds
+
+def test_extract_u_nk_unit():
+    '''Test if extract_u_nk assign the attr correctly'''
+    dataset = load_benzene()
+    u_nk = extract_u_nk(dataset['data']['Coulomb'][0], 310)
+    assert u_nk.attrs['temperature'] == 310
+    assert u_nk.attrs['energy_unit'] == 'kT'
+
+def test_extract_dHdl_unit():
+    '''Test if extract_u_nk assign the attr correctly'''
+    dataset = load_benzene()
+    dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
+    assert dhdl.attrs['temperature'] == 310
+    assert dhdl.attrs['energy_unit'] == 'kT'

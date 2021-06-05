@@ -21,10 +21,13 @@ def to_kT(df):
     DataFrame
         `df` converted.
     """
-    assert 'temperature' in df.attrs, 'Attribute temperature not found in the' \
-                                      ' input Dataframe.'
-    assert 'energy_unit' in df.attrs, 'Attribute energy_unit not found in the' \
-                                      ' input Dataframe.'
+
+    if 'temperature' not in df.attrs:
+        raise TypeError('Attribute temperature not found in the input '
+                        'Dataframe.')
+    if 'energy_unit' not in df.attrs:
+        raise TypeError('Attribute energy_unit not found in the input '
+                        'Dataframe.')
     if df.attrs['energy_unit'] == 'kT':
         return df
     elif df.attrs['energy_unit'] == 'kJ/mol':
@@ -40,7 +43,7 @@ def to_kT(df):
         new_df.attrs['energy_unit'] = 'kT'
         return new_df
     else:
-        raise NameError('energy_unit {} can only be kT, kJ/mol or ' \
+        raise ValueError('energy_unit {} can only be kT, kJ/mol or ' \
                         'kcal/mol.'.format(df.attrs['energy_unit']))
 
 
@@ -61,6 +64,7 @@ def to_kcalmol(df):
     kt_df = to_kT(df)
     kt_df = kt_df * (Boltzmann_constant * df.attrs['temperature'] *
                            Avogadro_constant / 1000 * kJ2kcal)
+    kt_df.attrs['energy_unit'] = 'kcal/mol'
     return kt_df
 
 def to_kJmol(df):
@@ -80,12 +84,5 @@ def to_kJmol(df):
     kt_df = to_kT(df)
     kt_df = kt_df * (Boltzmann_constant * df.attrs['temperature'] *
                            Avogadro_constant / 1000)
+    kt_df.attrs['energy_unit'] = 'kJ/mol'
     return kt_df
-
-def pass_attrs(func):
-    '''Pass the attributes from the input dataframe to the output dataframe'''
-    def wrapper(input_dataframe, *args,**kwargs):
-        dataframe = func(input_dataframe, *args,**kwargs)
-        dataframe.attrs = input_dataframe.attrs
-        return dataframe
-    return wrapper

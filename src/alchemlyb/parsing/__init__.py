@@ -1,8 +1,9 @@
 def add_attr(func):
-    '''Pass the attributes from the input dataframe to the output dataframe'''
+    '''Add temperature to the parsed dataframe.'''
     def wrapper(outfile, T):
         dataframe = func(outfile, T)
-        dataframe.attrs['temperature'] = T
-        dataframe.attrs['energy_unit'] = 'kT'
+        if dataframe is not None:
+            dataframe.attrs['temperature'] = T
+            dataframe.attrs['energy_unit'] = 'kT'
         return dataframe
     return wrapper

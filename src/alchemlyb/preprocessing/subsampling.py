@@ -6,7 +6,7 @@ import pandas as pd
 from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
-from ..postprocessors.units import pass_attrs
+from . import pass_attrs
 
 
 def _check_multiple_times(df):
