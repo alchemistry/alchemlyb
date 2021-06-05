@@ -15,6 +15,7 @@ import pandas as pd
 import numpy as np
 
 from .util import anyopen
+from . import add_attr
 
 logger = logging.getLogger("alchemlyb.parsers.Amber")
 
@@ -256,7 +257,7 @@ def file_validation(outfile):
     file_datum.have_mbar = have_mbar
     return file_datum
 
-
+@add_attr
 def extract_u_nk(outfile, T):
     """Return reduced potentials `u_nk` from Amber outputfile.
 
@@ -312,7 +313,7 @@ def extract_u_nk(outfile, T):
                                                           names=['time', 'lambdas']),
                         index=np.array(file_datum.mbar_lambdas, dtype=np.float64)).T
 
-
+@add_attr
 def extract_dHdl(outfile, T):
     """Return gradients ``dH/dl`` from Amber TI outputfile.
 

@@ -4,7 +4,7 @@
 import pandas as pd
 
 from .util import anyopen
-
+from . import add_attr
 
 # TODO: perhaps move constants elsewhere?
 # these are the units we need for dealing with GOMC, so not
@@ -12,7 +12,7 @@ from .util import anyopen
 # (kB in kJ/molK)
 k_b = 8.3144621E-3
 
-
+@add_attr
 def extract_u_nk(filename, T):
     """Return reduced potentials `u_nk` from a Hamiltonian differences dat file.
 
@@ -88,7 +88,7 @@ def extract_u_nk(filename, T):
 
     return u_k
 
-
+@add_attr
 def extract_dHdl(filename, T):
     """Return gradients `dH/dl` from a Hamiltonian differences free energy file.
 

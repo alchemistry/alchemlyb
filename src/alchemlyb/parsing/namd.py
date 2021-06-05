@@ -4,6 +4,7 @@
 import pandas as pd
 import numpy as np
 from .util import anyopen
+from . import add_attr
 
 # TODO: perhaps move constants elsewhere?
 # these are the units we need for dealing with NAMD, which uses
@@ -11,7 +12,7 @@ from .util import anyopen
 # (kB in kcal/molK)
 k_b = 1.9872041e-3
 
-
+@add_attr
 def extract_u_nk(fep_file, T):
     """Return reduced potentials `u_nk` from NAMD fepout file.
 

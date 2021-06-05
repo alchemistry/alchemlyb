@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 
 from .util import anyopen
+from . import add_attr
 
 
 # TODO: perhaps move constants elsewhere?
@@ -13,7 +14,7 @@ from .util import anyopen
 # (kB in kJ/molK)
 k_b = 8.3144621E-3
 
-
+@add_attr
 def extract_u_nk(xvg, T):
     """Return reduced potentials `u_nk` from a Hamiltonian differences XVG file.
 
@@ -105,12 +106,9 @@ def extract_u_nk(xvg, T):
 
     u_k.name = 'u_nk'
 
-    u_k.attrs['temperature'] = T
-    u_k.attrs['energy_unit'] = 'kT'
-
     return u_k
 
-
+@add_attr
 def extract_dHdl(xvg, T):
     """Return gradients `dH/dl` from a Hamiltonian differences XVG file.
 
@@ -184,9 +182,6 @@ def extract_dHdl(xvg, T):
     dHdl= dHdl.reset_index().set_index(newind)
 
     dHdl.name='dH/dl'
-
-    dHdl.attrs['temperature'] = T
-    dHdl.attrs['energy_unit'] = 'kT'
 
     return dHdl
 

@@ -89,8 +89,8 @@ class MBAR(BaseEstimator):
         # set attributes
         out = self._mbar.getFreeEnergyDifferences(return_theta=True)
         free_energy_differences = [pd.DataFrame(i,
-                              columns=self.states_,
-                              index=self.states_) for i in out]
+                                   columns=self.states_,
+                                   index=self.states_) for i in out]
 
         (self.delta_f_, self.d_delta_f_, self.theta_) = free_energy_differences
 
