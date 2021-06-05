@@ -39,7 +39,7 @@ class Test_preprocessing():
         assert new_dhdl.attrs['energy_unit'] == 'kT'
 
     def test_unknown2kt(self, dhdl):
-        with pytest.raises(NameError):
+        with pytest.raises(ValueError):
             dhdl.attrs['energy_unit'] = 'ddd'
             new_dhdl = to_kT(dhdl)
 
