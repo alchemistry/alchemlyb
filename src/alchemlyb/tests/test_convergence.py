@@ -41,4 +41,3 @@ def test_convergence_wrong_estimator(gmx_benzene):
     dHdl, u_nk = gmx_benzene
     with pytest.raises(ValueError):
         convergence = forward_backward_convergence(u_nk, 'www')
-        
