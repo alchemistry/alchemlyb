@@ -135,7 +135,7 @@ is provided to replace :func:`pandas.concat`. ::
 
 For more complex data manipulation functions, a decorator
 :func:`alchemlyb.pass_attrs` could be used to pass the metadata from the input
-data frame (first positional arguments) to the output dataframe. ::
+data frame (first positional argument) to the output dataframe. ::
 
     >>> from alchemlyb import pass_attrs
     >>> @pass_attrs
