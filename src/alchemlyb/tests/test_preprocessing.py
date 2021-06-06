@@ -6,6 +6,7 @@ import pytest
 import pandas as pd
 import numpy as np
 
+import alchemlyb
 from alchemlyb.parsing import gmx
 from alchemlyb.preprocessing import (slicing, statistical_inefficiency,
                                      equilibrium_detection,)
@@ -34,12 +35,12 @@ def gmx_benzene_u_nk():
 
 def gmx_benzene_dHdl_full():
     dataset = alchemtest.gmx.load_benzene()
-    return pd.concat([gmx.extract_dHdl(i, T=300) for i in dataset['data']['Coulomb']])
+    return alchemlyb.concat([gmx.extract_dHdl(i, T=300) for i in dataset['data']['Coulomb']])
 
 
 def gmx_benzene_u_nk_full():
     dataset = alchemtest.gmx.load_benzene()
-    return pd.concat([gmx.extract_u_nk(i, T=300) for i in dataset['data']['Coulomb']])
+    return alchemlyb.concat([gmx.extract_u_nk(i, T=300) for i in dataset['data']['Coulomb']])
 
 class TestSlicing:
     """Test slicing functionality.
@@ -82,56 +83,56 @@ class TestSlicing:
         assert len(subsample) == 501
 
     def test_sort_off(self, gmx_ABFE):
-        unsorted = pd.concat([gmx_ABFE[-500:], gmx_ABFE[:500]])
+        unsorted = alchemlyb.concat([gmx_ABFE[-500:], gmx_ABFE[:500]])
         with pytest.raises(KeyError):
             statistical_inefficiency(unsorted,
                                      unsorted.sum(axis=1),
                                      sort=False)
 
     def test_sort_on(self, gmx_ABFE):
-        unsorted = pd.concat([gmx_ABFE[-500:], gmx_ABFE[:500]])
+        unsorted = alchemlyb.concat([gmx_ABFE[-500:], gmx_ABFE[:500]])
         subsample = statistical_inefficiency(unsorted,
                                              unsorted.sum(axis=1),
                                              sort=True)
         assert subsample.reset_index(0)['time'].is_monotonic_increasing
 
     def test_sort_on_noseries(self, gmx_ABFE):
-        unsorted = pd.concat([gmx_ABFE[-500:], gmx_ABFE[:500]])
+        unsorted = alchemlyb.concat([gmx_ABFE[-500:], gmx_ABFE[:500]])
         subsample = statistical_inefficiency(unsorted,
                                              None,
                                              sort=True)
         assert subsample.reset_index(0)['time'].is_monotonic_increasing
 
     def test_duplication_off(self, gmx_ABFE):
-        duplicated = pd.concat([gmx_ABFE, gmx_ABFE])
+        duplicated = alchemlyb.concat([gmx_ABFE, gmx_ABFE])
         with pytest.raises(KeyError):
             statistical_inefficiency(duplicated,
                                      duplicated.sum(axis=1),
                                      drop_duplicates=False)
 
     def test_duplication_on_dataframe(self, gmx_ABFE):
-        duplicated = pd.concat([gmx_ABFE, gmx_ABFE])
+        duplicated = alchemlyb.concat([gmx_ABFE, gmx_ABFE])
         subsample = statistical_inefficiency(duplicated,
                                              duplicated.sum(axis=1),
                                              drop_duplicates=True)
         assert len(subsample) < 1000
 
     def test_duplication_on_dataframe_noseries(self, gmx_ABFE):
-        duplicated = pd.concat([gmx_ABFE, gmx_ABFE])
+        duplicated = alchemlyb.concat([gmx_ABFE, gmx_ABFE])
         subsample = statistical_inefficiency(duplicated,
                                              None,
                                              drop_duplicates=True)
         assert len(subsample) == 1001
 
     def test_duplication_on_series(self, gmx_ABFE):
-        duplicated = pd.concat([gmx_ABFE, gmx_ABFE])
+        duplicated = alchemlyb.concat([gmx_ABFE, gmx_ABFE])
         subsample = statistical_inefficiency(duplicated.sum(axis=1),
                                              duplicated.sum(axis=1),
                                              drop_duplicates=True)
         assert len(subsample) < 1000
 
     def test_duplication_on_series_noseries(self, gmx_ABFE):
-        duplicated = pd.concat([gmx_ABFE, gmx_ABFE])
+        duplicated = alchemlyb.concat([gmx_ABFE, gmx_ABFE])
         subsample = statistical_inefficiency(duplicated.sum(axis=1),
                                              None,
                                              drop_duplicates=True)

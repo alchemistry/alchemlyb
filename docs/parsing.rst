@@ -15,9 +15,13 @@ These functions have a consistent interface across all submodules, often taking 
 
 Standard forms of raw data
 --------------------------
-All components of **alchemlyb** are designed to work together well with minimal work on the part of the user.
-To make this possible, the library deals in a common data structure for each ``dHdl`` and ``u_nk``, and all parsers yield these quantities in these standard forms.
-The layout of these data structures allow for easy stacking of samples from different simulations while retaining information on where each sample came from using e.g. :py:func:`pandas.concat`.
+All components of **alchemlyb** are designed to work together well with minimal
+work on the part of the user. To make this possible, the library deals in a
+common data structure for each ``dHdl`` and ``u_nk``, and all parsers yield
+these quantities in these standard forms. The metadata (such as energy unit
+and temperature) are stored in :attr:`pandas.DataFrame.attrs`. Care
+should be taken to ensure that these metadata is persevered during
+:ref:`metadata propagation <metadata>`.
 
 
 .. _dHdl:
@@ -94,9 +98,49 @@ For datasets that sample only a single :math:`\lambda` parameter, then the DataF
 
 A note on units
 '''''''''''''''
-Throughout ``alchemlyb``, energy quantities such as ``dHdl`` or ``u_nk`` are given in units of :math:`k_B T`.
+Throughout ``alchemlyb``, the metadata, such as unit and temperature, of the
+dataset are stored as dictionary in :attr:`pandas.DataFrame.attrs`. ::
+
+    >>> from alchemtest.gmx import load_benzene
+    >>> from alchemlyb.parsing.gmx import extract_dHdl
+    >>> dataset = load_benzene()
+    >>> dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
+    >>> dhdl.attrs['temperature']
+    310
+    >>> dhdl.attrs['energy_unit']
+    'kT'
+
 Also, although parsers will extract timestamps from input data, these are taken as-is and the library does not have any awareness of units for these.
 Keep this in mind when doing, e.g. :ref:`subsampling <subsampling>`.
+
+.. _metadata:
+
+Metadata Propagation
+''''''''''''''''''''
+The metadata is stored in :attr:`pandas.DataFrame.attrs`. Though all functions
+in **alchemlyb** will preserve this metadata, the metadata might get lost
+during data manipulation (such as concatenation). :func:`alchemlyb.concat`
+is provided to replace :func:`pandas.concat`. ::
+
+    >>> import alchemlyb
+    >>> from alchemtest.gmx import load_benzene
+    >>> from alchemlyb.parsing.gmx import extract_dHdl
+    >>> dataset = load_benzene().data
+    >>> dhdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in
+    dataset['Coulomb']])
+    >>> dhdl_coul.attrs
+    {'temperature': 300, 'energy_unit': 'kT'}
+
+.. autofunction:: alchemlyb.concat
+
+For more complex data manipulation functions, a decorator
+:func:`alchemlyb.pass_attrs` could be used to pass the metadata from the input
+data frame (first positional arguments) to the output dataframe. ::
+
+    >>> from alchemlyb import pass_attrs
+    >>> @pass_attrs
+    >>> def slice(dataframe):
+    >>>     return dataframe.loc[::10]
 
 Parsers by software package
 ---------------------------

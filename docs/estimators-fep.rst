@@ -16,8 +16,8 @@ and parse the datafiles separately for each alchemical leg using :func:`alchemly
     >>> from alchemlyb.parsing.gmx import extract_u_nk
     >>> import pandas as pd
 
-    >>> u_nk_coul = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
-    >>> u_nk_vdw = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['VDW']])
+    >>> u_nk_coul = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
+    >>> u_nk_vdw = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz['VDW']])
 
 We can now use the :class:`~alchemlyb.estimators.MBAR` estimator to obtain the free energy differences between each :math:`\lambda` window sampled.
 The :meth:`~alchemlyb.estimators.MBAR.fit` method is used to perform the free energy estimate, given the gradient data::

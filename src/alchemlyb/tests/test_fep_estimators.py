@@ -6,6 +6,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
+import alchemlyb
 from alchemlyb.parsing import gmx, amber, namd, gomc
 from alchemlyb.estimators import MBAR, BAR
 import alchemtest.gmx
@@ -18,7 +19,7 @@ from alchemlyb.parsing.gmx import extract_u_nk
 def gmx_benzene_coul_u_nk():
     dataset = alchemtest.gmx.load_benzene()
 
-    u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['Coulomb']])
 
     return u_nk
@@ -26,7 +27,7 @@ def gmx_benzene_coul_u_nk():
 def gmx_benzene_vdw_u_nk():
     dataset = alchemtest.gmx.load_benzene()
 
-    u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['VDW']])
 
     return u_nk
@@ -34,7 +35,7 @@ def gmx_benzene_vdw_u_nk():
 def gmx_expanded_ensemble_case_1():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_1()
 
-    u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return u_nk
@@ -42,7 +43,7 @@ def gmx_expanded_ensemble_case_1():
 def gmx_expanded_ensemble_case_2():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_2()
 
-    u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return u_nk
@@ -50,7 +51,7 @@ def gmx_expanded_ensemble_case_2():
 def gmx_expanded_ensemble_case_3():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_3()
 
-    u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return u_nk
@@ -58,7 +59,7 @@ def gmx_expanded_ensemble_case_3():
 def gmx_water_particle_with_total_energy():
     dataset = alchemtest.gmx.load_water_particle_with_total_energy()
 
-    u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return u_nk
@@ -66,7 +67,7 @@ def gmx_water_particle_with_total_energy():
 def gmx_water_particle_with_potential_energy():
     dataset = alchemtest.gmx.load_water_particle_with_potential_energy()
 
-    u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return u_nk
@@ -74,7 +75,7 @@ def gmx_water_particle_with_potential_energy():
 def gmx_water_particle_without_energy():
     dataset = alchemtest.gmx.load_water_particle_without_energy()
 
-    u_nk = pd.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return u_nk
@@ -82,14 +83,14 @@ def gmx_water_particle_without_energy():
 def amber_bace_example_complex_vdw():
     dataset = alchemtest.amber.load_bace_example()
 
-    u_nk = pd.concat([amber.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([amber.extract_u_nk(filename, T=300)
                       for filename in dataset['data']['complex']['vdw']])
     return u_nk
 
 def gomc_benzene_u_nk():
     dataset = alchemtest.gomc.load_benzene()
 
-    u_nk = pd.concat([gomc.extract_u_nk(filename, T=298)
+    u_nk = alchemlyb.concat([gomc.extract_u_nk(filename, T=298)
                       for filename in dataset['data']])
 
     return u_nk
@@ -187,7 +188,7 @@ class Test_Units():
     @pytest.fixture(scope='class')
     def u_nk():
         bz = load_benzene().data
-        u_nk_coul = pd.concat(
+        u_nk_coul = alchemlyb.concat(
             [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
         u_nk_coul.attrs = extract_u_nk(load_benzene().data['Coulomb'][0], T=300).attrs
         return u_nk_coul

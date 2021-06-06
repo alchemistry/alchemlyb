@@ -19,4 +19,3 @@ def test_nounit():
     dhdl.attrs.pop('energy_unit', None)
     with pytest.raises(TypeError):
         to_kT(dhdl)
-        

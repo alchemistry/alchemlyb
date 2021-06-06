@@ -4,6 +4,8 @@ It is quite often that the user want to visualise the results to gain
 confidence on the computed free energy. **alchemlyb** provides various
 visualisation tools to help user to judge the estimate.
 
+Plotting Functions
+------------------
 .. currentmodule:: alchemlyb.visualisation
 
 .. autosummary::
@@ -31,7 +33,7 @@ the degree of overlap. It is recommended that there should be at least
     >>> from alchemlyb.estimators import MBAR
 
     >>> bz = load_benzene().data
-    >>> u_nk_coul = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
+    >>> u_nk_coul = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
     >>> mbar_coul = MBAR()
     >>> mbar_coul.fit(u_nk_coul)
 
@@ -67,9 +69,9 @@ together as well. ::
     >>> from alchemlyb.estimators import TI
 
     >>> bz = load_benzene().data
-    >>> dHdl_coul = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+    >>> dHdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
     >>> ti_coul = TI().fit(dHdl_coul)
-    >>> dHdl_vdw = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
+    >>> dHdl_vdw = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
     >>> ti_vdw = TI().fit(dHdl_vdw)
 
     >>> from alchemlyb.visualisation import plot_ti_dhdl
@@ -106,10 +108,10 @@ estimators. ::
     >>> import pandas as pd
     >>> from alchemlyb.visualisation.dF_state import plot_dF_state
     >>> bz = load_benzene().data
-    >>> u_nk_coul = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
-    >>> dHdl_coul = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
-    >>> u_nk_vdw = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['VDW']])
-    >>> dHdl_vdw = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
+    >>> u_nk_coul = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
+    >>> dHdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+    >>> u_nk_vdw = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz['VDW']])
+    >>> dHdl_vdw = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
     >>> ti_coul = TI().fit(dHdl_coul)
     >>> ti_vdw = TI().fit(dHdl_vdw)
     >>> bar_coul = BAR().fit(u_nk_coul)
@@ -159,12 +161,12 @@ and the corresponding error. ::
     >>> for i in range(1, num_points+1):
     >>>     # Do the forward
     >>>     slice = int(len(data_list[0])/num_points*i)
-    >>>     u_nk_coul = pd.concat([data[:slice] for data in data_list])
+    >>>     u_nk_coul = alchemlyb.concat([data[:slice] for data in data_list])
     >>>     estimate = MBAR().fit(u_nk_coul)
     >>>     forward.append(estimate.delta_f_.iloc[0,-1])
     >>>     forward_error.append(estimate.d_delta_f_.iloc[0,-1])
     >>>     # Do the backward
-    >>>     u_nk_coul = pd.concat([data[-slice:] for data in data_list])
+    >>>     u_nk_coul = alchemlyb.concat([data[-slice:] for data in data_list])
     >>>     estimate = MBAR().fit(u_nk_coul)
     >>>     backward.append(estimate.delta_f_.iloc[0,-1])
     >>>     backward_error.append(estimate.d_delta_f_.iloc[0,-1])

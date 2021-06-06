@@ -47,9 +47,6 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     The code is taken and modified from
     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
-    The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of :math:`kT`.
-
 
     .. versionadded:: 0.4.0
     '''

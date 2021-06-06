@@ -5,6 +5,7 @@ import pytest
 
 import pandas as pd
 
+import alchemlyb
 from alchemlyb.parsing import gmx, amber, gomc
 from alchemlyb.estimators import TI
 import alchemtest.gmx
@@ -17,7 +18,7 @@ from alchemlyb.parsing.gmx import extract_dHdl
 def gmx_benzene_coul_dHdl():
     dataset = alchemtest.gmx.load_benzene()
 
-    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['Coulomb']])
 
     return dHdl
@@ -25,7 +26,7 @@ def gmx_benzene_coul_dHdl():
 def gmx_benzene_vdw_dHdl():
     dataset = alchemtest.gmx.load_benzene()
 
-    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['VDW']])
 
     return dHdl
@@ -33,7 +34,7 @@ def gmx_benzene_vdw_dHdl():
 def gmx_expanded_ensemble_case_1_dHdl():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_1()
 
-    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return dHdl
@@ -41,7 +42,7 @@ def gmx_expanded_ensemble_case_1_dHdl():
 def gmx_expanded_ensemble_case_2_dHdl():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_2()
 
-    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return dHdl
@@ -49,7 +50,7 @@ def gmx_expanded_ensemble_case_2_dHdl():
 def gmx_expanded_ensemble_case_3_dHdl():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_3()
 
-    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return dHdl
@@ -57,7 +58,7 @@ def gmx_expanded_ensemble_case_3_dHdl():
 def gmx_water_particle_with_total_energy_dHdl():
     dataset = alchemtest.gmx.load_water_particle_with_total_energy()
 
-    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return dHdl
@@ -65,7 +66,7 @@ def gmx_water_particle_with_total_energy_dHdl():
 def gmx_water_particle_with_potential_energy_dHdl():
     dataset = alchemtest.gmx.load_water_particle_with_potential_energy()
 
-    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return dHdl
@@ -73,7 +74,7 @@ def gmx_water_particle_with_potential_energy_dHdl():
 def gmx_water_particle_without_energy_dHdl():
     dataset = alchemtest.gmx.load_water_particle_without_energy()
 
-    dHdl = pd.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['AllStates']])
 
     return dHdl
@@ -81,7 +82,7 @@ def gmx_water_particle_without_energy_dHdl():
 def amber_simplesolvated_charge_dHdl():
     dataset = alchemtest.amber.load_simplesolvated()
 
-    dHdl = pd.concat([amber.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([amber.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['charge']])
 
     return dHdl
@@ -89,7 +90,7 @@ def amber_simplesolvated_charge_dHdl():
 def amber_simplesolvated_vdw_dHdl():
     dataset = alchemtest.amber.load_simplesolvated()
 
-    dHdl = pd.concat([amber.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([amber.extract_dHdl(filename, T=300)
                       for filename in dataset['data']['vdw']])
 
     return dHdl
@@ -97,7 +98,7 @@ def amber_simplesolvated_vdw_dHdl():
 def gomc_benzene_dHdl():
     dataset = alchemtest.gomc.load_benzene()
 
-    dHdl = pd.concat([gomc.extract_dHdl(filename, T=298)
+    dHdl = alchemlyb.concat([gomc.extract_dHdl(filename, T=298)
                       for filename in dataset['data']])
 
     return dHdl
@@ -167,7 +168,7 @@ class Test_Units():
     @pytest.fixture(scope='class')
     def dhdl():
         bz = load_benzene().data
-        dHdl_coul = pd.concat(
+        dHdl_coul = alchemlyb.concat(
             [extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
         dHdl_coul.attrs = extract_dHdl(load_benzene().data['Coulomb'][0], T=300).attrs
         return dHdl_coul
