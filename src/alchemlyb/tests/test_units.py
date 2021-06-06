@@ -31,3 +31,10 @@ def test_concat():
     df2.attrs = {1: 2}
     with pytest.raises(ValueError):
         alchemlyb.concat([df1, df2])
+
+def test_setT():
+    '''Test setting temperature.'''
+    df = pd.DataFrame(data={'col1': [1, 2]})
+    df.attrs = {'temperature': 300, 'energy_unit': 'kT'}
+    new = to_kT(df, 310)
+    assert new.attrs['temperature'] == 310

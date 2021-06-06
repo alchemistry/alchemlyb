@@ -246,4 +246,3 @@ class Test_Units():
         new_dhdl = equilibrium_detection(dhdl)
         assert new_dhdl.attrs['temperature'] == 310
         assert new_dhdl.attrs['energy_unit'] == 'kT'
-        
