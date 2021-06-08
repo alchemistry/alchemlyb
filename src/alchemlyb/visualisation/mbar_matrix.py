@@ -9,7 +9,6 @@ The code for producing the overlap matrix plot is taken from
 `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
 """
-from __future__ import division
 
 import matplotlib.pyplot as plt
 import numpy as np

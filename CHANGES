@@ -13,6 +13,21 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" http://semver.org
 
 ------------------------------------------------------------------------------
+??/??/2021 xiki-tempula
+
+  * 0.5.0
+
+Enhancements
+
+Deprecations
+
+Fixes
+
+Changes
+  - Removed support for Python 2.7 and 3.5 (issue #130).
+  - Bump the minimum pandas version to 1.0 (issue #130).
+  
+
 06/??/2021 orbeckst
 
   * 0.4.2
