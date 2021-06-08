@@ -13,6 +13,14 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" http://semver.org
 
 ------------------------------------------------------------------------------
+06/??/2021 orbeckst
+
+  * 0.4.2
+
+Fixes
+  - added back documentation that was lost in 0.4.1 release (#136)
+
+
 06/01/2021 xiki-tempula, orbeckst
 
   * 0.4.1
