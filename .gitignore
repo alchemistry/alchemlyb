@@ -2,3 +2,6 @@
 .vscode
 *.DS_Store
 build
+__pycache__
+.coverage.*
+*~
