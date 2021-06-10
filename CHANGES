@@ -13,7 +13,7 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" http://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2021 xiki-tempula
+??/??/2021 xiki-tempula, orbeckst
 
   * 0.5.0
 
@@ -24,8 +24,11 @@ Deprecations
 Fixes
 
 Changes
-  - Removed support for Python 2.7 and 3.5 (issue #130).
-  - Bump the minimum pandas version to 1.0 (issue #130).
+  - alchemlyb adopts NEP29
+    https://numpy.org/neps/nep-0029-deprecation_policy.html
+    to effectively only support the last 2-3 minor Python versions
+  - Removed support for Python 2.7 and 3.6 (issue #130, #140).
+  - Bump the minimum pandas version to 1.2 (issue #130, #140).
   
 
 06/08/2021 orbeckst
