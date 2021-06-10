@@ -39,8 +39,17 @@ Development is done in the open on `GitHub`_.
 
 Software engineering best-practices are used throughout, including continuous integration testing via Travis CI, up-to-date documentation, and regular releases.
 
-.. _`GitHub`: https://github.com/alchemistry/alchemlyb
+.. Note::
+   With release 0.5.0, the alchemlyb project adopted `NEP 29`_ to determine which versions of Python and NumPy_ will be supported.
+   When we release a new major or minor version, alchemlyb will support *at least all minor versions of Python introduced and released in the prior 42 months from the release date with a minimum of 2 minor versions of Python*, and *all minor versions of NumPy released in the prior 24 months from the anticipated release date with a minimum of 3 minor versions of NumPy*.
 
+The pandas_ package (one of our other primary dependencies) also follows `NEP 29`_ so this support policy will make it easier to maintain **alchemlyb** in the future.
+
+   
+.. _`GitHub`: https://github.com/alchemistry/alchemlyb
+.. _`NEP 29`: https://numpy.org/neps/nep-0029-deprecation_policy.html
+.. _NumPy: https://numpy.org
+.. _pandas: https://pandas.pydata.org/
 
 .. _contact:
 
