@@ -42,6 +42,7 @@ setup(name='alchemlyb',
       package_dir={'': 'src'},
       license='BSD',
       long_description=open('README.rst').read(),
+      long_description_content_type='text/x-rst',
       tests_require = ['pytest', 'alchemtest'],
       install_requires=['numpy', 'pandas>=1.0', 'pymbar>=3.0.5,<4', 'scipy', 'scikit-learn', 'matplotlib']
       )

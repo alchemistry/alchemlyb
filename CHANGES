@@ -28,6 +28,14 @@ Changes
   - Bump the minimum pandas version to 1.0 (issue #130).
   
 
+06/08/2021 orbeckst
+
+  * 0.4.2
+
+Fixes
+  - added back documentation that was lost in 0.4.1 release (#136)
+
+
 06/01/2021 xiki-tempula, orbeckst
 
   * 0.4.1
