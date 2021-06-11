@@ -5,6 +5,8 @@ import pytest
 
 from alchemlyb.parsing.namd import extract_u_nk
 from alchemtest.namd import load_tyr2ala
+from alchemtest.namd import load_idws
+
 
 @pytest.fixture(scope="module")
 def dataset():
@@ -22,3 +24,13 @@ def test_u_nk(dataset, direction, shape):
 
         assert u_nk.index.names == ['time', 'fep-lambda']
         assert u_nk.shape == shape
+
+def test_u_nk_idws():
+    """Test that u_nk has the correct form when extracted from files.
+    """
+
+    filenames = load_idws()['data']['forward']
+    u_nk = extract_u_nk(filenames, T=300)
+
+    assert u_nk.index.names == ['time', 'fep-lambda']
+    assert u_nk.shape == (2602, 11)
