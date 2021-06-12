@@ -99,6 +99,18 @@ def to_kJmol(df, T=None):
     return kt_df
 
 def get_unit_converter(units):
+    """ Obtain the converter according to the unit string.
+
+    Parameters
+    ----------
+    units : str
+        The unit of the estimate.
+
+    Returns
+    -------
+    func
+        converter.
+    """
     converters = {'kT': to_kT, 'kJ/mol': to_kJmol,
                    'kcal/mol': to_kcalmol}
     try:
