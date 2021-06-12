@@ -152,7 +152,7 @@ Keep this in mind when doing, e.g. :ref:`subsampling <subsampling>`.
 
 Metadata Propagation
 ''''''''''''''''''''
-The metadata is stored in :attr:`pandas.DataFrame.attrs`. Though all functions
+The metadata is stored in :attr:`pandas.DataFrame.attrs`. Although all functions
 in **alchemlyb** will preserve this metadata, the metadata might get lost
 during data manipulation (such as concatenation). :func:`alchemlyb.concat`
 is provided to replace :func:`pandas.concat`. ::
