@@ -104,7 +104,7 @@ def get_unit_converter(units):
     Parameters
     ----------
     units : str
-        The unit of the estimate.
+        The unit that the function converts to.
 
     Returns
     -------
