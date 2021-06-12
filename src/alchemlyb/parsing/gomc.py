@@ -4,15 +4,12 @@
 import pandas as pd
 
 from .util import anyopen
-from . import add_attr
+from . import _init_attrs
+from ..postprocessors.units import R_kJmol
 
-# TODO: perhaps move constants elsewhere?
-# these are the units we need for dealing with GOMC, so not
-# a bad place for it, honestly
-# (kB in kJ/molK)
-k_b = 8.3144621E-3
+k_b = R_kJmol
 
-@add_attr
+@_init_attrs
 def extract_u_nk(filename, T):
     """Return reduced potentials `u_nk` from a Hamiltonian differences dat file.
 
@@ -88,7 +85,7 @@ def extract_u_nk(filename, T):
 
     return u_k
 
-@add_attr
+@_init_attrs
 def extract_dHdl(filename, T):
     """Return gradients `dH/dl` from a Hamiltonian differences free energy file.
 

@@ -1,11 +1,9 @@
 '''Unit conversion and constants.'''
-# Taken from scipy.constants since py2 doesn't support it
-#: Boltzmann's constant :math:`k_B` in kJ/(mol K); value from `NIST CODATA: k<https://physics.nist.gov/cgi-bin/cuu/Value?k>`_.
-Boltzmann_constant = 1.380649e-23
-#: Avogadro constant :math:`N_A` in 1/mol; value from `NIST CODATA: k<https://physics.nist.gov/cgi-bin/cuu/Value?na|search_for=avogadro>`_.
-Avogadro_constant = 6.02214076e+23
-kJ2kcal = 0.239006
 
+from scipy.constants import R, calorie
+
+kJ2kcal = 1 / calorie
+R_kJmol = R / 1000
 
 def to_kT(df, T=None):
     """ Convert the unit of a DataFrame to `kT`.
@@ -41,14 +39,12 @@ def to_kT(df, T=None):
     if df.attrs['energy_unit'] == 'kT':
         return new_df
     elif df.attrs['energy_unit'] == 'kJ/mol':
-        new_df = new_df / (Boltzmann_constant * df.attrs['temperature'] *
-                           Avogadro_constant / 1000)
+        new_df /= R_kJmol * df.attrs['temperature']
         new_df.attrs = attrs
         new_df.attrs['energy_unit'] = 'kT'
         return new_df
     elif df.attrs['energy_unit'] == 'kcal/mol':
-        new_df = new_df / (Boltzmann_constant * df.attrs['temperature'] *
-                           Avogadro_constant / 1000 * kJ2kcal)
+        new_df /= R_kJmol * df.attrs['temperature'] * kJ2kcal
         new_df.attrs = attrs
         new_df.attrs['energy_unit'] = 'kT'
         return new_df
@@ -76,8 +72,7 @@ def to_kcalmol(df, T=None):
         `df` converted.
     """
     kt_df = to_kT(df, T)
-    kt_df = kt_df * (Boltzmann_constant * df.attrs['temperature'] *
-                           Avogadro_constant / 1000 * kJ2kcal)
+    kt_df *= R_kJmol * df.attrs['temperature'] * kJ2kcal
     kt_df.attrs = df.attrs
     kt_df.attrs['energy_unit'] = 'kcal/mol'
     return kt_df
@@ -101,8 +96,18 @@ def to_kJmol(df, T=None):
         `df` converted.
     """
     kt_df = to_kT(df, T)
-    kt_df = kt_df * (Boltzmann_constant * df.attrs['temperature'] *
-                           Avogadro_constant / 1000)
+    kt_df *= R_kJmol * df.attrs['temperature']
     kt_df.attrs = df.attrs
     kt_df.attrs['energy_unit'] = 'kJ/mol'
     return kt_df
+
+def get_unit_converter(units):
+    converters = {'kT': to_kT, 'kJ/mol': to_kJmol,
+                   'kcal/mol': to_kcalmol}
+    try:
+        convert = converters[units]
+    except KeyError:
+        raise ValueError(
+            f"Energy unit {units} is not supported, "
+            f"choose one of {list(converters.keys())}")
+    return converters[units]

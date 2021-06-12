@@ -13,7 +13,7 @@ from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
 from ..estimators import TI, BAR, MBAR
-from ..postprocessors.units import to_kcalmol, to_kJmol, to_kT
+from ..postprocessors.units import get_unit_converter
 
 def plot_dF_state(estimators, labels=None, colors=None, units='kT',
                   orientation='portrait', nb=10):
@@ -74,18 +74,10 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
             max_length = len_dF
         dF = []
         error = []
+        convert = get_unit_converter(units)
         for dhdl in dhdl_list:
             for i in range(len(dhdl.delta_f_) - 1):
-                _converters = {'kT': to_kT, 'kJ/mol': to_kJmol,
-                               'kcal/mol': to_kcalmol}
-                try:
-                    convert = _converters[units]
-                except KeyError:
-                    raise ValueError(
-                        f"Energy unit {units} is not supported, "
-                        f"choose one of {list(_converters.keys())}")
-
-                dF.append(convert(dhdl.delta_f_).iloc[i, i + 1])
+                dF.append(get_unit_converter(dhdl.delta_f_).iloc[i, i + 1])
                 error.append(convert(dhdl.d_delta_f_).iloc[i, i + 1])
 
         dF_list.append(dF)

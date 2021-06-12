@@ -204,25 +204,6 @@ class Test_Units():
         dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
         return dhdl
 
-    def test_kt2kt(self, dhdl):
-        new_dhdl = to_kT(dhdl)
-        assert new_dhdl.attrs['energy_unit'] == 'kT'
-
-    def test_kj2kt(self, dhdl):
-        dhdl.attrs['energy_unit'] = 'kJ/mol'
-        new_dhdl = to_kT(dhdl)
-        assert new_dhdl.attrs['energy_unit'] == 'kT'
-
-    def test_kcal2kt(self, dhdl):
-        dhdl.attrs['energy_unit'] = 'kcal/mol'
-        new_dhdl = to_kT(dhdl)
-        assert new_dhdl.attrs['energy_unit'] == 'kT'
-
-    def test_unknown2kt(self, dhdl):
-        with pytest.raises(ValueError):
-            dhdl.attrs['energy_unit'] = 'ddd'
-            new_dhdl = to_kT(dhdl)
-
     def test_slicing(self, dhdl):
         '''Test if extract_u_nk assign the attr correctly'''
         dataset = load_benzene()

@@ -38,3 +38,63 @@ def test_setT():
     df.attrs = {'temperature': 300, 'energy_unit': 'kT'}
     new = to_kT(df, 310)
     assert new.attrs['temperature'] == 310
+
+class Test_Conversion():
+    '''Test the preprocessing module.'''
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def dhdl():
+        dataset = load_benzene()
+        dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
+        return dhdl
+
+    def test_kt2kt_number(self, dhdl):
+        new_dhdl = to_kT(dhdl)
+        assert 12.9 == pytest.approx(new_dhdl.iloc[0, 0], 0.1)
+
+    def test_kt2kt_unit(self, dhdl):
+        new_dhdl = to_kT(dhdl)
+        assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_kj2kt_unit(self, dhdl):
+        dhdl.attrs['energy_unit'] = 'kJ/mol'
+        new_dhdl = to_kT(dhdl)
+        assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_kj2kt_number(self, dhdl):
+        dhdl.attrs['energy_unit'] = 'kJ/mol'
+        new_dhdl = to_kT(dhdl)
+        assert 5.0 == pytest.approx(new_dhdl.iloc[0, 0], 0.1)
+
+    def test_kcal2kt_unit(self, dhdl):
+        dhdl.attrs['energy_unit'] = 'kcal/mol'
+        new_dhdl = to_kT(dhdl)
+        assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_kcal2kt_number(self, dhdl):
+        dhdl.attrs['energy_unit'] = 'kcal/mol'
+        new_dhdl = to_kT(dhdl)
+        assert 21.0 == pytest.approx(new_dhdl.iloc[0, 0], 0.1)
+
+    def test_unknown2kt(self, dhdl):
+        dhdl.attrs['energy_unit'] = 'ddd'
+        with pytest.raises(ValueError):
+            to_kT(dhdl)
+
+def test_pd_slice():
+    '''Test if slicing will preserve the metadata.'''
+    d = {'col1': [1, 2], 'col2': [3, 4]}
+    df = pd.DataFrame(data=d)
+    df.attrs = {1: 1}
+    assert df[::2].attrs == {1: 1}
+
+@pytest.mark.xfail
+def test_pd_concat():
+    '''Test if concat will preserve the metadata.'''
+    d = {'col1': [1, 2], 'col2': [3, 4]}
+    df1 = pd.DataFrame(data=d)
+    df1.attrs = {1: 1}
+    df2 = pd.DataFrame(data=d)
+    df2.attrs = {1: 1}
+    df = pd.concat([df1, df2])
+    assert df.attrs == {1: 1}

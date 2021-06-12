@@ -9,7 +9,8 @@ Unit Conversion
 ---------------
 
 For all of the input and output dataframes (such as ``u_nk``, ``dHdl``,
-``Estimator.delta_f_``, ``Estimator.d_delta_f_``), the metadata is stored as
+``Estimator.delta_f_``, ``Estimator.d_delta_f_``), the :ref:`metadata <metadata>`
+is stored as
 :attr:`pandas.DataFrame.attrs`. The unit of the data could be converted to
 :math:`kT`, :math:`kJ/mol` or :math:`kcal/mol` via the
 :func:`~alchemlyb.postprocessors.units.to_kT`,

@@ -5,16 +5,12 @@ import pandas as pd
 import numpy as np
 
 from .util import anyopen
-from . import add_attr
+from . import _init_attrs
+from ..postprocessors.units import R_kJmol
 
+k_b = R_kJmol
 
-# TODO: perhaps move constants elsewhere?
-# these are the units we need for dealing with gromacs, so not
-# a bad place for it, honestly
-# (kB in kJ/molK)
-k_b = 8.3144621E-3
-
-@add_attr
+@_init_attrs
 def extract_u_nk(xvg, T):
     """Return reduced potentials `u_nk` from a Hamiltonian differences XVG file.
 
@@ -108,7 +104,7 @@ def extract_u_nk(xvg, T):
 
     return u_k
 
-@add_attr
+@_init_attrs
 def extract_dHdl(xvg, T):
     """Return gradients `dH/dl` from a Hamiltonian differences XVG file.
 

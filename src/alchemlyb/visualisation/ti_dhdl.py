@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
-from ..postprocessors.units import to_kcalmol, to_kJmol, to_kT
+from ..postprocessors.units import get_unit_converter
 
 def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
                  ax=None):
@@ -61,15 +61,8 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
 
     # Convert unit
     new_unit = []
+    convert = get_unit_converter(units)
     for dhdl in dhdl_list:
-        _converters = {'kT': to_kT, 'kJ/mol': to_kJmol,
-                       'kcal/mol': to_kcalmol}
-        try:
-            convert = _converters[units]
-        except KeyError:
-            raise ValueError(
-                f"Energy unit {units} is not supported, "
-                f"choose one of {list(_converters.keys())}")
         new_unit.append(convert(dhdl))
 
     dhdl_list = new_unit

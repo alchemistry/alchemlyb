@@ -4,15 +4,12 @@
 import pandas as pd
 import numpy as np
 from .util import anyopen
-from . import add_attr
+from . import _init_attrs
+from ..postprocessors.units import R_kJmol, kJ2kcal
 
-# TODO: perhaps move constants elsewhere?
-# these are the units we need for dealing with NAMD, which uses
-# kcal/mol for energies  http://www.ks.uiuc.edu/Research/namd/2.13/ug/node12.html#SECTION00062200000000000000
-# (kB in kcal/molK)
-k_b = 1.9872041e-3
+k_b = R_kJmol * kJ2kcal
 
-@add_attr
+@_init_attrs
 def extract_u_nk(fep_file, T):
     """Return reduced potentials `u_nk` from NAMD fepout file.
 

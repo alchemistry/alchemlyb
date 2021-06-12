@@ -15,15 +15,12 @@ import pandas as pd
 import numpy as np
 
 from .util import anyopen
-from . import add_attr
+from . import _init_attrs
+from ..postprocessors.units import R_kJmol, kJ2kcal
 
 logger = logging.getLogger("alchemlyb.parsers.Amber")
 
-# TODO: perhaps move constants elsewhere?
-# these are the units we need for dealing with Amber, which uses
-# kcal/mol for energies  http://ambermd.org/Questions/units.html
-# (kB in kcal/molK)
-k_b = 1.9872041e-3
+k_b = R_kJmol * kJ2kcal
 
 
 def convert_to_pandas(file_datum):
@@ -257,7 +254,7 @@ def file_validation(outfile):
     file_datum.have_mbar = have_mbar
     return file_datum
 
-@add_attr
+@_init_attrs
 def extract_u_nk(outfile, T):
     """Return reduced potentials `u_nk` from Amber outputfile.
 
@@ -313,7 +310,7 @@ def extract_u_nk(outfile, T):
                                                           names=['time', 'lambdas']),
                         index=np.array(file_datum.mbar_lambdas, dtype=np.float64)).T
 
-@add_attr
+@_init_attrs
 def extract_dHdl(outfile, T):
     """Return gradients ``dH/dl`` from Amber TI outputfile.
 

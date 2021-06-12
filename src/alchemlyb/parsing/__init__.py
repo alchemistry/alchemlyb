@@ -1,5 +1,9 @@
-def add_attr(func):
-    '''Add temperature to the parsed dataframe.'''
+def _init_attrs(func):
+    '''Add temperature to the parsed dataframe.
+
+    The temperature is added to the dataframe as dataframe.attrs['temperature']
+    and the energy unit is initiated as dataframe.attrs['energy_unit'] = 'kT'.
+    '''
     def wrapper(outfile, T):
         dataframe = func(outfile, T)
         if dataframe is not None:

@@ -26,19 +26,22 @@ if the data need to be reorganized or transformed because of the powerful tools
 that :mod:`pandas` makes available to manipulate these data structures. 
 
 .. Warning::
-   When alchemlyb dataframes are transformed with standard pandas functions 
-   (such as :func:`pandas.concat` or *slicing* with :attr:`pandas.DataFrame.loc`), 
+   When alchemlyb dataframes are transformed with standard pandas functions
+   (such as :func:`pandas.concat`),
    care needs to be taken to ensure that ``alchemlyb`` metadata, which are stored
    in the dataframe, are maintained and propagated during processing of 
    ``alchemlyb`` dataframes. 
-   See :ref:`metadata propagation <metadata> for how do work with dataframes
+   See :ref:`metadata propagation <metadata>` for how do work with dataframes
    safely in ``alchemlyb``.
 
+
 The metadata (such as the unit of the energy and temperature) are stored in 
-:attr:`pandas.DataFrame.attrs`, a :class:`dict`. Functions in ``alchemlyb`` are aware
+:attr:`pandas.DataFrame.attrs`, a :class:`dict`. Functions in ``alchemlyb`` are
+aware
 of these metadata but working with the data using :mod:`pandas` requires some
 care due to shortcomings in how pandas currently handles metadata (see issue
-`pandas-dev/pandas#28283 <https://github.com/pandas-dev/pandas/issues/28283>_).
+`pandas-dev/pandas#28283 <https://github
+.com/pandas-dev/pandas/issues/28283>`_).
 
 
 
@@ -175,8 +178,9 @@ data frame (first positional argument) to the output dataframe. ::
 
     >>> from alchemlyb import pass_attrs
     >>> @pass_attrs
-    >>> def slice(dataframe):
-    >>>     return dataframe.loc[::10]
+    >>> def manipulation(dataframes, *args, **kwargs):
+    >>>     return func(dataframes, *args, **kwargs)
+
 .. autofunction:: alchemlyb.pass_attrs
 
 Parsers by software package
