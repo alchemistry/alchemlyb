@@ -18,10 +18,28 @@ Standard forms of raw data
 All components of **alchemlyb** are designed to work together well with minimal
 work on the part of the user. To make this possible, the library deals in a
 common data structure for each ``dHdl`` and ``u_nk``, and all parsers yield
-these quantities in these standard forms. The metadata (such as energy unit
-and temperature) are stored in :attr:`pandas.DataFrame.attrs`. Care
-should be taken to ensure that these metadata is persevered during
-:ref:`metadata propagation <metadata>`.
+these quantities in these standard forms.  The common data structure is a 
+:class:`pandas.DataFrame`. Normally, it should be sufficient to just pass the
+``dHdl`` and ``u_nk`` dataframes from one ``alchemlyb`` function to the
+next. However, being a :class:`~pandas.DataFrame` provides enormous flexibility
+if the data need to be reorganized or transformed because of the powerful tools 
+that :mod:`pandas` makes available to manipulate these data structures. 
+
+.. Warning::
+   When alchemlyb dataframes are transformed with standard pandas functions 
+   (such as :func:`pandas.concat` or *slicing* with :attr:`pandas.DataFrame.loc`), 
+   care needs to be taken to ensure that ``alchemlyb`` metadata, which are stored
+   in the dataframe, are maintained and propagated during processing of 
+   ``alchemlyb`` dataframes. 
+   See :ref:`metadata propagation <metadata> for how do work with dataframes
+   safely in ``alchemlyb``.
+
+The metadata (such as the unit of the energy and temperature) are stored in 
+:attr:`pandas.DataFrame.attrs`, a :class:`dict`. Functions in ``alchemlyb`` are aware
+of these metadata but working with the data using :mod:`pandas` requires some
+care due to shortcomings in how pandas currently handles metadata (see issue
+`pandas-dev/pandas#28283 <https://github.com/pandas-dev/pandas/issues/28283>_).
+
 
 
 .. _dHdl:
