@@ -177,6 +177,7 @@ data frame (first positional argument) to the output dataframe. ::
     >>> @pass_attrs
     >>> def slice(dataframe):
     >>>     return dataframe.loc[::10]
+.. autofunction:: alchemlyb.pass_attrs
 
 Parsers by software package
 ---------------------------
