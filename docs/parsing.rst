@@ -155,7 +155,8 @@ Metadata Propagation
 The metadata is stored in :attr:`pandas.DataFrame.attrs`. Although all functions
 in **alchemlyb** will preserve this metadata, the metadata might get lost
 during data manipulation (such as concatenation). :func:`alchemlyb.concat`
-is provided to replace :func:`pandas.concat`. ::
+is provided to replace :func:`pandas.concat`, which currently does not propagate 
+attributes. Use it in the following manner::
 
     >>> import alchemlyb
     >>> from alchemtest.gmx import load_benzene
