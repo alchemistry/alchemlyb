@@ -27,7 +27,9 @@ def concat(objs, *args, **kwargs):
     -------
     DataFrame
         Concatenated pandas object.
-    '''
+ 
+ 
+    .. versionadded:: 0.5.0'''
     # Sanity check
     attrs = objs[0].attrs
     for obj in objs:
