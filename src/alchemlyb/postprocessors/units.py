@@ -9,7 +9,8 @@ def to_kT(df, T=None):
     """ Convert the unit of a DataFrame to `kT`.
 
     If temperature `T` is not provided, the DataFrame need to have attribute
-    `temperature` and `energy_unit`.
+    `temperature` and `energy_unit`. Otherwise, the temperature of the output
+    dateframe will be set accordingly.
 
     Parameters
     ----------
@@ -53,7 +54,8 @@ def to_kcalmol(df, T=None):
     """Convert the unit of a DataFrame to kcal/mol.
 
     If temperature `T` is not provided, the DataFrame need to have attribute
-    `temperature` and `energy_unit`.
+    `temperature` and `energy_unit`. Otherwise, the temperature of the output
+    dateframe will be set accordingly.
 
     Parameters
     ----------
@@ -76,7 +78,8 @@ def to_kJmol(df, T=None):
     """Convert the unit of a DataFrame to kJ/mol.
 
     If temperature `T` is not provided, the DataFrame need to have attribute
-    `temperature` and `energy_unit`.
+    `temperature` and `energy_unit`. Otherwise, the temperature of the output
+    dateframe will be set accordingly.
 
     Parameters
     ----------
