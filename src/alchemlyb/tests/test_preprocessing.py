@@ -3,7 +3,6 @@
 """
 import pytest
 
-import pandas as pd
 import numpy as np
 
 import alchemlyb
@@ -12,7 +11,6 @@ from alchemlyb.preprocessing import (slicing, statistical_inefficiency,
                                      equilibrium_detection,)
 from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
 from alchemtest.gmx import load_benzene
-from alchemlyb.postprocessors.units import to_kcalmol, to_kT, to_kJmol
 
 import alchemtest.gmx
 

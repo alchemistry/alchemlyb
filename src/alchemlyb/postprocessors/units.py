@@ -110,4 +110,4 @@ def get_unit_converter(units):
         raise ValueError(
             f"Energy unit {units} is not supported, "
             f"choose one of {list(converters.keys())}")
-    return converters[units]
+    return convert

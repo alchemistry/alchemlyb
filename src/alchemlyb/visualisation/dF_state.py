@@ -68,16 +68,16 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     dF_list = []
     error_list = []
     max_length = 0
+    convert = get_unit_converter(units)
     for dhdl_list in estimators:
         len_dF = sum([len(dhdl.delta_f_) - 1 for dhdl in dhdl_list])
         if len_dF > max_length:
             max_length = len_dF
         dF = []
         error = []
-        convert = get_unit_converter(units)
         for dhdl in dhdl_list:
             for i in range(len(dhdl.delta_f_) - 1):
-                dF.append(get_unit_converter(dhdl.delta_f_).iloc[i, i + 1])
+                dF.append(convert(dhdl.delta_f_).iloc[i, i + 1])
                 error.append(convert(dhdl.d_delta_f_).iloc[i, i + 1])
 
         dF_list.append(dF)

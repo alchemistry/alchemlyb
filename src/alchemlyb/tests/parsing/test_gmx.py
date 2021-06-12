@@ -117,12 +117,12 @@ def test_u_nk_with_total_energy():
     dataset = load_water_particle_with_total_energy()
 
     # Check if the sum of values on the diagonal has the correct value
-    assert_almost_equal(_diag_sum(dataset), 47611377946.58586, decimal=4)
+    assert_almost_equal(_diag_sum(dataset), 47611374980.34574, decimal=4)
 
     # Check one specific value in the dataframe
     assert_almost_equal(
         extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0],
-        -11211.578357345974,
+        -11211.577658852531,
         decimal=6
     )
 
@@ -135,12 +135,12 @@ def test_u_nk_with_potential_energy():
     dataset = load_water_particle_with_potential_energy()
 
     # Check if the sum of values on the diagonal has the correct value
-    assert_almost_equal(_diag_sum(dataset), 16674041445589.646, decimal=2)
+    assert_almost_equal(_diag_sum(dataset), 16674040406778.867, decimal=2)
 
     # Check one specific value in the dataframe
     assert_almost_equal(
         extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0],
-        -15656.558227621246,
+        -15656.557252200757,
         decimal=6
     )
 
@@ -154,7 +154,7 @@ def test_u_nk_without_energy():
     dataset = load_water_particle_without_energy()
 
     # Check if the sum of values on the diagonal has the correct value
-    assert_almost_equal(_diag_sum(dataset), 20572988148877.555, decimal=2)
+    assert_almost_equal(_diag_sum(dataset), 20572986867158.184, decimal=2)
 
     # Check one specific value in the dataframe
     assert_almost_equal(
