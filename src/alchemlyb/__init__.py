@@ -6,7 +6,11 @@ del get_versions
 
 def pass_attrs(func):
     '''Pass the attrs from the first positional argument to the output
-    dataframe.'''
+    dataframe.
+ 
+ 
+    .. versionadded:: 0.5.0'''
+ '''
     def wrapper(input_dataframe, *args,**kwargs):
         dataframe = func(input_dataframe, *args,**kwargs)
         dataframe.attrs = input_dataframe.attrs
