@@ -34,18 +34,14 @@ def to_kT(df, T=None):
         raise TypeError('Attribute energy_unit not found in the input '
                         'Dataframe.')
 
-    attrs = new_df.attrs
-
     if df.attrs['energy_unit'] == 'kT':
         return new_df
     elif df.attrs['energy_unit'] == 'kJ/mol':
         new_df /= R_kJmol * df.attrs['temperature']
-        new_df.attrs = attrs
         new_df.attrs['energy_unit'] = 'kT'
         return new_df
     elif df.attrs['energy_unit'] == 'kcal/mol':
         new_df /= R_kJmol * df.attrs['temperature'] * kJ2kcal
-        new_df.attrs = attrs
         new_df.attrs['energy_unit'] = 'kT'
         return new_df
     else:
@@ -73,7 +69,6 @@ def to_kcalmol(df, T=None):
     """
     kt_df = to_kT(df, T)
     kt_df *= R_kJmol * df.attrs['temperature'] * kJ2kcal
-    kt_df.attrs = df.attrs
     kt_df.attrs['energy_unit'] = 'kcal/mol'
     return kt_df
 
@@ -97,7 +92,6 @@ def to_kJmol(df, T=None):
     """
     kt_df = to_kT(df, T)
     kt_df *= R_kJmol * df.attrs['temperature']
-    kt_df.attrs = df.attrs
     kt_df.attrs['energy_unit'] = 'kJ/mol'
     return kt_df
 

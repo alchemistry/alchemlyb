@@ -7,6 +7,7 @@ from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
 
+
 def _check_multiple_times(df):
     if isinstance(df, pd.Series):
         return df.sort_index(0).reset_index('time', name='').duplicated('time').any()
@@ -16,6 +17,7 @@ def _check_multiple_times(df):
 
 def _check_sorted(df):
     return df.reset_index(0)['time'].is_monotonic_increasing
+
 
 def slicing(df, lower=None, upper=None, step=None, force=False):
     """Subsample a DataFrame using simple slicing.
@@ -53,6 +55,7 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
     df = df.dropna()
 
     return df
+
 
 def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
                              conservative=True, drop_duplicates=False, sort=False):
@@ -184,6 +187,7 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
         df = slicing(df, lower=lower, upper=upper, step=step)
 
     return df
+
 
 def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
     """Subsample a DataFrame using automated equilibrium detection on a timeseries.
