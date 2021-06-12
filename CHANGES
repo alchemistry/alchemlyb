@@ -18,6 +18,9 @@ The rules for this file:
   * 0.5.0
 
 Enhancements
+  - Visualisation module will change the data according to input unit (PR
+  #129).
+  - The parser output dataframe with metadata (PR #129).
 
 Deprecations
 
@@ -26,6 +29,9 @@ Fixes
 Changes
   - Removed support for Python 2.7 and 3.5 (issue #130).
   - Bump the minimum pandas version to 1.0 (issue #130).
+  - alchemlyb.concat added to replace pd.concat (PR #129).
+  - postprocessors.units module for unit conversion (PR #129).
+  - pass_attrs decorator for safely passing variable (PR #129).
   
 
 06/08/2021 orbeckst

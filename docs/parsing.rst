@@ -155,11 +155,12 @@ Keep this in mind when doing, e.g. :ref:`subsampling <subsampling>`.
 
 Metadata Propagation
 ''''''''''''''''''''
-The metadata is stored in :attr:`pandas.DataFrame.attrs`. Although all functions
-in **alchemlyb** will preserve this metadata, the metadata might get lost
-during data manipulation (such as concatenation). :func:`alchemlyb.concat`
-is provided to replace :func:`pandas.concat`, which currently does not propagate 
-attributes. Use it in the following manner::
+The metadata is stored in :attr:`pandas.DataFrame.attrs`. Though common pandas
+functions can safely propagate the metadata, the metadata might get lost
+during some operations such as concatenation (`pandas-dev/pandas#28283
+<https://github.com/pandas-dev/pandas/issues/28283>`_). :func:`alchemlyb.concat`
+is provided to replace :func:`pandas.concat` allowing the safe propagation
+of metadata. ::
 
     >>> import alchemlyb
     >>> from alchemtest.gmx import load_benzene
@@ -172,9 +173,11 @@ attributes. Use it in the following manner::
 
 .. autofunction:: alchemlyb.concat
 
-For more complex data manipulation functions, a decorator
-:func:`alchemlyb.pass_attrs` could be used to pass the metadata from the input
-data frame (first positional argument) to the output dataframe. ::
+Although all functions in **alchemlyb** will safely propagate the metadata, if
+the user is interested in writing custom data manipulation functions,
+a decorator :func:`alchemlyb.pass_attrs` could be used to pass the metadata
+from the input data frame (first positional argument) to the output
+dataframe to ensure safe propagation of metadata. ::
 
     >>> from alchemlyb import pass_attrs
     >>> @pass_attrs

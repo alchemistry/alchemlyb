@@ -2,6 +2,7 @@ import pytest
 import pandas as pd
 
 import alchemlyb
+from alchemlyb import pass_attrs
 from alchemtest.gmx import load_benzene
 from alchemlyb.parsing.gmx import extract_dHdl
 from alchemlyb.postprocessors.units import to_kT
@@ -81,13 +82,6 @@ class Test_Conversion():
         with pytest.raises(ValueError):
             to_kT(dhdl)
 
-def test_pd_slice():
-    '''Test if slicing will preserve the metadata.'''
-    d = {'col1': [1, 2], 'col2': [3, 4]}
-    df = pd.DataFrame(data=d)
-    df.attrs = {1: 1}
-    assert df[::2].attrs == {1: 1}
-
 @pytest.mark.xfail
 def test_pd_concat():
     '''Test if concat will preserve the metadata.'''
@@ -98,3 +92,22 @@ def test_pd_concat():
     df2.attrs = {1: 1}
     df = pd.concat([df1, df2])
     assert df.attrs == {1: 1}
+
+def test_pass_attrs():
+    d = {'col1': [1, 2], 'col2': [3, 4]}
+    df1 = pd.DataFrame(data=d)
+    df1.attrs = {1: 1}
+    df2 = pd.DataFrame(data=d)
+    df2.attrs = {1: 1}
+
+    @pass_attrs
+    def concat(df1, df2):
+        return pd.concat([df1, df2])
+    assert concat(df1, df2).attrs == {1: 1}
+
+def test_pd_slice():
+    '''Test if slicing will preserve the metadata.'''
+    d = {'col1': [1, 2], 'col2': [3, 4]}
+    df = pd.DataFrame(data=d)
+    df.attrs = {1: 1}
+    assert df[::2].attrs == {1: 1}
