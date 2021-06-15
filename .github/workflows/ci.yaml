@@ -59,7 +59,6 @@ jobs:
       shell: bash -l {0}
       run: |
         pytest -v --cov alchemlyb --cov-report=xml src/alchemlyb/tests
-        pytest -v --cov=openff --cov-report=xml --cov-config=setup.cfg openff/benchmark/tests/
 
     - name: Codecov
       uses: codecov/codecov-action@v1.5.2
