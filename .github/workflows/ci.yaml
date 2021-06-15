@@ -34,6 +34,11 @@ jobs:
         python-version: ${{ matrix.python-version }}
         architecture: x64
 
+    - name: Environment Information
+      shell: bash -l {0}
+      run: |
+        python --version
+
     - name: Install pytest, pytest plugins
       shell: bash -l {0}
       run: |
