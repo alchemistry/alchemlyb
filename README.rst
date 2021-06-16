@@ -47,10 +47,10 @@ independent, equilibrated samples [Chodera2016]_.
     :scale: 100%
     :target: http://alchemlyb.readthedocs.io/en/latest/
 
-.. |build| image:: https://travis-ci.org/alchemistry/alchemlyb.svg?branch=master
+.. |build| image:: https://github.com/alchemistry/alchemlyb/actions/workflows/ci.yaml/badge.svg?branch=master
     :alt: Build Status
     :scale: 100%
-    :target: https://travis-ci.org/alchemistry/alchemlyb
+    :target: https://github.com/alchemistry/alchemlyb/actions/workflows/ci.yaml
 
 .. |cov| image:: https://codecov.io/gh/alchemistry/alchemlyb/branch/master/graph/badge.svg
     :alt: Code coverage
