@@ -59,7 +59,7 @@ def extract_u_nk(fep_files, T):
                 # New window, get IDWS lambda if any
                 if l[0] == '#NEW':
                     if 'LAMBDA_IDWS' in l:
-                        lambda_idws = "{0:.2f}".format(float(l[10]))
+                        lambda_idws = l[10]
                     else:
                         lambda_idws = None
 
@@ -68,8 +68,8 @@ def extract_u_nk(fep_files, T):
 
                     # extract lambda values for finished window
                     # lambda1 = sampling lambda (row), lambda2 = comparison lambda (col)
-                    lambda1 = "{0:.2f}".format(float(l[7]))
-                    lambda2 = "{0:.2f}".format(float(l[8]))
+                    lambda1 = l[7]
+                    lambda2 = l[8]
 
                     # convert last window's work and times values to np arrays
                     win_de_arr = beta * np.asarray(win_de)
@@ -121,7 +121,7 @@ def extract_u_nk(fep_files, T):
                 if '#STARTING' in l:
                     parsing = True
 
-    if (lambda2 == '1.00' or lambda2 == '0.00'):
+    if (float(lambda2) == 1.0 or float(lambda2) == 0.0):
         # this excludes the IDWS case where a dataframe already exists for both endpoints
         # create last dataframe for fep-lambda at last LAMBDA2
         tempDF = pd.DataFrame({
