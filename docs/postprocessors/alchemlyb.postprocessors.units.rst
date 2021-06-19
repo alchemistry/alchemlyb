@@ -9,6 +9,8 @@
 
 .. autofunction:: to_kJmol
 
+.. autofunction:: get_unit_converter
+
    
 
    

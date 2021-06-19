@@ -5,6 +5,12 @@ Tools for postprocessing
 
 Tools are available for postprocessing the dataframes.
 
+Constants
+---------
+
+.. autodata:: kJ2kcal
+.. autodata:: R_kJmol
+
 Unit Conversion
 ---------------
 

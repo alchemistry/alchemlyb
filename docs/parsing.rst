@@ -37,11 +37,9 @@ that :mod:`pandas` makes available to manipulate these data structures.
 
 The metadata (such as the unit of the energy and temperature) are stored in 
 :attr:`pandas.DataFrame.attrs`, a :class:`dict`. Functions in ``alchemlyb`` are
-aware
-of these metadata but working with the data using :mod:`pandas` requires some
-care due to shortcomings in how pandas currently handles metadata (see issue
-`pandas-dev/pandas#28283 <https://github
-.com/pandas-dev/pandas/issues/28283>`_).
+aware of these metadata but working with the data using :mod:`pandas`
+requires some care due to shortcomings in how pandas currently handles
+metadata (see issue `pandas-dev/pandas#28283 <https://github.com/pandas-dev/pandas/issues/28283>`_).
 
 
 
@@ -166,8 +164,7 @@ of metadata. ::
     >>> from alchemtest.gmx import load_benzene
     >>> from alchemlyb.parsing.gmx import extract_dHdl
     >>> dataset = load_benzene().data
-    >>> dhdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in
-    dataset['Coulomb']])
+    >>> dhdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in dataset['Coulomb']])
     >>> dhdl_coul.attrs
     {'temperature': 300, 'energy_unit': 'kT'}
 
