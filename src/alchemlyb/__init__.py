@@ -18,12 +18,12 @@ def pass_attrs(func):
     return wrapper
 
 def concat(objs, *args, **kwargs):
-    '''Concatenate pandas objects along a particular axis with optional set
-    logic along the other axes.
+    '''Concatenate pandas objects while persevering the attrs.
 
-    If all pandas objects have the same attrs attribute, the new pandas objects
-    would have this attrs attribute. A ValueError would be raised if any pandas
-    object has a different attrs.
+    Concatenate pandas objects along a particular axis with optional set
+    logic along the other axes. If all pandas objects have the same  attrs
+    attribute, the new pandas objects would have this attrs attribute. A
+    ValueError would be raised if any pandas object has a different attrs.
 
     Parameters
     ----------
@@ -42,7 +42,7 @@ def concat(objs, *args, **kwargs):
 
     See Also
     --------
-        pandas.concat
+    pandas.concat
  
  
     .. versionadded:: 0.5.0'''
