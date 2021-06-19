@@ -105,6 +105,10 @@ def to_kJmol(df, T=None):
 def get_unit_converter(units):
     """ Obtain the converter according to the unit string.
 
+    If `units` is 'kT', the `to_kT` converter is returned. If `units` is
+    'kJ/mol', the `to_kJmol` converter is returned. If `units` is 'kcal/mol',
+    the `to_kcalmol` converter is returned.
+
     Parameters
     ----------
     units : str
