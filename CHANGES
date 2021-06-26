@@ -27,7 +27,7 @@ Deprecations
 Fixes
 
 Changes
-  - The scipy constant for gas constant is used for parser instead of the
+  - The scipy constant for gas constant is used for parsers instead of the
   contestants used by the corresponding MD engine (issue #125, PR #129).
   - Visualisation module will change the data according to input unit (issue
   #125,PR #129).

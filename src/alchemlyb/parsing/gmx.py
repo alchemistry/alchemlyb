@@ -26,6 +26,11 @@ def extract_u_nk(xvg, T):
     u_nk : DataFrame
         Potential energy for each alchemical state (k) for each frame (n).
 
+
+    .. versionchanged:: 0.5.0
+        The :attr:`scipy.constants.gas_constant` is used for parsers instead of
+        the contestants used by the corresponding MD engine.
+
     """
 
     h_col_match = r"\xD\f{}H \xl\f{}"
@@ -119,6 +124,11 @@ def extract_dHdl(xvg, T):
     -------
     dH/dl : Series
         dH/dl as a function of time for this lambda window.
+
+
+    .. versionchanged:: 0.5.0
+        The :attr:`scipy.constants.gas_constant` is used for parsers instead of
+        the contestants used by the corresponding MD engine.
 
     """
     beta = 1/(k_b * T)
