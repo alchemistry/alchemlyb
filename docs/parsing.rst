@@ -123,12 +123,12 @@ unit, the energy measured in :math:`k_B T`, where :math:`k_B` is `Boltzmann's co
 absolute temperature in Kelvin. Therefore, all parsers require specification of :math:`T`.
  
 Throughout ``alchemlyb``, the metadata, such as the energy unit and temperature of 
-the dataset, are stored as a dictionary in :attr:`pandas.DataFrame.attrs` metadata 
-attribute. The keys of the :attr:`~pandas.DataFrame.attrs`  dictionary are 
+the dataset, are stored as a dictionary in :attr:`pandas.DataFrame.attrs` metadata
+attribute. The keys of the :attr:`~pandas.DataFrame.attrs`  dictionary are
 
 - ``"temperature"``: the temperature at which the simulation was performed, in Kelvin
 - ``"energy_unit"``: the unit of energy, such as "kT", "kcal/mol", "kJ/mol" (as defined in
-   :mod:`alchemlyb.postprocessors.units`
+   :mod:`~alchemlyb.postprocessors.units`).
 
 Conversion functions in :mod:`alchemlyb.postprocessing` and elsewhere may use the 
 metadata for unit conversion and other transformations.

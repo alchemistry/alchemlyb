@@ -36,8 +36,6 @@ def test_plot_ti_dhdl():
     '''Just test if the plot runs'''
     bz = load_benzene().data
     dHdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
-    dHdl_coul.attrs = extract_dHdl(load_benzene().data['Coulomb'][0],
-                                   T=300).attrs
     ti_coul = TI()
     ti_coul.fit(dHdl_coul)
     assert isinstance(plot_ti_dhdl(ti_coul),
@@ -50,8 +48,6 @@ def test_plot_ti_dhdl():
     assert isinstance(plot_ti_dhdl(ti_coul, labels=['Coul'], colors=['r']),
                matplotlib.axes.Axes)
     dHdl_vdw = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
-    dHdl_vdw.attrs = extract_dHdl(load_benzene().data['Coulomb'][0],
-                                   T=300).attrs
     ti_vdw = TI().fit(dHdl_vdw)
     assert isinstance(plot_ti_dhdl([ti_coul, ti_vdw]),
                       matplotlib.axes.Axes)
@@ -70,12 +66,6 @@ def test_plot_dF_state():
     dHdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
     u_nk_vdw = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz['VDW']])
     dHdl_vdw = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
-
-    u_nk_coul.attrs = extract_dHdl(load_benzene().data['Coulomb'][0],
-                                   T=300).attrs
-    dHdl_coul.attrs = u_nk_coul.attrs
-    u_nk_vdw.attrs = u_nk_coul.attrs
-    dHdl_vdw.attrs = u_nk_coul.attrs
 
     ti_coul = TI().fit(dHdl_coul)
     ti_vdw = TI().fit(dHdl_vdw)
@@ -142,12 +132,10 @@ class Test_Units():
         bz = load_benzene().data
         dHdl_coul = alchemlyb.concat(
             [extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
-        dHdl_coul.attrs = extract_dHdl(load_benzene().data['Coulomb'][0], T=300).attrs
         ti = TI().fit(dHdl_coul)
 
         u_nk_coul = alchemlyb.concat(
             [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
-        u_nk_coul.attrs = extract_dHdl(load_benzene().data['Coulomb'][0], T=300).attrs
         mbar = MBAR().fit(u_nk_coul)
 
         return ti, mbar

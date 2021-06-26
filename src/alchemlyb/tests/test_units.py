@@ -84,7 +84,12 @@ class Test_Conversion():
 
 @pytest.mark.xfail
 def test_pd_concat():
-    '''Test if concat will preserve the metadata.'''
+    '''Test if concat will preserve the metadata.
+    When this test is being made, the pd.concat will discard the attrs of
+    the input dataframe. However, this should get fixed in the future.
+    pandas-dev/pandas#28283
+    <https://github.com/pandas-dev/pandas/issues/28283>
+    '''
     d = {'col1': [1, 2], 'col2': [3, 4]}
     df1 = pd.DataFrame(data=d)
     df1.attrs = {1: 1}

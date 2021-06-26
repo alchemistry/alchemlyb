@@ -18,18 +18,20 @@ The rules for this file:
   * 0.5.0
 
 Enhancements
-  - Visualisation module will change the data according to input unit (PR
-  #129).
-  - The parser output dataframe with metadata (PR #129).
+  - postprocessors.units module for unit conversion (issue #125, PR #129).
+  - pass_attrs decorator for safely passing variable (issue #125, PR #129).
+  - alchemlyb.concat added to replace pd.concat (issue #125, PR #129).
 
 Deprecations
 
 Fixes
 
 Changes
-  - alchemlyb.concat added to replace pd.concat (PR #129).
-  - postprocessors.units module for unit conversion (PR #129).
-  - pass_attrs decorator for safely passing variable (PR #129).
+  - The scipy constant for gas constant is used for parser instead of the
+  contestants used by the corresponding MD engine (issue #125, PR #129).
+  - Visualisation module will change the data according to input unit (issue
+  #125,PR #129).
+  - The parser output dataframe with metadata (issue #125, PR #129).
   - alchemlyb adopts NEP29
     https://numpy.org/neps/nep-0029-deprecation_policy.html
     to effectively only support the last 2-3 minor Python versions

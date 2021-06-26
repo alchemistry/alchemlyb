@@ -46,6 +46,10 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
 
+    .. versionchanged:: 0.5.0
+        The `units` will be used to change the underlying data instead of only
+        changing the figure legend.
+
     .. versionadded:: 0.4.0
     '''
     # Make it into a list
