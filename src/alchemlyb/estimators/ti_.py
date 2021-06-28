@@ -104,6 +104,10 @@ class TI(BaseEstimator):
 
         self.states_ = means.index.values.tolist()
 
+        self.delta_f_.attrs = dHdl.attrs
+        self.d_delta_f_.attrs = dHdl.attrs
+        self.dhdl.attrs = dHdl.attrs
+
         return self
 
     def separate_dhdl(self):

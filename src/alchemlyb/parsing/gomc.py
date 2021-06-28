@@ -4,15 +4,12 @@
 import pandas as pd
 
 from .util import anyopen
+from . import _init_attrs
+from ..postprocessors.units import R_kJmol
 
+k_b = R_kJmol
 
-# TODO: perhaps move constants elsewhere?
-# these are the units we need for dealing with GOMC, so not
-# a bad place for it, honestly
-# (kB in kJ/molK)
-k_b = 8.3144621E-3
-
-
+@_init_attrs
 def extract_u_nk(filename, T):
     """Return reduced potentials `u_nk` from a Hamiltonian differences dat file.
 
@@ -27,6 +24,11 @@ def extract_u_nk(filename, T):
     -------
     u_nk : DataFrame
         Potential energy for each alchemical state (k) for each frame (n).
+
+
+    .. versionchanged:: 0.5.0
+        The :mod:`scipy.constants` is used for parsers instead of
+        the constants used by the corresponding MD engine.
 
     """
 
@@ -88,7 +90,7 @@ def extract_u_nk(filename, T):
 
     return u_k
 
-
+@_init_attrs
 def extract_dHdl(filename, T):
     """Return gradients `dH/dl` from a Hamiltonian differences free energy file.
 
@@ -103,6 +105,11 @@ def extract_dHdl(filename, T):
     -------
     dH/dl : Series
         dH/dl as a function of step for this lambda window.
+
+
+    .. versionchanged:: 0.5.0
+        The :mod:`scipy.constants` is used for parsers instead of
+        the constants used by the corresponding MD engine.
 
     """
     beta = 1/(k_b * T)

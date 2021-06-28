@@ -5,15 +5,12 @@ import pandas as pd
 import numpy as np
 
 from .util import anyopen
+from . import _init_attrs
+from ..postprocessors.units import R_kJmol
 
+k_b = R_kJmol
 
-# TODO: perhaps move constants elsewhere?
-# these are the units we need for dealing with gromacs, so not
-# a bad place for it, honestly
-# (kB in kJ/molK)
-k_b = 8.3144621E-3
-
-
+@_init_attrs
 def extract_u_nk(xvg, T):
     """Return reduced potentials `u_nk` from a Hamiltonian differences XVG file.
 
@@ -28,6 +25,25 @@ def extract_u_nk(xvg, T):
     -------
     u_nk : DataFrame
         Potential energy for each alchemical state (k) for each frame (n).
+
+
+    Note
+    -----
+    Previous versions of alchemlyb (<0.5.0) used the `GROMACS value of the molar gas constant
+    <https://manual.gromacs.org/documentation/2019/reference-manual/definitions.html>`_
+    of  :math:`R = 8.3144621 \times 10^{−3}\, \text{kJ}\cdot\text{mol}^{-1}\cdot\text{K}^{-1}`
+    instead of the scipy value :data:`scipy.constants.R` (see :mod:`alchemlyb.postprocessors.units`).
+    The relative difference between the two values is :math:`6 \times 10^{-8}`. 
+    
+    Therefore, results in :math:`kT` for GROMACS data will differ between alchemlyb ≥0.5.0 and
+    previous versions; the difference is on the order of :math:`10^{-7}` for typical cases.
+    
+    
+    .. versionchanged:: 0.5.0
+        The :mod:`scipy.constants` is used for parsers instead of
+        the constants used by the corresponding MD engine.        
+        This leads to slightly different results for GROMACS input compared to 
+        previous versions of alchemlyb.
 
     """
 
@@ -107,7 +123,7 @@ def extract_u_nk(xvg, T):
 
     return u_k
 
-
+@_init_attrs
 def extract_dHdl(xvg, T):
     """Return gradients `dH/dl` from a Hamiltonian differences XVG file.
 
@@ -122,6 +138,25 @@ def extract_dHdl(xvg, T):
     -------
     dH/dl : Series
         dH/dl as a function of time for this lambda window.
+
+   
+    Note
+    -----
+    Previous versions of alchemlyb (<0.5.0) used the `GROMACS value of the molar gas constant
+    <https://manual.gromacs.org/documentation/2019/reference-manual/definitions.html>`_
+    of  :math:`R = 8.3144621 \times 10^{−3}\, \text{kJ}\cdot\text{mol}^{-1}\cdot\text{K}^{-1}`
+    instead of the scipy value :data:`scipy.constants.R` (see :mod:`alchemlyb.postprocessors.units`).
+    The relative difference between the two values is :math:`6 \times 10^{-8}`. 
+    
+    Therefore, results in :math:`kT` for GROMACS data will differ between alchemlyb ≥0.5.0 and
+    previous versions; the difference is on the order of :math:`10^{-7}` for typical cases.
+    
+    
+    .. versionchanged:: 0.5.0
+        The :mod:`scipy.constants` is used for parsers instead of
+        the constants used by the corresponding MD engine.
+        This leads to slightly different results for GROMACS input compared to 
+        previous versions of alchemlyb.        
 
     """
     beta = 1/(k_b * T)

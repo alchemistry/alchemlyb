@@ -33,7 +33,7 @@ def plot_convergence(forward, forward_error, backward, backward_error,
     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
     The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of :math:`kT`.
+    unit of the underlying variable.
 
 
     .. versionadded:: 0.4.0

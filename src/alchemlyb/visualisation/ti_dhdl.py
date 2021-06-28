@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
+from ..postprocessors.units import get_unit_converter
+
 def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
                  ax=None):
     '''Plot the dhdl of TI.
@@ -43,9 +45,10 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
     The code is taken and modified from
     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
-    The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of :math:`kT`.
 
+    .. versionchanged:: 0.5.0
+        The `units` will be used to change the underlying data instead of only
+        changing the figure legend.
 
     .. versionadded:: 0.4.0
     '''
@@ -60,6 +63,13 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
         for dhdl in dhdl_data:
             dhdl_list.extend(dhdl.separate_dhdl())
 
+    # Convert unit
+    new_unit = []
+    convert = get_unit_converter(units)
+    for dhdl in dhdl_list:
+        new_unit.append(convert(dhdl))
+
+    dhdl_list = new_unit
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))
 

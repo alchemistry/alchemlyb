@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import pytest
 
+import alchemlyb
 from alchemtest.gmx import load_benzene
 from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
 from alchemlyb.estimators import MBAR, TI, BAR
@@ -15,7 +16,7 @@ from alchemlyb.visualisation import plot_convergence
 def test_plot_mbar_omatrix():
     '''Just test if the plot runs'''
     bz = load_benzene().data
-    u_nk_coul = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
+    u_nk_coul = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
     mbar_coul = MBAR()
     mbar_coul.fit(u_nk_coul)
 
@@ -34,7 +35,7 @@ def test_plot_mbar_omatrix():
 def test_plot_ti_dhdl():
     '''Just test if the plot runs'''
     bz = load_benzene().data
-    dHdl_coul = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+    dHdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
     ti_coul = TI()
     ti_coul.fit(dHdl_coul)
     assert isinstance(plot_ti_dhdl(ti_coul),
@@ -46,7 +47,7 @@ def test_plot_ti_dhdl():
                matplotlib.axes.Axes)
     assert isinstance(plot_ti_dhdl(ti_coul, labels=['Coul'], colors=['r']),
                matplotlib.axes.Axes)
-    dHdl_vdw = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
+    dHdl_vdw = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
     ti_vdw = TI().fit(dHdl_vdw)
     assert isinstance(plot_ti_dhdl([ti_coul, ti_vdw]),
                       matplotlib.axes.Axes)
@@ -54,16 +55,17 @@ def test_plot_ti_dhdl():
         {'fep': range(100)},
         orient='index',
         columns=np.arange(100)/100).T
+    ti_coul.dhdl.attrs = dHdl_vdw.attrs
     assert isinstance(plot_ti_dhdl(ti_coul),
                matplotlib.axes.Axes)
 
 def test_plot_dF_state():
     '''Just test if the plot runs'''
     bz = load_benzene().data
-    u_nk_coul = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
-    dHdl_coul = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
-    u_nk_vdw = pd.concat([extract_u_nk(xvg, T=300) for xvg in bz['VDW']])
-    dHdl_vdw = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
+    u_nk_coul = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
+    dHdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+    u_nk_vdw = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz['VDW']])
+    dHdl_vdw = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
 
     ti_coul = TI().fit(dHdl_coul)
     ti_vdw = TI().fit(dHdl_vdw)
@@ -109,12 +111,12 @@ def test_plot_convergence():
     for i in range(1, num_points+1):
         # Do the forward
         slice = int(len(data_list[0])/num_points*i)
-        u_nk_coul = pd.concat([data[:slice] for data in data_list])
+        u_nk_coul = alchemlyb.concat([data[:slice] for data in data_list])
         estimate = MBAR().fit(u_nk_coul)
         forward.append(estimate.delta_f_.iloc[0,-1])
         forward_error.append(estimate.d_delta_f_.iloc[0,-1])
         # Do the backward
-        u_nk_coul = pd.concat([data[-slice:] for data in data_list])
+        u_nk_coul = alchemlyb.concat([data[-slice:] for data in data_list])
         estimate = MBAR().fit(u_nk_coul)
         backward.append(estimate.delta_f_.iloc[0,-1])
         backward_error.append(estimate.d_delta_f_.iloc[0,-1])
@@ -123,3 +125,53 @@ def test_plot_convergence():
         plot_convergence(forward, forward_error, backward, backward_error),
         matplotlib.axes.Axes)
 
+class Test_Units():
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def estimaters():
+        bz = load_benzene().data
+        dHdl_coul = alchemlyb.concat(
+            [extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+        ti = TI().fit(dHdl_coul)
+
+        u_nk_coul = alchemlyb.concat(
+            [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']])
+        mbar = MBAR().fit(u_nk_coul)
+
+        return ti, mbar
+
+    def test_plot_dF_state_kT(self, estimaters):
+        fig = plot_dF_state(estimaters, units='kT')
+        assert isinstance(fig, matplotlib.figure.Figure)
+
+    def test_plot_dF_state_kJ(self, estimaters):
+        fig = plot_dF_state(estimaters, units='kJ/mol')
+        assert isinstance(fig, matplotlib.figure.Figure)
+
+    def test_plot_dF_state_kcal(self, estimaters):
+        fig = plot_dF_state(estimaters, units='kcal/mol')
+        assert isinstance(fig, matplotlib.figure.Figure)
+
+    def test_plot_dF_state_unknown(self, estimaters):
+        with pytest.raises(ValueError):
+            fig = plot_dF_state(estimaters, units='ddd')
+
+    def test_plot_ti_dhdl_kT(self, estimaters):
+        ti, mbar = estimaters
+        fig = plot_ti_dhdl(ti, units='kT')
+        assert isinstance(fig, matplotlib.axes.Axes)
+
+    def test_plot_ti_dhdl_kJ(self, estimaters):
+        ti, mbar = estimaters
+        fig = plot_ti_dhdl(ti, units='kJ/mol')
+        assert isinstance(fig, matplotlib.axes.Axes)
+
+    def test_plot_ti_dhdl_kcal(self, estimaters):
+        ti, mbar = estimaters
+        fig = plot_ti_dhdl(ti, units='kcal/mol')
+        assert isinstance(fig, matplotlib.axes.Axes)
+
+    def test_plot_ti_dhdl_unknown(self, estimaters):
+        ti, mbar = estimaters
+        with pytest.raises(ValueError):
+            fig = plot_ti_dhdl(ti, units='ddd')

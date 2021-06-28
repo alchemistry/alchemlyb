@@ -13,6 +13,7 @@ from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
 from ..estimators import TI, BAR, MBAR
+from ..postprocessors.units import get_unit_converter
 
 def plot_dF_state(estimators, labels=None, colors=None, units='kT',
                   orientation='portrait', nb=10):
@@ -46,9 +47,10 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     The code is taken and modified from
     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
-    The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of :math:`kT`.
 
+    .. versionchanged:: 0.5.0
+        The `units` will be used to change the underlying data instead of only
+        changing the figure legend.
 
     .. versionadded:: 0.4.0
     '''
@@ -70,6 +72,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     dF_list = []
     error_list = []
     max_length = 0
+    convert = get_unit_converter(units)
     for dhdl_list in estimators:
         len_dF = sum([len(dhdl.delta_f_) - 1 for dhdl in dhdl_list])
         if len_dF > max_length:
@@ -78,8 +81,9 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
         error = []
         for dhdl in dhdl_list:
             for i in range(len(dhdl.delta_f_) - 1):
-                dF.append(dhdl.delta_f_.iloc[i, i+1])
-                error.append(dhdl.d_delta_f_.iloc[i, i+1])
+                dF.append(convert(dhdl.delta_f_).iloc[i, i + 1])
+                error.append(convert(dhdl.d_delta_f_).iloc[i, i + 1])
+
         dF_list.append(dF)
         error_list.append(error)
 
