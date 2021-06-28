@@ -28,7 +28,7 @@ def extract_u_nk(fep_file, T):
 
     .. versionchanged:: 0.5.0
         The :mod:`scipy.constants` is used for parsers instead of
-        the contestants used by the corresponding MD engine.
+        the constants used by the corresponding MD engine.
 
     """
     beta = 1/(k_b * T)

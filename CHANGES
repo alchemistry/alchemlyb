@@ -28,7 +28,9 @@ Fixes
 
 Changes
   - The scipy constant for gas constant is used for parsers instead of the
-  contestants used by the corresponding MD engine (issue #125, PR #129).
+    constants used by the corresponding MD engine (issue #125, PR #129).
+    This leads to small changes in results from GROMACS simulations compared to the 
+    previous releases.
   - Visualisation module will change the data according to input unit (issue
   #125,PR #129).
   - The parser output dataframe with metadata (issue #125, PR #129).
@@ -144,4 +146,3 @@ Features:
     - Subsampler functions for slicing, statitistical inefficiency, equilibration detection.
     - Minimally functional estimators for MBAR, TI.
     - high test coverage (works with data in alchemistry/alchemtests)
-
