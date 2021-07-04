@@ -16,8 +16,8 @@ and parse the datafiles separately for each alchemical leg using :func:`alchemly
     >>> from alchemlyb.parsing.gmx import extract_dHdl
     >>> import pandas as pd
 
-    >>> dHdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
-    >>> dHdl_vdw = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
+    >>> dHdl_coul = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
+    >>> dHdl_vdw = pd.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
 
 We can now use the :class:`~alchemlyb.estimators.TI` estimator to obtain the free energy differences between each :math:`\lambda` window sampled.
 The :meth:`~alchemlyb.estimators.TI.fit` method is used to perform the free energy estimate, given the gradient data::
