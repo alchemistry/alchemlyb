@@ -61,6 +61,8 @@ class TI(BaseEstimator):
         l_types = dHdl.index.names[1:]
 
         # obtain vector of delta lambdas between each state
+        # Fix issue #148, where for pandas == 1.3.0
+        # dl = means.reset_index()[list(means.index.names[:])].diff().iloc[1:].values
         dl = means.reset_index()[means.index.names[:]].diff().iloc[1:].values
 
         # apply trapezoid rule to obtain DF between each adjacent state
@@ -104,6 +106,10 @@ class TI(BaseEstimator):
 
         self.states_ = means.index.values.tolist()
 
+        self.delta_f_.attrs = dHdl.attrs
+        self.d_delta_f_.attrs = dHdl.attrs
+        self.dhdl.attrs = dHdl.attrs
+
         return self
 
     def separate_dhdl(self):
@@ -129,6 +135,8 @@ class TI(BaseEstimator):
         # get the lambda names
         l_types = self.dhdl.index.names
         # obtain bool of changed lambdas between each state
+        # Fix issue #148, where for pandas == 1.3.0
+        # lambdas = self.dhdl.reset_index()[list(l_types)]
         lambdas = self.dhdl.reset_index()[l_types]
         diff = lambdas.diff().to_numpy(dtype='bool')
         # diff will give the first row as NaN so need to fix that

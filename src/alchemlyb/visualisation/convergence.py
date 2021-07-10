@@ -17,9 +17,9 @@ def plot_convergence(forward, forward_error, backward, backward_error,
     backward_error : List
         A list of error from the last X% of data.
     units : str
-        The label for the unit of the estimate. Default: `kT`
+        The label for the unit of the estimate. Default: "kT"
     ax : matplotlib.axes.Axes
-        Matplotlib axes object where the plot will be drawn on. If ax=None,
+        Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
         a new axes will be generated.
 
     Returns
@@ -30,11 +30,13 @@ def plot_convergence(forward, forward_error, backward, backward_error,
     Note
     ----
     The code is taken and modified from
-    : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
+    `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
     The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of kT. The
-    scaling_factor is used to change the number to the desired unit.
+    unit of the underlying variable.
+
+
+    .. versionadded:: 0.4.0
     """
     if ax is None: # pragma: no cover
         fig, ax = plt.subplots(figsize=(8, 6))
@@ -64,7 +66,7 @@ def plot_convergence(forward, forward_error, backward, backward_error,
     plt.xticks(r_ts[::2], fontsize=10)
     plt.yticks(fontsize=10)
 
-    ax.legend((line1[0], line2[0]), (r'$Forward$', r'$Reverse$'), loc=9,
+    ax.legend((line1[0], line2[0]), ('Forward', 'Reverse'), loc=9,
                     prop=FP(size=18), frameon=False)
     ax.set_xlabel(r'Fraction of the simulation time', fontsize=16,
                   color='#151B54')

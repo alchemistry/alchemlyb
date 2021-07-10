@@ -15,14 +15,12 @@ import pandas as pd
 import numpy as np
 
 from .util import anyopen
+from . import _init_attrs
+from ..postprocessors.units import R_kJmol, kJ2kcal
 
 logger = logging.getLogger("alchemlyb.parsers.Amber")
 
-# TODO: perhaps move constants elsewhere?
-# these are the units we need for dealing with Amber, which uses
-# kcal/mol for energies  http://ambermd.org/Questions/units.html
-# (kB in kcal/molK)
-k_b = 1.9872041e-3
+k_b = R_kJmol * kJ2kcal
 
 
 def convert_to_pandas(file_datum):
@@ -256,7 +254,7 @@ def file_validation(outfile):
     file_datum.have_mbar = have_mbar
     return file_datum
 
-
+@_init_attrs
 def extract_u_nk(outfile, T):
     """Return reduced potentials `u_nk` from Amber outputfile.
 
@@ -272,6 +270,11 @@ def extract_u_nk(outfile, T):
     -------
     u_nk : DataFrame
         Reduced potential for each alchemical state (k) for each frame (n).
+
+
+    .. versionchanged:: 0.5.0
+        The :mod:`scipy.constants` is used for parsers instead of
+        the constants used by the corresponding MD engine.
 
     """
     beta = 1/(k_b * T)
@@ -312,7 +315,7 @@ def extract_u_nk(outfile, T):
                                                           names=['time', 'lambdas']),
                         index=np.array(file_datum.mbar_lambdas, dtype=np.float64)).T
 
-
+@_init_attrs
 def extract_dHdl(outfile, T):
     """Return gradients ``dH/dl`` from Amber TI outputfile.
 
@@ -327,6 +330,12 @@ def extract_dHdl(outfile, T):
     -------
     dH/dl : Series
         dH/dl as a function of time for this lambda window.
+
+
+    .. versionchanged:: 0.5.0
+        The :mod:`scipy.constants` is used for parsers instead of
+        the constants used by the corresponding MD engine.
+
     """
     beta = 1/(k_b * T)
 

@@ -4,7 +4,7 @@ To assess the quality of the free energy estimation, The dF between adjacent
 lambda states can be ploted to assess the quality of the estimation.
 
 The code for producing the dF states plot is modified based on
-: `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
+`Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
 """
 
@@ -13,8 +13,9 @@ from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
 from ..estimators import TI, BAR, MBAR
+from ..postprocessors.units import get_unit_converter
 
-def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
+def plot_dF_state(estimators, labels=None, colors=None, units='kT',
                   orientation='portrait', nb=10):
     '''Plot the dhdl of TI.
 
@@ -30,7 +31,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
     colors : List
         list of colors for plotting different estimators.
     units : str
-        The unit of the estimate. Default: 'kcal/mol'
+        The unit of the estimate. Default: "kT"
     orientation : string
         The orientation of the figure. Can be `portrait` or `landscape`
     nb : int
@@ -41,11 +42,17 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
     matplotlib.figure.Figure
         An Figure with the dF states drawn.
 
-    Notes
-    -----
+    Note
+    ----
     The code is taken and modified from
-    : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
+    `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
+
+    .. versionchanged:: 0.5.0
+        The `units` will be used to change the underlying data instead of only
+        changing the figure legend.
+
+    .. versionadded:: 0.4.0
     '''
     try:
         len(estimators)
@@ -65,6 +72,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
     dF_list = []
     error_list = []
     max_length = 0
+    convert = get_unit_converter(units)
     for dhdl_list in estimators:
         len_dF = sum([len(dhdl.delta_f_) - 1 for dhdl in dhdl_list])
         if len_dF > max_length:
@@ -73,8 +81,9 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
         error = []
         for dhdl in dhdl_list:
             for i in range(len(dhdl.delta_f_) - 1):
-                dF.append(dhdl.delta_f_.iloc[i, i+1])
-                error.append(dhdl.d_delta_f_.iloc[i, i+1])
+                dF.append(convert(dhdl.delta_f_).iloc[i, i + 1])
+                error.append(convert(dhdl.d_delta_f_).iloc[i, i + 1])
+
         dF_list.append(dF)
         error_list.append(error)
 
@@ -173,7 +182,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
             plt.yticks(fontsize=10)
             ax.xaxis.set_ticks([])
             for i in x + 0.5 * width * len(estimators):
-                ax.annotate('$\mathrm{%d-%d}$' % (i, i + 1), xy=(i, 0),
+                ax.annotate(r'$\mathrm{%d-%d}$' % (i, i + 1), xy=(i, 0),
                             xycoords=('data', 'axes fraction'), xytext=(0, -2),
                             size=10, textcoords='offset points', va='top',
                             ha='center')
@@ -190,11 +199,12 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
                          fancybox=True)
         plt.title('The free energy change breakdown', fontsize=12)
         plt.xlabel('States', fontsize=12, color='#151B54')
-        plt.ylabel('$\Delta G$ ' + units, fontsize=12, color='#151B54')
+        plt.ylabel(r'$\Delta G$ ({})'.format(units), fontsize=12, color='#151B54')
     elif orientation == 'portrait':
         leg = ax.legend(lines, labels, loc=0, ncol=2,
                         prop=FP(size=8),
-                        title='$\mathrm{\Delta G\/%s\/}\mathit{vs.}\/\mathrm{lambda\/pair}$' % units,
+                        title=r'$\Delta G$ ({})'.format(units) +
+                              r'$\mathit{vs.}$ lambda pair',
                         fancybox=True)
 
     leg.get_frame().set_alpha(0.5)

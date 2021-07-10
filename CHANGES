@@ -13,40 +13,90 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" http://semver.org
 
 ------------------------------------------------------------------------------
+??/??/2021 xiki-tempula, orbeckst
 
-
-??/??/2020 wehs7661, dotsdl, xiki-tempula
-
-* 0.?.?
+  * 0.5.0
 
 Enhancements
-  - Allow the dhdl from TI estimator to be separated for multiple lambda 
-  (PR #121).
-  - Allow the convergence to be plotted. (PR #121)
-  - Allow automatic sorting and duplication removal during subsampling
-  (issue #118, PR #119).
-  - Allow statistical_inefficiency to work on multiindex series. (issue #116,
-  PR #117)
-  - Allow the overlap matrix of the MBAR estimator to be plotted. (issue #73,
-  PR #107)
-  - Allow the dhdl of the TI estimator to be plotted. (issue #73, PR #110)
-  - Allow the dF states to be plotted. (issue #73, PR #112)
+  - postprocessors.units module for unit conversion (issue #125, PR #129).
+  - pass_attrs decorator for safely passing variable (issue #125, PR #129).
+  - alchemlyb.concat added to replace pd.concat (issue #125, PR #129).
 
 Deprecations
 
 Fixes
-  - removed redundant statistical inefficiency calculation in
-  `alchemlyb.preprocessing.subsampling.equilibrium_detection`
+  - Fix the support for pandas >= 1.3 (issue #147, PR #148).
 
+Changes
+  - The scipy constant for gas constant is used for parsers instead of the
+    constants used by the corresponding MD engine (issue #125, PR #129).
+    This leads to small changes in results from GROMACS simulations compared to the 
+    previous releases.
+  - Visualisation module will change the data according to input unit (issue
+  #125,PR #129).
+  - The parser output dataframe with metadata (issue #125, PR #129).
+  - alchemlyb adopts NEP29
+    https://numpy.org/neps/nep-0029-deprecation_policy.html
+    to effectively only support the last 2-3 minor Python versions
+  - Removed support for Python 2.7 and 3.6 (issue #130, #140).
+  - Bump the minimum pandas version to 1.2 (issue #130, #140).
+  
+
+06/08/2021 orbeckst
+
+  * 0.4.2
+
+Fixes
+  - added back documentation that was lost in 0.4.1 release (#136)
+
+
+06/01/2021 xiki-tempula, orbeckst
+
+  * 0.4.1
+
+Enhancements
+
+Deprecations
+  - Last release that supports Python 3.5 and 2.7.
+
+Fixes
+  - The plotting function assumes that the default unit is kcal/mol where it is
+    kT (issue #124, PR #123).
+  - invalid escape sequence in plotting annotations (issue #133)
 
 Changes
 
 
+04/27/2021 wehs7661, dotsdl, xiki-tempula, orbeckst
+
+  * 0.4.0
+
+Enhancements
+  - Allow the dhdl from TI estimator to be separated for multiple lambda 
+    (PR #121).
+  - Allow the convergence to be plotted. (PR #121)
+  - Allow automatic sorting and duplication removal during subsampling
+    (issue #118, PR #119).
+  - Allow statistical_inefficiency to work on multiindex series. (issue #116,
+    PR #117)
+  - Allow the overlap matrix of the MBAR estimator to be plotted. (issue #73,
+    PR #107)
+  - Allow the dhdl of the TI estimator to be plotted. (issue #73, PR #110)
+  - Allow the dF states to be plotted. (issue #73, PR #112)
+
+Deprecations
+  - Last version that is tested against Python 3.5 and 2.7.
+
+Fixes
+  - removed redundant statistical inefficiency calculation in
+    `alchemlyb.preprocessing.subsampling.equilibrium_detection`
+
+Changes
 
 
 01/16/2020 dotsdl, orbeckst
 
-* 0.3.1
+  * 0.3.1
 
 Enhancements
 
@@ -97,4 +147,3 @@ Features:
     - Subsampler functions for slicing, statitistical inefficiency, equilibration detection.
     - Minimally functional estimators for MBAR, TI.
     - high test coverage (works with data in alchemistry/alchemtests)
-

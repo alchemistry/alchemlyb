@@ -174,7 +174,10 @@ texinfo_documents = [
 intersphinx_mapping = {'https://docs.python.org/': None,
                        'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
                        'pymbar': ('https://pymbar.readthedocs.io/en/latest/', None),
-                       'alchemtest': ('https://alchemtest.readthedocs.io/en/latest/', None)}
+                       'alchemtest': (
+                           'https://alchemtest.readthedocs.io/en/latest/', None),
+                       'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None)}
 
 # generate stub pages where directed with autosummary
 #autosummary_generate = True
+autosummary_generate_overwrite = False

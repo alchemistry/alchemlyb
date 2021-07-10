@@ -128,5 +128,7 @@ class BAR(BaseEstimator):
         self.d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
                                        columns=self.states_,
                                        index=self.states_)
+        self.delta_f_.attrs = u_nk.attrs
+        self.d_delta_f_.attrs = u_nk.attrs
 
         return self

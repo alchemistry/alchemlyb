@@ -5,3 +5,6 @@ build
 .idea/
 docs/_build/
 src/alchemlyb.egg-info/
+__pycache__
+.coverage.*
+*~
