@@ -11,7 +11,7 @@ from alchemlyb.estimators import TI
 import alchemtest.gmx
 import alchemtest.amber
 import alchemtest.gomc
-from alchemtest.gmx import load_benzene
+from alchemtest.gmx import load_benzene, load_ABFE
 from alchemlyb.parsing.gmx import extract_dHdl
 
 
@@ -170,7 +170,6 @@ class Test_Units():
         bz = load_benzene().data
         dHdl_coul = alchemlyb.concat(
             [extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
-        dHdl_coul.attrs = extract_dHdl(load_benzene().data['Coulomb'][0], T=300).attrs
         return dHdl_coul
 
     def test_ti(self, dhdl):
@@ -181,6 +180,24 @@ class Test_Units():
         assert ti.d_delta_f_.attrs['energy_unit'] == 'kT'
         assert ti.dhdl.attrs['temperature'] == 300
         assert ti.dhdl.attrs['energy_unit'] == 'kT'
+
+    def test_ti_separate_dhdl(self, dhdl):
+        ti = TI().fit(dhdl)
+        dhdl_list = ti.separate_dhdl()
+        for dhdl in dhdl_list:
+            assert dhdl.attrs['temperature'] == 300
+            assert dhdl.attrs['energy_unit'] == 'kT'
+
+class Test_MultipleColumnUnits():
+    '''Test the case where the index has multiple columns'''
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def dhdl():
+        data = load_ABFE()['data']['complex']
+        dhdl = alchemlyb.concat(
+            [extract_dHdl(data[i],
+                          300) for i in range(30)])
+        return dhdl
 
     def test_ti_separate_dhdl(self, dhdl):
         ti = TI().fit(dhdl)
