@@ -9,7 +9,7 @@ from ..preprocessing.subsampling import statistical_inefficiency
 from ..estimators import MBAR, BAR, TI
 from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
                              plot_dF_state, plot_convergence)
-from ..constants import Boltzmann_constant, Avogadro_constant, kJ2kcal
+from ..postprocessors.units import get_unit_converter
 
 
 class ABFE():
@@ -191,16 +191,6 @@ class ABFE():
         '''
         if units is not None:
             self.logger.info('Set unit to {}.'.format(units))
-            if units == 'kT':
-                self.scaling_factor = 1
-            elif units == 'kJ/mol':
-                self.scaling_factor = Boltzmann_constant * self.T * \
-                                      Avogadro_constant / 1000
-            elif units == 'kcal/mol':
-                self.scaling_factor = Boltzmann_constant * self.T * \
-                                      Avogadro_constant / 1000 * kJ2kcal
-            else:
-                raise NameError('{} is not a valid unit.'.format(units))
             self.units = units
         else: # pragma: no cover
             pass
@@ -389,6 +379,7 @@ class ABFE():
             result_out.append([stage.split('-')[0][:9].rjust(9)+':  ', ])
         result_out.append(['TOTAL'.rjust(9) + ':  ', ])
 
+        converter = get_unit_converter(self.units)
         for estimator_name, estimator in self.estimator.items():
             self.logger.info('write the result from estimator {}'.format(
                 estimator_name))
@@ -399,8 +390,8 @@ class ABFE():
             result_out[2].append('---------------------')
             for index in range(1, num_states):
                 result_out[2+index].append('{:.3f}  +-  {:.3f}'.format(
-                    estimator.delta_f_.iloc[index-1, index]*self.scaling_factor,
-                    estimator.d_delta_f_.iloc[index-1, index]*self.scaling_factor
+                    converter(estimator.delta_f_.iloc[index-1, index]),
+                    converter(estimator.d_delta_f_.iloc[index-1, index])
                 ).rjust(21))
 
             result_out[2+num_states].append('---------------------')
@@ -430,24 +421,24 @@ class ABFE():
                 self.logger.info(
                     'Stage {} is from state {} to state {}.'.format(
                         stage, start, end))
-                result = estimator.delta_f_.iloc[start, end]*self.scaling_factor
+                result = converter(estimator.delta_f_.iloc[start, end])
                 if estimator_name != 'bar':
-                    error = estimator.d_delta_f_.iloc[start, end]*self.scaling_factor
+                    error = converter(estimator.d_delta_f_.iloc[start, end])
                 else:
-                    error = np.sqrt(sum(
+                    error = converter(np.sqrt(sum(
                         [estimator.d_delta_f_.iloc[start, start+1]**2
-                         for i in range(start, end + 1)])) * self.scaling_factor
+                         for i in range(start, end + 1)])))
                 result_out[3 + num_states + index].append(
                     '{:.3f}  +-  {:.3f}'.format(result, error,).rjust(21))
 
             # Total result
-            result = estimator.delta_f_.iloc[0, -1] * self.scaling_factor
+            result = converter(estimator.delta_f_.iloc[0, -1])
             if estimator_name != 'bar':
-                error = estimator.d_delta_f_.iloc[0, -1] * self.scaling_factor
+                error = converter(estimator.d_delta_f_.iloc[0, -1])
             else:
-                error = np.sqrt(sum(
+                error = converter(np.sqrt(sum(
                     [estimator.d_delta_f_.iloc[i, i + 1] ** 2
-                     for i in range(num_states - 1)])) * self.scaling_factor
+                     for i in range(num_states - 1)])))
             result_out[3 + num_states + len(stages)].append(
                 '{:.3f}  +-  {:.3f}'.format(result, error, ).rjust(21))
         self.logger.info('Write results:\n'+
@@ -510,8 +501,7 @@ class ABFE():
         self.logger.info('Plot TI dHdl.')
         if 'ti' in self.estimator:
             ax = plot_ti_dhdl(self.estimator['ti'], units=self.units,
-                              labels=labels, colors=colors, ax=ax,
-                              scaling_factor=self.scaling_factor)
+                              labels=labels, colors=colors, ax=ax)
             ax.figure.savefig(join(self.out, dhdl_TI))
             self.logger.info('Plot TI dHdl to {} under {}.'
                              ''.format(dhdl_TI, self.out))
@@ -542,7 +532,6 @@ class ABFE():
         self.logger.info('Plot dF states.')
         fig = plot_dF_state(self.estimator.values(), labels=labels, colors=colors,
                             units=self.units,
-                            scaling_factor=self.scaling_factor,
                             orientation=orientation, nb=nb)
         fig.savefig(join(self.out, dF_state))
         self.logger.info('Plot dF state to {} under {}.'
@@ -691,10 +680,11 @@ class ABFE():
         self.convergence = convergence
         self.logger.info('Plot convergence analysis to {} under {}.'
                          ''.format(dF_t, self.out))
-        ax = plot_convergence(np.array(forward_list) * self.scaling_factor,
-                              np.array(forward_error_list) * self.scaling_factor,
-                              np.array(backward_list) * self.scaling_factor,
-                              np.array(backward_error_list) * self.scaling_factor,
+        # converter = get_unit_converter(self.units)
+        ax = plot_convergence(np.array(forward_list),
+                              np.array(forward_error_list),
+                              np.array(backward_list),
+                              np.array(backward_error_list),
                               units=self.units, ax=ax)
         ax.figure.savefig(join(self.out, dF_t))
         return ax
