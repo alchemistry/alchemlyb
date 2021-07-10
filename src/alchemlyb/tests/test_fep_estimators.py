@@ -108,7 +108,7 @@ def namd_tyr2ala():
 
 def namd_idws():
     dataset = alchemtest.namd.load_idws()
-    u_nk = namd.extract_u_nk(dataset['data']['forward'][0], T=300)
+    u_nk = namd.extract_u_nk(dataset['data']['forward'], T=300)
 
     return u_nk
 
@@ -171,7 +171,7 @@ class TestBAR(FEPestimatorMixin):
                               (gmx_water_particle_without_energy, -11.660, 0.064914),
                               (amber_bace_example_complex_vdw, 2.37846, 0.050899),
                               (namd_tyr2ala, 11.0044, 0.10235),
-                              (namd_idws, -1.148, 0.16737),
+                              (namd_idws, 0.221147, 0.041003),
                               (gomc_benzene_u_nk, -0.87095, 0.071263),
                     ])
     def X_delta_f(self, request):

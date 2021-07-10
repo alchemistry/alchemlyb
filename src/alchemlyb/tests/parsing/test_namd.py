@@ -33,4 +33,4 @@ def test_u_nk_idws():
     u_nk = extract_u_nk(filenames, T=300)
 
     assert u_nk.index.names == ['time', 'fep-lambda']
-    assert u_nk.shape == (2602, 11)
+    assert u_nk.shape == (29252, 11)

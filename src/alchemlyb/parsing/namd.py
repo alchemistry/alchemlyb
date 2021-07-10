@@ -25,11 +25,18 @@ def extract_u_nk(fep_files, T):
     u_nk : DataFrame
         Potential energy for each alchemical state (k) for each frame (n).
 
+    Note
+    ----
+    If the number of forward and backward samples in a given window are different,
+    the extra sample(s) will be discarded. This is typically zero or one sample.
 
     .. versionchanged:: 0.5.0
         The :mod:`scipy.constants` is used for parsers instead of
         the constants used by the corresponding MD engine.
 
+        Support for Interleaved Double-Wide Sampling files added. 
+
+        `fep_files` can now be a list of filenames.
     """
     beta = 1/(k_b * T)
 
@@ -76,9 +83,9 @@ def extract_u_nk(fep_files, T):
                     win_ts_arr = np.asarray(win_ts)
 
                     if lambda_idws is not None:
-                    # Mimic classic DWS data
-                    # Arbitrarily match up fwd and bwd comparison energies on the same times
-                    # truncate extra samples from whichever array is longer
+                        # Mimic classic DWS data
+                        # Arbitrarily match up fwd and bwd comparison energies on the same times
+                        # truncate extra samples from whichever array is longer
                         win_de_back_arr = beta * np.asarray(win_de_back)
                         n = min(len(win_de_back_arr), len(win_de_arr))
 
@@ -120,6 +127,9 @@ def extract_u_nk(fep_files, T):
                 # turn parsing on after line 'STARTING COLLECTION OF ENSEMBLE AVERAGE'
                 if '#STARTING' in l:
                     parsing = True
+
+    if (len(win_de) != 0 or len(win_de_back) != 0):
+        print('Warning: trailing data without footer line (\"#Free energy...\"). Interrupted run?')
 
     if (float(lambda2) == 1.0 or float(lambda2) == 0.0):
         # this excludes the IDWS case where a dataframe already exists for both endpoints
