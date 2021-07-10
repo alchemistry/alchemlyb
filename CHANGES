@@ -25,6 +25,7 @@ Enhancements
 Deprecations
 
 Fixes
+  - Fix the support for pandas >= 1.3 (issue #147, PR #148).
 
 Changes
   - The scipy constant for gas constant is used for parsers instead of the
