@@ -86,6 +86,18 @@ def extract_u_nk(fep_files, T):
     u_nk : DataFrame
         Potential energy for each alchemical state (k) for each frame (n).
 
+    Note
+    ----
+    If the number of forward and backward samples in a given window are different,
+    the extra sample(s) will be discarded. This is typically zero or one sample.
+
+    .. versionchanged:: 0.5.0
+        The :mod:`scipy.constants` is used for parsers instead of
+        the constants used by the corresponding MD engine.
+
+        Support for Interleaved Double-Wide Sampling files added. 
+
+        `fep_files` can now be a list of filenames.
     """
     beta = 1/(k_b * T)
 
