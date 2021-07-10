@@ -47,7 +47,11 @@ def concat(objs, *args, **kwargs):
  
     .. versionadded:: 0.5.0'''
     # Sanity check
-    attrs = objs[0].attrs
+    try:
+        attrs = objs[0].attrs
+    except IndexError: # except empty list as input
+        raise ValueError('No objects to concatenate')
+
     for obj in objs:
         if attrs != obj.attrs:
             raise ValueError('All pandas objects should have the same attrs.')

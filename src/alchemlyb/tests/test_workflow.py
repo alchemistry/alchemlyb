@@ -291,16 +291,6 @@ class Test_methods():
                         suffix='bz2', T=310)
         return workflow
 
-    def test_change_unit(self, workflow):
-        workflow.update_units('kT')
-        assert workflow.scaling_factor == 1
-        workflow.update_units('kcal/mol')
-        assert np.isclose(workflow.scaling_factor, 0.6, atol=0.1)
-        workflow.update_units('kJ/mol')
-        assert np.isclose(workflow.scaling_factor, 2.6, atol=0.1)
-        with pytest.raises(NameError):
-            workflow.update_units('aaa')
-
     def test_uncorr_threshold(self, workflow):
         original_u_nk = workflow.u_nk_list
         original_dHdl = workflow.dHdl_list

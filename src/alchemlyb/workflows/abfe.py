@@ -10,6 +10,7 @@ from ..estimators import MBAR, BAR, TI
 from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
                              plot_dF_state, plot_convergence)
 from ..postprocessors.units import get_unit_converter
+from .. import concat
 
 
 class ABFE():
@@ -307,18 +308,18 @@ class ABFE():
         # Use unprocessed data if preprocess is not performed.
         if 'ti' in methods:
             try:
-                dHdl = pd.concat(self.dHdl_sample_list)
+                dHdl = concat(self.dHdl_sample_list)
             except (AttributeError, ValueError):
-                dHdl = pd.concat(self.dHdl_list)
+                dHdl = concat(self.dHdl_list)
                 self.logger.warning('dHdl has not been preprocessed.')
             self.logger.info(
                 'A total {} lines of dHdl is used.'.format(len(dHdl)))
 
         if 'bar' in methods or 'mbar' in methods:
             try:
-                u_nk = pd.concat(self.u_nk_sample_list)
+                u_nk = concat(self.u_nk_sample_list)
             except (AttributeError, ValueError):
-                u_nk = pd.concat(self.u_nk_list)
+                u_nk = concat(self.u_nk_list)
                 self.logger.warning('u_nk has not been preprocessed.')
             self.logger.info(
                 'A total {} lines of u_nk is used.'.format(len(u_nk)))
@@ -383,6 +384,10 @@ class ABFE():
         for estimator_name, estimator in self.estimator.items():
             self.logger.info('write the result from estimator {}'.format(
                 estimator_name))
+
+            # Do the unit conversion
+            delta_f_ = converter(estimator.delta_f_)
+            d_delta_f_ = converter(estimator.d_delta_f_)
             # Write the estimator header
             result_out[0].append('---------------------')
             result_out[1].append('{} ({}) '.format(
@@ -390,8 +395,8 @@ class ABFE():
             result_out[2].append('---------------------')
             for index in range(1, num_states):
                 result_out[2+index].append('{:.3f}  +-  {:.3f}'.format(
-                    converter(estimator.delta_f_.iloc[index-1, index]),
-                    converter(estimator.d_delta_f_.iloc[index-1, index])
+                    delta_f_.iloc[index-1, index],
+                    d_delta_f_.iloc[index-1, index]
                 ).rjust(21))
 
             result_out[2+num_states].append('---------------------')
@@ -421,24 +426,24 @@ class ABFE():
                 self.logger.info(
                     'Stage {} is from state {} to state {}.'.format(
                         stage, start, end))
-                result = converter(estimator.delta_f_.iloc[start, end])
+                result = delta_f_.iloc[start, end]
                 if estimator_name != 'bar':
-                    error = converter(estimator.d_delta_f_.iloc[start, end])
+                    error = d_delta_f_.iloc[start, end]
                 else:
-                    error = converter(np.sqrt(sum(
-                        [estimator.d_delta_f_.iloc[start, start+1]**2
-                         for i in range(start, end + 1)])))
+                    error = np.sqrt(sum(
+                        [d_delta_f_.iloc[start, start+1]**2
+                         for i in range(start, end + 1)]))
                 result_out[3 + num_states + index].append(
                     '{:.3f}  +-  {:.3f}'.format(result, error,).rjust(21))
 
             # Total result
-            result = converter(estimator.delta_f_.iloc[0, -1])
+            result = delta_f_.iloc[0, -1]
             if estimator_name != 'bar':
-                error = converter(estimator.d_delta_f_.iloc[0, -1])
+                error = d_delta_f_.iloc[0, -1]
             else:
-                error = converter(np.sqrt(sum(
-                    [estimator.d_delta_f_.iloc[i, i + 1] ** 2
-                     for i in range(num_states - 1)])))
+                error = np.sqrt(sum(
+                    [d_delta_f_.iloc[i, i + 1] ** 2
+                     for i in range(num_states - 1)]))
             result_out[3 + num_states + len(stages)].append(
                 '{:.3f}  +-  {:.3f}'.format(result, error, ).rjust(21))
         self.logger.info('Write results:\n'+
@@ -616,6 +621,8 @@ class ABFE():
             self.logger.warning(
                 '{} is not a valid estimator.'.format(estimator))
 
+        converter = get_unit_converter(self.units)
+
         self.logger.info('Begin forward analysis')
         forward_list = []
         forward_error_list = []
@@ -631,16 +638,17 @@ class ABFE():
             else:  # pragma: no cover
                 raise NameError(
                     '{} is not a valid estimator.'.format(estimator))
-            sample = pd.concat(sample)
+            sample = concat(sample)
             result = estimator_fit(sample)
-            forward_list.append(result.delta_f_.iloc[0, -1])
+            forward_list.append(converter(result.delta_f_).iloc[0, -1])
             if estimator.lower() == 'bar':
                 error = np.sqrt(sum(
-                    [result.d_delta_f_.iloc[i, i + 1] ** 2
+                    [converter(result.d_delta_f_).iloc[i, i + 1] ** 2
                      for i in range(len(result.d_delta_f_) - 1)]))
                 forward_error_list.append(error)
             else:
-                forward_error_list.append(result.d_delta_f_.iloc[0, -1])
+                forward_error_list.append(converter(result.d_delta_f_).iloc[
+                                                        0, -1])
             self.logger.info('{:.2f} +/- {:.2f} kT'.format(forward_list[-1],
                                                         forward_error_list[-1]))
 
@@ -659,28 +667,30 @@ class ABFE():
             else:  # pragma: no cover
                 raise NameError(
                     '{} is not a valid estimator.'.format(estimator))
-            sample = pd.concat(sample)
+            sample = concat(sample)
             result = estimator_fit(sample)
-            backward_list.append(result.delta_f_.iloc[0, -1])
+            backward_list.append(converter(result.delta_f_).iloc[0, -1])
             if estimator.lower() == 'bar':
                 error = np.sqrt(sum(
-                    [result.d_delta_f_.iloc[i, i + 1] ** 2
+                    [converter(result.d_delta_f_).iloc[i, i + 1] ** 2
                      for i in range(len(result.d_delta_f_) - 1)]))
                 backward_error_list.append(error)
             else:
-                backward_error_list.append(result.d_delta_f_.iloc[0, -1])
+                backward_error_list.append(converter(
+                    result.d_delta_f_).iloc[0, -1])
             self.logger.info('{:.2f} +/- {:.2f} kT'.format(backward_list[-1],
                                                         backward_error_list[-1]))
 
-        convergence = pd.DataFrame({'Forward (kT)': forward_list,
-                                    'F. Error (kT)': forward_error_list,
-                                    'Backward (kT)': backward_list,
-                                    'B. Error (kT)': backward_error_list})
+        convergence = pd.DataFrame(
+            {'Forward ({})'.format(self.units): forward_list,
+             'F. Error ({})'.format(self.units): forward_error_list,
+             'Backward ({})'.format(self.units): backward_list,
+             'B. Error ({})'.format(self.units): backward_error_list})
 
         self.convergence = convergence
         self.logger.info('Plot convergence analysis to {} under {}.'
                          ''.format(dF_t, self.out))
-        # converter = get_unit_converter(self.units)
+
         ax = plot_convergence(np.array(forward_list),
                               np.array(forward_error_list),
                               np.array(backward_list),
