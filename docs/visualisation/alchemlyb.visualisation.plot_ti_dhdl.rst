@@ -11,7 +11,7 @@ When custom labels are desirable, the user could pass a list of strings to the
 *labels* for labelling each alchemical transformation differently. The color of
 each alchemical transformation could also be set by passing a list of color
 string to the *colors*. The unit in the y axis could be labelled to other units
-by setting *units*, which by default is :math:`kT`. The user can pass
+by setting *units*, which by default is kcal/mol. The user can pass
 :class:`matplotlib.axes.Axes` into the function to have the dhdl drawn on a
 specific axes.
 

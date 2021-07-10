@@ -14,8 +14,8 @@ import numpy as np
 
 from ..estimators import TI, BAR, MBAR
 
-def plot_dF_state(estimators, labels=None, colors=None, units='kT',
-                  scaling_factor=1, orientation='portrait', nb=10):
+def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
+                  orientation='portrait', nb=10):
     '''Plot the dhdl of TI.
 
     Parameters
@@ -30,10 +30,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     colors : List
         list of colors for plotting different estimators.
     units : str
-        The unit of the estimate. Default: `kT`
-    scaling_factor : float
-        The scaling factor to change the energy from :math:`kT` to the
-        desired unit.
+        The unit of the estimate. Default: 'kcal/mol'
     orientation : string
         The orientation of the figure. Can be `portrait` or `landscape`
     nb : int
@@ -44,8 +41,8 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     matplotlib.figure.Figure
         An Figure with the dF states drawn.
 
-    Note
-    ----
+    Notes
+    -----
     The code is taken and modified from
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 
