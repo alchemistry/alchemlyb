@@ -25,6 +25,7 @@ Enhancements
 Deprecations
 
 Fixes
+  - concat gives Valueerror to empty list (issue #150, PR #152).
   - Fix the support for pandas >= 1.3 (issue #147, PR #148).
 
 Changes
