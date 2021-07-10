@@ -46,10 +46,6 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kcal/mol',
     The code is taken and modified from
     : `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 
-    The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable, which is in the unit of kT. The
-    scaling_factor is used to change the number to the desired unit.
-
     '''
     try:
         len(estimators)

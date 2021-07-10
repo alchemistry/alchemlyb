@@ -85,7 +85,6 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kcal/mol', ax=None)
             raise ValueError(
                 'Number of colors ({}) should be larger than the number of data ({})'.format(
                     len(labels), len(dhdl_data)))
-
     # Get the real data out
     xs, ndx, dx = [0], 0, 0.001
     min_y, max_y = 0, 0
