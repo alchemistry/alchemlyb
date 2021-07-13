@@ -150,6 +150,7 @@ class TI(BaseEstimator):
                 for l in l_types:
                     if l != l_types[i]:
                         new = new.reset_index(l, drop=True)
+                new.attrs = self.dhdl.attrs
                 dhdl_list.append(new)
         return dhdl_list
 
