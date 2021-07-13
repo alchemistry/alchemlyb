@@ -33,6 +33,11 @@ def test_concat():
     with pytest.raises(ValueError):
         alchemlyb.concat([df1, df2])
 
+def test_concat_empty():
+    '''Test if empty raise the right error.'''
+    with pytest.raises(ValueError):
+        alchemlyb.concat([])
+
 def test_setT():
     '''Test setting temperature.'''
     df = pd.DataFrame(data={'col1': [1, 2]})
