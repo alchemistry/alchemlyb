@@ -109,11 +109,8 @@ def extract_u_nk(fep_files, T):
     # The assumption is that they make sense in lexicographic order.
     for fep_file in sorted(fep_files):
         lambda1_at_start, lambda2_at_start, lambda_idws_at_start = None, None, None
-<<<<<<< HEAD
         # Note we have not set parsing=False because we could be continuing one window across
         # more than one fepout file
-=======
->>>>>>> Tolerate truncated and restarted NAMD fepout files
         with anyopen(fep_file, 'r') as f:
             has_idws = False
             for line in f:
@@ -129,7 +126,6 @@ def extract_u_nk(fep_files, T):
                 # within the same file, then complain. This can happen if truncated fepout files
                 # are presented in the wrong order.
                 if l[0] == '#NEW':
-<<<<<<< HEAD
                     lambda1_at_start, lambda2_at_start = float(l[6]), float(l[8])
                     lambda_idws_at_start = float(l[10]) if 'LAMBDA_IDWS' in l else None
                     has_idws = True if lambda_idws_at_start is not None else False
@@ -140,17 +136,6 @@ def extract_u_nk(fep_files, T):
                     # lambda1 = sampling lambda (row), lambda2 = comparison lambda (col)
                     lambda1 = float(l[7])
                     lambda2 = float(l[8])
-=======
-                    lambda1_at_start, lambda2_at_start = l[6], l[8]
-                    lambda_idws_at_start = l[10] if 'LAMBDA_IDWS' in l else None
-
-                # this line marks end of window; dump data into dataframe
-                if '#Free' in l:
-                    # extract lambda values for finished window
-                    # lambda1 = sampling lambda (row), lambda2 = comparison lambda (col)
-                    lambda1 = l[7]
-                    lambda2 = l[8]
->>>>>>> Tolerate truncated and restarted NAMD fepout files
                     lambda1_idx = all_lambdas.index(lambda1)
                     if has_idws is True and lambda1_idx > 0:
                         lambda_idws = all_lambdas[lambda1_idx - 1]
@@ -158,18 +143,11 @@ def extract_u_nk(fep_files, T):
                         lambda_idws = None
 
                     # If the lambdas are not what we thought they would be, return None, ensuring the calculation
-<<<<<<< HEAD
                     # fails. This can happen if fepouts where one window spans multiple fepouts are processed out of order
                     if lambda1_at_start is not None \
                         and (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
                         print("namd.py: extract_u_nk: Error: Lambdas changed unexpectedly while processing", fep_file)
                         print(f"namd.py: extract_u_nk: Error: l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
-                        print(f"namd.py: extract_u_nk: Error: fep_file = {fep_file}; has_idws = {has_idws}")
-=======
-                    # fails.
-                    if (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
-                        print("Error: Lambdas appear to have changed within the same fepout file", fep_file)
->>>>>>> Tolerate truncated and restarted NAMD fepout files
                         return None
 
                     # As we are at the end of a window, convert last window's work and times values to np arrays
