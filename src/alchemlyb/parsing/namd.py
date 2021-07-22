@@ -9,6 +9,63 @@ from ..postprocessors.units import R_kJmol, kJ2kcal
 
 k_b = R_kJmol * kJ2kcal
 
+def get_lambdas(fep_files):
+    """Retrieves all lambda values included in the FEP files provided.
+    
+    We have to do this in order to tolerate truncated and restarted fepout files.
+    The IDWS lambda is not present at the termination of the window, presumably
+    for backwards compatibility with ParseFEP and probably other things.
+
+    For a given lambda1, there can be only one lambda_idws.
+
+    Parameters
+    ----------
+    fep_files: str or list of str
+        Path(s) to fepout files to extract dasta from.
+
+    Returns
+    -------
+    List of floats, or None if there is more than one lambda_idws for each lambda1.
+    """
+
+    lambda_fwd_map, lambda_bwd_map = {}, {}
+
+    for fep_file in sorted(fep_files):
+        with anyopen(fep_file, 'r') as f:
+            for line in f:
+                l = line.strip().split()
+                if l[0] not in ['#NEW', '#Free']:
+                    continue
+
+                # We might not have a #NEW line so make the best guess
+                if l[0] == '#NEW':
+                    lambda1, lambda2 = l[6], l[8]
+                    lambda_idws = l[10] if 'LAMBDA_IDWS' in l else None
+                elif l[0] == '#Free':
+                    lambda1, lambda2, lambda_idws = l[7], l[8], None
+
+                # Make sure the lambda2 values are consistent
+                if lambda1 in lambda_fwd_map and lambda_fwd_map[lambda1] != lambda2:
+                    print(f'fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} instead of {lambda2}')
+                    return None
+
+                lambda_fwd_map[lambda1] = lambda2
+
+                # Make sure the lambda_idws values are consistent
+                if lambda_idws is not None:
+                    if lambda1 in lambda_bwd_map and lambda_bwd_map[lambda1] != lambda_idws:
+                        print(f'bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} instead of {lambda_idws}')
+                        return None
+                    lambda_bwd_map[lambda1] = lambda_idws
+
+    all_lambdas = set()
+    all_lambdas.update(lambda_fwd_map.keys())
+    all_lambdas.update(lambda_fwd_map.values())
+    all_lambdas.update(lambda_bwd_map.keys())
+    all_lambdas.update(lambda_bwd_map.values())
+    return list(sorted(all_lambdas))
+
+
 @_init_attrs
 def extract_u_nk(fep_files, T):
     """Return reduced potentials `u_nk` from NAMD fepout file(s).
@@ -25,18 +82,6 @@ def extract_u_nk(fep_files, T):
     u_nk : DataFrame
         Potential energy for each alchemical state (k) for each frame (n).
 
-    Note
-    ----
-    If the number of forward and backward samples in a given window are different,
-    the extra sample(s) will be discarded. This is typically zero or one sample.
-
-    .. versionchanged:: 0.5.0
-        The :mod:`scipy.constants` is used for parsers instead of
-        the constants used by the corresponding MD engine.
-
-        Support for Interleaved Double-Wide Sampling files added. 
-
-        `fep_files` can now be a list of filenames.
     """
     beta = 1/(k_b * T)
 
@@ -57,51 +102,73 @@ def extract_u_nk(fep_files, T):
         fep_files = [fep_files]
 
     time = 0
+    # Extract the lambda values only from the fepouts
+    all_lambdas = get_lambdas(fep_files)
     # open and get data from fep file.
-    for fep_file in fep_files:
+    # We sort the list of fep files in case some of them represent restarted windows.
+    # The assumption is that they make sense in lexicographic order.
+    for fep_file in sorted(fep_files):
+        lambda1_at_start, lambda2_at_start, lambda_idws_at_start = None, None, None
         with anyopen(fep_file, 'r') as f:
+            has_idws = False
             for line in f:
                 l = line.strip().split()
+                # We don't know if IDWS was enabled just from the #Free line, and we might not have
+                # a #NEW line in this file, so we have to check for the existence of FepE_back lines
+                # We rely on short-circuit evaluation to avoid the string comparison most of the time
+                if has_idws is False and l[0] == 'FepE_back:':
+                    has_idws = True
 
                 # New window, get IDWS lambda if any
+                # We keep track of lambdas from the #NEW line and if they disagree with the #Free line
+                # within the same file, then complain. This can happen if truncated fepout files
+                # are presented in the wrong order.
                 if l[0] == '#NEW':
-                    if 'LAMBDA_IDWS' in l:
-                        lambda_idws = l[10]
-                    else:
-                        lambda_idws = None
+                    lambda1_at_start, lambda2_at_start = l[6], l[8]
+                    lambda_idws_at_start = l[10] if 'LAMBDA_IDWS' in l else None
 
                 # this line marks end of window; dump data into dataframe
                 if '#Free' in l:
-
                     # extract lambda values for finished window
                     # lambda1 = sampling lambda (row), lambda2 = comparison lambda (col)
                     lambda1 = l[7]
                     lambda2 = l[8]
+                    lambda1_idx = all_lambdas.index(lambda1)
+                    if has_idws is True and lambda1_idx > 0:
+                        lambda_idws = all_lambdas[lambda1_idx - 1]
+                    else:
+                        lambda_idws = None
+
+                    # If the lambdas are not what we thought they would be, return None, ensuring the calculation
+                    # fails.
+                    if (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
+                        print("Error: Lambdas appear to have changed within the same fepout file", fep_file)
+                        return None
 
                     # convert last window's work and times values to np arrays
                     win_de_arr = beta * np.asarray(win_de)
                     win_ts_arr = np.asarray(win_ts)
 
                     if lambda_idws is not None:
-                        # Mimic classic DWS data
-                        # Arbitrarily match up fwd and bwd comparison energies on the same times
-                        # truncate extra samples from whichever array is longer
+                    # Mimic classic DWS data
+                    # Arbitrarily match up fwd and bwd comparison energies on the same times
+                    # truncate extra samples from whichever array is longer
                         win_de_back_arr = beta * np.asarray(win_de_back)
                         n = min(len(win_de_back_arr), len(win_de_arr))
 
                         tempDF = pd.DataFrame({
-                        'time': win_ts_arr[:n],
-                        'fep-lambda': np.full(n,lambda1),
+                            'time': win_ts_arr[:n],
+                            'fep-lambda': np.full(n,lambda1),
                             lambda1: 0,
-                        lambda2: win_de_arr[:n],
-                        lambda_idws: win_de_back_arr[:n]})
+                            lambda2: win_de_arr[:n],
+                            lambda_idws: win_de_back_arr[:n]})
 
                     else:
                         # create dataframe of times and work values
                         # this window's data goes in row LAMBDA1 and column LAMBDA2
                         tempDF = pd.DataFrame({
                             'time': win_ts_arr,
-                            'fep-lambda': np.full(len(win_de_arr),lambda1),
+                            'fep-lambda': np.full(len(win_de_arr), lambda1),
                             lambda1: 0,
                             lambda2: win_de_arr})
 
@@ -137,7 +204,6 @@ def extract_u_nk(fep_files, T):
         tempDF = pd.DataFrame({
             'time': win_ts_arr,
             'fep-lambda': lambda2})
-
         u_nk = pd.concat([u_nk, tempDF], sort=True)
 
     u_nk.set_index(['time','fep-lambda'], inplace=True)
