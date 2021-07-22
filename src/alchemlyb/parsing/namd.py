@@ -141,8 +141,10 @@ def extract_u_nk(fep_files, T):
 
                     # If the lambdas are not what we thought they would be, return None, ensuring the calculation
                     # fails.
-                    if (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
+                    if lambda1_at_start is not None \
+                        and (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
                         print("Error: Lambdas appear to have changed within the same fepout file", fep_file)
+                        print(f"{lambda1_at_start} {lambda2_at_start} {lambda_idws_at_start} => {lambda1} {lambda2} {lambda_idws}")
                         return None
 
                     # convert last window's work and times values to np arrays
