@@ -21,7 +21,7 @@ def get_lambdas(fep_files):
     Parameters
     ----------
     fep_files: str or list of str
-        Path(s) to fepout files to extract dasta from.
+        Path(s) to fepout files to extract data from.
 
     Returns
     -------
@@ -39,14 +39,14 @@ def get_lambdas(fep_files):
 
                 # We might not have a #NEW line so make the best guess
                 if l[0] == '#NEW':
-                    lambda1, lambda2 = l[6], l[8]
-                    lambda_idws = l[10] if 'LAMBDA_IDWS' in l else None
+                    lambda1, lambda2 = float(l[6]), float(l[8])
+                    lambda_idws = float(l[10]) if 'LAMBDA_IDWS' in l else None
                 elif l[0] == '#Free':
-                    lambda1, lambda2, lambda_idws = l[7], l[8], None
+                    lambda1, lambda2, lambda_idws = float(l[7]), float(l[8]), None
 
                 # Make sure the lambda2 values are consistent
                 if lambda1 in lambda_fwd_map and lambda_fwd_map[lambda1] != lambda2:
-                    print(f'fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} instead of {lambda2}')
+                    print(f'namd.py: get_lambdas: Error: fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} but it should be {lambda2}')
                     return None
 
                 lambda_fwd_map[lambda1] = lambda2
@@ -54,7 +54,7 @@ def get_lambdas(fep_files):
                 # Make sure the lambda_idws values are consistent
                 if lambda_idws is not None:
                     if lambda1 in lambda_bwd_map and lambda_bwd_map[lambda1] != lambda_idws:
-                        print(f'bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} instead of {lambda_idws}')
+                        print(f'namd.py: get_lambdas: Error: bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} but it should be {lambda_idws}')
                         return None
                     lambda_bwd_map[lambda1] = lambda_idws
 
@@ -124,15 +124,16 @@ def extract_u_nk(fep_files, T):
                 # within the same file, then complain. This can happen if truncated fepout files
                 # are presented in the wrong order.
                 if l[0] == '#NEW':
-                    lambda1_at_start, lambda2_at_start = l[6], l[8]
-                    lambda_idws_at_start = l[10] if 'LAMBDA_IDWS' in l else None
+                    lambda1_at_start, lambda2_at_start = float(l[6]), float(l[8])
+                    lambda_idws_at_start = float(l[10]) if 'LAMBDA_IDWS' in l else None
+                    has_idws = True if lambda_idws_at_start is not None else False
 
                 # this line marks end of window; dump data into dataframe
                 if '#Free' in l:
                     # extract lambda values for finished window
                     # lambda1 = sampling lambda (row), lambda2 = comparison lambda (col)
-                    lambda1 = l[7]
-                    lambda2 = l[8]
+                    lambda1 = float(l[7])
+                    lambda2 = float(l[8])
                     lambda1_idx = all_lambdas.index(lambda1)
                     if has_idws is True and lambda1_idx > 0:
                         lambda_idws = all_lambdas[lambda1_idx - 1]
@@ -143,8 +144,9 @@ def extract_u_nk(fep_files, T):
                     # fails.
                     if lambda1_at_start is not None \
                         and (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
-                        print("Error: Lambdas appear to have changed within the same fepout file", fep_file)
-                        print(f"{lambda1_at_start} {lambda2_at_start} {lambda_idws_at_start} => {lambda1} {lambda2} {lambda_idws}")
+                        print("namd.py: extract_u_nk: Error: Lambdas appear to have changed within the same namd fepout file", fep_file)
+                        print(f"namd.py: extract_u_nk: Error: l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
+                        print(f"namd.py: extract_u_nk: Error: fep_file = {fep_file}; has_idws = {has_idws}")
                         return None
 
                     # convert last window's work and times values to np arrays
@@ -197,10 +199,10 @@ def extract_u_nk(fep_files, T):
                 if '#STARTING' in l:
                     parsing = True
 
-    if (len(win_de) != 0 or len(win_de_back) != 0):
+    if len(win_de) != 0 or len(win_de_back) != 0:
         print('Warning: trailing data without footer line (\"#Free energy...\"). Interrupted run?')
 
-    if (float(lambda2) == 1.0 or float(lambda2) == 0.0):
+    if lambda2 in (0.0, 1.0):
         # this excludes the IDWS case where a dataframe already exists for both endpoints
         # create last dataframe for fep-lambda at last LAMBDA2
         tempDF = pd.DataFrame({
