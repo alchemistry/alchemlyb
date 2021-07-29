@@ -54,7 +54,7 @@ def get_lambdas(fep_files):
                 # Make sure the lambda_idws values are consistent
                 if lambda_idws is not None:
                     if lambda1 in lambda_bwd_map and lambda_bwd_map[lambda1] != lambda_idws:
-                        print(f'bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} instead of {lambda_idws}')
+                        print(f'namd.py: get_lambdas: Error: bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} but it should be {lambda_idws}')
                         return None
                     lambda_bwd_map[lambda1] = lambda_idws
 
