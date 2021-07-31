@@ -109,6 +109,8 @@ def extract_u_nk(fep_files, T):
     # The assumption is that they make sense in lexicographic order.
     for fep_file in sorted(fep_files):
         lambda1_at_start, lambda2_at_start, lambda_idws_at_start = None, None, None
+        # Note we have not set parsing=False because we could be continuing one window across
+        # more than one fepout file
         with anyopen(fep_file, 'r') as f:
             has_idws = False
             for line in f:
@@ -129,7 +131,7 @@ def extract_u_nk(fep_files, T):
                     has_idws = True if lambda_idws_at_start is not None else False
 
                 # this line marks end of window; dump data into dataframe
-                if '#Free' in l:
+                if l[0] == '#Free':
                     # extract lambda values for finished window
                     # lambda1 = sampling lambda (row), lambda2 = comparison lambda (col)
                     lambda1 = float(l[7])
@@ -141,22 +143,23 @@ def extract_u_nk(fep_files, T):
                         lambda_idws = None
 
                     # If the lambdas are not what we thought they would be, return None, ensuring the calculation
-                    # fails.
+                    # fails. This can happen if fepouts where one window spans multiple fepouts are processed out of order
                     if lambda1_at_start is not None \
                         and (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
-                        print("namd.py: extract_u_nk: Error: Lambdas appear to have changed within the same namd fepout file", fep_file)
+                        print("namd.py: extract_u_nk: Error: Lambdas changed unexpectedly while processing", fep_file)
                         print(f"namd.py: extract_u_nk: Error: l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
                         print(f"namd.py: extract_u_nk: Error: fep_file = {fep_file}; has_idws = {has_idws}")
                         return None
 
-                    # convert last window's work and times values to np arrays
-                    win_de_arr = beta * np.asarray(win_de)
-                    win_ts_arr = np.asarray(win_ts)
+                    # As we are at the end of a window, convert last window's work and times values to np arrays
+                    # (with energy unit kT since they were kcal/mol in the fepouts)
+                    win_de_arr = beta * np.asarray(win_de) # dE values
+                    win_ts_arr = np.asarray(win_ts) # timesteps
 
                     if lambda_idws is not None:
-                    # Mimic classic DWS data
-                    # Arbitrarily match up fwd and bwd comparison energies on the same times
-                    # truncate extra samples from whichever array is longer
+                        # Mimic classic DWS data
+                        # Arbitrarily match up fwd and bwd comparison energies on the same times
+                        # truncate extra samples from whichever array is longer
                         win_de_back_arr = beta * np.asarray(win_de_back)
                         n = min(len(win_de_back_arr), len(win_de_arr))
 
@@ -195,7 +198,7 @@ def extract_u_nk(fep_files, T):
                         win_de_back.append(float(l[6]))
                         win_ts_back.append(float(l[1]))
 
-                # turn parsing on after line 'STARTING COLLECTION OF ENSEMBLE AVERAGE'
+                # Turn parsing on after line 'STARTING COLLECTION OF ENSEMBLE AVERAGE'
                 if '#STARTING' in l:
                     parsing = True
 
