@@ -156,9 +156,9 @@ def extract_u_nk(fep_files, T):
                     win_ts_arr = np.asarray(win_ts) # timesteps
 
                     if lambda_idws is not None:
-                    # Mimic classic DWS data
-                    # Arbitrarily match up fwd and bwd comparison energies on the same times
-                    # truncate extra samples from whichever array is longer
+                        # Mimic classic DWS data
+                        # Arbitrarily match up fwd and bwd comparison energies on the same times
+                        # truncate extra samples from whichever array is longer
                         win_de_back_arr = beta * np.asarray(win_de_back)
                         n = min(len(win_de_back_arr), len(win_de_arr))
 
