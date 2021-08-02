@@ -4,6 +4,8 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 
 from pymbar import MBAR as MBAR_
+import pymbar
+from pymbar.utils import ParameterError
 
 
 class MBAR(BaseEstimator):
@@ -48,12 +50,15 @@ class MBAR(BaseEstimator):
     """
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
-                 initial_f_k=None, method='hybr', verbose=False):
+                 initial_f_k=None, method=None, verbose=False):
 
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
         self.initial_f_k = initial_f_k
-        self.method = [dict(method=method)]
+        if method is None:
+            self.method = None
+        else:
+            self.method = [dict(method=method)]
         self.verbose = verbose
 
         # handle for pymbar.MBAR object
@@ -73,30 +78,65 @@ class MBAR(BaseEstimator):
         """
         # sort by state so that rows from same state are in contiguous blocks
         u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
-        
+
         groups = u_nk.groupby(level=u_nk.index.names[1:])
-        N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in u_nk.columns]        
-        
-        self._mbar = MBAR_(u_nk.T, N_k,
-                           maximum_iterations=self.maximum_iterations,
-                           relative_tolerance=self.relative_tolerance,
-                           initial_f_k=self.initial_f_k,
-                           solver_protocol=self.method,
-                           verbose=self.verbose)
+        N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in
+               u_nk.columns]
+
+        if self.method is None:
+            try:
+                self._mbar = MBAR_(u_nk.T, N_k,
+                                   maximum_iterations=self.maximum_iterations,
+                                   relative_tolerance=self.relative_tolerance,
+                                   initial_f_k=self.initial_f_k,
+                                   solver_protocol=[dict(method='hybr')],
+                                   verbose=self.verbose)
+                # set attributes
+                out = self._mbar.getFreeEnergyDifferences(return_theta=True)
+            except:
+                try:
+                    self._mbar = MBAR_(u_nk.T, N_k,
+                                       maximum_iterations=self.maximum_iterations,
+                                       relative_tolerance=self.relative_tolerance,
+                                       initial_f_k=self.initial_f_k,
+                                       solver_protocol=[
+                                           dict(method='adaptive')],
+                                       verbose=self.verbose)
+                    # set attributes
+                    out = self._mbar.getFreeEnergyDifferences(
+                        return_theta=True)
+                except:
+                    self._mbar = MBAR_(u_nk.T, N_k,
+                                       maximum_iterations=self.maximum_iterations,
+                                       relative_tolerance=self.relative_tolerance,
+                                       initial_f_k=self.initial_f_k,
+                                       solver_protocol=[dict(method='BFGS')],
+                                       verbose=self.verbose)
+                    # set attributes
+                    out = self._mbar.getFreeEnergyDifferences(
+                        return_theta=True)
+        else:
+            self._mbar = MBAR_(u_nk.T, N_k,
+                               maximum_iterations=self.maximum_iterations,
+                               relative_tolerance=self.relative_tolerance,
+                               initial_f_k=self.initial_f_k,
+                               solver_protocol=self.method,
+                               verbose=self.verbose)
+            # set attributes
+            out = self._mbar.getFreeEnergyDifferences(return_theta=True)
 
         self.states_ = u_nk.columns.values.tolist()
 
-        # set attributes
-        out = self._mbar.getFreeEnergyDifferences(return_theta=True)
         free_energy_differences = [pd.DataFrame(i,
-                                   columns=self.states_,
-                                   index=self.states_) for i in out]
+                                                columns=self.states_,
+                                                index=self.states_) for i in
+                                   out]
 
         (self.delta_f_, self.d_delta_f_, self.theta_) = free_energy_differences
 
         self.delta_f_.attrs = u_nk.attrs
         self.d_delta_f_.attrs = u_nk.attrs
-        
+
         return self
 
     def predict(self, u_ln):
