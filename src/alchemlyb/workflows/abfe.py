@@ -1,3 +1,4 @@
+import os
 from os.path import join
 from glob import glob
 import pandas as pd
@@ -11,6 +12,7 @@ from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
                              plot_dF_state, plot_convergence)
 from ..postprocessors.units import get_unit_converter
 from .. import concat
+from .. import __version__
 
 
 class ABFE():
@@ -24,7 +26,7 @@ class ABFE():
     software : str
         The software used for generating input. {'Gromacs', }
     dir : str
-        Directory in which data files are stored. Default: './'.
+        Directory in which data files are stored. Default: os.path.curdir.
     prefix : str
         Prefix for datafile sets. Default: 'dhdl'.
     suffix : str
@@ -46,7 +48,7 @@ class ABFE():
         A list of the methods to esitimate the free energy with. Default: None.
     out : str
         Directory in which the output files produced by this script will be
-        stored. Default: './'.
+        stored. Default: os.path.curdir.
     resultfilename : str
         custom defined result filename. Default: None. (not writing the result)
     overlap : str
@@ -62,7 +64,9 @@ class ABFE():
         points (an integer) must be provided. Default: None. (not doing
         convergence analysis).
     log : str
-        The filename of the log file. Default: 'result.log'
+        The filename of the log file. The workflow logs under
+        alchemlyb.workflows.ABFE. Default:
+        'result.log'
 
     Attributes
     ----------
@@ -75,15 +79,16 @@ class ABFE():
     dHdl_list : list
         The list of dHdl read from the files.
     '''
-    def __init__(self, units='kcal/mol', software='Gromacs', dir='./',
+    def __init__(self, units='kcal/mol', software='Gromacs', dir=os.path.curdir,
                  prefix='dhdl', suffix='xvg', T=298, skiptime=0, uncorr=None,
-                 threshold=50, methods=None, out='./', resultfilename=None,
+                 threshold=50, methods=None, out=os.path.curdir, resultfilename=None,
                  overlap=None, breakdown=None, forwrev=None,
                  log='result.log'):
 
         logging.basicConfig(filename=log, level=logging.INFO)
         self.logger = logging.getLogger('alchemlyb.workflows.ABFE')
         self.logger.info('Initialise Alchemlyb ABFE Workflow')
+        self.logger.info('Alchemlyb Version: {}'.format(__version__))
 
         self.logger.info('Set temperature to {} K.'.format(T))
         self.T = T
@@ -246,6 +251,28 @@ class ABFE():
                         col = u_nk[key[0]]
                     subsample = statistical_inefficiency(u_nk, col, sort=True,
                                                          drop_duplicates=True)
+                # This part is commented out as it duplicates #98
+                # The user could restore this part if it is desired.
+
+                # elif uncorr == 'dhdl_all':
+                #     subsample = statistical_inefficiency(u_nk, u_nk.sum(axis=1),
+                #                                          sort = True,
+                #                                          drop_duplicates = True)
+                # elif uncorr == 'dE':
+                #     # Using the same logic as alchemical-analysis
+                #     key = u_nk.index.values[0][1:]
+                #     index = u_nk.columns.values.tolist().index(key)
+                #     # for the state that is not the last state, take the state+1
+                #     if index + 1 < len(u_nk.columns):
+                #         subsample = statistical_inefficiency(
+                #             u_nk, u_nk.iloc[:, index + 1])
+                #     # for the state that is the last state, take the state-1
+                #     else:
+                #         subsample = statistical_inefficiency(
+                #             u_nk, u_nk.iloc[:, index - 1],
+                #                                          sort = True,
+                #                                          drop_duplicates = True)
+
                 else: # pragma: no cover
                     # The dhdl_all and dE will be implemented here when #48 is
                     # merged
@@ -269,7 +296,9 @@ class ABFE():
             self.dHdl_sample_list = []
             for index, dHdl in enumerate(self.dHdl_list):
                 dHdl = dHdl[dHdl.index.get_level_values('time') >= skiptime]
-                subsample = statistical_inefficiency(dHdl, dHdl.sum(axis=1))
+                subsample = statistical_inefficiency(dHdl, dHdl.sum(axis=1),
+                                                     sort=True,
+                                                     drop_duplicates=True)
                 if len(subsample) < threshold:
                     self.logger.warning('Number of dHdl {} for state {} is '
                                         'less than the threshold {}.'.format(

@@ -2,13 +2,17 @@ Automatic workflow
 ==================
 Though **alchemlyb** is a library offering great flexibility in deriving free
 energy estimate, it also provide a easy pipeline that is similar to
-`Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_ and a
+`Alchemical Analysis `_ and a
 step-by-step version that allows more flexibility.
+
+Note
+----
+This is an experimental feature and is not API stable.
 
 Fully Automatic analysis
 ------------------------
 A interface similar to
-`Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
+`Alchemical Analysis `_
 could be excuted with a single line of command. ::
 
     >>> import os
@@ -107,3 +111,4 @@ to the data generated at each stage of the analysis. ::
 .. autofunction:: plot_dF_state
 .. autofunction:: check_convergence
 
+.. _Alchemical Analysis: https://github.com/MobleyLab/alchemical-analysis
