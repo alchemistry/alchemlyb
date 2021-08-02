@@ -22,7 +22,7 @@ class ABFE():
     ----------
     units : str
         The unit used for printing and plotting results. {'kcal/mol', 'kJ/mol',
-        'kT'}
+        'kT'}. Default: 'kT'.
     software : str
         The software used for generating input. {'Gromacs', }
     dir : str
@@ -79,7 +79,7 @@ class ABFE():
     dHdl_list : list
         The list of dHdl read from the files.
     '''
-    def __init__(self, units='kcal/mol', software='Gromacs', dir=os.path.curdir,
+    def __init__(self, units='kT', software='Gromacs', dir=os.path.curdir,
                  prefix='dhdl', suffix='xvg', T=298, skiptime=0, uncorr=None,
                  threshold=50, methods=None, out=os.path.curdir, resultfilename=None,
                  overlap=None, breakdown=None, forwrev=None,
