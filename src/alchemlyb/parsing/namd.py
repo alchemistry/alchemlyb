@@ -51,7 +51,7 @@ def _get_lambdas(fep_files):
                 # Make sure the lambda2 values are consistent
                 if lambda1 in lambda_fwd_map and lambda_fwd_map[lambda1] != lambda2:
                     logger.error(f'fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} but it should be {lambda2}')
-                    return None
+                    raise ValueError('Inconsistent lambda values')
 
                 lambda_fwd_map[lambda1] = lambda2
 
@@ -59,7 +59,7 @@ def _get_lambdas(fep_files):
                 if lambda_idws is not None:
                     if lambda1 in lambda_bwd_map and lambda_bwd_map[lambda1] != lambda_idws:
                         logger.error(f'bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} but it should be {lambda_idws}')
-                        return None
+                        raise ValueError('Inconsistent lambda values')
                     lambda_bwd_map[lambda1] = lambda_idws
 
     all_lambdas = set()
@@ -146,14 +146,13 @@ def extract_u_nk(fep_files, T):
                     else:
                         lambda_idws = None
 
-                    # If the lambdas are not what we thought they would be, return None, ensuring the calculation
+                    # If the lambdas are not what we thought they would be, raise an exception to ensure the calculation
                     # fails. This can happen if fepouts where one window spans multiple fepouts are processed out of order
                     if lambda1_at_start is not None \
                         and (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
                         logger.error("Lambdas changed unexpectedly while processing", fep_file)
-                        logger.error(f"Error: l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
-                        logger.error(f"Error: fep_file = {fep_file}; has_idws = {has_idws}")
-                        return None
+                        logger.error(f"l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
+                        raise ValueError("Inconsistent lambda values")
 
                     # As we are at the end of a window, convert last window's work and times values to np arrays
                     # (with energy unit kT since they were kcal/mol in the fepouts)
