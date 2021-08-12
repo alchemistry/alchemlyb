@@ -58,7 +58,7 @@ def _get_lambdas(fep_files):
                 # Make sure the lambda_idws values are consistent
                 if lambda_idws is not None:
                     if lambda1 in lambda_bwd_map and lambda_bwd_map[lambda1] != lambda_idws:
-                        logger.error(f'namd.py: get_lambdas: Error: bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} but it should be {lambda_idws}')
+                        logger.error(f'bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} but it should be {lambda_idws}')
                         return None
                     lambda_bwd_map[lambda1] = lambda_idws
 
@@ -150,9 +150,9 @@ def extract_u_nk(fep_files, T):
                     # fails. This can happen if fepouts where one window spans multiple fepouts are processed out of order
                     if lambda1_at_start is not None \
                         and (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
-                        logger.error("namd.py: extract_u_nk: Error: Lambdas changed unexpectedly while processing", fep_file)
-                        logger.error(f"namd.py: extract_u_nk: Error: l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
-                        logger.error(f"namd.py: extract_u_nk: Error: fep_file = {fep_file}; has_idws = {has_idws}")
+                        logger.error("Lambdas changed unexpectedly while processing", fep_file)
+                        logger.error(f"Error: l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
+                        logger.error(f"Error: fep_file = {fep_file}; has_idws = {has_idws}")
                         return None
 
                     # As we are at the end of a window, convert last window's work and times values to np arrays
