@@ -3,13 +3,17 @@
 """
 import pandas as pd
 import numpy as np
+import logging
 from .util import anyopen
 from . import _init_attrs
 from ..postprocessors.units import R_kJmol, kJ2kcal
 
+logger = logging.getLogger("alchemlyb.parsers.NAMD")
+
 k_b = R_kJmol * kJ2kcal
 
-def get_lambdas(fep_files):
+
+def _get_lambdas(fep_files):
     """Retrieves all lambda values included in the FEP files provided.
     
     We have to do this in order to tolerate truncated and restarted fepout files.
@@ -46,7 +50,7 @@ def get_lambdas(fep_files):
 
                 # Make sure the lambda2 values are consistent
                 if lambda1 in lambda_fwd_map and lambda_fwd_map[lambda1] != lambda2:
-                    print(f'namd.py: get_lambdas: Error: fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} but it should be {lambda2}')
+                    logger.error(f'fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} but it should be {lambda2}')
                     return None
 
                 lambda_fwd_map[lambda1] = lambda2
@@ -54,7 +58,7 @@ def get_lambdas(fep_files):
                 # Make sure the lambda_idws values are consistent
                 if lambda_idws is not None:
                     if lambda1 in lambda_bwd_map and lambda_bwd_map[lambda1] != lambda_idws:
-                        print(f'namd.py: get_lambdas: Error: bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} but it should be {lambda_idws}')
+                        logger.error(f'namd.py: get_lambdas: Error: bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} but it should be {lambda_idws}')
                         return None
                     lambda_bwd_map[lambda1] = lambda_idws
 
@@ -103,7 +107,7 @@ def extract_u_nk(fep_files, T):
 
     time = 0
     # Extract the lambda values only from the fepouts
-    all_lambdas = get_lambdas(fep_files)
+    all_lambdas = _get_lambdas(fep_files)
     # open and get data from fep file.
     # We sort the list of fep files in case some of them represent restarted windows.
     # The assumption is that they make sense in lexicographic order.
@@ -146,8 +150,9 @@ def extract_u_nk(fep_files, T):
                     # fails. This can happen if fepouts where one window spans multiple fepouts are processed out of order
                     if lambda1_at_start is not None \
                         and (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
-                        print("namd.py: extract_u_nk: Error: Lambdas changed unexpectedly while processing", fep_file)
-                        print(f"namd.py: extract_u_nk: Error: l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
+                        logger.error("namd.py: extract_u_nk: Error: Lambdas changed unexpectedly while processing", fep_file)
+                        logger.error(f"namd.py: extract_u_nk: Error: l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
+                        logger.error(f"namd.py: extract_u_nk: Error: fep_file = {fep_file}; has_idws = {has_idws}")
                         return None
 
                     # As we are at the end of a window, convert last window's work and times values to np arrays
@@ -202,7 +207,7 @@ def extract_u_nk(fep_files, T):
                     parsing = True
 
     if len(win_de) != 0 or len(win_de_back) != 0:
-        print('Warning: trailing data without footer line (\"#Free energy...\"). Interrupted run?')
+        logger.warning('Trailing data without footer line (\"#Free energy...\"). Interrupted run?')
 
     if lambda2 in (0.0, 1.0):
         # this excludes the IDWS case where a dataframe already exists for both endpoints
