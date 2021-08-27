@@ -6,6 +6,7 @@ import pytest
 from alchemlyb.parsing.namd import extract_u_nk
 from alchemtest.namd import load_tyr2ala
 from alchemtest.namd import load_idws
+from alchemtest.namd import load_restarted
 
 
 @pytest.fixture(scope="module")
@@ -34,3 +35,14 @@ def test_u_nk_idws():
 
     assert u_nk.index.names == ['time', 'fep-lambda']
     assert u_nk.shape == (29252, 11)
+
+def test_u_nk_restarted():
+    """Test that u_nk has the correct form when extracted from an IDWS
+    FEP run that includes a termination and restart.
+    """
+
+    filenames = load_restarted()['data']['both']
+    u_nk = extract_u_nk(filenames, T=300)
+
+    assert u_nk.index.names == ['time', 'fep-lambda']
+    assert u_nk.shape == (30061, 11)
