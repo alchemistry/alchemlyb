@@ -206,15 +206,3 @@ class Test_Units():
         assert mbar.delta_f_.attrs['energy_unit'] == 'kT'
         assert mbar.d_delta_f_.attrs['temperature'] == 300
         assert mbar.d_delta_f_.attrs['energy_unit'] == 'kT'
-
-def test_MBAR_assign():
-    '''Test if the assignment is actually being passed into the MBAR'''
-    mbar = MBAR(maximum_iterations=1000,
-                relative_tolerance=1e-08,
-                initial_f_k=3, method='BFGS',
-                verbose=True)
-    assert mbar.initial_f_k == 3
-    assert mbar.relative_tolerance == 1e-08
-    assert mbar.maximum_iterations == 1000
-    assert mbar.method == 'BFGS'
-    assert mbar.verbose == True
