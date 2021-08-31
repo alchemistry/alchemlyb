@@ -95,7 +95,8 @@ def extract_u_nk(fep_files, T):
         The :mod:`scipy.constants` is used for parsers instead of
         the constants used by the corresponding MD engine.
 
-        Support for Interleaved Double-Wide Sampling files added. 
+    .. versionchanged:: 0.6.0
+        Support for Interleaved Double-Wide Sampling files added.
 
         `fep_files` can now be a list of filenames.
     """
