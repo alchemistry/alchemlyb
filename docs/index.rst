@@ -7,10 +7,12 @@ alchemlyb: the simple alchemistry library
 =========================================
 
 **alchemlyb** is a library for doing alchemical free energy calculations more easily.
-It seeks to provide fexlible building blocks which could be chained together for customised analysis and workflows that use these building bocks to allow foolproof automatic analysis.
 
-Different building blocks covers functions for parsing data from formats common to existing MD engines, subsampling these data, fitting these data with an estimator to obtain free energies, and plotting the results.
-These functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data. Its components allow work at all scales, from use on small systems using a single workstation to larger datasets that require distributed computing using libraries such as `dask`_.
+It seeks to provide flexible building blocks covering functions for parsing data from formats common to existing MD engines, subsampling these data, fitting these data with an estimator to obtain free energies, and plotting the results.
+
+These functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data. General and robust workflows following the best practice are also provided that can be seen as reference implementations and examples.
+
+Its components allow work at all scales, from use on small systems using a single workstation to larger datasets that require distributed computing using libraries such as `dask`_.
 
 The library is *under active development* and the API is still somewhat in flux. However, it is used by multiple groups in a production environment. We use `semantic versioning`_ to indicate clearly what kind of changes you may expect between releases. See :ref:`contact` for how to get in touch if you have questions or find problems.
 
