@@ -33,6 +33,7 @@ def _get_lambdas(fep_files):
     """
 
     lambda_fwd_map, lambda_bwd_map = {}, {}
+    is_ascending = set()
 
     for fep_file in sorted(fep_files):
         with anyopen(fep_file, 'r') as f:
@@ -48,18 +49,28 @@ def _get_lambdas(fep_files):
                 elif l[0] == '#Free':
                     lambda1, lambda2, lambda_idws = float(l[7]), float(l[8]), None
 
+                # Keep track of whether the lambda values are increasing or decreasing, so we can return
+                # a sorted list of the lambdas in the correct order.
+                # If it changes during parsing of this set of fepout files, then we know something is wrong
+                is_ascending.add(lambda2 > lambda1)
+                if lambda_idws is not None:
+                    is_ascending.add(lambda1 > lambda_idws)
+
+                if len(is_ascending) != 1:
+                    raise ValueError(f'Lambda values change direction in {fep_file}, relative to the other files')
+
                 # Make sure the lambda2 values are consistent
                 if lambda1 in lambda_fwd_map and lambda_fwd_map[lambda1] != lambda2:
-                    logger.error(f'fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} but it should be {lambda2}')
-                    raise ValueError('Inconsistent lambda values')
+                    logger.error(f'fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} but it has already been {lambda2}')
+                    raise ValueError('More than one lambda2 value for a particular lambda1')
 
                 lambda_fwd_map[lambda1] = lambda2
 
                 # Make sure the lambda_idws values are consistent
                 if lambda_idws is not None:
                     if lambda1 in lambda_bwd_map and lambda_bwd_map[lambda1] != lambda_idws:
-                        logger.error(f'bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} but it should be {lambda_idws}')
-                        raise ValueError('Inconsistent lambda values')
+                        logger.error(f'bwd: lambda1 {lambda1} has lambda_idws {lambda_bwd_map[lambda1]} but it has already been {lambda_idws}')
+                        raise ValueError('More than one lambda_idws value for a particular lambda1')
                     lambda_bwd_map[lambda1] = lambda_idws
 
     all_lambdas = set()
@@ -67,11 +78,12 @@ def _get_lambdas(fep_files):
     all_lambdas.update(lambda_fwd_map.values())
     all_lambdas.update(lambda_bwd_map.keys())
     all_lambdas.update(lambda_bwd_map.values())
-    return list(sorted(all_lambdas))
+    should_reverse = not next(iter(is_ascending))
+    return list(sorted(all_lambdas, reverse=should_reverse))
 
 
 @_init_attrs
-def extract_u_nk(fep_files, T):
+def extract_u_nk(fep_files, T, stride=1):
     """Return reduced potentials `u_nk` from NAMD fepout file(s).
 
     Parameters
@@ -154,7 +166,7 @@ def extract_u_nk(fep_files, T):
                     lambda2 = float(l[8])
                     lambda1_idx = all_lambdas.index(lambda1)
                     if has_idws is True and lambda1_idx > 0:
-                        lambda_idws = all_lambdas[lambda1_idx - 1]
+                        lambda_idws = all_lambdas[lambda1_idx - 1] # XXX: 
                     else:
                         lambda_idws = None
 
@@ -162,9 +174,10 @@ def extract_u_nk(fep_files, T):
                     # fails. This can happen if fepouts where one window spans multiple fepouts are processed out of order
                     if lambda1_at_start is not None \
                         and (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
-                        logger.error("Lambdas changed unexpectedly while processing", fep_file)
+                        logger.error(f"Lambdas changed unexpectedly while processing {fep_file}")
                         logger.error(f"l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
-                        raise ValueError("Inconsistent lambda values")
+                        logger.error(line)
+                        raise ValueError("Inconsistent lambda values in extract_u_nk")
 
                     # As we are at the end of a window, convert last window's work and times values to np arrays
                     # (with energy unit kT since they were kcal/mol in the fepouts)
@@ -184,8 +197,10 @@ def extract_u_nk(fep_files, T):
                             lambda1: 0,
                             lambda2: win_de_arr[:n],
                             lambda_idws: win_de_back_arr[:n]})
+                        print(f"{fep_file}: IDWS window {lambda1} {lambda2} {lambda_idws}")
 
                     else:
+                        print(f"{fep_file}: Forward-only window {lambda1} {lambda2}")
                         # create dataframe of times and work values
                         # this window's data goes in row LAMBDA1 and column LAMBDA2
                         tempDF = pd.DataFrame({
@@ -203,13 +218,15 @@ def extract_u_nk(fep_files, T):
                     win_de_back = []
                     win_ts_back = []
                     parsing = False
+                    has_idws = False
+                    lambda1_at_start, lambda2_at_start, lambda_idws_at_start = None, None, None
 
                 # append work value from 'dE' column of fepout file
                 if parsing:
-                    if l[0] == 'FepEnergy:':
+                    if l[0] == 'FepEnergy:' and len(win_ts) % stride == 0:
                         win_de.append(float(l[6]))
                         win_ts.append(float(l[1]))
-                    elif l[0] == 'FepE_back:':
+                    elif l[0] == 'FepE_back:' and len(win_ts_back) % stride == 0:
                         win_de_back.append(float(l[6]))
                         win_ts_back.append(float(l[1]))
 
