@@ -238,8 +238,8 @@ def test_decorrelate_u_nk_single_l(method, size):
                                 sort=True)) == size
 
 @pytest.mark.parametrize(('method', 'size'), [('dhdl', 501),
-                                              ('dhdl_all', 501),
-                                              ('dE', 501)])
+                                              ('dhdl_all', 1001),
+                                              ('dE', 334)])
 def test_decorrelate_u_nk_multiple_l(method, size):
     dataset = load_ABFE()
     u_nk = extract_u_nk(dataset['data']['complex'][-1], 310)
