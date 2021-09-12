@@ -7,57 +7,8 @@ from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
 
-
-def _check_multiple_times(df):
-    if isinstance(df, pd.Series):
-        return df.sort_index(0).reset_index('time', name='').duplicated('time').any()
-    else:
-        return df.sort_index(0).reset_index('time').duplicated('time').any()
-
-
-def _check_sorted(df):
-    return df.reset_index(0)['time'].is_monotonic_increasing
-
-
-def slicing(df, lower=None, upper=None, step=None, force=False):
-    """Subsample a DataFrame using simple slicing.
-
-    Parameters
-    ----------
-    df : DataFrame
-        DataFrame to subsample.
-    lower : float
-        Lower time to slice from.
-    upper : float
-        Upper time to slice to (inclusive).
-    step : int
-        Step between rows to slice by.
-    force : bool
-        Ignore checks that DataFrame is in proper form for expected behavior.
-
-    Returns
-    -------
-    DataFrame
-        `df` subsampled.
-
-    """
-    try:
-        df = df.loc[lower:upper:step]
-    except KeyError:
-        raise KeyError("DataFrame rows must be sorted by time, increasing.")
-
-    if not force and _check_multiple_times(df):
-        raise KeyError("Duplicate time values found; it's generally advised "
-                       "to use slicing on DataFrames with unique time values "
-                       "for each row. Use `force=True` to ignore this error.")
-
-    # drop any rows that have missing values
-    df = df.dropna()
-
-    return df
-
 def decorrelate_u_nk(df, method='dhdl', **kwargs):
-    """Subsample a u_nk DataFrame based on selected method.
+    """Subsample a u_nk DataFrame based on the selected method.
 
     This is wrapper function around the
     :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
@@ -65,7 +16,7 @@ def decorrelate_u_nk(df, method='dhdl', **kwargs):
     Parameters
     ----------
     df : DataFrame
-        DataFrame to subsample according to the selected method.
+        DataFrame to be subsampled according to the selected method.
     method : string
         Method for decorrelating the data. ['dhdl', 'dhdl_all', 'dE']
     **kwargs :
@@ -154,6 +105,54 @@ def decorrelate_dhdl(df, **kwargs):
     series = df.sum(axis=1)
 
     return statistical_inefficiency(df, series, **kwargs)
+
+def _check_multiple_times(df):
+    if isinstance(df, pd.Series):
+        return df.sort_index(0).reset_index('time', name='').duplicated('time').any()
+    else:
+        return df.sort_index(0).reset_index('time').duplicated('time').any()
+
+
+def _check_sorted(df):
+    return df.reset_index(0)['time'].is_monotonic_increasing
+
+
+def slicing(df, lower=None, upper=None, step=None, force=False):
+    """Subsample a DataFrame using simple slicing.
+
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame to subsample.
+    lower : float
+        Lower time to slice from.
+    upper : float
+        Upper time to slice to (inclusive).
+    step : int
+        Step between rows to slice by.
+    force : bool
+        Ignore checks that DataFrame is in proper form for expected behavior.
+
+    Returns
+    -------
+    DataFrame
+        `df` subsampled.
+
+    """
+    try:
+        df = df.loc[lower:upper:step]
+    except KeyError:
+        raise KeyError("DataFrame rows must be sorted by time, increasing.")
+
+    if not force and _check_multiple_times(df):
+        raise KeyError("Duplicate time values found; it's generally advised "
+                       "to use slicing on DataFrames with unique time values "
+                       "for each row. Use `force=True` to ignore this error.")
+
+    # drop any rows that have missing values
+    df = df.dropna()
+
+    return df
 
 def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
                              conservative=True, drop_duplicates=False, sort=False):
