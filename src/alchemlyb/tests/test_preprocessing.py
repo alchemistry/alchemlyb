@@ -234,7 +234,8 @@ class Test_Units():
 def test_decorrelate_u_nk_single_l(method, size):
     dataset = load_benzene()
     u_nk = extract_u_nk(dataset['data']['Coulomb'][0], 310)
-    assert len(decorrelate_u_nk(u_nk, method=method)) == size
+    assert len(decorrelate_u_nk(u_nk, method=method, drop_duplicates=True,
+                                sort=True)) == size
 
 @pytest.mark.parametrize(('method', 'size'), [('dhdl', 501),
                                               ('dhdl_all', 501),
@@ -242,4 +243,17 @@ def test_decorrelate_u_nk_single_l(method, size):
 def test_decorrelate_u_nk_multiple_l(method, size):
     dataset = load_ABFE()
     u_nk = extract_u_nk(dataset['data']['complex'][0], 310)
-    assert len(decorrelate_u_nk(u_nk, method=method)) == size
+    assert len(decorrelate_u_nk(u_nk, method=method, drop_duplicates=True,
+                                sort=True)) == size
+
+def test_decorrelate_dhdl_single_l():
+    dataset = load_benzene()
+    dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
+    assert len(decorrelate_dhdl(dhdl, drop_duplicates=True,
+                                sort=True)) == 2001
+
+def test_decorrelate_dhdl_multiple_l():
+    dataset = load_ABFE()
+    dhdl = extract_dHdl(dataset['data']['complex'][0], 310)
+    assert len(decorrelate_dhdl(dhdl, drop_duplicates=True,
+                                sort=True)) == 501
