@@ -8,9 +8,10 @@ import numpy as np
 import alchemlyb
 from alchemlyb.parsing import gmx
 from alchemlyb.preprocessing import (slicing, statistical_inefficiency,
-                                     equilibrium_detection,)
+                                     equilibrium_detection,
+                                     decorrelate_u_nk, decorrelate_dhdl)
 from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
-from alchemtest.gmx import load_benzene
+from alchemtest.gmx import load_benzene, load_ABFE
 
 import alchemtest.gmx
 
@@ -225,3 +226,20 @@ class Test_Units():
         new_dhdl = equilibrium_detection(dhdl)
         assert new_dhdl.attrs['temperature'] == 310
         assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+
+@pytest.mark.parametrize(('method', 'size'), [('dhdl', 2001),
+                                              ('dhdl_all', 2001),
+                                              ('dE', 2001)])
+def test_decorrelate_u_nk_single_l(method, size):
+    dataset = load_benzene()
+    u_nk = extract_u_nk(dataset['data']['Coulomb'][0], 310)
+    assert len(decorrelate_u_nk(u_nk, method=method)) == size
+
+@pytest.mark.parametrize(('method', 'size'), [('dhdl', 501),
+                                              ('dhdl_all', 501),
+                                              ('dE', 501)])
+def test_decorrelate_u_nk_multiple_l(method, size):
+    dataset = load_ABFE()
+    u_nk = extract_u_nk(dataset['data']['complex'][0], 310)
+    assert len(decorrelate_u_nk(u_nk, method=method)) == size
