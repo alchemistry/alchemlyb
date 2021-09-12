@@ -58,8 +58,7 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
 
 
 def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
-                             conservative=True, drop_duplicates=False, sort=False,
-                             method='dhdl'):
+                             conservative=True, drop_duplicates=False, sort=False):
     """Subsample a DataFrame based on the calculated statistical inefficiency
     of a timeseries.
 
@@ -124,19 +123,6 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
        end up with correlated data.
 
     """
-    
-    if method == 'dhdl':
-        # Find the current column index
-        # Select the first row and remove the first column (Time)
-        key = u_nk.index.values[0][1:]
-                    if len(key) > 1:
-                        # Multiple keys
-                        col = u_nk[key]
-                    else:
-                        # Single key
-                        col = u_nk[key[0]]
-                    subsample = statistical_inefficiency(u_nk, col, sort=True,
-                                                         drop_duplicates=True)
     if _check_multiple_times(df):
         if drop_duplicates:
             if isinstance(df, pd.Series):
