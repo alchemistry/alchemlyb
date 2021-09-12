@@ -242,9 +242,8 @@ def test_decorrelate_u_nk_single_l(method, size):
                                               ('dE', 501)])
 def test_decorrelate_u_nk_multiple_l(method, size):
     dataset = load_ABFE()
-    u_nk = extract_u_nk(dataset['data']['complex'][0], 310)
-    assert len(decorrelate_u_nk(u_nk, method=method, drop_duplicates=True,
-                                sort=True)) == size
+    u_nk = extract_u_nk(dataset['data']['complex'][-1], 310)
+    assert len(decorrelate_u_nk(u_nk, method=method,)) == size
 
 def test_decorrelate_dhdl_single_l():
     dataset = load_benzene()
@@ -255,5 +254,4 @@ def test_decorrelate_dhdl_single_l():
 def test_decorrelate_dhdl_multiple_l():
     dataset = load_ABFE()
     dhdl = extract_dHdl(dataset['data']['complex'][0], 310)
-    assert len(decorrelate_dhdl(dhdl, drop_duplicates=True,
-                                sort=True)) == 501
+    assert len(decorrelate_dhdl(dhdl,)) == 501
