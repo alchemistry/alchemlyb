@@ -34,6 +34,7 @@ def _get_lambdas(fep_files):
 
     lambda_fwd_map, lambda_bwd_map = {}, {}
     is_ascending = set()
+    endpoint_windows = []
 
     for fep_file in sorted(fep_files):
         with anyopen(fep_file, 'r') as f:
@@ -52,11 +53,16 @@ def _get_lambdas(fep_files):
                 # Keep track of whether the lambda values are increasing or decreasing, so we can return
                 # a sorted list of the lambdas in the correct order.
                 # If it changes during parsing of this set of fepout files, then we know something is wrong
-                is_ascending.add(lambda2 > lambda1)
-                if lambda_idws is not None:
-                    is_ascending.add(lambda1 > lambda_idws)
+                
+                # Keep track of endpoints separately since in IDWS runs there must be one of opposite direction
+                if 0.0 in (lambda1, lambda2) or 1.0 in (lambda1, lambda2):
+                    endpoint_windows.append((lambda1, lambda2))
+                else:
+                    is_ascending.add(lambda2 > lambda1)
+                    if lambda_idws is not None:
+                        is_ascending.add(lambda1 > lambda_idws)
 
-                if len(is_ascending) != 1:
+                if len(is_ascending) > 1:
                     raise ValueError(f'Lambda values change direction in {fep_file}, relative to the other files')
 
                 # Make sure the lambda2 values are consistent
@@ -73,17 +79,25 @@ def _get_lambdas(fep_files):
                         raise ValueError('More than one lambda_idws value for a particular lambda1')
                     lambda_bwd_map[lambda1] = lambda_idws
 
+
+    is_ascending = next(iter(is_ascending))
+    # If this is NOT an IDWS run (lambda_bwd_map has no entries) then:
+    #   - Endpoint windows must match the direction of the rest of the run
+    if len(lambda_bwd_map) == 0:
+        for lambda1, lambda2 in endpoint_windows:
+            if (lambda1 < lambda2) != is_ascending:
+                raise ValueError(f'Window ({lambda1}, {lambda2}) does not match direction of rest of windows (is_ascending is {is_ascending}')
+
     all_lambdas = set()
     all_lambdas.update(lambda_fwd_map.keys())
     all_lambdas.update(lambda_fwd_map.values())
     all_lambdas.update(lambda_bwd_map.keys())
     all_lambdas.update(lambda_bwd_map.values())
-    should_reverse = not next(iter(is_ascending))
-    return list(sorted(all_lambdas, reverse=should_reverse))
+    return list(sorted(all_lambdas, reverse=not is_ascending))
 
 
 @_init_attrs
-def extract_u_nk(fep_files, T, stride=1):
+def extract_u_nk(fep_files, T):
     """Return reduced potentials `u_nk` from NAMD fepout file(s).
 
     Parameters
@@ -223,10 +237,10 @@ def extract_u_nk(fep_files, T, stride=1):
 
                 # append work value from 'dE' column of fepout file
                 if parsing:
-                    if l[0] == 'FepEnergy:' and len(win_ts) % stride == 0:
+                    if l[0] == 'FepEnergy:':
                         win_de.append(float(l[6]))
                         win_ts.append(float(l[1]))
-                    elif l[0] == 'FepE_back:' and len(win_ts_back) % stride == 0:
+                    elif l[0] == 'FepE_back:':
                         win_de_back.append(float(l[6]))
                         win_ts_back.append(float(l[1]))
 
