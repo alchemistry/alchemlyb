@@ -10,7 +10,7 @@ alchemlyb: the simple alchemistry library
 
 It seeks to provide flexible building blocks covering functions for parsing data from formats common to existing MD engines, subsampling these data, fitting these data with an estimator to obtain free energies, and plotting the results.
 
-These functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data. General and robust workflows following the best practice are also provided that can be seen as reference implementations and examples.
+These functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data. General and robust workflows following best practices are also provided, which can be used as reference implementations and examples.
 
 **alchemlyb** seeks to be as boring and simple as possible to enable more complex work. Its components allow work at all scales, from use on small systems using a single workstation to larger datasets that require distributed computing using libraries such as `dask`_.
 
