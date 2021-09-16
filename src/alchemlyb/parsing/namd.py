@@ -58,12 +58,14 @@ def _get_lambdas(fep_files):
                 if 0.0 in (lambda1, lambda2) or 1.0 in (lambda1, lambda2):
                     endpoint_windows.append((lambda1, lambda2))
                 else:
-                    is_ascending.add(lambda2 > lambda1)
-                    if lambda_idws is not None:
+                    # If the lambdas are equal then this doesn't represent an ascending window
+                    if lambda2 != lambda1:
+                        is_ascending.add(lambda2 > lambda1)
+                    if lambda_idws is not None and lambda1 != lambda_idws:
                         is_ascending.add(lambda1 > lambda_idws)
 
                 if len(is_ascending) > 1:
-                    raise ValueError(f'Lambda values change direction in {fep_file}, relative to the other files')
+                    raise ValueError(f'Lambda values {lambda1} -> {lambda2} (IDWS: {lambda_idws}) change direction in {fep_file}, relative to the other files')
 
                 # Make sure the lambda2 values are consistent
                 if lambda1 in lambda_fwd_map and lambda_fwd_map[lambda1] != lambda2:
