@@ -12,6 +12,7 @@ The following is an overview over the guiding principles and ideas that underpin
 `alchemlyb` is a library that seeks to make doing alchemical free energy calculations easier and less error prone.
 It includes functions for parsing data from formats common to existing MD engines, subsampling these data, and fitting these data with an estimator to obtain free energies.
 These functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data.
+General and robust workflows following best practices are also provided, which can be used as reference implementations and examples.
 
 `alchemlyb` seeks to be as boring and simple as possible to enable more complex work.
 Its components allow work at all scales, from use on small systems using a single workstation to larger datasets that require distributed computing using libraries such as dask.
@@ -57,15 +58,15 @@ The library is structured as follows, following a similar style to
     ├── postprocessors
     │   ├── ...
     │   └── units.py    
-    └── visualisation
-	├── convergence.py
-	├── dF_state.py
-	├── mbar_matrix.py
-	├── ti_dhdl.py
-	└── ...
-  
-
-	 
+    ├── visualisation
+    │   ├── convergence.py
+    │   ├── dF_state.py
+    │   ├── mbar_matrix.py
+    │   ├── ti_dhdl.py
+    │   └── ...
+    └── workflows
+        └── ...
+         
 
 The :mod:`~alchemlyb.parsing` submodule contains parsers for individual MD engines, since the output files needed to perform alchemical free energy calculations vary widely and are not standardized.
 Each module at the very least provides an `extract_u_nk` function for extracting reduced potentials (needed for MBAR), as well as an `extract_dHdl` function for extracting derivatives required for thermodynamic integration.
