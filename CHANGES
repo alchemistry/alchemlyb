@@ -47,6 +47,7 @@ Fixes
     compatible with pandas.concat() (issue #150, PR #152).
   - Fix the support for pandas >= 1.3 by skipping 1.3.0 (issue #147, PR #148).
   - Fix separate_dhdl not work for multiple columns (issue #149, PR #151).
+  - MBAR estimator now correctly passes max_iterations to pymbar.MBAR. (PR #162)
   
 
 06/08/2021 orbeckst
