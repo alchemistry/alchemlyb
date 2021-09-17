@@ -53,7 +53,10 @@ The library is structured as follows, following a similar style to
     │   └── ...        
     ├── convergence          ### NOT IMPLEMENTED
     │   ├── convergence.py
-    │   └── ...    
+    │   └── ...
+    ├── postprocessors
+    │   ├── ...
+    │   └── units.py    
     └── visualisation
 	├── convergence.py
 	├── dF_state.py
@@ -82,7 +85,9 @@ Correct error estimates require the use of time series with independent samples.
 The :mod:`~alchemlyb.convergence` submodule will feature convenience functions/classes for doing convergence analysis using a given dataset and a chosen estimator, though the form of this is not yet thought-out.
 However, the `gist a41e5756a58e1775e3e3a915f07bfd37`_ shows an example for how this can be done already in practice.
 
-The :mod:`visualization` submodule contains convenience plotting functions as known from, for example, `alchemical-analysis.py`_.
+The :mod:`~alchemlyb.postprocessing` submodule contains functions to calculate new quantities or express data in different units.
+
+The :mod:`~alchemlyb.visualization` submodule contains convenience plotting functions as known from, for example, `alchemical-analysis.py`_.
 
 All of these components lend themselves well to writing clear and flexible pipelines for processing data needed for alchemical free energy calculations, and furthermore allow for scaling up via libraries like `dask`_ or `joblib`_.
 

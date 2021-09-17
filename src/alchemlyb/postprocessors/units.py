@@ -4,9 +4,11 @@
 from scipy.constants import R, calorie
 
 #: conversion factor from kJ to kcal, based on :data:`scipy.constants.calorie`
+#: in :mod:`scipy.constants`
 kJ2kcal = 1 / calorie
 
-#: Gas constant :math:`R` in kJ/(mol K), based on :data:`scipy.constants.R`
+#: gas constant :math:`R` in kJ/(mol K), based on :data:`scipy.constants.R`
+#: in :mod:`scipy.constants`
 R_kJmol = R / 1000
 
 def to_kT(df, T=None):
@@ -120,7 +122,8 @@ def get_unit_converter(units):
         converter
 
 
-    .. versionadded:: 0.5.0"""
+    .. versionadded:: 0.5.0
+    """
     converters = {'kT': to_kT, 'kJ/mol': to_kJmol,
                    'kcal/mol': to_kcalmol}
     try:
