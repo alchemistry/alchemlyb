@@ -213,10 +213,9 @@ def extract_u_nk(fep_files, T):
                             lambda1: 0,
                             lambda2: win_de_arr[:n],
                             lambda_idws: win_de_back_arr[:n]})
-                        print(f"{fep_file}: IDWS window {lambda1} {lambda2} {lambda_idws}")
-
+                        # print(f"{fep_file}: IDWS window {lambda1} {lambda2} {lambda_idws}")
                     else:
-                        print(f"{fep_file}: Forward-only window {lambda1} {lambda2}")
+                        # print(f"{fep_file}: Forward-only window {lambda1} {lambda2}")
                         # create dataframe of times and work values
                         # this window's data goes in row LAMBDA1 and column LAMBDA2
                         tempDF = pd.DataFrame({
