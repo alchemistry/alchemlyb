@@ -3,11 +3,11 @@ Parsing data files
 **alchemlyb** features parsing submodules for getting raw data from different software packages into common data structures that can be used directly by its :ref:`subsamplers <subsampling>` and :ref:`estimators <estimators>`.
 Each submodule features at least two functions, namely:
 
-``extract_dHdl``
+:func:`extract_dHdl`
   Extract the gradient of the Hamiltonian, :math:`\frac{dH}{d\lambda}`, for each timestep of the sampled state.
   Required input for :ref:`TI-based estimators <estimators_ti>`.
 
-``extract_u_nk``
+:func:`extract_u_nk`
   Extract reduced potentials, :math:`u_{nk}`, for each timestep of the sampled state and all neighboring states.
   Required input for :ref:`FEP-based estimators <estimators_fep>`.
 
@@ -115,8 +115,12 @@ For datasets that sample only a single :math:`\lambda` parameter, then the DataF
        99.0 1.0         -22016.69   -22016.93  -22017.17        -22057.68
       100.0 1.0         -22137.19   -22136.51  -22135.83        -22101.26
 
+
+.. _note-on-units:
+
 A note on units
 '''''''''''''''
+
 ``alchemlyb`` reads input files in native energy units and converts them to a common
 unit, the energy measured in :math:`k_B T`, where :math:`k_B` is `Boltzmann's constant 
 <https://physics.nist.gov/cgi-bin/cuu/Value?k>`_ and :math:`T` is the thermodynamic 
@@ -126,9 +130,12 @@ Throughout ``alchemlyb``, the metadata, such as the energy unit and temperature 
 the dataset, are stored as a dictionary in :attr:`pandas.DataFrame.attrs` metadata
 attribute. The keys of the :attr:`~pandas.DataFrame.attrs`  dictionary are
 
-- ``"temperature"``: the temperature at which the simulation was performed, in Kelvin
-- ``"energy_unit"``: the unit of energy, such as "kT", "kcal/mol", "kJ/mol" (as defined in
-   :mod:`~alchemlyb.postprocessors.units`).
+``"temperature"``
+   the temperature at which the simulation was performed, in Kelvin
+   
+``"energy_unit"``
+   the unit of energy, such as "kT", "kcal/mol", "kJ/mol" (as
+   defined in :mod:`~alchemlyb.postprocessors.units`)
 
 Conversion functions in :mod:`alchemlyb.postprocessing` and elsewhere may use the 
 metadata for unit conversion and other transformations.

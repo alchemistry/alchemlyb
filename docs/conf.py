@@ -176,7 +176,7 @@ intersphinx_mapping = {'https://docs.python.org/': None,
                        'pymbar': ('https://pymbar.readthedocs.io/en/latest/', None),
                        'alchemtest': (
                            'https://alchemtest.readthedocs.io/en/latest/', None),
-                       'scipy': ('http://docs.scipy.org/doc/scipy/reference/', None)}
+                       'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None)}
 
 # generate stub pages where directed with autosummary
 #autosummary_generate = True

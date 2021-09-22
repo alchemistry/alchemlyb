@@ -53,7 +53,7 @@ class MBAR(BaseEstimator):
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
         self.initial_f_k = initial_f_k
-        self.method = [dict(method=method)]
+        self.method = method
         self.verbose = verbose
 
         # handle for pymbar.MBAR object
@@ -77,12 +77,15 @@ class MBAR(BaseEstimator):
         groups = u_nk.groupby(level=u_nk.index.names[1:])
         N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in u_nk.columns]        
         
+        # Prepare the solver_protocol as stated in https://github.com/choderalab/pymbar/issues/419#issuecomment-803714103
+        solver_options = {"maximum_iterations": self.maximum_iterations,
+                          "verbose": self.verbose}
+        solver_protocol = {"method": self.method,
+                           "options": solver_options}
         self._mbar = MBAR_(u_nk.T, N_k,
-                           maximum_iterations=self.maximum_iterations,
                            relative_tolerance=self.relative_tolerance,
                            initial_f_k=self.initial_f_k,
-                           solver_protocol=self.method,
-                           verbose=self.verbose)
+                           solver_protocol=(solver_protocol,))
 
         self.states_ = u_nk.columns.values.tolist()
 
