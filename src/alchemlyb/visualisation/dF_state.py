@@ -105,7 +105,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
             fig, axs = plt.subplots(nrows=len(xs), figsize=(8, 6))
         mnb = max([len(i) for i in xs])
     else:
-        raise NameError("Not recognising {}, only supports 'landscape' or 'portrait'.".format(orientation))
+        raise ValueError("Not recognising {}, only supports 'landscape' or 'portrait'.".format(orientation))
 
     # Sort out the colors
     if colors is None:

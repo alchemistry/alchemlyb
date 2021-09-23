@@ -10,9 +10,35 @@ The rules for this file:
   * keep the format consistent (79 char width, M/D/Y date format) and do not
     use tabs but use spaces for formatting
   * accompany each entry with github issue/PR number (Issue #xyz)
-  * release numbers follow "Semantic Versioning" http://semver.org
+  * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+??/??/2021 
+
+  * 0.6.0
+
+Changes
+
+Enhancements
+
+Fixes
+
+
+09/17/2021 xiki-tempula, orbeckst
+
+  * 0.5.1
+
+Changes (not affecting code)
+  - update the Mission to also include general and robust workflows (discussion
+    #159, issue #160, PR #161)
+
+Fixes
+  - MBAR estimator now correctly passes max_iterations to pymbar.MBAR. (PR #162)
+  - docs (PR #157)
+  - visualisation.df_state.plot_dF_state() now correctly raises ValueError instead
+    of NameError when incorrect orientation keyword argument is supplied
+
+
 08/01/2021 xiki-tempula, orbeckst
 
   * 0.5.0

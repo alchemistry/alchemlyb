@@ -7,11 +7,12 @@ alchemlyb: the simple alchemistry library
 =========================================
 
 **alchemlyb** is a library for doing alchemical free energy calculations more easily.
-It includes functions for parsing data from formats common to existing MD engines, subsampling these data, and fitting these data with an estimator to obtain free energies.
-These functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data.
 
-**alchemlyb** seeks to be as boring and simple as possible to enable more complex work.
-Its components allow work at all scales, from use on small systems using a single workstation to larger datasets that require distributed computing using libraries such as `dask`_.
+It seeks to provide flexible building blocks covering functions for parsing data from formats common to existing MD engines, subsampling these data, fitting these data with an estimator to obtain free energies, and plotting the results.
+
+These functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data. General and robust workflows following best practices are also provided, which can be used as reference implementations and examples.
+
+**alchemlyb** seeks to be as boring and simple as possible to enable more complex work. Its components allow work at all scales, from use on small systems using a single workstation to larger datasets that require distributed computing using libraries such as `dask`_.
 
 The library is *under active development* and the API is still somewhat in flux. However, it is used by multiple groups in a production environment. We use `semantic versioning`_ to indicate clearly what kind of changes you may expect between releases. See :ref:`contact` for how to get in touch if you have questions or find problems.
 
@@ -37,7 +38,7 @@ This is an open-source project, the hope of which is to produce a library with w
 To enable this, the library is a community effort.
 Development is done in the open on `GitHub`_.
 
-Software engineering best-practices are used throughout, including continuous integration testing via Travis CI, up-to-date documentation, and regular releases.
+Software engineering best-practices are used throughout, including continuous integration testing via Github Actions, up-to-date documentation, and regular releases.
 
 .. Note::
    With release 0.5.0, the alchemlyb project adopted `NEP 29`_ to determine which versions of Python and NumPy_ will be supported.
