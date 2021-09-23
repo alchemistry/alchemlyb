@@ -52,7 +52,6 @@ class TestSlicing:
     def test_basic_slicing(self, data, size):
         assert len(self.slicer(data, lower=1000, upper=34000, step=5)) == size
 
-
     @pytest.mark.parametrize('data', [gmx_benzene_dHdl(),
                                       gmx_benzene_u_nk()])
     def test_disordered_exception(self, data):
@@ -146,7 +145,6 @@ class TestSlicing:
                                              None,
                                              drop_duplicates=True)
         assert len(subsample) == 1001
-
 
 class CorrelatedPreprocessors:
 
