@@ -46,6 +46,15 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     kwargs['drop_duplicates'] = drop_duplicates
     kwargs['sort'] = sort
 
+    # Check if the input is u_nk
+    try:
+        key = df.index.values[0][1:]
+        if len(key) == 1:
+            key = key[0]
+        df[key]
+    except KeyError:
+        raise ValueError('The input should be u_nk')
+
     if method == 'dhdl':
         # Find the current column index
         # Select the first row and remove the first column (Time)
