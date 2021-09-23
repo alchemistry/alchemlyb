@@ -82,7 +82,7 @@ class TestSlicing:
                                              gmx_ABFE.sum(axis=1),
                                              lower=100,
                                              upper=400,
-                                             step = 2)
+                                             step=2)
         assert len(subsample) == 76
 
     def test_multiindex_duplicated(self, gmx_ABFE):
