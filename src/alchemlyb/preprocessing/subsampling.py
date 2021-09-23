@@ -7,8 +7,14 @@ from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
 
-def decorrelate_u_nk(df, method='dhdl', **kwargs):
+def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
+                     sort=True, **kwargs):
     """Subsample a u_nk DataFrame based on the selected method.
+
+    The method can be either 'dhdl_all' (obtained as a sum over all energy
+    components) or 'dhdl' (obtained as the energy components that are
+    changing; default) or 'dE'. In the latter case the energy differences
+    dE_{i,i+1} (dE_{i,i-1} for the last lambda) are used.
 
     This is wrapper function around the
     :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
@@ -17,8 +23,12 @@ def decorrelate_u_nk(df, method='dhdl', **kwargs):
     ----------
     df : DataFrame
         DataFrame to be subsampled according to the selected method.
-    method : string
-        Method for decorrelating the data. ['dhdl', 'dhdl_all', 'dE']
+    method : {'dhdl', 'dhdl_all', 'dE'}
+        Method for decorrelating the data.
+    drop_duplicates : bool
+        Drop the duplicated lines based on time.
+    sort : bool
+        Sort the Dataframe based on the time column.
     **kwargs :
         Additional keyword arguments for
         :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
@@ -30,14 +40,11 @@ def decorrelate_u_nk(df, method='dhdl', **kwargs):
 
     Note
     ----
-    if 'drop_duplicates' and 'sort' are not set, they are default to 'True'
-    for more robust performance.
+    The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
+    but can loose data.
     """
-    if not 'drop_duplicates' in kwargs:
-        kwargs['drop_duplicates'] = True
-
-    if not 'sort' in kwargs:
-        kwargs['sort'] = True
+    kwargs['drop_duplicates'] = drop_duplicates
+    kwargs['sort'] = sort
 
     if method == 'dhdl':
         # Find the current column index
@@ -60,18 +67,18 @@ def decorrelate_u_nk(df, method='dhdl', **kwargs):
         else:
             # For the case of more than 1 lambda
             index = df.columns.values.tolist().index(key)
-        # for the state that is not the last state, take the state+1
+            # for the state that is not the last state, take the state+1
         if index + 1 < len(df.columns):
             series = df.iloc[:, index + 1]
-        # for the state that is the last state, take the state-1
+            # for the state that is the last state, take the state-1
         else:
             series = df.iloc[:, index - 1]
     else: # pragma: no cover
-        raise NameError(
+        raise ValueError(
             'Decorrelation method {} not found.'.format(method))
     return statistical_inefficiency(df, series, **kwargs)
 
-def decorrelate_dhdl(df, **kwargs):
+def decorrelate_dhdl(df, drop_duplicates=True, sort=True, **kwargs):
     """Subsample a dhdl DataFrame.
 
     This is wrapper function around the
@@ -81,6 +88,10 @@ def decorrelate_dhdl(df, **kwargs):
     ----------
     df : DataFrame
         DataFrame to subsample according to the selected method.
+    drop_duplicates : bool
+        Drop the duplicated lines based on time.
+    sort : bool
+        Sort the Dataframe based on the time column.
     **kwargs :
         Additional keyword arguments for
         :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
@@ -92,15 +103,12 @@ def decorrelate_dhdl(df, **kwargs):
 
     Note
     ----
-    if 'drop_duplicates' and 'sort' are not set, they are default to 'True'
-    for more robust performance.
+    The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
+    but can loose data.
     """
 
-    if not 'drop_duplicates' in kwargs:
-        kwargs['drop_duplicates'] = True
-
-    if not 'sort' in kwargs:
-        kwargs['sort'] = True
+    kwargs['drop_duplicates'] = drop_duplicates
+    kwargs['sort'] = sort
 
     series = df.sum(axis=1)
 
