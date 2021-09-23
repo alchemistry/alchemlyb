@@ -76,6 +76,16 @@ class TestSlicing:
         with pytest.raises(KeyError):
             self.slicer(data.sort_index(0), lower=200)
 
+    def test_subsample_bounds_and_step(self, gmx_ABFE):
+        """Make sure that slicing the series also works
+        """
+        subsample = statistical_inefficiency(gmx_ABFE,
+                                             gmx_ABFE.sum(axis=1),
+                                             lower=100,
+                                             upper=400,
+                                             step=2)
+        assert len(subsample) == 76
+
     def test_multiindex_duplicated(self, gmx_ABFE):
         subsample = statistical_inefficiency(gmx_ABFE,
                                              gmx_ABFE.sum(axis=1))
