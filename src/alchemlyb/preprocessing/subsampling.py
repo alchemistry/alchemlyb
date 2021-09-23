@@ -169,15 +169,11 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
             raise KeyError("Statistical inefficiency only works as expected if "
                            "values are sorted by time, increasing.")
 
-    if (len(series) != len(df) or
-        not all(series.reset_index()['time'] == df.reset_index()['time'])):
-        raise ValueError("series and data must be sampled at the same times")
-
     if series is not None:
+    
         if (len(series) != len(df) or
             not all(series.reset_index()['time'] == df.reset_index()['time'])):
             raise ValueError("series and data must be sampled at the same times")
-        series = slicing(series, lower=lower, upper=upper, step=step)
                
         series = slicing(series, lower=lower, upper=upper, step=step)
 
