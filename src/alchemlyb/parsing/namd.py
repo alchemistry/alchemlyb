@@ -65,11 +65,11 @@ def _get_lambdas(fep_files):
                         is_ascending.add(lambda1 > lambda_idws)
 
                 if len(is_ascending) > 1:
-                    raise ValueError(f'Lambda values {lambda1} -> {lambda2} (IDWS: {lambda_idws}) change direction in {fep_file}, relative to the other files')
+                    raise ValueError(f'Lambda values change direction in {fep_file}, relative to the other files: {lambda1} -> {lambda2} (IDWS: {lambda_idws})')
 
                 # Make sure the lambda2 values are consistent
                 if lambda1 in lambda_fwd_map and lambda_fwd_map[lambda1] != lambda2:
-                    logger.error(f'fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} but it has already been {lambda2}')
+                    logger.error(f'fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} in {fep_file} but it has already been {lambda2}')
                     raise ValueError('More than one lambda2 value for a particular lambda1')
 
                 lambda_fwd_map[lambda1] = lambda2
@@ -83,12 +83,6 @@ def _get_lambdas(fep_files):
 
 
     is_ascending = next(iter(is_ascending))
-    # If this is NOT an IDWS run (lambda_bwd_map has no entries) then:
-    #   - Endpoint windows must match the direction of the rest of the run
-    if len(lambda_bwd_map) == 0:
-        for lambda1, lambda2 in endpoint_windows:
-            if (lambda1 < lambda2) != is_ascending:
-                raise ValueError(f'Window ({lambda1}, {lambda2}) does not match direction of rest of windows (is_ascending is {is_ascending}')
 
     all_lambdas = set()
     all_lambdas.update(lambda_fwd_map.keys())
@@ -181,19 +175,20 @@ def extract_u_nk(fep_files, T):
                     lambda1 = float(l[7])
                     lambda2 = float(l[8])
                     lambda1_idx = all_lambdas.index(lambda1)
-                    if has_idws is True and lambda1_idx > 0:
-                        lambda_idws = all_lambdas[lambda1_idx - 1] # XXX: 
-                    else:
-                        lambda_idws = None
+                    # if has_idws is True and lambda1_idx > 0:
+                    #     lambda_idws = all_lambdas[lambda1_idx - 1] # XXX: May not be the case, especially if fepouts go from 1.0 -> 0.0
+                    # else:
+                    #     lambda_idws = None
 
                     # If the lambdas are not what we thought they would be, raise an exception to ensure the calculation
                     # fails. This can happen if fepouts where one window spans multiple fepouts are processed out of order
+                    # NB: There is no way to tell if lambda_idws changed because it isn't in the '#Free' line that ends a window
                     if lambda1_at_start is not None \
-                        and (lambda1, lambda2, lambda_idws) != (lambda1_at_start, lambda2_at_start, lambda_idws_at_start):
+                        and (lambda1, lambda2) != (lambda1_at_start, lambda2_at_start):
                         logger.error(f"Lambdas changed unexpectedly while processing {fep_file}")
-                        logger.error(f"l1, l2, lidws: {lambda1_at_start}, {lambda2_at_start}, {lambda_idws_at_start} changed to {lambda1}, {lambda2}, {lambda_idws}")
+                        logger.error(f"l1, l2: {lambda1_at_start}, {lambda2_at_start} changed to {lambda1}, {lambda2}")
                         logger.error(line)
-                        raise ValueError("Inconsistent lambda values in extract_u_nk")
+                        raise ValueError("Inconsistent lambda values within the same window")
 
                     # As we are at the end of a window, convert last window's work and times values to np arrays
                     # (with energy unit kT since they were kcal/mol in the fepouts)
