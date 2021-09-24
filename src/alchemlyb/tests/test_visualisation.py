@@ -38,8 +38,11 @@ def test_plot_ti_dhdl():
     dHdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['Coulomb']])
     ti_coul = TI()
     ti_coul.fit(dHdl_coul)
-    assert isinstance(plot_ti_dhdl(ti_coul),
-               matplotlib.axes.Axes)
+
+    ax = plot_ti_dhdl(ti_coul)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
     fig, ax = plt.subplots(figsize=(8, 6))
     assert isinstance(plot_ti_dhdl(ti_coul, ax=ax),
                matplotlib.axes.Axes)
@@ -47,17 +50,22 @@ def test_plot_ti_dhdl():
                matplotlib.axes.Axes)
     assert isinstance(plot_ti_dhdl(ti_coul, labels=['Coul'], colors=['r']),
                matplotlib.axes.Axes)
+    plt.close(fig)
+
     dHdl_vdw = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz['VDW']])
     ti_vdw = TI().fit(dHdl_vdw)
-    assert isinstance(plot_ti_dhdl([ti_coul, ti_vdw]),
-                      matplotlib.axes.Axes)
+    ax = plot_ti_dhdl([ti_coul, ti_vdw])
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
     ti_coul.dhdl = pd.DataFrame.from_dict(
         {'fep': range(100)},
         orient='index',
         columns=np.arange(100)/100).T
     ti_coul.dhdl.attrs = dHdl_vdw.attrs
-    assert isinstance(plot_ti_dhdl(ti_coul),
-               matplotlib.axes.Axes)
+    ax = plot_ti_dhdl(ti_coul)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
 
 def test_plot_dF_state():
     '''Just test if the plot runs'''
@@ -79,26 +87,44 @@ def test_plot_dF_state():
                  (mbar_coul, mbar_vdw), ]
     fig = plot_dF_state(dhdl_data, orientation='portrait')
     assert isinstance(fig, matplotlib.figure.Figure)
+    plt.close(fig)
+
     fig = plot_dF_state(dhdl_data, orientation='landscape')
     assert isinstance(fig, matplotlib.figure.Figure)
+    plt.close(fig)
+
     fig = plot_dF_state(dhdl_data, labels=['MBAR', 'TI', 'BAR'])
     assert isinstance(fig, matplotlib.figure.Figure)
+    plt.close(fig)
+
     with pytest.raises(ValueError):
         fig = plot_dF_state(dhdl_data, labels=['MBAR', 'TI',])
+
     fig = plot_dF_state(dhdl_data, colors=['#C45AEC', '#33CC33', '#F87431'])
     assert isinstance(fig, matplotlib.figure.Figure)
+    plt.close(fig)
+
     with pytest.raises(ValueError):
         fig = plot_dF_state(dhdl_data, colors=['#C45AEC', '#33CC33'])
-    with pytest.raises(NameError):
+
+    with pytest.raises(ValueError):
         fig = plot_dF_state(dhdl_data, orientation='xxx')
+
     fig = plot_dF_state(ti_coul, orientation='landscape')
     assert isinstance(fig, matplotlib.figure.Figure)
+    plt.close(fig)
+
     fig = plot_dF_state(ti_coul, orientation='portrait')
     assert isinstance(fig, matplotlib.figure.Figure)
+    plt.close(fig)
+
     fig = plot_dF_state([ti_coul, bar_coul])
     assert isinstance(fig, matplotlib.figure.Figure)
+    plt.close(fig)
+
     fig = plot_dF_state([(ti_coul, ti_vdw)])
     assert isinstance(fig, matplotlib.figure.Figure)
+    plt.close(fig)
 
 def test_plot_convergence():
     bz = load_benzene().data
@@ -121,9 +147,9 @@ def test_plot_convergence():
         backward.append(estimate.delta_f_.iloc[0,-1])
         backward_error.append(estimate.d_delta_f_.iloc[0,-1])
 
-    assert isinstance(
-        plot_convergence(forward, forward_error, backward, backward_error),
-        matplotlib.axes.Axes)
+    ax = plot_convergence(forward, forward_error, backward, backward_error)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
 
 class Test_Units():
     @staticmethod
@@ -143,14 +169,17 @@ class Test_Units():
     def test_plot_dF_state_kT(self, estimaters):
         fig = plot_dF_state(estimaters, units='kT')
         assert isinstance(fig, matplotlib.figure.Figure)
+        plt.close(fig)
 
     def test_plot_dF_state_kJ(self, estimaters):
         fig = plot_dF_state(estimaters, units='kJ/mol')
         assert isinstance(fig, matplotlib.figure.Figure)
+        plt.close(fig)
 
     def test_plot_dF_state_kcal(self, estimaters):
         fig = plot_dF_state(estimaters, units='kcal/mol')
         assert isinstance(fig, matplotlib.figure.Figure)
+        plt.close(fig)
 
     def test_plot_dF_state_unknown(self, estimaters):
         with pytest.raises(ValueError):
@@ -158,18 +187,21 @@ class Test_Units():
 
     def test_plot_ti_dhdl_kT(self, estimaters):
         ti, mbar = estimaters
-        fig = plot_ti_dhdl(ti, units='kT')
-        assert isinstance(fig, matplotlib.axes.Axes)
+        ax = plot_ti_dhdl(ti, units='kT')
+        assert isinstance(ax, matplotlib.axes.Axes)
+        plt.close(ax.figure)
 
     def test_plot_ti_dhdl_kJ(self, estimaters):
         ti, mbar = estimaters
-        fig = plot_ti_dhdl(ti, units='kJ/mol')
-        assert isinstance(fig, matplotlib.axes.Axes)
+        ax = plot_ti_dhdl(ti, units='kJ/mol')
+        assert isinstance(ax, matplotlib.axes.Axes)
+        plt.close(ax.figure)
 
     def test_plot_ti_dhdl_kcal(self, estimaters):
         ti, mbar = estimaters
-        fig = plot_ti_dhdl(ti, units='kcal/mol')
-        assert isinstance(fig, matplotlib.axes.Axes)
+        ax = plot_ti_dhdl(ti, units='kcal/mol')
+        assert isinstance(ax, matplotlib.axes.Axes)
+        plt.close(ax.figure)
 
     def test_plot_ti_dhdl_unknown(self, estimaters):
         ti, mbar = estimaters
