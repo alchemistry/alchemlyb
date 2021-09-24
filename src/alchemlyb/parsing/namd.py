@@ -174,11 +174,6 @@ def extract_u_nk(fep_files, T):
                     # lambda1 = sampling lambda (row), lambda2 = comparison lambda (col)
                     lambda1 = float(l[7])
                     lambda2 = float(l[8])
-                    lambda1_idx = all_lambdas.index(lambda1)
-                    # if has_idws is True and lambda1_idx > 0:
-                    #     lambda_idws = all_lambdas[lambda1_idx - 1] # XXX: May not be the case, especially if fepouts go from 1.0 -> 0.0
-                    # else:
-                    #     lambda_idws = None
 
                     # If the lambdas are not what we thought they would be, raise an exception to ensure the calculation
                     # fails. This can happen if fepouts where one window spans multiple fepouts are processed out of order
@@ -195,7 +190,7 @@ def extract_u_nk(fep_files, T):
                     win_de_arr = beta * np.asarray(win_de) # dE values
                     win_ts_arr = np.asarray(win_ts) # timesteps
 
-                    if lambda_idws is not None:
+                    if lambda_idws_at_start is not None:
                         # Mimic classic DWS data
                         # Arbitrarily match up fwd and bwd comparison energies on the same times
                         # truncate extra samples from whichever array is longer
@@ -207,8 +202,8 @@ def extract_u_nk(fep_files, T):
                             'fep-lambda': np.full(n,lambda1),
                             lambda1: 0,
                             lambda2: win_de_arr[:n],
-                            lambda_idws: win_de_back_arr[:n]})
-                        # print(f"{fep_file}: IDWS window {lambda1} {lambda2} {lambda_idws}")
+                            lambda_idws_at_start: win_de_back_arr[:n]})
+                        # print(f"{fep_file}: IDWS window {lambda1} {lambda2} {lambda_idws_at_start}")
                     else:
                         # print(f"{fep_file}: Forward-only window {lambda1} {lambda2}")
                         # create dataframe of times and work values
