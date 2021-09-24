@@ -12,7 +12,7 @@ k_b = R_kJmol
 
 @_init_attrs
 def extract_u_nk(xvg, T):
-    """Return reduced potentials `u_nk` from a Hamiltonian differences XVG file.
+    r"""Return reduced potentials `u_nk` from a Hamiltonian differences XVG file.
 
     Parameters
     ----------
@@ -29,20 +29,24 @@ def extract_u_nk(xvg, T):
 
     Note
     -----
-    Previous versions of alchemlyb (<0.5.0) used the `GROMACS value of the molar gas constant
+    Previous versions of alchemlyb (<0.5.0) used the `GROMACS value of the
+    molar gas constant
     <https://manual.gromacs.org/documentation/2019/reference-manual/definitions.html>`_
-    of  :math:`R = 8.3144621 \times 10^{−3}\, \text{kJ}\cdot\text{mol}^{-1}\cdot\text{K}^{-1}`
-    instead of the scipy value :data:`scipy.constants.R` (see :mod:`alchemlyb.postprocessors.units`).
-    The relative difference between the two values is :math:`6 \times 10^{-8}`. 
-    
-    Therefore, results in :math:`kT` for GROMACS data will differ between alchemlyb ≥0.5.0 and
-    previous versions; the difference is on the order of :math:`10^{-7}` for typical cases.
-    
-    
+    of :math:`R = 8.3144621 \times 10^{−3}\,
+    \text{kJ}\cdot\text{mol}^{-1}\cdot\text{K}^{-1}` instead of the scipy value
+    :data:`scipy.constants.R` in :mod:`scipy.constants` (see
+    :mod:`alchemlyb.postprocessors.units`).  The relative difference between
+    the two values is :math:`6 \times 10^{-8}`.
+
+    Therefore, results in :math:`kT` for GROMACS data will differ between
+    alchemlyb ≥0.5.0 and previous versions; the relative difference is on the
+    order of :math:`10^{-7}` for typical cases.
+
+
     .. versionchanged:: 0.5.0
         The :mod:`scipy.constants` is used for parsers instead of
-        the constants used by the corresponding MD engine.        
-        This leads to slightly different results for GROMACS input compared to 
+        the constants used by the corresponding MD engine.
+        This leads to slightly different results for GROMACS input compared to
         previous versions of alchemlyb.
 
     """
@@ -125,7 +129,7 @@ def extract_u_nk(xvg, T):
 
 @_init_attrs
 def extract_dHdl(xvg, T):
-    """Return gradients `dH/dl` from a Hamiltonian differences XVG file.
+    r"""Return gradients `dH/dl` from a Hamiltonian differences XVG file.
 
     Parameters
     ----------
@@ -139,24 +143,27 @@ def extract_dHdl(xvg, T):
     dH/dl : Series
         dH/dl as a function of time for this lambda window.
 
-   
     Note
     -----
-    Previous versions of alchemlyb (<0.5.0) used the `GROMACS value of the molar gas constant
+    Previous versions of alchemlyb (<0.5.0) used the `GROMACS value of the
+    molar gas constant
     <https://manual.gromacs.org/documentation/2019/reference-manual/definitions.html>`_
-    of  :math:`R = 8.3144621 \times 10^{−3}\, \text{kJ}\cdot\text{mol}^{-1}\cdot\text{K}^{-1}`
-    instead of the scipy value :data:`scipy.constants.R` (see :mod:`alchemlyb.postprocessors.units`).
-    The relative difference between the two values is :math:`6 \times 10^{-8}`. 
-    
-    Therefore, results in :math:`kT` for GROMACS data will differ between alchemlyb ≥0.5.0 and
-    previous versions; the difference is on the order of :math:`10^{-7}` for typical cases.
-    
-    
+    of :math:`R = 8.3144621 \times 10^{−3}\,
+    \text{kJ}\cdot\text{mol}^{-1}\cdot\text{K}^{-1}` instead of the scipy value
+    :data:`scipy.constants.R` in :mod:`scipy.constants` (see
+    :mod:`alchemlyb.postprocessors.units`).  The relative difference between
+    the two values is :math:`6 \times 10^{-8}`.
+
+    Therefore, results in :math:`kT` for GROMACS data will differ between
+    alchemlyb ≥0.5.0 and previous versions; the relative difference is on the
+    order of :math:`10^{-7}` for typical cases.
+
+
     .. versionchanged:: 0.5.0
         The :mod:`scipy.constants` is used for parsers instead of
         the constants used by the corresponding MD engine.
-        This leads to slightly different results for GROMACS input compared to 
-        previous versions of alchemlyb.        
+        This leads to slightly different results for GROMACS input compared to
+        previous versions of alchemlyb.
 
     """
     beta = 1/(k_b * T)
@@ -280,7 +287,7 @@ def _extract_dataframe(xvg, headers=None):
     xvg: str
        Path to XVG file to extract data from.
     headers: dict
-       headers dictionary to search header information, reduced I/O by 
+       headers dictionary to search header information, reduced I/O by
        reusing if it is already parsed. Direct access by key name
 
     """
@@ -327,8 +334,8 @@ def _parse_header(line, headers={}, depth=2):
     headers: dict
         headers dictionary to update, pass by reference
     depth: int
-        depth of nested key and value store 
-        
+        depth of nested key and value store
+
     Examples
     --------
     "x y z" line turns into { 'x': { 'y': {'_val': 'z' }}}
@@ -337,7 +344,7 @@ def _parse_header(line, headers={}, depth=2):
     >>> _parse_header('@ s0 legend "Potential Energy (kJ/mol)"', headers)
     >>> headers
     {'s0': {'legend': {'_val': 'Potential Energy (kJ/mol)'}}}
-    
+
     """
     # Remove a first character, i.e. @
     s = line[1:].split(None, 1)
@@ -357,7 +364,7 @@ def _parse_header(line, headers={}, depth=2):
 
 def _get_headers(xvg):
     """Build python dictionary from header lines
-    
+
     Build nested key and value store by reading header ('@') lines from a file.
     Direct access to value provides reduced time complexity O(1).
     `_raw_lines` key is reserved to keep the original text.
@@ -439,7 +446,7 @@ def _get_value_by_key(headers, key1, key2=None):
     -------
 
     >>> headers
-    {'s0': {'legend': {'_val': 'Potential Energy (kJ/mol)'}}, 
+    {'s0': {'legend': {'_val': 'Potential Energy (kJ/mol)'}},
             'subtitle': {'_val': 'T = 310 (K) \\xl\\f{} state 38: (coul-lambda,
                 vdw-lambda) = (0.9500, 0.0000)'}}
     >>> _get_value_by_key(header, 's0','legend')
