@@ -284,11 +284,12 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
                            "values are sorted by time, increasing.")
 
     if series is not None:
-        series = slicing(series, lower=lower, upper=upper, step=step)
-
+    
         if (len(series) != len(df) or
             not all(series.reset_index()['time'] == df.reset_index()['time'])):
             raise ValueError("series and data must be sampled at the same times")
+               
+        series = slicing(series, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series (could use fft=True but needs test)
         statinef  = statisticalInefficiency(series, fast=False)

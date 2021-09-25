@@ -13,7 +13,7 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2021 
+??/??/2021 schlaicha
 
   * 0.6.0
 
@@ -22,6 +22,7 @@ Changes
 Enhancements
 
 Fixes
+  - Subsampling now works with bounds and step (PR #167, issue #166).
 
 
 09/17/2021 xiki-tempula, orbeckst
