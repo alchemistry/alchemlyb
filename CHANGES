@@ -20,6 +20,7 @@ The rules for this file:
 Changes
 
 Enhancements
+  - Easy functiuon for decorrelating the u_nk and dHdl (PR #163).
 
 Fixes
   - Subsampling now works with bounds and step (PR #167, issue #166).
