@@ -252,7 +252,6 @@ class Test_Units():
         assert new_dhdl.attrs['temperature'] == 310
         assert new_dhdl.attrs['energy_unit'] == 'kT'
 
-
 @pytest.mark.parametrize(('method', 'size'), [('dhdl', 2001),
                                               ('dhdl_all', 2001),
                                               ('dE', 2001)])
