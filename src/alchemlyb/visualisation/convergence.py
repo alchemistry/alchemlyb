@@ -2,7 +2,10 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
-def plot_convergence(forward, forward_error, backward, backward_error,
+from ..postprocessors.units import get_unit_converter
+
+def plot_convergence(forward=None, forward_error=None, backward=None,
+                     backward_error=None, dataframe=None,
                      units='kT', ax=None):
     """Plot the forward and backward convergence.
 
@@ -16,6 +19,11 @@ def plot_convergence(forward, forward_error, backward, backward_error,
         A list of free energy estimate from the last X% of data.
     backward_error : List
         A list of error from the last X% of data.
+    dataframe : Dataframe
+        Output Dataframe from
+        :func:`~alchemlyb.postprocessors.forward_backward_convergence`. If
+        Dataframe is provided, `forward`, `forward_error`, `backward`,
+        `backward_error` will be ignored.
     units : str
         The label for the unit of the estimate. Default: "kT"
     ax : matplotlib.axes.Axes
@@ -32,12 +40,19 @@ def plot_convergence(forward, forward_error, backward, backward_error,
     The code is taken and modified from
     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
-    The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable.
+    If `dataframe` is not provide, the units variable is for labelling only.
+    Changing it doesn't change the unit of the underlying variable.
 
 
     .. versionadded:: 0.4.0
     """
+    if dataframe is not None:
+        dataframe = get_unit_converter(units)(dataframe)
+        forward = dataframe['Forward'].to_numpy()
+        forward_error = dataframe['F. Error'].to_numpy()
+        backward = dataframe['Backward'].to_numpy()
+        backward_error = dataframe['B. Error'].to_numpy()
+
     if ax is None: # pragma: no cover
         fig, ax = plt.subplots(figsize=(8, 6))
 
