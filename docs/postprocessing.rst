@@ -12,10 +12,8 @@ forward and backward convergence of the estimate using
 :func:`~alchemlyb.postprocessors.forward_backward_convergence` and
 :func:`~alchemlyb.visualisation.plot_convergence`. ::
 
-    >>> import pandas as pd
     >>> from alchemtest.gmx import load_benzene
     >>> from alchemlyb.parsing.gmx import extract_u_nk
-    >>> from alchemlyb.estimators import MBAR
     >>> from alchemlyb.visualisation import plot_convergence
     >>> from alchemlyb.postprocessors import forward_backward_convergence
 

@@ -24,7 +24,8 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
     -------
     DataFrame
         The DataFrame with convergence data. ::
-               Forward       F. Error       Backward       B. Error
+
+                Forward       F. Error       Backward       B. Error
             0      33.988935        0.334676       35.666128        0.324426
             1      35.075489        0.232150       35.382850        0.230944
             2      34.919988        0.190424       35.156028        0.189489
@@ -35,6 +36,8 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
             7      35.019853        0.116970       35.096870        0.116783
             8      35.035123        0.110147       35.225907        0.109742
             9      35.113417        0.104280       35.113417        0.104280
+
+
 
     '''
     logger = logging.getLogger('alchemlyb.postprocessors.'
