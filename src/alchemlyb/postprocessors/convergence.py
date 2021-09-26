@@ -1,4 +1,10 @@
 import pandas as pd
+import logging
+import numpy as np
+
+from ..estimators import MBAR, BAR, TI
+from .. import concat
+
 def forward_backward_convergence(df_list, estimator='mbar', num=10):
     ''' The forward and backward convergence of the free energy estimate.
     
@@ -31,107 +37,70 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
             9      35.113417        0.104280       35.113417        0.104280
 
     '''
-    self.logger.info('Start convergence analysis.')
-    self.logger.info('Check data availability.')
-
-    try:
-        dHdl_list = self.dHdl_sample_list
-        self.logger.info('Subsampled dHdl is available.')
-    except AttributeError:
-        try:
-            dHdl_list = self.dHdl_list
-            self.logger.info('Subsampled dHdl not available, '
-                             'use original data instead.')
-        except AttributeError:  # pragma: no cover
-            self.logger.warning('dHdl is not available.')
-
-    try:
-        u_nk_list = self.u_nk_sample_list
-        self.logger.info('Subsampled u_nk is available.')
-    except AttributeError:
-        try:
-            u_nk_list = self.u_nk_list
-            self.logger.info('Subsampled u_nk not available, '
-                             'use original data instead.')
-        except AttributeError:  # pragma: no cover
-            self.logger.warning('u_nk is not available.')
+    logger = logging.getLogger('alchemlyb.postprocessors.'
+                               'forward_backward_convergence')
+    logger.info('Start convergence analysis.')
+    logger.info('Check data availability.')
 
     if estimator.lower() == 'mbar':
-        self.logger.info('Use MBAR estimator for convergence analysis.')
+        logger.info('Use MBAR estimator for convergence analysis.')
         estimator_fit = MBAR().fit
     elif estimator.lower() == 'bar':
-        self.logger.info('Use BAR estimator for convergence analysis.')
+        logger.info('Use BAR estimator for convergence analysis.')
         estimator_fit = BAR().fit
     elif estimator.lower() == 'ti':
-        self.logger.info('Use TI estimator for convergence analysis.')
+        logger.info('Use TI estimator for convergence analysis.')
         estimator_fit = TI().fit
     else:  # pragma: no cover
-        self.logger.warning(
+        logger.warning(
             '{} is not a valid estimator.'.format(estimator))
 
-    converter = get_unit_converter(self.units)
-
-    self.logger.info('Begin forward analysis')
+    logger.info('Begin forward analysis')
     forward_list = []
     forward_error_list = []
-    for i in range(1, forwrev + 1):
-        self.logger.info('Forward analysis: {:.2f}%'.format(i / forwrev))
+    for i in range(1, num + 1):
+        logger.info('Forward analysis: {:.2f}%'.format(i / num))
         sample = []
-        if estimator.lower() in ['mbar', 'bar']:
-            for data in u_nk_list:
-                sample.append(data[:len(data) // forwrev * i])
-        elif estimator.lower() == 'ti':
-            for data in dHdl_list:
-                sample.append(data[:len(data) // forwrev * i])
-        else:  # pragma: no cover
-            raise NameError(
-                '{} is not a valid estimator.'.format(estimator))
+        for data in df_list:
+            sample.append(data[:len(data) // num * i])
         sample = concat(sample)
         result = estimator_fit(sample)
-        forward_list.append(converter(result.delta_f_).iloc[0, -1])
+        forward_list.append(result.delta_f_.iloc[0, -1])
         if estimator.lower() == 'bar':
             error = np.sqrt(sum(
-                [converter(result.d_delta_f_).iloc[i, i + 1] ** 2
+                [result.d_delta_f_.iloc[i, i + 1] ** 2
                  for i in range(len(result.d_delta_f_) - 1)]))
             forward_error_list.append(error)
         else:
-            forward_error_list.append(converter(result.d_delta_f_).iloc[
-                                          0, -1])
-        self.logger.info('{:.2f} +/- {:.2f} kT'.format(forward_list[-1],
-                                                       forward_error_list[-1]))
+            forward_error_list.append(result.d_delta_f_.iloc[0, -1])
+        logger.info('{:.2f} +/- {:.2f} kT'.format(forward_list[-1],
+                                                  forward_error_list[-1]))
 
-    self.logger.info('Begin backward analysis')
+    logger.info('Begin backward analysis')
     backward_list = []
     backward_error_list = []
-    for i in range(1, forwrev + 1):
-        self.logger.info('Backward analysis: {:.2f}%'.format(i / forwrev))
+    for i in range(1, num + 1):
+        logger.info('Backward analysis: {:.2f}%'.format(i / num))
         sample = []
-        if estimator.lower() in ['mbar', 'bar']:
-            for data in u_nk_list:
-                sample.append(data[-len(data) // forwrev * i:])
-        elif estimator.lower() == 'ti':
-            for data in dHdl_list:
-                sample.append(data[-len(data) // forwrev * i:])
-        else:  # pragma: no cover
-            raise NameError(
-                '{} is not a valid estimator.'.format(estimator))
+        for data in df_list:
+            sample.append(data[-len(data) // num * i:])
         sample = concat(sample)
         result = estimator_fit(sample)
-        backward_list.append(converter(result.delta_f_).iloc[0, -1])
+        backward_list.append(result.delta_f_.iloc[0, -1])
         if estimator.lower() == 'bar':
             error = np.sqrt(sum(
-                [converter(result.d_delta_f_).iloc[i, i + 1] ** 2
+                [result.d_delta_f_.iloc[i, i + 1] ** 2
                  for i in range(len(result.d_delta_f_) - 1)]))
             backward_error_list.append(error)
         else:
-            backward_error_list.append(converter(
-                result.d_delta_f_).iloc[0, -1])
-        self.logger.info('{:.2f} +/- {:.2f} kT'.format(backward_list[-1],
-                                                       backward_error_list[
-                                                           -1]))
+            backward_error_list.append(result.d_delta_f_.iloc[0, -1])
+        logger.info('{:.2f} +/- {:.2f} kT'.format(backward_list[-1],
+                                                  backward_error_list[-1]))
 
     convergence = pd.DataFrame(
-        {'Forward ({})'.format(self.units): forward_list,
-         'F. Error ({})'.format(self.units): forward_error_list,
-         'Backward ({})'.format(self.units): backward_list,
-         'B. Error ({})'.format(self.units): backward_error_list})
+        {'Forward': forward_list,
+         'F. Error': forward_error_list,
+         'Backward': backward_list,
+         'B. Error': backward_error_list})
+    convergence.attrs = df_list[0].attrs
+    return convergence
