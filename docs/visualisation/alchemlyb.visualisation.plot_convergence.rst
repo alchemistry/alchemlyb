@@ -6,7 +6,7 @@ Plot the Forward and Backward Convergence
 The function :func:`~alchemlyb.visualisation.plot_convergence` allows
 the user to visualise the convergence by plotting the free energy change
 computed using the equilibrated snapshots between the proper target time
-frames. The data could be provided as a Dataframe as the output from
+frames. The data could be provided as a Dataframe from
 :func:`alchemlyb.postprocessors.forward_backward_convergence` or provided
 explicitly in both forward (data points are stored in `forward` and
 `forward_error`) and reverse (data points are stored in `backward` and

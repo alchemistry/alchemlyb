@@ -37,8 +37,6 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
             8      35.035123        0.110147       35.225907        0.109742
             9      35.113417        0.104280       35.113417        0.104280
 
-
-
     '''
     logger = logging.getLogger('alchemlyb.postprocessors.'
                                'forward_backward_convergence')
