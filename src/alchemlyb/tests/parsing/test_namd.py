@@ -125,13 +125,19 @@ def restarted_dataset_toomany_lambda2():
     filenames = dataset['data']['both']
 
     # For the same l1 and lidws we retain old lambda2 values thus ensuring a collision
+    # Also, don't make a window where lambda1 >= lambda2 because this will trigger the
+    # "direction changed" exception instead
     def func_new_line(l):
+        if float(l[LAMBDA2_IDX_NEW]) <= 0.2:
+            return l
         l[LAMBDA1_IDX_NEW] = '0.2'
         if len(l) > 9 and l[9] == 'LAMBDA_IDWS':
             l[LAMBDA_IDWS_IDX_NEW] = '0.1'
         return l
 
     def func_free_line(l):
+        if float(l[LAMBDA2_IDX_FREE]) <= 0.2:
+            return l
         l[LAMBDA1_IDX_FREE] = '0.2'
         return l
 
