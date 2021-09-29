@@ -191,6 +191,20 @@ def extract_u_nk(fep_files, T):
                     win_de_arr = beta * np.asarray(win_de) # dE values
                     win_ts_arr = np.asarray(win_ts) # timesteps
 
+                    # Infer lambda_idws_at_start if it wasn't explictly included in this fepout.
+                    # If lambdas are in ascending order, choose the one before it
+                    # This can happen if user ran minimize before starting dynamics and didn't do firsttimestep 0,
+                    # because NAMD only emits the '#NEW' line on timestep 0 for some reason
+                    if has_idws and lambda_idws_at_start is None:
+                        l1_idx, l2_idx = all_lambdas.index(lambda1), all_lambdas.index(lambda2)
+                        if l1_idx > 0 and l1_idx < l2_idx: # Ascending lambdas
+                            lambda_idws_at_start = all_lambdas[l1_idx - 1]
+                        elif l2_idx < (len(all_lambdas) - 1) and l2_idx < l1_idx: # Descending lambdas
+                            lambda_idws_at_start = all_lambdas[l2_idx + 1]
+
+                        logger.warning(f'Warning: {fep_file} has IDWS data but lambda_idws not specified.')
+                        logger.warning(f'         lambda1 = {lambda1}, lambda2 = {lambda2}; inferring lambda_idws to be {lambda_idws_at_start}')
+
                     if lambda_idws_at_start is not None:
                         # Mimic classic DWS data
                         # Arbitrarily match up fwd and bwd comparison energies on the same times
