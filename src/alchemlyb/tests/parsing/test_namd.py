@@ -87,12 +87,11 @@ def _corrupt_fepout(fepout_in, params, tmp_path):
 
 
 @pytest.fixture
-def restarted_dataset_inconsistent(tmp_path):
-    """Returns intentionally messed up dataset."""
-    # We explicitly call load_restarted() again because we are modifying the
-    # singleton dataset object and don't want to break other tests
-    dataset = load_restarted()
-    filenames = dataset['data']['both']
+def restarted_dataset_inconsistent(restarted_dataset, tmp_path):
+    """Returns intentionally messed up dataset where lambda1 and lambda2 at start and end of
+    a window are different."""
+
+    filenames = restarted_dataset['data']['both']
 
     changed = False
     def func_free_line(l):
@@ -104,21 +103,21 @@ def restarted_dataset_inconsistent(tmp_path):
     temp_fnames = []
     for i in range(len(filenames)):
         fname = _corrupt_fepout(filenames[i], [('#Free', func_free_line)], tmp_path)
-        dataset['data']['both'][i] = fname
+        restarted_dataset['data']['both'][i] = fname
         temp_fnames.append(fname)
         # Only actually modify one window so we don't trigger the wrong exception
         if changed is True:
             break
 
-    return dataset
+    return restarted_dataset
 
 
 @pytest.fixture
-def restarted_dataset_toomany_lambda2(tmp_path):
+def restarted_dataset_toomany_lambda2(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset, where there are too many lambda2 values for a
     given lambda1."""
-    dataset = load_restarted()
-    filenames = dataset['data']['both']
+
+    filenames = restarted_dataset['data']['both']
 
     # For the same l1 and lidws we retain old lambda2 values thus ensuring a collision
     # Also, don't make a window where lambda1 >= lambda2 because this will trigger the
@@ -140,18 +139,18 @@ def restarted_dataset_toomany_lambda2(tmp_path):
     temp_fnames = []
     for i in range(len(filenames)):
         fname = _corrupt_fepout(filenames[i], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
-        dataset['data']['both'][i] = fname
+        restarted_dataset['data']['both'][i] = fname
         temp_fnames.append(fname)
 
-    return dataset
+    return restarted_dataset
 
 
 @pytest.fixture
-def restarted_dataset_toomany_lambda_idws(tmp_path):
+def restarted_dataset_toomany_lambda_idws(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset, where there are too many lambda2 values for a
     given lambda1."""
-    dataset = load_restarted()
-    filenames = dataset['data']['both']
+
+    filenames = restarted_dataset['data']['both']
 
     # For the same lambda1 and lambda2 we retain old lambda_idws values thus ensuring a collision
     changed = False
@@ -171,17 +170,17 @@ def restarted_dataset_toomany_lambda_idws(tmp_path):
     temp_fnames = []
     for i in range(len(filenames)):
         fname = _corrupt_fepout(filenames[i], [('#NEW', func_new_line)], tmp_path)
-        dataset['data']['both'][i] = fname
+        restarted_dataset['data']['both'][i] = fname
         temp_fnames.append(fname)
 
-    return dataset
+    return restarted_dataset
 
 
 @pytest.fixture
-def restarted_dataset_direction_changed(tmp_path):
+def restarted_dataset_direction_changed(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset, with one window where the lambda values are reversed."""
-    dataset = load_restarted()
-    filenames = dataset['data']['both']
+
+    filenames = restarted_dataset['data']['both']
 
     def func_new_line(l):
         l[6], l[8], l[10] = l[10], l[8], l[6]
@@ -194,8 +193,8 @@ def restarted_dataset_direction_changed(tmp_path):
     # Reverse the direction of lambdas for this window
     idx_to_corrupt = filenames.index(sorted(filenames)[-3])
     fname1 = _corrupt_fepout(filenames[idx_to_corrupt], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
-    dataset['data']['both'][idx_to_corrupt] = fname1
-    return dataset
+    restarted_dataset['data']['both'][idx_to_corrupt] = fname1
+    return restarted_dataset
 
 
 def test_u_nk_restarted(restarted_dataset):
