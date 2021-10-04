@@ -1,8 +1,7 @@
 """NAMD parser tests.
 
 """
-from os import unlink, close
-from tempfile import mkstemp
+from os.path import basename
 import bz2
 import pytest
 
@@ -54,8 +53,8 @@ def restarted_dataset():
     return load_restarted()
 
 
-def _corrupt_fepout(fepout_in, params):
-    """Corrups specific lines in a fepout file according to each line's prefix,
+def _corrupt_fepout(fepout_in, params, tmp_path):
+    """Corrupts specific lines in a fepout file according to each line's prefix,
     using caller-supplied functions.
 
     Parameters
@@ -73,11 +72,10 @@ def _corrupt_fepout(fepout_in, params):
 
     Returns
     -------
-    The name of a temporary file which the caller must unlink.
+    The name of a temporary file which pytest will unlink.
     """
 
-    fh, fepout_out = mkstemp(suffix='.fepout.bz2', prefix='restarted_')
-    close(fh)
+    fepout_out = tmp_path / basename(fepout_in)
     with bz2.open(fepout_out, 'wt') as f_out:
         with bz2.open(fepout_in, 'rt') as f_in:
             for line in f_in:
@@ -85,11 +83,11 @@ def _corrupt_fepout(fepout_in, params):
                     if line.startswith(prefix):
                         line = ' '.join(func(line.split())) + '\n'
                 f_out.write(line)
-    return fepout_out
+    return str(fepout_out)
 
 
 @pytest.fixture
-def restarted_dataset_inconsistent():
+def restarted_dataset_inconsistent(tmp_path):
     """Returns intentionally messed up dataset."""
     # We explicitly call load_restarted() again because we are modifying the
     # singleton dataset object and don't want to break other tests
@@ -105,20 +103,18 @@ def restarted_dataset_inconsistent():
 
     temp_fnames = []
     for i in range(len(filenames)):
-        fname = _corrupt_fepout(filenames[i], [('#Free', func_free_line)])
+        fname = _corrupt_fepout(filenames[i], [('#Free', func_free_line)], tmp_path)
         dataset['data']['both'][i] = fname
         temp_fnames.append(fname)
         # Only actually modify one window so we don't trigger the wrong exception
         if changed is True:
             break
 
-    yield dataset
-    for fname in temp_fnames:
-        unlink(fname)
+    return dataset
 
 
 @pytest.fixture
-def restarted_dataset_toomany_lambda2():
+def restarted_dataset_toomany_lambda2(tmp_path):
     """Returns intentionally messed up dataset, where there are too many lambda2 values for a
     given lambda1."""
     dataset = load_restarted()
@@ -143,17 +139,15 @@ def restarted_dataset_toomany_lambda2():
 
     temp_fnames = []
     for i in range(len(filenames)):
-        fname = _corrupt_fepout(filenames[i], [('#NEW', func_new_line), ('#Free', func_free_line)])
+        fname = _corrupt_fepout(filenames[i], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
         dataset['data']['both'][i] = fname
         temp_fnames.append(fname)
 
-    yield dataset
-    for fname in temp_fnames:
-        unlink(fname)
+    return dataset
 
 
 @pytest.fixture
-def restarted_dataset_toomany_lambda_idws():
+def restarted_dataset_toomany_lambda_idws(tmp_path):
     """Returns intentionally messed up dataset, where there are too many lambda2 values for a
     given lambda1."""
     dataset = load_restarted()
@@ -176,17 +170,15 @@ def restarted_dataset_toomany_lambda_idws():
 
     temp_fnames = []
     for i in range(len(filenames)):
-        fname = _corrupt_fepout(filenames[i], [('#NEW', func_new_line)])
+        fname = _corrupt_fepout(filenames[i], [('#NEW', func_new_line)], tmp_path)
         dataset['data']['both'][i] = fname
         temp_fnames.append(fname)
 
-    yield dataset
-    for fname in temp_fnames:
-        unlink(fname)
+    return dataset
 
 
 @pytest.fixture
-def restarted_dataset_direction_changed():
+def restarted_dataset_direction_changed(tmp_path):
     """Returns intentionally messed up dataset, with one window where the lambda values are reversed."""
     dataset = load_restarted()
     filenames = dataset['data']['both']
@@ -201,19 +193,14 @@ def restarted_dataset_direction_changed():
     
     # Reverse the direction of lambdas for this window
     idx_to_corrupt = filenames.index(sorted(filenames)[-3])
-    fname1 = _corrupt_fepout(filenames[idx_to_corrupt], [('#NEW', func_new_line), ('#Free', func_free_line)])
+    fname1 = _corrupt_fepout(filenames[idx_to_corrupt], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
     dataset['data']['both'][idx_to_corrupt] = fname1
-    yield dataset
-
-    unlink(fname1)
+    return dataset
 
 
-def test_u_nk_restarted(restarted_dataset, restarted_dataset_direction_changed,
-    restarted_dataset_toomany_lambda_idws, restarted_dataset_toomany_lambda2,
-    restarted_dataset_inconsistent):
+def test_u_nk_restarted(restarted_dataset):
     """Test that u_nk has the correct form when extracted from an IDWS
-    FEP run that includes a termination and restart, and that the parser throws
-    exceptions when it encounters various forms of corrupted fepout files.
+    FEP run that includes a termination and restart.
     """
 
     filenames = restarted_dataset['data']['both']
@@ -222,14 +209,32 @@ def test_u_nk_restarted(restarted_dataset, restarted_dataset_direction_changed,
     assert u_nk.index.names == ['time', 'fep-lambda']
     assert u_nk.shape == (30061, 11)
 
-    with pytest.raises(ValueError, match='Inconsistent lambda values within the same window'):
-        u_nk = extract_u_nk(restarted_dataset_inconsistent['data']['both'], T=300)
+
+def test_u_nk_restarted_direction_changed(restarted_dataset_direction_changed):
+    """Test that when lambda values change direction within a dataset, parsing throws an error."""
 
     with pytest.raises(ValueError, match='Lambda values change direction'):
         u_nk = extract_u_nk(restarted_dataset_direction_changed['data']['both'], T=300)
 
+
+def test_u_nk_restarted_inconsistent(restarted_dataset_inconsistent):
+    """Test that when lambda values are inconsistent between start and end of a single window,
+    parsing throws an error.
+    """
+
+    with pytest.raises(ValueError, match='Inconsistent lambda values within the same window'):
+        u_nk = extract_u_nk(restarted_dataset_inconsistent['data']['both'], T=300)
+
+
+def test_u_nk_restarted_toomany_lambda_idws(restarted_dataset_toomany_lambda_idws):
+    """Test that when there is more than one lambda_idws for a given lambda1, parsing throws an error."""
+
     with pytest.raises(ValueError, match='More than one lambda_idws value for a particular lambda1'):
         u_nk = extract_u_nk(restarted_dataset_toomany_lambda_idws['data']['both'], T=300)
+
+
+def test_u_nk_restarted_toomany_lambda2(restarted_dataset_toomany_lambda2):
+    """Test that when there is more than one lambda2 for a given lambda1, parsing throws an error."""
 
     with pytest.raises(ValueError, match='More than one lambda2 value for a particular lambda1'):
         u_nk = extract_u_nk(restarted_dataset_toomany_lambda2['data']['both'], T=300)
