@@ -57,7 +57,6 @@ The library is structured as follows, following a similar style to
     │   └── ...
     ├── postprocessors
     │   ├── ...
-    │   └── convergence.py
     │   └── units.py
     ├── visualisation
     │   ├── convergence.py

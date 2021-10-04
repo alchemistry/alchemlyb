@@ -2,8 +2,8 @@ Using functions to estimate Convergence
 =======================================
 
 For a result to be valid, we need to ensure that longer simulation time
-would not result in different results. Various functions are provided in
-this module to estimate the convergence of the data and help user determine
+would not result in different results. Various functions will be provided in
+this module to estimate the convergence of the estimate and help user determine
 the simulation end point.
 
 Time Convergence
@@ -21,7 +21,7 @@ forward and backward convergence of the estimate using
     >>> bz = load_benzene().data
     >>> data_list = [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']]
     >>> df = forward_backward_convergence(data_list, 'mbar')
-    >>> ax = plot_convergence(dataframe=df)
+    >>> ax = plot_convergence(df)
     >>> ax.figure.savefig('dF_t.pdf')
 
 Will give a plot looks like this
