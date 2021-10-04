@@ -12,7 +12,7 @@ from alchemlyb.visualisation.mbar_matrix import plot_mbar_overlap_matrix
 from alchemlyb.visualisation.ti_dhdl import plot_ti_dhdl
 from alchemlyb.visualisation.dF_state import plot_dF_state
 from alchemlyb.visualisation import plot_convergence
-from alchemlyb.postprocessors import forward_backward_convergence
+from alchemlyb.convergence import forward_backward_convergence
 
 def test_plot_mbar_omatrix():
     '''Just test if the plot runs'''
@@ -131,7 +131,7 @@ def test_plot_convergence_dataframe():
     bz = load_benzene().data
     data_list = [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']]
     df = forward_backward_convergence(data_list, 'mbar')
-    ax = plot_convergence(dataframe=df)
+    ax = plot_convergence(df)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 

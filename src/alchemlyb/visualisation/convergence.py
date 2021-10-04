@@ -1,29 +1,20 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
 from ..postprocessors.units import get_unit_converter
 
-def plot_convergence(forward=None, forward_error=None, backward=None,
-                     backward_error=None, dataframe=None,
-                     units='kT', ax=None):
+def plot_convergence(*data, units='kT', ax=None):
     """Plot the forward and backward convergence.
 
     Parameters
     ----------
-    forward : List
-        A list of free energy estimate from the first X% of data.
-    forward_error : List
-        A list of error from the first X% of data.
-    backward : List
-        A list of free energy estimate from the last X% of data.
-    backward_error : List
-        A list of error from the last X% of data.
-    dataframe : Dataframe
+    data : Dataframe or 4 Lists
         Output Dataframe from
-        :func:`~alchemlyb.postprocessors.forward_backward_convergence`. If
-        Dataframe is provided, `forward`, `forward_error`, `backward`,
-        `backward_error` will be ignored.
+        :func:`~alchemlyb.postprocessors.convergence.forward_backward_convergence`.
+        Or given explicitly as `forward`, `forward_error`, `backward`,
+        `backward_error` see :ref:`plot_convergence <plot_convergence>`.
     units : str
         The label for the unit of the estimate. Default: "kT"
     ax : matplotlib.axes.Axes
@@ -44,14 +35,23 @@ def plot_convergence(forward=None, forward_error=None, backward=None,
     Changing it doesn't change the unit of the underlying variable.
 
 
+    .. versionchanged:: 0.6.0
+        data now takes in dataframe
+
     .. versionadded:: 0.4.0
     """
-    if dataframe is not None:
-        dataframe = get_unit_converter(units)(dataframe)
+    if len(data) == 1 and isinstance(data[0], pd.DataFrame):
+        dataframe = get_unit_converter(units)(data)
         forward = dataframe['Forward'].to_numpy()
         forward_error = dataframe['F. Error'].to_numpy()
         backward = dataframe['Backward'].to_numpy()
         backward_error = dataframe['B. Error'].to_numpy()
+    else:
+        try:
+            forward, forward_error, backward, backward_error = data
+        except ValueError:
+            raise ValueError('Ensure all four of forward, forward_error, '
+                             'backward, backward_error are supplied.')
 
     if ax is None: # pragma: no cover
         fig, ax = plt.subplots(figsize=(8, 6))

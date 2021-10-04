@@ -57,7 +57,8 @@ The library is structured as follows, following a similar style to
     │   └── ...
     ├── postprocessors
     │   ├── ...
-    │   └── units.py    
+    │   └── convergence.py
+    │   └── units.py
     ├── visualisation
     │   ├── convergence.py
     │   ├── dF_state.py
@@ -83,8 +84,7 @@ The :mod:`~alchemlyb.estimators` module features classes *a la* **scikit-learn**
 MBAR, BAR, and thermodynamic integration (TI) as the major methods are all implemented.
 Correct error estimates require the use of time series with independent samples.
 
-The :mod:`~alchemlyb.convergence` submodule will feature convenience functions/classes for doing convergence analysis using a given dataset and a chosen estimator, though the form of this is not yet thought-out.
-However, the `gist a41e5756a58e1775e3e3a915f07bfd37`_ shows an example for how this can be done already in practice.
+The :mod:`~alchemlyb.convergence` submodule will feature convenience functions/classes for doing convergence analysis using a given dataset and a chosen estimator.
 
 The :mod:`~alchemlyb.postprocessing` submodule contains functions to calculate new quantities or express data in different units.
 

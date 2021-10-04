@@ -2,7 +2,7 @@ import pytest
 
 from alchemtest.gmx import load_benzene
 from alchemlyb.parsing import gmx
-from alchemlyb.postprocessors import forward_backward_convergence
+from alchemlyb.convergence import forward_backward_convergence
 
 @pytest.fixture()
 def gmx_benzene():
