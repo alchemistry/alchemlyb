@@ -13,7 +13,7 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2021 schlaicha, jhenin, ttjoseph
+??/??/2021 schlaicha, xiki-tempula, jhenin, ttjoseph
 
   * 0.6.0
 
@@ -21,6 +21,7 @@ Changes
 
 Enhancements
   - support for Interleaved Double-Wide Sampling (IDWS) in NAMD (PR #135)
+  - Convenience function for decorrelating u_nk and dHdl (PR #163).
 
 Fixes
   - Subsampling now works with bounds and step (PR #167, issue #166).
