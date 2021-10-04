@@ -16,7 +16,7 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     changing; default) or 'dE'. In the latter case the energy differences
     dE_{i,i+1} (dE_{i,i-1} for the last lambda) are used.
 
-    This is wrapper function around the
+    This is a wrapper function around the function
     :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
 
     Parameters
@@ -42,6 +42,8 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     ----
     The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
     but can loose data.
+
+    .. versionadded:: 0.6.0
     """
     kwargs['drop_duplicates'] = drop_duplicates
     kwargs['sort'] = sort
@@ -90,7 +92,7 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
 def decorrelate_dhdl(df, drop_duplicates=True, sort=True, **kwargs):
     """Subsample a dhdl DataFrame.
 
-    This is wrapper function around the
+    This is a wrapper function around the function
     :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
 
     Parameters
@@ -114,6 +116,9 @@ def decorrelate_dhdl(df, drop_duplicates=True, sort=True, **kwargs):
     ----
     The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
     but can loose data.
+
+
+    .. versionadded:: 0.6.0
     """
 
     kwargs['drop_duplicates'] = drop_duplicates
