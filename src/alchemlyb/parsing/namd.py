@@ -20,7 +20,7 @@ def _get_lambdas(fep_files):
     The IDWS lambda is not present at the termination of the window, presumably
     for backwards compatibility with ParseFEP and probably other things.
 
-    For a given lambda1, there can be only one lambda_idws.
+    For a given lambda1, there can be only one lambda2 and at most one lambda_idws.
 
     Parameters
     ----------
@@ -49,6 +49,10 @@ def _get_lambdas(fep_files):
                     lambda_idws = float(l[10]) if 'LAMBDA_IDWS' in l else None
                 elif l[0] == '#Free':
                     lambda1, lambda2, lambda_idws = float(l[7]), float(l[8]), None
+                else:
+                    # We only care about lines with lambda values. No need to
+                    # do all that other processing below for every line
+                    continue
 
                 # Keep track of whether the lambda values are increasing or decreasing, so we can return
                 # a sorted list of the lambdas in the correct order.
@@ -191,10 +195,13 @@ def extract_u_nk(fep_files, T):
                     win_de_arr = beta * np.asarray(win_de) # dE values
                     win_ts_arr = np.asarray(win_ts) # timesteps
 
-                    # Infer lambda_idws_at_start if it wasn't explictly included in this fepout.
-                    # If lambdas are in ascending order, choose the one before it
-                    # This can happen if user ran minimize before starting dynamics and didn't do firsttimestep 0,
-                    # because NAMD only emits the '#NEW' line on timestep 0 for some reason
+                    # This handles the special case where there are IDWS energies but no lambda_idws value in the
+                    # current .fepout file. This can happen when the NAMD firsttimestep is not 0, because NAMD only emits
+                    # the '#NEW' line on timestep 0 for some reason. Perhaps the user ran minimize before dynamics,
+                    # or this is a restarted run.
+                    # We infer lambda_idws_at_start if it wasn't explictly included in this fepout.
+                    # If lambdas are in ascending order, choose the one before it all_lambdas, and if descending, choose
+                    # the one after. The "else" case is handled by the rest of this block, by default.
                     if has_idws and lambda_idws_at_start is None:
                         l1_idx, l2_idx = all_lambdas.index(lambda1), all_lambdas.index(lambda2)
                         if l1_idx > 0 and l1_idx < l2_idx: # Ascending lambdas
@@ -202,7 +209,7 @@ def extract_u_nk(fep_files, T):
                         elif l2_idx < (len(all_lambdas) - 1) and l2_idx < l1_idx: # Descending lambdas
                             lambda_idws_at_start = all_lambdas[l2_idx + 1]
 
-                        logger.warning(f'Warning: {fep_file} has IDWS data but lambda_idws not specified.')
+                        logger.warning(f'Warning: {fep_file} has IDWS data but lambda_idws not included.')
                         logger.warning(f'         lambda1 = {lambda1}, lambda2 = {lambda2}; inferring lambda_idws to be {lambda_idws_at_start}')
 
                     if lambda_idws_at_start is not None:
@@ -254,7 +261,7 @@ def extract_u_nk(fep_files, T):
                 if '#STARTING' in l:
                     parsing = True
 
-    if len(win_de) != 0 or len(win_de_back) != 0:
+    if len(win_de) != 0 or len(win_de_back) != 0: # pragma: no cover
         logger.warning('Trailing data without footer line (\"#Free energy...\"). Interrupted run?')
 
     if lambda2 in (0.0, 1.0):
