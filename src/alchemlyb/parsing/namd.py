@@ -139,12 +139,10 @@ def extract_u_nk(fep_files, T):
 
     # boolean flag to parse data after equil time
     parsing = False
-    lambda_idws = None
 
     if type(fep_files) is str:
         fep_files = [fep_files]
 
-    time = 0
     # Extract the lambda values only from the fepouts
     all_lambdas = _get_lambdas(fep_files)
     # open and get data from fep file.
