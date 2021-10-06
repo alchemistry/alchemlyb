@@ -9,6 +9,7 @@ from alchemlyb.parsing.namd import extract_u_nk
 from alchemtest.namd import load_tyr2ala
 from alchemtest.namd import load_idws
 from alchemtest.namd import load_restarted
+from alchemtest.namd import load_restarted_reversed
 
 # Indices of lambda values in the following line in NAMD fepout files:
 # #NEW FEP WINDOW: LAMBDA SET TO 0.6 LAMBDA2 0.7 LAMBDA_IDWS 0.5
@@ -19,6 +20,7 @@ LAMBDA_IDWS_IDX_NEW = 10
 # #Free energy change for lambda window [ 0.6 0.7 ] is 0.12345 ; net change until now is 0.12345
 LAMBDA1_IDX_FREE = 7
 LAMBDA2_IDX_FREE = 8
+
 
 @pytest.fixture(scope="module")
 def dataset():
@@ -48,9 +50,9 @@ def test_u_nk_idws():
     assert u_nk.shape == (29252, 11)
 
 
-@pytest.fixture
-def restarted_dataset():
-    return load_restarted()
+@pytest.fixture(params=[load_restarted, load_restarted_reversed])
+def restarted_dataset(request):
+    return request.param()
 
 
 def _corrupt_fepout(fepout_in, params, tmp_path):
@@ -152,19 +154,24 @@ def restarted_dataset_toomany_lambda_idws(restarted_dataset, tmp_path):
 
     filenames = restarted_dataset['data']['both']
 
-    # For the same lambda1 and lambda2 we retain old lambda_idws values thus ensuring a collision
-    changed = False
+    # For the same lambda1 and lambda2 we retain the first set of lambda1/lambda2 values
+    # and replicate them across all windows thus ensuring that there will be more than
+    # one lambda_idws value for a given lambda1 and lambda2
+    this_lambda1, this_lambda2 = None, None
+
     def func_new_line(l):
-        # Ensure that changing these lamda values won't cause a reversal in direction and trigger
+        nonlocal this_lambda1, this_lambda2
+        
+        if this_lambda1 is None:
+            this_lambda1, this_lambda2 = l[LAMBDA1_IDX_NEW], l[LAMBDA2_IDX_NEW]
+        # Ensure that changing these lambda values won't cause a reversal in direction and trigger
         # an exception we're not trying to test here
         if len(l) > 9 and float(l[LAMBDA_IDWS_IDX_NEW]) < 0.5:
-            l[LAMBDA1_IDX_NEW], l[LAMBDA2_IDX_NEW] = '0.5', '0.6'
-            changed = True
+            l[LAMBDA1_IDX_NEW], l[LAMBDA2_IDX_NEW] = this_lambda1, this_lambda2
         return l
 
     def func_free_line(l):
-        if changed:
-            l[LAMBDA1_IDX_FREE], l[LAMBDA2_IDX_FREE] = '0.5', '0.6'
+        l[LAMBDA1_IDX_FREE], l[LAMBDA2_IDX_FREE] = this_lambda1, this_lambda2
         return l
 
     temp_fnames = []
@@ -197,16 +204,22 @@ def restarted_dataset_direction_changed(restarted_dataset, tmp_path):
     return restarted_dataset
 
 
-def test_u_nk_restarted(restarted_dataset):
+def test_u_nk_restarted():
     """Test that u_nk has the correct form when extracted from an IDWS
-    FEP run that includes a termination and restart.
+    FEP run that includes terminations and restarts.
     """
-
-    filenames = restarted_dataset['data']['both']
+    filenames = load_restarted()['data']['both']
     u_nk = extract_u_nk(filenames, T=300)
-
+    
     assert u_nk.index.names == ['time', 'fep-lambda']
     assert u_nk.shape == (30061, 11)
+
+    filenames = load_restarted_reversed()['data']['both']
+    u_nk = extract_u_nk(filenames, T=300)
+    
+    assert u_nk.index.names == ['time', 'fep-lambda']
+    assert u_nk.shape == (30170, 11)
+
 
 
 def test_u_nk_restarted_direction_changed(restarted_dataset_direction_changed):
