@@ -214,12 +214,13 @@ def test_u_nk_restarted():
     assert u_nk.index.names == ['time', 'fep-lambda']
     assert u_nk.shape == (30061, 11)
 
+
+def test_u_nk_restarted_reversed():
     filenames = load_restarted_reversed()['data']['both']
     u_nk = extract_u_nk(filenames, T=300)
     
     assert u_nk.index.names == ['time', 'fep-lambda']
     assert u_nk.shape == (30170, 11)
-
 
 
 def test_u_nk_restarted_direction_changed(restarted_dataset_direction_changed):
