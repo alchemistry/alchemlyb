@@ -93,7 +93,7 @@ def restarted_dataset_inconsistent(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset where lambda1 and lambda2 at start and end of
     a window are different."""
 
-    filenames = restarted_dataset['data']['both']
+    filenames = sorted(restarted_dataset['data']['both'])
 
     changed = False
     def func_free_line(l):
@@ -119,7 +119,7 @@ def restarted_dataset_toomany_lambda2(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset, where there are too many lambda2 values for a
     given lambda1."""
 
-    filenames = restarted_dataset['data']['both']
+    filenames = sorted(restarted_dataset['data']['both'])
 
     # For the same l1 and lidws we retain old lambda2 values thus ensuring a collision
     # Also, don't make a window where lambda1 >= lambda2 because this will trigger the
@@ -152,7 +152,7 @@ def restarted_dataset_toomany_lambda_idws(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset, where there are too many lambda2 values for a
     given lambda1."""
 
-    filenames = restarted_dataset['data']['both']
+    filenames = sorted(restarted_dataset['data']['both'])
 
     # For the same lambda1 and lambda2 we retain the first set of lambda1/lambda2 values
     # and replicate them across all windows thus ensuring that there will be more than
@@ -187,7 +187,7 @@ def restarted_dataset_toomany_lambda_idws(restarted_dataset, tmp_path):
 def restarted_dataset_direction_changed(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset, with one window where the lambda values are reversed."""
 
-    filenames = restarted_dataset['data']['both']
+    filenames = sorted(restarted_dataset['data']['both'])
 
     def func_new_line(l):
         l[6], l[8], l[10] = l[10], l[8], l[6]
