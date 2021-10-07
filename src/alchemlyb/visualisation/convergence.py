@@ -59,7 +59,7 @@ def plot_convergence(*data, units='kT', ax=None):
     else:
         try:
             forward, forward_error, backward, backward_error = data
-        except ValueError:
+        except ValueError: # pragma: no cover
             raise ValueError('Ensure all four of forward, forward_error, '
                              'backward, backward_error are supplied.')
 
