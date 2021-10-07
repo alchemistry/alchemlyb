@@ -31,8 +31,14 @@ def test_convergence_mbar(gmx_benzene):
 def test_convergence_bar(gmx_benzene):
     dHdl, u_nk = gmx_benzene
     convergence = forward_backward_convergence(u_nk, 'BAR')
-    assert convergence.shape == (10, 4)
+    assert convergence.shape == (10, 5)
     assert convergence.iloc[0, 0] == pytest.approx(3.02, 0.01)
     assert convergence.iloc[0, 2] == pytest.approx(3.06, 0.01)
     assert convergence.iloc[-1, 0] == pytest.approx(3.05, 0.01)
     assert convergence.iloc[-1, 2] == pytest.approx(3.04, 0.01)
+
+def test_convergence_wrong_estimator(gmx_benzene):
+    dHdl, u_nk = gmx_benzene
+    with pytest.raises(ValueError):
+        convergence = forward_backward_convergence(u_nk, 'www')
+        

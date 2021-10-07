@@ -26,18 +26,17 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
     DataFrame
         The DataFrame with convergence data. ::
 
-                         Forward  Forward_Error  Backward  Backward_Error
-            t_fraction
-            1/10        3.067943       0.070175  3.111035        0.067088
-            2/10        3.122223       0.049303  3.126450        0.048173
-            3/10        3.117742       0.039916  3.094115        0.039099
-            4/10        3.091870       0.034389  3.101558        0.033783
-            5/10        3.093778       0.030814  3.082714        0.030148
-            6/10        3.079128       0.027999  3.085972        0.027652
-            7/10        3.086951       0.025847  3.077004        0.025610
-            8/10        3.079147       0.024122  3.081519        0.023968
-            9/10        3.086575       0.022778  3.090475        0.022633
-            10/10       3.088821       0.021573  3.089027        0.021568
+                Forward  Forward_Error  Backward  Backward_Error  data_fraction
+            0  3.016442       0.052748  3.065176        0.051036            0.1
+            1  3.078106       0.037170  3.078567        0.036640            0.2
+            2  3.072561       0.030186  3.047357        0.029775            0.3
+            3  3.048325       0.026070  3.057527        0.025743            0.4
+            4  3.049769       0.023359  3.037454        0.023001            0.5
+            5  3.034078       0.021260  3.040484        0.021075            0.6
+            6  3.043274       0.019642  3.032495        0.019517            0.7
+            7  3.035460       0.018340  3.036670        0.018261            0.8
+            8  3.042032       0.017319  3.046597        0.017233            0.9
+            9  3.044149       0.016405  3.044385        0.016402            1.0
 
 
     .. versionadded:: 0.6.0
@@ -56,15 +55,15 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
     elif estimator.lower() == 'ti':
         logger.info('Use TI estimator for convergence analysis.')
         estimator_fit = TI().fit
-    else:  # pragma: no cover
-        logger.warning(
+    else:
+        raise ValueError(
             '{} is not a valid estimator.'.format(estimator))
 
     logger.info('Begin forward analysis')
     forward_list = []
     forward_error_list = []
     for i in range(1, num + 1):
-        logger.info('Forward analysis: {:.2f}%'.format(i / num))
+        logger.info('Forward analysis: {:.2f}%'.format(100 * i / num))
         sample = []
         for data in df_list:
             sample.append(data[:len(data) // num * i])
@@ -85,7 +84,7 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
     backward_list = []
     backward_error_list = []
     for i in range(1, num + 1):
-        logger.info('Backward analysis: {:.2f}%'.format(i / num))
+        logger.info('Backward analysis: {:.2f}%'.format(100 * i / num))
         sample = []
         for data in df_list:
             sample.append(data[-len(data) // num * i:])
@@ -106,8 +105,7 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
         {'Forward': forward_list,
          'Forward_Error': forward_error_list,
          'Backward': backward_list,
-         'Backward_Error': backward_error_list},
-        index=['{}/{}'.format(i, num) for i in range(1, num + 1)])
-    convergence.index.name = 't_fraction'
+         'Backward_Error': backward_error_list,
+         'data_fraction': [i / num for i in range(1, num + 1)]})
     convergence.attrs = df_list[0].attrs
     return convergence
