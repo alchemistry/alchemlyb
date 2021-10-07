@@ -2,6 +2,7 @@
 
 """
 from os.path import basename
+from re import search
 import bz2
 import pytest
 
@@ -110,6 +111,37 @@ def restarted_dataset_inconsistent(restarted_dataset, tmp_path):
         if changed is True:
             break
 
+    return restarted_dataset
+
+
+@pytest.fixture
+def restarted_dataset_idws_without_lambda_idws(restarted_dataset, tmp_path):
+    """Returns intentionally messed up dataset where the first window has IDWS data
+    but no lambda_idws.
+    """
+
+    # First window won't have any IDWS data so we just drop all its files and fudge the lambdas
+    # in the next window to include 0.0 or 1.0 (as appropriate) so we still have a nominally complete calculation
+    
+    filenames = [x for x in sorted(restarted_dataset['data']['both']) if search('000[a-z]?.fepout', x) is None]
+
+    def func_new_line(l):
+        if float(l[LAMBDA1_IDX_NEW]) > 0.5: # 1->0 (reversed) calculation
+            l[LAMBDA1_IDX_NEW] == '1.0'
+        else: # regular 0->1 calculation
+            l[LAMBDA1_IDX_NEW] = '0.0'
+        # Drop the lambda_idws
+        return l[:9]
+    
+    def func_free_line(l):
+        if float(l[LAMBDA1_IDX_FREE]) > 0.5: # 1->0 (reversed) calculation
+            l[LAMBDA1_IDX_FREE] == '1.0'
+        else: # regular 0->1 calculation
+            l[LAMBDA1_IDX_FREE] = '0.0'
+        return l
+        
+    filenames[0] = _corrupt_fepout(filenames[0], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
+    restarted_dataset['data']['both'] = filenames
     return restarted_dataset
 
 
@@ -224,6 +256,17 @@ def test_u_nk_restarted_direction_changed(restarted_dataset_direction_changed):
         u_nk = extract_u_nk(restarted_dataset_direction_changed['data']['both'], T=300)
 
 
+def test_u_nk_restarted_idws_without_lambda_idws(restarted_dataset_idws_without_lambda_idws):
+    """Test that when the first window has IDWS data but no lambda_idws, parsing throws an error.
+    
+    In this situation, the lambda_idws cannot be inferred, because there's no previous lambda
+    value available.
+    """
+
+    with pytest.raises(ValueError, match='IDWS data present in first window but lambda_idws not included'):
+        u_nk = extract_u_nk(restarted_dataset_idws_without_lambda_idws['data']['both'], T=300)
+
+
 def test_u_nk_restarted_inconsistent(restarted_dataset_inconsistent):
     """Test that when lambda values are inconsistent between start and end of a single window,
     parsing throws an error.
@@ -245,4 +288,3 @@ def test_u_nk_restarted_toomany_lambda2(restarted_dataset_toomany_lambda2):
 
     with pytest.raises(ValueError, match='More than one lambda2 value for a particular lambda1'):
         u_nk = extract_u_nk(restarted_dataset_toomany_lambda2['data']['both'], T=300)
-

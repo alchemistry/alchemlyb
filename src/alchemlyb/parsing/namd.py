@@ -40,8 +40,6 @@ def _get_lambdas(fep_files):
         with anyopen(fep_file, 'r') as f:
             for line in f:
                 l = line.strip().split()
-                if l[0] not in ['#NEW', '#Free']:
-                    continue
 
                 # We might not have a #NEW line so make the best guess
                 if l[0] == '#NEW':
@@ -148,8 +146,10 @@ def extract_u_nk(fep_files, T):
     # open and get data from fep file.
     # We sort the list of fep files in case some of them represent restarted windows.
     # The assumption is that they make sense in lexicographic order.
+    # We keep track of which lambda window we're in, but since it can span multiple files,
+    # only reset these variables here and after the end of each window
+    lambda1_at_start, lambda2_at_start, lambda_idws_at_start = None, None, None
     for fep_file in sorted(fep_files):
-        lambda1_at_start, lambda2_at_start, lambda_idws_at_start = None, None, None
         # Note we have not set parsing=False because we could be continuing one window across
         # more than one fepout file
         with anyopen(fep_file, 'r') as f:
@@ -199,14 +199,16 @@ def extract_u_nk(fep_files, T):
                     # or this is a restarted run.
                     # We infer lambda_idws_at_start if it wasn't explictly included in this fepout.
                     # If lambdas are in ascending order, choose the one before it all_lambdas, and if descending, choose
-                    # the one after. The "else" case is handled by the rest of this block, by default.
+                    # the one after. This happens "automatically" because the lambdas were returned already sorted
+                    # in the correct direction by _get_lambdas().
+                    # The "else" case is handled by the rest of this block, by default.
                     if has_idws and lambda_idws_at_start is None:
-                        l1_idx, l2_idx = all_lambdas.index(lambda1), all_lambdas.index(lambda2)
-                        if l1_idx > 0 and l1_idx < l2_idx: # Ascending lambdas
-                            lambda_idws_at_start = all_lambdas[l1_idx - 1]
-                        elif l2_idx < (len(all_lambdas) - 1) and l2_idx < l1_idx: # Descending lambdas
-                            lambda_idws_at_start = all_lambdas[l2_idx + 1]
-
+                        l1_idx = all_lambdas.index(lambda1)
+                        # Test for the highly pathological case where the first window is both incomplete and has IDWS
+                        # data but no lambda_idws value.
+                        if l1_idx == 0:
+                            raise ValueError(f'IDWS data present in first window but lambda_idws not included; no way to infer the correct lambda_idws')
+                        lambda_idws_at_start = all_lambdas[l1_idx - 1]
                         logger.warning(f'Warning: {fep_file} has IDWS data but lambda_idws not included.')
                         logger.warning(f'         lambda1 = {lambda1}, lambda2 = {lambda2}; inferring lambda_idws to be {lambda_idws_at_start}')
 
