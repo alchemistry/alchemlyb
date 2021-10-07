@@ -97,16 +97,15 @@ def restarted_dataset_inconsistent(restarted_dataset, tmp_path):
 
     changed = False
     def func_free_line(l):
+        nonlocal changed
         if float(l[7]) >= 0.7 and float(l[7]) < 0.9:
             l[7] = str(float(l[7]) + 0.0001)
             changed = True
         return l
 
-    temp_fnames = []
     for i in range(len(filenames)):
-        fname = _corrupt_fepout(filenames[i], [('#Free', func_free_line)], tmp_path)
-        restarted_dataset['data']['both'][i] = fname
-        temp_fnames.append(fname)
+        restarted_dataset['data']['both'][i] = \
+            _corrupt_fepout(filenames[i], [('#Free', func_free_line)], tmp_path)
         # Only actually modify one window so we don't trigger the wrong exception
         if changed is True:
             break
@@ -138,11 +137,9 @@ def restarted_dataset_toomany_lambda2(restarted_dataset, tmp_path):
         l[LAMBDA1_IDX_FREE] = '0.2'
         return l
 
-    temp_fnames = []
     for i in range(len(filenames)):
-        fname = _corrupt_fepout(filenames[i], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
-        restarted_dataset['data']['both'][i] = fname
-        temp_fnames.append(fname)
+        restarted_dataset['data']['both'][i] = \
+            _corrupt_fepout(filenames[i], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
 
     return restarted_dataset
 
@@ -174,11 +171,8 @@ def restarted_dataset_toomany_lambda_idws(restarted_dataset, tmp_path):
         l[LAMBDA1_IDX_FREE], l[LAMBDA2_IDX_FREE] = this_lambda1, this_lambda2
         return l
 
-    temp_fnames = []
     for i in range(len(filenames)):
-        fname = _corrupt_fepout(filenames[i], [('#NEW', func_new_line)], tmp_path)
-        restarted_dataset['data']['both'][i] = fname
-        temp_fnames.append(fname)
+        restarted_dataset['data']['both'][i] = _corrupt_fepout(filenames[i], [('#NEW', func_new_line)], tmp_path)
 
     return restarted_dataset
 
