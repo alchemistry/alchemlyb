@@ -8,6 +8,13 @@ from ..postprocessors.units import get_unit_converter
 def plot_convergence(*data, units='kT', ax=None):
     """Plot the forward and backward convergence.
 
+    The input could be the result from
+    :func:`~alchemlyb.convergence.forward_backward_convergence` or it could
+    be given explicitly as `forward`, `forward_error`, `backward`,
+    `backward_error`. These four array_like objects should have the same
+    shape and can be used as input for the
+    :func:`matplotlib.pyplot.errorbar`.
+
     Parameters
     ----------
     data : Dataframe or 4 array_like objects
@@ -33,7 +40,7 @@ def plot_convergence(*data, units='kT', ax=None):
 
     If `data` is not an :class:pandas.Dataframe` produced by
     :func:`~alchemlyb.convergence.forward_backward_convergence`,
-    the unit will be adjusted accoridng to the units
+    the unit will be adjusted according to the units
     variable. Otherwise, the units variable is for labelling only.
     Changing it doesn't change the unit of the underlying variable.
 
@@ -44,7 +51,7 @@ def plot_convergence(*data, units='kT', ax=None):
     .. versionadded:: 0.4.0
     """
     if len(data) == 1 and isinstance(data[0], pd.DataFrame):
-        dataframe = get_unit_converter(units)(data)
+        dataframe = get_unit_converter(units)(data[0])
         forward = dataframe['Forward'].to_numpy()
         forward_error = dataframe['Forward_Error'].to_numpy()
         backward = dataframe['Backward'].to_numpy()
