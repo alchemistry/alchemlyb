@@ -6,11 +6,12 @@ import numpy as np
 import logging
 
 from ..parsing import gmx
-from ..preprocessing.subsampling import statistical_inefficiency
+from ..preprocessing.subsampling import decorrelate_dhdl, decorrelate_u_nk
 from ..estimators import MBAR, BAR, TI
 from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
                              plot_dF_state, plot_convergence)
 from ..postprocessors.units import get_unit_converter
+from ..convergence import forward_backward_convergence
 from .. import concat
 from .. import __version__
 
@@ -239,45 +240,7 @@ class ABFE():
                 # Find the starting frame
 
                 u_nk = u_nk[u_nk.index.get_level_values('time') >= skiptime]
-                if uncorr == 'dhdl':
-                    # Find the current column index
-                    # Select the first row and remove the first column (Time)
-                    key = u_nk.index.values[0][1:]
-                    if len(key) > 1:
-                        # Multiple keys
-                        col = u_nk[key]
-                    else:
-                        # Single key
-                        col = u_nk[key[0]]
-                    subsample = statistical_inefficiency(u_nk, col, sort=True,
-                                                         drop_duplicates=True)
-                # This part is commented out as it duplicates #98
-                # The user could restore this part if it is desired.
-
-                # elif uncorr == 'dhdl_all':
-                #     subsample = statistical_inefficiency(u_nk, u_nk.sum(axis=1),
-                #                                          sort = True,
-                #                                          drop_duplicates = True)
-                # elif uncorr == 'dE':
-                #     # Using the same logic as alchemical-analysis
-                #     key = u_nk.index.values[0][1:]
-                #     index = u_nk.columns.values.tolist().index(key)
-                #     # for the state that is not the last state, take the state+1
-                #     if index + 1 < len(u_nk.columns):
-                #         subsample = statistical_inefficiency(
-                #             u_nk, u_nk.iloc[:, index + 1])
-                #     # for the state that is the last state, take the state-1
-                #     else:
-                #         subsample = statistical_inefficiency(
-                #             u_nk, u_nk.iloc[:, index - 1],
-                #                                          sort = True,
-                #                                          drop_duplicates = True)
-
-                else: # pragma: no cover
-                    # The dhdl_all and dE will be implemented here when #48 is
-                    # merged
-                    raise NameError(
-                        'Decorrelation method {} not found.'.format(uncorr))
+                subsample = decorrelate_u_nk(u_nk, uncorr)
 
                 if len(subsample) < threshold:
                     self.logger.warning('Number of u_nk {} for state {} is '
@@ -296,9 +259,7 @@ class ABFE():
             self.dHdl_sample_list = []
             for index, dHdl in enumerate(self.dHdl_list):
                 dHdl = dHdl[dHdl.index.get_level_values('time') >= skiptime]
-                subsample = statistical_inefficiency(dHdl, dHdl.sum(axis=1),
-                                                     sort=True,
-                                                     drop_duplicates=True)
+                subsample = decorrelate_dhdl(dHdl)
                 if len(subsample) < threshold:
                     self.logger.warning('Number of dHdl {} for state {} is '
                                         'less than the threshold {}.'.format(
@@ -573,7 +534,9 @@ class ABFE():
 
     def check_convergence(self, forwrev, estimator='mbar', dF_t='dF_t.pdf',
                      ax=None):
-        '''Compute the forward and backward convergence and plotted with
+        '''Compute the forward and backward convergence using
+        :func:`~alchemlyb.convergence.forward_backward_convergence`and
+        plotted with
         :func:`~alchemlyb.visualisation.plot_convergence`.
 
         Parameters
@@ -593,19 +556,6 @@ class ABFE():
         Attributes
         ----------
         convergence : DataFrame
-            The DataFrame with convergence data. ::
-
-                   Forward (kT)  F. Error (kT)  Backward (kT)  B. Error (kT)
-                0      33.988935        0.334676       35.666128        0.324426
-                1      35.075489        0.232150       35.382850        0.230944
-                2      34.919988        0.190424       35.156028        0.189489
-                3      34.929927        0.165316       35.242255        0.164400
-                4      34.957007        0.147852       35.247704        0.147191
-                5      35.003660        0.134952       35.214658        0.134458
-                6      35.070199        0.124956       35.178422        0.124664
-                7      35.019853        0.116970       35.096870        0.116783
-                8      35.035123        0.110147       35.225907        0.109742
-                9      35.113417        0.104280       35.113417        0.104280
 
         Returns
         -------
@@ -615,115 +565,41 @@ class ABFE():
         self.logger.info('Start convergence analysis.')
         self.logger.info('Check data availability.')
 
-        try:
-            dHdl_list = self.dHdl_sample_list
-            self.logger.info('Subsampled dHdl is available.')
-        except AttributeError:
+        if estimator.lower() in ['mbar', 'bar']:
             try:
-                dHdl_list = self.dHdl_list
-                self.logger.info('Subsampled dHdl not available, '
-                                 'use original data instead.')
-            except AttributeError: # pragma: no cover
-                self.logger.warning('dHdl is not available.')
-
-        try:
-            u_nk_list = self.u_nk_sample_list
-            self.logger.info('Subsampled u_nk is available.')
-        except AttributeError:
+                u_nk_list = self.u_nk_sample_list
+                self.logger.info('Subsampled u_nk is available.')
+            except AttributeError:
+                try:
+                    u_nk_list = self.u_nk_list
+                    self.logger.info('Subsampled u_nk not available, '
+                                     'use original data instead.')
+                except AttributeError:  # pragma: no cover
+                    self.logger.warning('u_nk is not available.')
+            convergence = forward_backward_convergence(u_nk_list,
+                                                       estimator=estimator,
+                                                       num=forwrev)
+        else:
             try:
-                u_nk_list = self.u_nk_list
-                self.logger.info('Subsampled u_nk not available, '
-                                 'use original data instead.')
-            except AttributeError: # pragma: no cover
-                self.logger.warning('u_nk is not available.')
+                dHdl_list = self.dHdl_sample_list
+                self.logger.info('Subsampled dHdl is available.')
+            except AttributeError:
+                try:
+                    dHdl_list = self.dHdl_list
+                    self.logger.info('Subsampled dHdl not available, '
+                                     'use original data instead.')
+                except AttributeError: # pragma: no cover
+                    self.logger.warning('dHdl is not available.')
+            convergence = forward_backward_convergence(dHdl_list,
+                                                       estimator=estimator,
+                                                       num=forwrev)
 
-        if estimator.lower() == 'mbar':
-            self.logger.info('Use MBAR estimator for convergence analysis.')
-            estimator_fit = MBAR().fit
-        elif estimator.lower() == 'bar':
-            self.logger.info('Use BAR estimator for convergence analysis.')
-            estimator_fit = BAR().fit
-        elif estimator.lower() == 'ti':
-            self.logger.info('Use TI estimator for convergence analysis.')
-            estimator_fit = TI().fit
-        else: # pragma: no cover
-            self.logger.warning(
-                '{} is not a valid estimator.'.format(estimator))
+        self.convergence = get_unit_converter(self.units)(convergence)
 
-        converter = get_unit_converter(self.units)
-
-        self.logger.info('Begin forward analysis')
-        forward_list = []
-        forward_error_list = []
-        for i in range(1, forwrev + 1):
-            self.logger.info('Forward analysis: {:.2f}%'.format(i / forwrev))
-            sample = []
-            if estimator.lower() in ['mbar', 'bar']:
-                for data in u_nk_list:
-                    sample.append(data[:len(data) // forwrev * i])
-            elif estimator.lower() == 'ti':
-                for data in dHdl_list:
-                    sample.append(data[:len(data) // forwrev * i])
-            else:  # pragma: no cover
-                raise NameError(
-                    '{} is not a valid estimator.'.format(estimator))
-            sample = concat(sample)
-            result = estimator_fit(sample)
-            forward_list.append(converter(result.delta_f_).iloc[0, -1])
-            if estimator.lower() == 'bar':
-                error = np.sqrt(sum(
-                    [converter(result.d_delta_f_).iloc[i, i + 1] ** 2
-                     for i in range(len(result.d_delta_f_) - 1)]))
-                forward_error_list.append(error)
-            else:
-                forward_error_list.append(converter(result.d_delta_f_).iloc[
-                                                        0, -1])
-            self.logger.info('{:.2f} +/- {:.2f} kT'.format(forward_list[-1],
-                                                        forward_error_list[-1]))
-
-        self.logger.info('Begin backward analysis')
-        backward_list = []
-        backward_error_list = []
-        for i in range(1, forwrev + 1):
-            self.logger.info('Backward analysis: {:.2f}%'.format(i / forwrev))
-            sample = []
-            if estimator.lower() in ['mbar', 'bar']:
-                for data in u_nk_list:
-                    sample.append(data[-len(data) // forwrev * i:])
-            elif estimator.lower() == 'ti':
-                for data in dHdl_list:
-                    sample.append(data[-len(data) // forwrev * i:])
-            else:  # pragma: no cover
-                raise NameError(
-                    '{} is not a valid estimator.'.format(estimator))
-            sample = concat(sample)
-            result = estimator_fit(sample)
-            backward_list.append(converter(result.delta_f_).iloc[0, -1])
-            if estimator.lower() == 'bar':
-                error = np.sqrt(sum(
-                    [converter(result.d_delta_f_).iloc[i, i + 1] ** 2
-                     for i in range(len(result.d_delta_f_) - 1)]))
-                backward_error_list.append(error)
-            else:
-                backward_error_list.append(converter(
-                    result.d_delta_f_).iloc[0, -1])
-            self.logger.info('{:.2f} +/- {:.2f} kT'.format(backward_list[-1],
-                                                        backward_error_list[-1]))
-
-        convergence = pd.DataFrame(
-            {'Forward ({})'.format(self.units): forward_list,
-             'F. Error ({})'.format(self.units): forward_error_list,
-             'Backward ({})'.format(self.units): backward_list,
-             'B. Error ({})'.format(self.units): backward_error_list})
-
-        self.convergence = convergence
         self.logger.info('Plot convergence analysis to {} under {}.'
                          ''.format(dF_t, self.out))
 
-        ax = plot_convergence(np.array(forward_list),
-                              np.array(forward_error_list),
-                              np.array(backward_list),
-                              np.array(backward_error_list),
+        ax = plot_convergence(self.convergence,
                               units=self.units, ax=ax)
         ax.figure.savefig(join(self.out, dF_t))
         return ax
