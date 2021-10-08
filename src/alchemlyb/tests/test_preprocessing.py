@@ -8,9 +8,10 @@ import numpy as np
 import alchemlyb
 from alchemlyb.parsing import gmx
 from alchemlyb.preprocessing import (slicing, statistical_inefficiency,
-                                     equilibrium_detection,)
+                                     equilibrium_detection,
+                                     decorrelate_u_nk, decorrelate_dhdl)
 from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
-from alchemtest.gmx import load_benzene
+from alchemtest.gmx import load_benzene, load_ABFE
 
 import alchemtest.gmx
 
@@ -24,6 +25,21 @@ def gmx_benzene_dHdl():
 def gmx_ABFE():
     dataset = alchemtest.gmx.load_ABFE()
     return gmx.extract_u_nk(dataset['data']['complex'][0], T=300)
+
+@pytest.fixture()
+def gmx_ABFE_dhdl():
+    dataset = alchemtest.gmx.load_ABFE()
+    return gmx.extract_dHdl(dataset['data']['complex'][0], T=300)
+
+@pytest.fixture()
+def gmx_ABFE_u_nk():
+    dataset = alchemtest.gmx.load_ABFE()
+    return gmx.extract_u_nk(dataset['data']['complex'][-1], T=300)
+
+@pytest.fixture()
+def gmx_benzene_u_nk_fixture():
+    dataset = alchemtest.gmx.load_benzene()
+    return gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
 
 
 def gmx_benzene_u_nk():
@@ -235,3 +251,28 @@ class Test_Units():
         new_dhdl = equilibrium_detection(dhdl)
         assert new_dhdl.attrs['temperature'] == 310
         assert new_dhdl.attrs['energy_unit'] == 'kT'
+
+@pytest.mark.parametrize(('method', 'size'), [('dhdl', 2001),
+                                              ('dhdl_all', 2001),
+                                              ('dE', 2001)])
+def test_decorrelate_u_nk_single_l(gmx_benzene_u_nk_fixture, method, size):
+    assert len(decorrelate_u_nk(gmx_benzene_u_nk_fixture, method=method,
+                                drop_duplicates=True,
+                                sort=True)) == size
+
+@pytest.mark.parametrize(('method', 'size'), [('dhdl', 501),
+                                              ('dhdl_all', 1001),
+                                              ('dE', 334)])
+def test_decorrelate_u_nk_multiple_l(gmx_ABFE_u_nk, method, size):
+    assert len(decorrelate_u_nk(gmx_ABFE_u_nk, method=method,)) == size
+
+def test_decorrelate_dhdl_single_l(gmx_benzene_u_nk_fixture):
+    assert len(decorrelate_dhdl(gmx_benzene_u_nk_fixture, drop_duplicates=True,
+                                sort=True)) == 2001
+
+def test_decorrelate_dhdl_multiple_l(gmx_ABFE_dhdl):
+    assert len(decorrelate_dhdl(gmx_ABFE_dhdl,)) == 501
+
+def test_raise_non_uk(gmx_ABFE_dhdl):
+    with pytest.raises(ValueError):
+        decorrelate_u_nk(gmx_ABFE_dhdl, )

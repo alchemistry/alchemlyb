@@ -7,6 +7,126 @@ from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
 
+def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
+                     sort=True, **kwargs):
+    """Subsample a u_nk DataFrame based on the selected method.
+
+    The method can be either 'dhdl_all' (obtained as a sum over all energy
+    components) or 'dhdl' (obtained as the energy components that are
+    changing; default) or 'dE'. In the latter case the energy differences
+    dE_{i,i+1} (dE_{i,i-1} for the last lambda) are used.
+
+    This is a wrapper function around the function
+    :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
+
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame to be subsampled according to the selected method.
+    method : {'dhdl', 'dhdl_all', 'dE'}
+        Method for decorrelating the data.
+    drop_duplicates : bool
+        Drop the duplicated lines based on time.
+    sort : bool
+        Sort the Dataframe based on the time column.
+    **kwargs :
+        Additional keyword arguments for
+        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
+
+    Returns
+    -------
+    DataFrame
+        `df` subsampled according to selected `method`.
+
+    Note
+    ----
+    The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
+    but can loose data.
+
+    .. versionadded:: 0.6.0
+    """
+    kwargs['drop_duplicates'] = drop_duplicates
+    kwargs['sort'] = sort
+
+    # Check if the input is u_nk
+    try:
+        key = df.index.values[0][1:]
+        if len(key) == 1:
+            key = key[0]
+        df[key]
+    except KeyError:
+        raise ValueError('The input should be u_nk')
+
+    if method == 'dhdl':
+        # Find the current column index
+        # Select the first row and remove the first column (Time)
+        key = df.index.values[0][1:]
+        if len(key) > 1:
+            # Multiple keys
+            series = df[key]
+        else:
+            # Single key
+            series = df[key[0]]
+    elif method == 'dhdl_all':
+        series = df.sum(axis=1)
+    elif method == 'dE':
+        # Using the same logic as alchemical-analysis
+        key = df.index.values[0][1:]
+        if len(key) == 1:
+            # For the case where there is a single lambda
+            index = df.columns.values.tolist().index(key[0])
+        else:
+            # For the case of more than 1 lambda
+            index = df.columns.values.tolist().index(key)
+            # for the state that is not the last state, take the state+1
+        if index + 1 < len(df.columns):
+            series = df.iloc[:, index + 1]
+            # for the state that is the last state, take the state-1
+        else:
+            series = df.iloc[:, index - 1]
+    else: # pragma: no cover
+        raise ValueError(
+            'Decorrelation method {} not found.'.format(method))
+    return statistical_inefficiency(df, series, **kwargs)
+
+def decorrelate_dhdl(df, drop_duplicates=True, sort=True, **kwargs):
+    """Subsample a dhdl DataFrame.
+
+    This is a wrapper function around the function
+    :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
+
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame to subsample according to the selected method.
+    drop_duplicates : bool
+        Drop the duplicated lines based on time.
+    sort : bool
+        Sort the Dataframe based on the time column.
+    **kwargs :
+        Additional keyword arguments for
+        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
+
+    Returns
+    -------
+    DataFrame
+        `df` subsampled.
+
+    Note
+    ----
+    The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
+    but can loose data.
+
+
+    .. versionadded:: 0.6.0
+    """
+
+    kwargs['drop_duplicates'] = drop_duplicates
+    kwargs['sort'] = sort
+
+    series = df.sum(axis=1)
+
+    return statistical_inefficiency(df, series, **kwargs)
 
 def _check_multiple_times(df):
     if isinstance(df, pd.Series):
@@ -55,7 +175,6 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
     df = df.dropna()
 
     return df
-
 
 def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
                              conservative=True, drop_duplicates=False, sort=False):

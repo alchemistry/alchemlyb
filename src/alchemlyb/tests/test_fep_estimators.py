@@ -106,6 +106,25 @@ def namd_tyr2ala():
 
     return u_nk
 
+def namd_idws():
+    dataset = alchemtest.namd.load_idws()
+    u_nk = namd.extract_u_nk(dataset['data']['forward'], T=300)
+
+    return u_nk
+
+def namd_idws_restarted():
+    dataset = alchemtest.namd.load_restarted()
+    u_nk = namd.extract_u_nk(dataset['data']['both'], T=300)
+
+    return u_nk
+
+def namd_idws_restarted_reversed():
+    dataset = alchemtest.namd.load_restarted_reversed()
+    u_nk = namd.extract_u_nk(dataset['data']['both'], T=300)
+
+    return u_nk
+
+
 class FEPestimatorMixin:
     """Mixin for all FEP Estimator test classes.
 
@@ -165,6 +184,9 @@ class TestBAR(FEPestimatorMixin):
                               (gmx_water_particle_without_energy, -11.660, 0.064914),
                               (amber_bace_example_complex_vdw, 2.37846, 0.050899),
                               (namd_tyr2ala, 11.0044, 0.10235),
+                              (namd_idws, 0.221147, 0.041003),
+                              (namd_idws_restarted, 7.081127, 0.0344211),
+                              (namd_idws_restarted_reversed, -4.18405, 0.03457),
                               (gomc_benzene_u_nk, -0.87095, 0.071263),
                     ])
     def X_delta_f(self, request):
