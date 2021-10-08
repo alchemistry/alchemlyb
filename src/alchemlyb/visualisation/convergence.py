@@ -1,21 +1,27 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 from matplotlib.font_manager import FontProperties as FP
 import numpy as np
 
-def plot_convergence(forward, forward_error, backward, backward_error,
-                     units='kT', ax=None):
+from ..postprocessors.units import get_unit_converter
+
+def plot_convergence(*data, units='kT', ax=None):
     """Plot the forward and backward convergence.
+
+    The input could be the result from
+    :func:`~alchemlyb.convergence.forward_backward_convergence` or it could
+    be given explicitly as `forward`, `forward_error`, `backward`,
+    `backward_error`. These four array_like objects should have the same
+    shape and can be used as input for the
+    :func:`matplotlib.pyplot.errorbar`.
 
     Parameters
     ----------
-    forward : List
-        A list of free energy estimate from the first X% of data.
-    forward_error : List
-        A list of error from the first X% of data.
-    backward : List
-        A list of free energy estimate from the last X% of data.
-    backward_error : List
-        A list of error from the last X% of data.
+    data : Dataframe or 4 array_like objects
+        Output Dataframe from
+        :func:`~alchemlyb.convergence.forward_backward_convergence`.
+        Or given explicitly as `forward`, `forward_error`, `backward`,
+        `backward_error` see :ref:`plot_convergence <plot_convergence>`.
     units : str
         The label for the unit of the estimate. Default: "kT"
     ax : matplotlib.axes.Axes
@@ -32,12 +38,31 @@ def plot_convergence(forward, forward_error, backward, backward_error,
     The code is taken and modified from
     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
-    The units variable is for labelling only. Changing it doesn't change the
-    unit of the underlying variable.
+    If `data` is not an :class:pandas.Dataframe` produced by
+    :func:`~alchemlyb.convergence.forward_backward_convergence`,
+    the unit will be adjusted according to the units
+    variable. Otherwise, the units variable is for labelling only.
+    Changing it doesn't change the unit of the underlying variable.
 
+
+    .. versionchanged:: 0.6.0
+        data now takes in dataframe
 
     .. versionadded:: 0.4.0
     """
+    if len(data) == 1 and isinstance(data[0], pd.DataFrame):
+        dataframe = get_unit_converter(units)(data[0])
+        forward = dataframe['Forward'].to_numpy()
+        forward_error = dataframe['Forward_Error'].to_numpy()
+        backward = dataframe['Backward'].to_numpy()
+        backward_error = dataframe['Backward_Error'].to_numpy()
+    else:
+        try:
+            forward, forward_error, backward, backward_error = data
+        except ValueError: # pragma: no cover
+            raise ValueError('Ensure all four of forward, forward_error, '
+                             'backward, backward_error are supplied.')
+
     if ax is None: # pragma: no cover
         fig, ax = plt.subplots(figsize=(8, 6))
 

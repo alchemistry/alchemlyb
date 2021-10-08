@@ -22,6 +22,9 @@ Changes
 Enhancements
   - support for Interleaved Double-Wide Sampling (IDWS) in NAMD (PR #135)
   - Convenience function for decorrelating u_nk and dHdl (PR #163).
+  - Time convergence function forward_backward_convergence
+  introduced and plot_convergence now takes dataframe from
+  forward_backward_convergence as input (PR #168).
 
 Fixes
   - Subsampling now works with bounds and step (PR #167, issue #166).
