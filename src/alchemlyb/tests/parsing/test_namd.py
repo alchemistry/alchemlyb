@@ -281,8 +281,34 @@ def test_u_nk_restarted():
     assert u_nk.shape == (30061, 11)
 
 
+def test_u_nk_restarted_missing_window_header(tmp_path):
+    """Test that u_nk has the correct form when a #NEW line is missing from the restarted dataset
+    and the parser has to infer lambda_idws for that window."""
+    filenames = sorted(load_restarted()['data']['both'])
+    # Remove "#NEW" line
+    filenames[4] = _corrupt_fepout(filenames[4], [('#NEW', lambda l: None),], tmp_path)
+
+    u_nk = extract_u_nk(filenames, T=300)
+    
+    assert u_nk.index.names == ['time', 'fep-lambda']
+    assert u_nk.shape == (30061, 11)
+
+
 def test_u_nk_restarted_reversed():
     filenames = load_restarted_reversed()['data']['both']
+    u_nk = extract_u_nk(filenames, T=300)
+    
+    assert u_nk.index.names == ['time', 'fep-lambda']
+    assert u_nk.shape == (30170, 11)
+
+
+def test_u_nk_restarted_reversed_missing_window_header(tmp_path):
+    """Test that u_nk has the correct form when a #NEW line is missing from the restarted_reversed dataset
+    and the parser has to infer lambda_idws for that window."""
+    filenames = sorted(load_restarted_reversed()['data']['both'])
+    # Remove "#NEW" line
+    filenames[4] = _corrupt_fepout(filenames[4], [('#NEW', lambda l: None),], tmp_path)
+
     u_nk = extract_u_nk(filenames, T=300)
     
     assert u_nk.index.names == ['time', 'fep-lambda']
