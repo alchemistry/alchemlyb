@@ -73,6 +73,9 @@ def _corrupt_fepout(fepout_in, params, tmp_path):
         a modified list of tokens that will be reassembled into the line to be
         output.
 
+        The function may return None if this line should not be written. This
+        can be used to delete lines from the fepout.
+
     Returns
     -------
     The name of a temporary file which pytest will unlink.
@@ -84,8 +87,10 @@ def _corrupt_fepout(fepout_in, params, tmp_path):
             for line in f_in:
                 for prefix, func in params:
                     if line.startswith(prefix):
-                        line = ' '.join(func(line.split())) + '\n'
-                f_out.write(line)
+                        tokens_out = func(line.split())
+                        line = ' '.join(tokens_out) + '\n' if tokens_out is not None else None
+                if line is not None:
+                    f_out.write(line)
     return str(fepout_out)
 
 
@@ -105,11 +110,13 @@ def restarted_dataset_inconsistent(restarted_dataset, tmp_path):
         return l
 
     for i in range(len(filenames)):
-        restarted_dataset['data']['both'][i] = \
-            _corrupt_fepout(filenames[i], [('#Free', func_free_line)], tmp_path)
+        filenames[i] = _corrupt_fepout(filenames[i], [('#Free', func_free_line)], tmp_path)
         # Only actually modify one window so we don't trigger the wrong exception
         if changed is True:
             break
+
+    # Don't directly modify the glob object
+    restarted_dataset['data']['both'] = filenames
 
     return restarted_dataset
 
@@ -170,9 +177,10 @@ def restarted_dataset_toomany_lambda2(restarted_dataset, tmp_path):
         return l
 
     for i in range(len(filenames)):
-        restarted_dataset['data']['both'][i] = \
+        filenames[i] = \
             _corrupt_fepout(filenames[i], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
 
+    restarted_dataset['data']['both'] = filenames
     return restarted_dataset
 
 
@@ -204,8 +212,9 @@ def restarted_dataset_toomany_lambda_idws(restarted_dataset, tmp_path):
         return l
 
     for i in range(len(filenames)):
-        restarted_dataset['data']['both'][i] = _corrupt_fepout(filenames[i], [('#NEW', func_new_line)], tmp_path)
+        filenames[i] = _corrupt_fepout(filenames[i], [('#NEW', func_new_line)], tmp_path)
 
+    restarted_dataset['data']['both'] = filenames
     return restarted_dataset
 
 
@@ -226,7 +235,38 @@ def restarted_dataset_direction_changed(restarted_dataset, tmp_path):
     # Reverse the direction of lambdas for this window
     idx_to_corrupt = filenames.index(sorted(filenames)[-3])
     fname1 = _corrupt_fepout(filenames[idx_to_corrupt], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
-    restarted_dataset['data']['both'][idx_to_corrupt] = fname1
+    filenames[idx_to_corrupt] = fname1
+    restarted_dataset['data']['both'] = filenames
+    return restarted_dataset
+
+
+@pytest.fixture
+def restarted_dataset_all_windows_truncated(restarted_dataset, tmp_path):
+    """Returns dataset where all windows are truncated (no #Free... footer lines)."""
+
+    filenames = sorted(restarted_dataset['data']['both'])
+
+    def func_free_line(l):
+        return None
+
+    for i in range(len(filenames)):
+        filenames[i] = _corrupt_fepout(filenames[i], [('#Free', func_free_line)], tmp_path)
+    
+    restarted_dataset['data']['both'] = filenames
+    return restarted_dataset
+
+
+@pytest.fixture
+def restarted_dataset_last_window_truncated(restarted_dataset, tmp_path):
+    """Returns dataset where the last window is truncated (no #Free... footer line)."""
+
+    filenames = sorted(restarted_dataset['data']['both'])
+
+    def func_free_line(l):
+        return None
+
+    filenames[-1] = _corrupt_fepout(filenames[-1], [('#Free', func_free_line)], tmp_path)
+    restarted_dataset['data']['both'] = filenames
     return restarted_dataset
 
 
@@ -288,3 +328,17 @@ def test_u_nk_restarted_toomany_lambda2(restarted_dataset_toomany_lambda2):
 
     with pytest.raises(ValueError, match='More than one lambda2 value for a particular lambda1'):
         u_nk = extract_u_nk(restarted_dataset_toomany_lambda2['data']['both'], T=300)
+
+
+def test_u_nk_restarted_all_windows_truncated(restarted_dataset_all_windows_truncated):
+    """Test that when there is more than one lambda2 for a given lambda1, parsing throws an error."""
+
+    with pytest.raises(ValueError, match='New window begun after truncated window'):
+        u_nk = extract_u_nk(restarted_dataset_all_windows_truncated['data']['both'], T=300)
+
+
+def test_u_nk_restarted_last_window_truncated(restarted_dataset_last_window_truncated):
+    """Test that when there is more than one lambda2 for a given lambda1, parsing throws an error."""
+
+    with pytest.raises(ValueError, match='Last window is truncated'):
+        u_nk = extract_u_nk(restarted_dataset_last_window_truncated['data']['both'], T=300)
