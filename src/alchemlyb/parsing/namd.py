@@ -50,7 +50,7 @@ def _get_lambdas(fep_files):
                 else:
                     # We only care about lines with lambda values. No need to
                     # do all that other processing below for every line
-                    continue
+                    continue # pragma: no cover
 
                 # Keep track of whether the lambda values are increasing or decreasing, so we can return
                 # a sorted list of the lambdas in the correct order.
