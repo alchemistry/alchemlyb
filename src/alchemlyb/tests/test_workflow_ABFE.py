@@ -17,7 +17,7 @@ class Test_automatic_ABFE():
                         prefix='dhdl', suffix='xvg', T=310, skiptime=10,
                         uncorr='dhdl', threshold=50,
                         methods=('mbar', 'bar', 'ti'), out='./',
-                        resultfilename='result.out', overlap='O_MBAR.pdf',
+                        overlap='O_MBAR.pdf',
                         breakdown=True, forwrev=10, log='result.log')
         return workflow
 
@@ -41,13 +41,6 @@ class Test_automatic_ABFE():
         assert 'mbar' in workflow.estimator
         assert 'ti' in workflow.estimator
         assert 'bar' in workflow.estimator
-
-    def test_write(self, workflow):
-        '''test if the result has been written.'''
-        with open('result.out', 'r') as f:
-            text = f.read()
-        assert len(text.split('\n')) == 37
-        os.remove('result.out')
 
     def test_O_MBAR(self, workflow):
         '''test if the O_MBAR.pdf has been plotted.'''
@@ -85,7 +78,6 @@ class Test_manual_ABFE():
         workflow.update_units('kcal/mol')
         workflow.preprocess(skiptime=10, uncorr='dhdl', threshold=50)
         workflow.estimate(methods=('mbar', 'bar', 'ti'))
-        workflow.write(resultfilename='result.out')
         workflow.plot_overlap_matrix(overlap='O_MBAR.pdf')
         workflow.plot_ti_dhdl(dhdl_TI='dhdl_TI.pdf')
         workflow.plot_dF_state(dF_state='dF_state.pdf')
@@ -112,13 +104,6 @@ class Test_manual_ABFE():
         assert 'mbar' in workflow.estimator
         assert 'ti' in workflow.estimator
         assert 'bar' in workflow.estimator
-
-    def test_write(self, workflow):
-        '''test if the result has been written.'''
-        with open('result.out', 'r') as f:
-            text = f.read()
-        assert len(text.split('\n')) == 37
-        os.remove('result.out')
 
     def test_O_MBAR(self, workflow):
         '''test if the O_MBAR.pdf has been plotted.'''
@@ -170,7 +155,7 @@ class Test_automatic_benzene():
                         prefix='dhdl', suffix='bz2', T=310, skiptime=0,
                         uncorr='dhdl', threshold=50,
                         methods=('mbar', 'bar', 'ti'), out='./',
-                        resultfilename='result.out', overlap='O_MBAR.pdf',
+                        overlap='O_MBAR.pdf',
                         breakdown=True, forwrev=10, log='result.log')
         return workflow
 
@@ -187,13 +172,6 @@ class Test_automatic_benzene():
         assert 'mbar' in workflow.estimator
         assert 'ti' in workflow.estimator
         assert 'bar' in workflow.estimator
-
-    def test_write(self, workflow):
-        '''test if the result has been written.'''
-        with open('result.out', 'r') as f:
-            text = f.read()
-        assert len(text.split('\n')) == 10
-        os.remove('result.out')
 
     def test_O_MBAR(self, workflow):
         '''test if the O_MBAR.pdf has been plotted.'''
@@ -249,18 +227,10 @@ Where only fep-lambda changes but the bonded-lambda is always 0.
             dHdl.set_index('bound-lambda', append=True, inplace=True)
 
         workflow.estimate(methods=('ti', ))
-        workflow.write(resultfilename='result.out')
         workflow.plot_ti_dhdl(dhdl_TI='dhdl_TI.pdf')
         workflow.plot_dF_state(dF_state='dF_state.pdf')
         workflow.check_convergence(10, dF_t='dF_t.pdf', estimator='ti')
         return workflow
-
-    def test_write(self, workflow):
-        '''test if the result has been written.'''
-        with open('result.out', 'r') as f:
-            text = f.read()
-        assert len(text.split('\n')) == 11
-        os.remove('result.out')
 
     def test_dhdl_TI(self, workflow):
         '''test if the dhdl_TI.pdf has been plotted.'''

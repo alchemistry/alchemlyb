@@ -50,8 +50,6 @@ class ABFE():
     out : str
         Directory in which the output files produced by this script will be
         stored. Default: os.path.curdir.
-    resultfilename : str
-        custom defined result filename. Default: None. (not writing the result)
     overlap : str
         The filename for the plot of overlap matrix. Default: None. (not
         plotting).
@@ -82,7 +80,7 @@ class ABFE():
     '''
     def __init__(self, units='kT', software='Gromacs', dir=os.path.curdir,
                  prefix='dhdl', suffix='xvg', T=298, skiptime=0, uncorr=None,
-                 threshold=50, methods=None, out=os.path.curdir, resultfilename=None,
+                 threshold=50, methods=None, out=os.path.curdir,
                  overlap=None, breakdown=None, forwrev=None,
                  log='result.log'):
 
@@ -161,9 +159,6 @@ class ABFE():
                                threshold=threshold)
         if methods is not None:
             self.estimate(methods)
-
-        if resultfilename is not None:
-            self.write(resultfilename=resultfilename)
 
         if overlap is not None:
             self.plot_overlap_matrix(overlap)
@@ -330,30 +325,63 @@ class ABFE():
                 self.logger.warning(
                     '{} is not a valid estimator.'.format(estimator))
 
-    def write(self, resultfilename='result.out'):
-        '''Write the result into a text file.
+    def generate_result(self):
+        '''Summarise the result into a dataframe.
 
-        Parameters
-        ----------
-        resultfilename : str
-            A list of the methods to esitimate the free energy with. Default:
-            ['TI', 'BAR', 'MBAR'].
+        Returns
+        -------
+        DataFrame
+            The DataFrame with convergence data. ::
+
+                                      MBAR  MBAR_Error        BAR  BAR_Error         TI  TI_Error
+                States 0 -- 1     0.065967    0.001293   0.066544   0.001661   0.066663  0.001675
+                       1 -- 2     0.089774    0.001398   0.089303   0.002101   0.089566  0.002144
+                       2 -- 3     0.132036    0.001638   0.132687   0.002990   0.133292  0.003055
+                       3 -- 4     0.116494    0.001213   0.116348   0.002691   0.116845  0.002750
+                       4 -- 5     0.105251    0.000980   0.106344   0.002337   0.106603  0.002362
+                       5 -- 6     0.349320    0.002781   0.343399   0.006839   0.350568  0.007393
+                       6 -- 7     0.402346    0.002767   0.391368   0.006641   0.395754  0.006961
+                       7 -- 8     0.322284    0.002058   0.319395   0.005333   0.321542  0.005434
+                       8 -- 9     0.434999    0.002683   0.425680   0.006823   0.430251  0.007155
+                       9 -- 10    0.355672    0.002219   0.350564   0.005472   0.352745  0.005591
+                       10 -- 11   3.574227    0.008744   3.513595   0.018711   3.514790  0.018078
+                       11 -- 12   2.896685    0.009905   2.821760   0.017844   2.823210  0.018088
+                       12 -- 13   2.223769    0.011229   2.188885   0.018438   2.189784  0.018478
+                       13 -- 14   1.520978    0.012526   1.493598   0.019155   1.490070  0.019288
+                       14 -- 15   0.911279    0.009527   0.894878   0.015023   0.896010  0.015140
+                       15 -- 16   0.892365    0.010558   0.886706   0.015260   0.884698  0.015392
+                       16 -- 17   1.737971    0.025315   1.720643   0.031416   1.741028  0.030624
+                       17 -- 18   1.790706    0.025560   1.788112   0.029435   1.801695  0.029244
+                       18 -- 19   1.998635    0.023340   2.007404   0.027447   2.019213  0.027096
+                       19 -- 20   2.263475    0.020286   2.265322   0.025023   2.282040  0.024566
+                       20 -- 21   2.565680    0.016695   2.561324   0.023611   2.552977  0.023753
+                       21 -- 22   1.384094    0.007553   1.385837   0.011672   1.381999  0.011991
+                       22 -- 23   1.428567    0.007504   1.422689   0.012524   1.416010  0.013012
+                       23 -- 24   1.440581    0.008059   1.412517   0.013125   1.408267  0.013539
+                       24 -- 25   1.411329    0.009022   1.419167   0.013356   1.411446  0.013795
+                       25 -- 26   1.340320    0.010167   1.360679   0.015213   1.356953  0.015260
+                       26 -- 27   1.243745    0.011239   1.245873   0.015711   1.248959  0.015762
+                       27 -- 28   1.128429    0.012859   1.124554   0.016999   1.121892  0.016962
+                       28 -- 29   1.010313    0.016442   1.005444   0.017692   1.019747  0.017257
+                Stages coul      10.215658    0.033903  10.017838   0.041839  10.017854  0.048744
+                       vdw       22.547489    0.098699  22.501150   0.060092  22.542936  0.106723
+                       bonded     2.374144    0.014995   2.341631   0.005507   2.363828  0.021078
+                       TOTAL     35.137291    0.103580  34.860619   0.087022  34.924618  0.119206
+
         '''
 
         # Write estimate
-        self.logger.info('Write the estimate as txt file to {} under {} '
-                         'with unit {}.'.format(
-            resultfilename, self.out, self.units))
+        self.logger.info('Summarise the estimate into a dataframe.')
         # Make the header name
-        self.logger.info('Write the header names.')
-        result_out = [['------------', ],
-                      ['   States   ', ],
-                      ['------------', ],]
+        self.logger.info('Generate the row names.')
         eitimator_names = list(self.estimator.keys())
         num_states = len(self.estimator[eitimator_names[0]].states_)
+        data_dict = {'name': [],
+                     'state': []}
         for i in range(num_states - 1):
-            result_out.append([str(i).rjust(4) + ' -- ' + str(i+1).ljust(4), ])
-        result_out.append(['------------', ])
+            data_dict['name'].append(str(i) + ' -- ' + str(i+1))
+            data_dict['state'].append('States')
+
         try:
             u_nk = self.u_nk_list[0]
             stages = u_nk.reset_index('time').index.names
@@ -367,31 +395,34 @@ class ABFE():
                 stages = []
                 self.logger.warning('No stage name found in dHdl or u_nk')
         for stage in stages:
-            result_out.append([stage.split('-')[0][:9].rjust(9)+':  ', ])
-        result_out.append(['TOTAL'.rjust(9) + ':  ', ])
+            data_dict['name'].append(stage.split('-')[0])
+            data_dict['state'].append('Stages')
+        data_dict['name'].append('TOTAL')
+        data_dict['state'].append('Stages')
 
         converter = get_unit_converter(self.units)
+        col_names = []
         for estimator_name, estimator in self.estimator.items():
-            self.logger.info('write the result from estimator {}'.format(
+            self.logger.info('Read the results from estimator {}'.format(
                 estimator_name))
 
             # Do the unit conversion
             delta_f_ = converter(estimator.delta_f_)
             d_delta_f_ = converter(estimator.d_delta_f_)
             # Write the estimator header
-            result_out[0].append('---------------------')
-            result_out[1].append('{} ({}) '.format(
-                estimator_name.upper(), self.units).rjust(21))
-            result_out[2].append('---------------------')
+
+            col_names.append(estimator_name.upper())
+            col_names.append(estimator_name.upper() + '_Error')
+            data_dict[estimator_name.upper()] = []
+            data_dict[estimator_name.upper() + '_Error'] = []
             for index in range(1, num_states):
-                result_out[2+index].append('{:.3f}  +-  {:.3f}'.format(
-                    delta_f_.iloc[index-1, index],
-                    d_delta_f_.iloc[index-1, index]
-                ).rjust(21))
+                data_dict[estimator_name.upper()].append(
+                    delta_f_.iloc[index-1, index])
+                data_dict[estimator_name.upper() + '_Error'].append(
+                    d_delta_f_.iloc[index - 1, index])
 
-            result_out[2+num_states].append('---------------------')
-
-            self.logger.info('write the staged result from estimator {}'.format(
+            self.logger.info('Generate the staged result from estimator {'
+                             '}'.format(
                 estimator_name))
             for index, stage in enumerate(stages):
                 if len(stages) == 1:
@@ -423,8 +454,8 @@ class ABFE():
                     error = np.sqrt(sum(
                         [d_delta_f_.iloc[start, start+1]**2
                          for i in range(start, end + 1)]))
-                result_out[3 + num_states + index].append(
-                    '{:.3f}  +-  {:.3f}'.format(result, error,).rjust(21))
+                data_dict[estimator_name.upper()].append(result)
+                data_dict[estimator_name.upper() + '_Error'].append(error)
 
             # Total result
             result = delta_f_.iloc[0, -1]
@@ -434,12 +465,21 @@ class ABFE():
                 error = np.sqrt(sum(
                     [d_delta_f_.iloc[i, i + 1] ** 2
                      for i in range(num_states - 1)]))
-            result_out[3 + num_states + len(stages)].append(
-                '{:.3f}  +-  {:.3f}'.format(result, error, ).rjust(21))
-        self.logger.info('Write results:\n'+
-                         '\n'.join([' '.join(line) for line in result_out]))
-        with open(join(self.out, resultfilename), 'w') as f:
-            f.write('\n'.join([' '.join(line) for line in result_out]))
+            data_dict[estimator_name.upper()].append(result)
+            data_dict[estimator_name.upper() + '_Error'].append(error)
+        summary = pd.DataFrame.from_dict(data_dict)
+
+        summary = summary.set_index(['state', 'name'])
+        # Make sure that the columns are in the right order
+        summary = summary[col_names]
+        # Remove the name of the index column to make it prettier
+        summary.index.names = [None, None]
+
+        summary.attrs = estimator.delta_f_.attrs
+
+        self.summary = summary
+        self.logger.info('Write results:\n{}'.format(summary.to_string()))
+        return summary
 
     def plot_overlap_matrix(self, overlap='O_MBAR.pdf', ax=None):
         '''Plot the overlap matrix for MBAR estimator using
