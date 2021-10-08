@@ -45,7 +45,7 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
 
     .. versionadded:: 0.6.0
     '''
-    logger = logging.getLogger('alchemlyb.postprocessors.'
+    logger = logging.getLogger('alchemlyb.convergence.'
                                'forward_backward_convergence')
     logger.info('Start convergence analysis.')
     logger.info('Check data availability.')
