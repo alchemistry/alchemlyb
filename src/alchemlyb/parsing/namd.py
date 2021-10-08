@@ -3,6 +3,7 @@
 """
 import pandas as pd
 import numpy as np
+from os.path import basename
 import logging
 from .util import anyopen
 from . import _init_attrs
@@ -36,7 +37,7 @@ def _get_lambdas(fep_files):
     is_ascending = set()
     endpoint_windows = []
 
-    for fep_file in sorted(fep_files):
+    for fep_file in sorted(fep_files, key=basename):
         with anyopen(fep_file, 'r') as f:
             for line in f:
                 l = line.strip().split()
@@ -150,7 +151,8 @@ def extract_u_nk(fep_files, T):
     # We keep track of which lambda window we're in, but since it can span multiple files,
     # only reset these variables here and after the end of each window
     lambda1_at_start, lambda2_at_start, lambda_idws_at_start = None, None, None
-    for fep_file in sorted(fep_files):
+
+    for fep_file in sorted(fep_files, key=basename):
         # Note we have not set parsing=False because we could be continuing one window across
         # more than one fepout file
         with anyopen(fep_file, 'r') as f:
@@ -168,6 +170,11 @@ def extract_u_nk(fep_files, T):
                 # within the same file, then complain. This can happen if truncated fepout files
                 # are presented in the wrong order.
                 if l[0] == '#NEW':
+                    if parsing:
+                        logger.error(f'Window with lambda1: {lambda1_at_start} lambda2: {lambda2_at_start} lambda_idws: {lambda_idws_at_start} appears truncated')
+                        logger.error(f'because a new window was encountered in {fep_file} before the previous one finished.')
+                        raise ValueError('New window begun after truncated window')
+
                     lambda1_at_start, lambda2_at_start = float(l[6]), float(l[8])
                     lambda_idws_at_start = float(l[10]) if 'LAMBDA_IDWS' in l else None
                     has_idws = True if lambda_idws_at_start is not None else False
@@ -264,6 +271,8 @@ def extract_u_nk(fep_files, T):
 
     if len(win_de) != 0 or len(win_de_back) != 0: # pragma: no cover
         logger.warning('Trailing data without footer line (\"#Free energy...\"). Interrupted run?')
+        raise ValueError('Last window is truncated')
+
 
     if lambda2 in (0.0, 1.0):
         # this excludes the IDWS case where a dataframe already exists for both endpoints
