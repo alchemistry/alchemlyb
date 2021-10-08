@@ -115,6 +115,7 @@ def extract_u_nk(fep_files, T):
     If the number of forward and backward samples in a given window are different,
     the extra sample(s) will be discarded. This is typically zero or one sample.
 
+
     .. versionchanged:: 0.5.0
         The :mod:`scipy.constants` is used for parsers instead of
         the constants used by the corresponding MD engine.
