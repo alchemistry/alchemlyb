@@ -11,7 +11,14 @@ def plot_convergence(*data, units='kT', ax=None):
     The input could be the result from
     :func:`~alchemlyb.convergence.forward_backward_convergence` or it could
     be given explicitly as `forward`, `forward_error`, `backward`,
-    `backward_error`. These four array_like objects should have the same
+    `backward_error`.
+
+    `forward`: A list of free energy estimate from the first X% of data,
+    where `forward_error` is the corresponding error.
+    `backward`: A list of free energy estimate from the last X% of data.,
+    where `backward_error` is the corresponding error.
+
+    These four array_like objects should have the same
     shape and can be used as input for the
     :func:`matplotlib.pyplot.errorbar`.
 
