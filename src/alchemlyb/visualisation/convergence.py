@@ -15,6 +15,7 @@ def plot_convergence(*data, units='kT', ax=None):
 
     `forward`: A list of free energy estimate from the first X% of data,
     where `forward_error` is the corresponding error.
+    
     `backward`: A list of free energy estimate from the last X% of data.,
     where `backward_error` is the corresponding error.
 
