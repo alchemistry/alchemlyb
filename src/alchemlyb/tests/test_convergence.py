@@ -39,5 +39,5 @@ def test_convergence_bar(gmx_benzene):
 
 def test_convergence_wrong_estimator(gmx_benzene):
     dHdl, u_nk = gmx_benzene
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="{} is not a valid estimator".format("www")):
         convergence = forward_backward_convergence(u_nk, 'www')
