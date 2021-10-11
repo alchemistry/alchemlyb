@@ -4,6 +4,7 @@
 import pandas as pd
 import numpy as np
 from os.path import basename
+from re import split
 import logging
 from .util import anyopen
 from . import _init_attrs
@@ -12,6 +13,15 @@ from ..postprocessors.units import R_kJmol, kJ2kcal
 logger = logging.getLogger("alchemlyb.parsers.NAMD")
 
 k_b = R_kJmol * kJ2kcal
+
+
+def _filename_sort_key(s):
+    """Key for natural-sorting filenames, ignoring the path.
+
+    This means that unlike with the standard Python sorted() function, "foo9" < "foo10".
+    """
+
+    return [int(t) if t.isdigit() else t.lower() for t in split(r'(\d+)', basename(s))]
 
 
 def _get_lambdas(fep_files):
@@ -37,7 +47,7 @@ def _get_lambdas(fep_files):
     is_ascending = set()
     endpoint_windows = []
 
-    for fep_file in sorted(fep_files, key=basename):
+    for fep_file in sorted(fep_files, key=_filename_sort_key):
         with anyopen(fep_file, 'r') as f:
             for line in f:
                 l = line.strip().split()
@@ -102,7 +112,17 @@ def extract_u_nk(fep_files, T):
     Parameters
     ----------
     fep_file : str or list of str
-        Path to fepout file(s) to extract data from.
+        Path to fepout file(s) to extract data from. These are sorted by filename,
+        not including the path, prior to processing, using natural-sort. This way,
+        filenames including numbers without leading zeros are handled intuitively.
+
+        Windows may be split across files, or more than one window may be present
+        in a given file. Windows without footer lines (which may be in a different
+        file than the respective header lines) will raise an error. This means that
+        while windows may have been interrupted and restarted, they must be
+        complete. Lambda values are expected to increase or decrease monotonically,
+        and match between header and footer of each window.
+
     T : float
         Temperature in Kelvin at which the simulation was sampled.
 
@@ -122,7 +142,8 @@ def extract_u_nk(fep_files, T):
         the constants used by the corresponding MD engine.
 
     .. versionchanged:: 0.6.0
-        Support for Interleaved Double-Wide Sampling files added.
+        Support for Interleaved Double-Wide Sampling files added, with various
+        robustness checks.
 
         `fep_files` can now be a list of filenames.
     """
@@ -152,7 +173,7 @@ def extract_u_nk(fep_files, T):
     # only reset these variables here and after the end of each window
     lambda1_at_start, lambda2_at_start, lambda_idws_at_start = None, None, None
 
-    for fep_file in sorted(fep_files, key=basename):
+    for fep_file in sorted(fep_files, key=_filename_sort_key):
         # Note we have not set parsing=False because we could be continuing one window across
         # more than one fepout file
         with anyopen(fep_file, 'r') as f:
