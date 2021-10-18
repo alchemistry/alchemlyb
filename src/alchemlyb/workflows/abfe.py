@@ -161,16 +161,22 @@ class ABFE():
             self.estimate(methods)
 
         if overlap is not None:
-            self.plot_overlap_matrix(overlap)
+            ax = self.plot_overlap_matrix(overlap)
+            plt.close(ax.figure)
 
         if breakdown:
-            self.plot_ti_dhdl()
-            self.plot_dF_state()
-            self.plot_dF_state(dF_state='dF_state_long.pdf',
-                               orientation='landscape')
+            ax = self.plot_ti_dhdl()
+            plt.close(ax.figure)
+            fig = self.plot_dF_state()
+            plt.close(fig)
+            fig = self.plot_dF_state(dF_state='dF_state_long.pdf',
+                                    orientation='landscape')
+            plt.close(fig)
 
         if forwrev is not None:
-            self.check_convergence(forwrev, estimator='mbar', dF_t='dF_t.pdf')
+            ax = self.check_convergence(forwrev, estimator='mbar', dF_t='dF_t.pdf')
+            plt.close(ax.figure)
+
 
     def update_units(self, units):
         '''Update the plot and text output to the selected unit.
@@ -400,15 +406,14 @@ class ABFE():
         data_dict['name'].append('TOTAL')
         data_dict['state'].append('Stages')
 
-        converter = get_unit_converter(self.units)
         col_names = []
         for estimator_name, estimator in self.estimator.items():
             self.logger.info('Read the results from estimator {}'.format(
                 estimator_name))
 
             # Do the unit conversion
-            delta_f_ = converter(estimator.delta_f_)
-            d_delta_f_ = converter(estimator.d_delta_f_)
+            delta_f_ = estimator.delta_f_
+            d_delta_f_ = estimator.d_delta_f_
             # Write the estimator header
 
             col_names.append(estimator_name.upper())
@@ -476,7 +481,8 @@ class ABFE():
         summary.index.names = [None, None]
 
         summary.attrs = estimator.delta_f_.attrs
-
+        converter = get_unit_converter(self.units)
+        summary = converter(summary)
         self.summary = summary
         self.logger.info('Write results:\n{}'.format(summary.to_string()))
         return summary
@@ -540,6 +546,7 @@ class ABFE():
             ax.figure.savefig(join(self.out, dhdl_TI))
             self.logger.info('Plot TI dHdl to {} under {}.'
                              ''.format(dhdl_TI, self.out))
+            return ax
 
     def plot_dF_state(self, dF_state='dF_state.pdf', labels=None, colors=None,
                       orientation='portrait', nb=10):
@@ -571,6 +578,7 @@ class ABFE():
         fig.savefig(join(self.out, dF_state))
         self.logger.info('Plot dF state to {} under {}.'
                          ''.format(dF_state, self.out))
+        return fig
 
     def check_convergence(self, forwrev, estimator='mbar', dF_t='dF_t.pdf',
                      ax=None):
