@@ -4,6 +4,7 @@ from glob import glob
 import pandas as pd
 import numpy as np
 import logging
+import matplotlib.pyplot as plt
 
 from ..parsing import gmx
 from ..preprocessing.subsampling import decorrelate_dhdl, decorrelate_u_nk
