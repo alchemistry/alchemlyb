@@ -3,6 +3,8 @@
 """
 import pandas as pd
 import numpy as np
+from os.path import basename
+from re import split
 import logging
 from .util import anyopen
 from . import _init_attrs
@@ -11,6 +13,15 @@ from ..postprocessors.units import R_kJmol, kJ2kcal
 logger = logging.getLogger("alchemlyb.parsers.NAMD")
 
 k_b = R_kJmol * kJ2kcal
+
+
+def _filename_sort_key(s):
+    """Key for natural-sorting filenames, ignoring the path.
+
+    This means that unlike with the standard Python sorted() function, "foo9" < "foo10".
+    """
+
+    return [int(t) if t.isdigit() else t.lower() for t in split(r'(\d+)', basename(s))]
 
 
 def _get_lambdas(fep_files):
@@ -36,7 +47,7 @@ def _get_lambdas(fep_files):
     is_ascending = set()
     endpoint_windows = []
 
-    for fep_file in sorted(fep_files):
+    for fep_file in sorted(fep_files, key=_filename_sort_key):
         with anyopen(fep_file, 'r') as f:
             for line in f:
                 l = line.strip().split()
@@ -101,7 +112,17 @@ def extract_u_nk(fep_files, T):
     Parameters
     ----------
     fep_file : str or list of str
-        Path to fepout file(s) to extract data from.
+        Path to fepout file(s) to extract data from. These are sorted by filename,
+        not including the path, prior to processing, using natural-sort. This way,
+        filenames including numbers without leading zeros are handled intuitively.
+
+        Windows may be split across files, or more than one window may be present
+        in a given file. Windows without footer lines (which may be in a different
+        file than the respective header lines) will raise an error. This means that
+        while windows may have been interrupted and restarted, they must be
+        complete. Lambda values are expected to increase or decrease monotonically,
+        and match between header and footer of each window.
+
     T : float
         Temperature in Kelvin at which the simulation was sampled.
 
@@ -121,7 +142,8 @@ def extract_u_nk(fep_files, T):
         the constants used by the corresponding MD engine.
 
     .. versionchanged:: 0.6.0
-        Support for Interleaved Double-Wide Sampling files added.
+        Support for Interleaved Double-Wide Sampling files added, with various
+        robustness checks.
 
         `fep_files` can now be a list of filenames.
     """
@@ -150,7 +172,8 @@ def extract_u_nk(fep_files, T):
     # We keep track of which lambda window we're in, but since it can span multiple files,
     # only reset these variables here and after the end of each window
     lambda1_at_start, lambda2_at_start, lambda_idws_at_start = None, None, None
-    for fep_file in sorted(fep_files):
+
+    for fep_file in sorted(fep_files, key=_filename_sort_key):
         # Note we have not set parsing=False because we could be continuing one window across
         # more than one fepout file
         with anyopen(fep_file, 'r') as f:
@@ -168,6 +191,11 @@ def extract_u_nk(fep_files, T):
                 # within the same file, then complain. This can happen if truncated fepout files
                 # are presented in the wrong order.
                 if l[0] == '#NEW':
+                    if parsing:
+                        logger.error(f'Window with lambda1: {lambda1_at_start} lambda2: {lambda2_at_start} lambda_idws: {lambda_idws_at_start} appears truncated')
+                        logger.error(f'because a new window was encountered in {fep_file} before the previous one finished.')
+                        raise ValueError('New window begun after truncated window')
+
                     lambda1_at_start, lambda2_at_start = float(l[6]), float(l[8])
                     lambda_idws_at_start = float(l[10]) if 'LAMBDA_IDWS' in l else None
                     has_idws = True if lambda_idws_at_start is not None else False
@@ -264,6 +292,8 @@ def extract_u_nk(fep_files, T):
 
     if len(win_de) != 0 or len(win_de_back) != 0: # pragma: no cover
         logger.warning('Trailing data without footer line (\"#Free energy...\"). Interrupted run?')
+        raise ValueError('Last window is truncated')
+
 
     if lambda2 in (0.0, 1.0):
         # this excludes the IDWS case where a dataframe already exists for both endpoints
