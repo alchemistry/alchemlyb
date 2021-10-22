@@ -56,9 +56,6 @@ def plot_convergence(*data, units='kT', ax=None):
     .. versionchanged:: 0.6.0
         data now takes in dataframe
 
-    .. versionchanged:: 0.6.0
-        data now takes in dataframe
-
     .. versionadded:: 0.4.0
     """
     if len(data) == 1 and isinstance(data[0], pd.DataFrame):
