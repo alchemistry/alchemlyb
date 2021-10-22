@@ -20,11 +20,15 @@ The rules for this file:
 Changes
 
 Enhancements
-  - support for Interleaved Double-Wide Sampling (IDWS) in NAMD (PR #135)
+  - support for Interleaved Double-Wide Sampling (IDWS) in NAMD (PR #135).
+    Windows may be split across NAMD .fepout files, allowing for interrupted
+    and restarted simulations, but each window must be complete (issue #145).
+    Various malformations of input files are detected, where lambdas do not
+    monotonically increase or decrease, or are inconsistent or missing.
   - Convenience function for decorrelating u_nk and dHdl (PR #163).
   - Time convergence function forward_backward_convergence
-  introduced and plot_convergence now takes dataframe from
-  forward_backward_convergence as input (PR #168).
+    introduced and plot_convergence now takes dataframe from
+    forward_backward_convergence as input (PR #168).
 
 Fixes
   - Subsampling now works with bounds and step (PR #167, issue #166).
