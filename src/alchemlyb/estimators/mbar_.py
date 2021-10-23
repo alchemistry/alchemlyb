@@ -49,7 +49,6 @@ class MBAR(BaseEstimator):
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
                  initial_f_k=None, method='hybr', verbose=False):
-
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
         self.initial_f_k = initial_f_k
@@ -73,50 +72,73 @@ class MBAR(BaseEstimator):
         """
         # sort by state so that rows from same state are in contiguous blocks
         u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
-        
+
         groups = u_nk.groupby(level=u_nk.index.names[1:])
-        N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in u_nk.columns]        
-        
+        N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in
+               u_nk.columns]
+        self.states_ = u_nk.columns.values.tolist()
+
         # Prepare the solver_protocol as stated in https://github.com/choderalab/pymbar/issues/419#issuecomment-803714103
         solver_options = {"maximum_iterations": self.maximum_iterations,
                           "verbose": self.verbose}
         solver_protocol = {"method": self.method,
                            "options": solver_options}
-        self._mbar = MBAR_(u_nk.T, N_k,
-                           relative_tolerance=self.relative_tolerance,
-                           initial_f_k=self.initial_f_k,
-                           solver_protocol=(solver_protocol,))
 
-        self.states_ = u_nk.columns.values.tolist()
+        self._mbar, out = self._do_MBAR(u_nk, N_k, solver_protocol)
 
-        # set attributes
-        out = self._mbar.getFreeEnergyDifferences(return_theta=True)
         free_energy_differences = [pd.DataFrame(i,
-                                   columns=self.states_,
-                                   index=self.states_) for i in out]
+                                                columns=self.states_,
+                                                index=self.states_) for i in
+                                   out]
 
         (self.delta_f_, self.d_delta_f_, self.theta_) = free_energy_differences
 
         self.delta_f_.attrs = u_nk.attrs
         self.d_delta_f_.attrs = u_nk.attrs
-        
+
         return self
 
     def predict(self, u_ln):
         pass
 
+    def _do_MBAR(self, u_nk, N_k, solver_protocol):
+        mbar = MBAR_(u_nk.T, N_k,
+                     relative_tolerance=self.relative_tolerance,
+                     initial_f_k=self.initial_f_k,
+                     solver_protocol=(solver_protocol,))
+
+        # set attributes
+        out = mbar.getFreeEnergyDifferences(return_theta=True)
+        return mbar, out
+
     @property
     def overlap_matrix(self):
         r"""MBAR overlap matrix.
-        
-        The estimated state overlap matrix :math:`O_{ij}` is an estimate of the probability 
+
+        The estimated state overlap matrix :math:`O_{ij}` is an estimate of the probability
         of observing a sample from state :math:`i` in state :math:`j`.
-        
+
         The :attr:`overlap_matrix` is computed on-the-fly. Assign it to a variable if
         you plan to re-use it.
-        
+
         See Also
         ---------
         pymbar.mbar.MBAR.computeOverlap
         """
         return self._mbar.computeOverlap()['matrix']
+
+
+class AutoMBAR(MBAR):
+    def _do_MBAR(self, u_nk, N_k, solver_protocol):
+        # Try the fastest method first
+        try:
+            solver_protocol["method"] = 'hybr'
+            mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
+        except:
+            try:
+                solver_protocol["method"] = 'adaptive'
+                mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
+            except:
+                solver_protocol["method"] = 'BFGS'
+                mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
+        return mbar, out

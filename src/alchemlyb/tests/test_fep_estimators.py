@@ -8,7 +8,7 @@ import pandas as pd
 
 import alchemlyb
 from alchemlyb.parsing import gmx, amber, namd, gomc
-from alchemlyb.estimators import MBAR, BAR
+from alchemlyb.estimators import MBAR, BAR, AutoMBAR
 import alchemtest.gmx
 import alchemtest.amber
 import alchemtest.gomc
@@ -166,6 +166,8 @@ class TestMBAR(FEPestimatorMixin):
     def test_mbar(self, X_delta_f):
         self.compare_delta_f(X_delta_f)
 
+class TestAutoMBAR(TestMBAR):
+    cls = AutoMBAR
 
 class TestBAR(FEPestimatorMixin):
     """Tests for BAR.
