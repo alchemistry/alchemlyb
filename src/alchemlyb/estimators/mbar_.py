@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 
 from pymbar import MBAR as MBAR_
-
+import pymbar
 
 class MBAR(BaseEstimator):
     """Multi-state Bennett acceptance ratio (MBAR).
@@ -134,11 +134,11 @@ class AutoMBAR(MBAR):
         try:
             solver_protocol["method"] = 'hybr'
             mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
-        except:
+        except pymbar.utils.ParameterError:
             try:
                 solver_protocol["method"] = 'adaptive'
                 mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
-            except:
+            except pymbar.utils.ParameterError:
                 solver_protocol["method"] = 'BFGS'
                 mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
         return mbar, out
