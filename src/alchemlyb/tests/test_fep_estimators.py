@@ -13,7 +13,7 @@ import alchemtest.gmx
 import alchemtest.amber
 import alchemtest.gomc
 import alchemtest.namd
-from alchemtest.gmx import load_benzene
+from alchemtest.gmx import load_benzene, load_ABFE
 from alchemlyb.parsing.gmx import extract_u_nk
 
 def gmx_benzene_coul_u_nk():
@@ -168,6 +168,19 @@ class TestMBAR(FEPestimatorMixin):
 
 class TestAutoMBAR(TestMBAR):
     cls = AutoMBAR
+
+class TestMBAR_fail():
+    @pytest.fixture(scope="class")
+    def n_uk_list(self):
+        n_uk_list = [gmx.extract_u_nk(dhdl, T=300) for dhdl in
+                     load_ABFE()['data']['complex']]
+        return n_uk_list
+
+    def test_failback_adaptive(self, n_uk_list):
+        # The hybr will fail on this while adaptive will work
+        mbar = AutoMBAR().fit(alchemlyb.concat([n_uk[:2] for n_uk in
+                                                n_uk_list]))
+
 
 class TestBAR(FEPestimatorMixin):
     """Tests for BAR.
