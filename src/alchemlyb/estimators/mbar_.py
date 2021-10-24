@@ -152,8 +152,10 @@ class AutoMBAR(MBAR):
     """
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
                  initial_f_k=None, verbose=False):
-        super().__init__(maximum_iterations, relative_tolerance, initial_f_k,
-                         verbose, method=None)
+        super().__init__(maximum_iterations=maximum_iterations,
+                         relative_tolerance=relative_tolerance,
+                         initial_f_k=initial_f_k,
+                         verbose=verbose, method=None)
 
     def _do_MBAR(self, u_nk, N_k, solver_protocol):
         # Try the fastest method first
