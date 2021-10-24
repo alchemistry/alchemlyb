@@ -18,6 +18,7 @@ The rules for this file:
   * 0.6.0
 
 Changes
+  - Automatic MBAR solver with fall back (issue #170, PR #172)
 
 Enhancements
   - support for Interleaved Double-Wide Sampling (IDWS) in NAMD (PR #135).

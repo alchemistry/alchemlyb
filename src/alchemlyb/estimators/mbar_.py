@@ -129,6 +129,32 @@ class MBAR(BaseEstimator):
 
 
 class AutoMBAR(MBAR):
+    """A more robust version of Multi-state Bennett acceptance ratio (MBAR).
+
+    Given that there isn't a single *method* that would allow MBAR to converge
+    at every single cases, the AutoMBAR class is created to iteratively try
+    all the available methods to obtain the converged estimate. The fastest
+    method *hybr* will be tried first, followed by the most stable method
+    *adaptive*. If *adaptive* finds it difficult to converge, *BFGS* will be
+    used as last resort. Though *BFGS* is not as stable as *adaptive*,
+    it has been shown that it could solve some cases where *adaptive* cannot.
+
+    This class is created to facilitate the high-throughput pipeline with
+    the intention of minimising the chance that MBAR solver will not converge.
+
+    Note
+    ----
+    Unlike :class:`~alchemlyb.estimators.MBAR`, the method of solving the MBAR
+    is determined by the class.
+
+
+    .. versionadded:: 0.6.0
+    """
+    def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
+                 initial_f_k=None, verbose=False):
+        super().__init__(maximum_iterations, relative_tolerance, initial_f_k,
+                         verbose, method=None)
+
     def _do_MBAR(self, u_nk, N_k, solver_protocol):
         # Try the fastest method first
         try:
