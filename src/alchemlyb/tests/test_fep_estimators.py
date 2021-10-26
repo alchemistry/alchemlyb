@@ -15,6 +15,7 @@ import alchemtest.gomc
 import alchemtest.namd
 from alchemtest.gmx import load_benzene, load_ABFE
 from alchemlyb.parsing.gmx import extract_u_nk
+from alchemtest.generic import load_MBAR_BGFS
 
 def gmx_benzene_coul_u_nk():
     dataset = alchemtest.gmx.load_benzene()
@@ -180,7 +181,17 @@ class TestMBAR_fail():
         # The hybr will fail on this while adaptive will work
         mbar = AutoMBAR().fit(alchemlyb.concat([n_uk[:2] for n_uk in
                                                 n_uk_list]))
+        assert isinstance(mbar, MBAR)
 
+def test_AutoMBAR_BGFS():
+    # A case where only BFGS would work
+    mbar = AutoMBAR()
+    u_kn = np.load(load_MBAR_BGFS()['data']['u_kn'])
+    N_k = np.load(load_MBAR_BGFS()['data']['N_k'])
+    solver_options = {"maximum_iterations": 10000,"verbose": False}
+    solver_protocol = {"method": None, "options": solver_options}
+    mbar, out = mbar._do_MBAR(u_kn.T, N_k, solver_protocol)
+    assert len(out) == 3
 
 class TestBAR(FEPestimatorMixin):
     """Tests for BAR.
