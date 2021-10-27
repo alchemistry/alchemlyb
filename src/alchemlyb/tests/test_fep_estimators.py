@@ -186,11 +186,11 @@ class TestMBAR_fail():
 def test_AutoMBAR_BGFS():
     # A case where only BFGS would work
     mbar = AutoMBAR()
-    u_kn = np.load(load_MBAR_BGFS()['data']['u_kn'])
+    u_nk = np.load(load_MBAR_BGFS()['data']['u_nk'])
     N_k = np.load(load_MBAR_BGFS()['data']['N_k'])
     solver_options = {"maximum_iterations": 10000,"verbose": False}
     solver_protocol = {"method": None, "options": solver_options}
-    mbar, out = mbar._do_MBAR(u_kn.T, N_k, solver_protocol)
+    mbar, out = mbar._do_MBAR(u_nk.T, N_k, solver_protocol)
     assert len(out) == 3
 
 class TestBAR(FEPestimatorMixin):
