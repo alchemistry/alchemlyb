@@ -144,7 +144,7 @@ class AutoMBAR(MBAR):
 
     Note
     ----
-    Unlike :class:`~alchemlyb.estimators.MBAR`, the method of solving the MBAR
+    Unlike :class:`~alchemlyb.estimators.MBAR`, the solver method 
     is determined by the class.
 
 
