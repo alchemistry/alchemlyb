@@ -146,7 +146,10 @@ class AutoMBAR(MBAR):
     ----
     Unlike :class:`~alchemlyb.estimators.MBAR`, the solver method 
     is determined by the class.
-
+    See Also
+    --------
+    MBAR
+    
 
     .. versionadded:: 0.6.0
     """
