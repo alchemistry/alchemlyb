@@ -132,7 +132,7 @@ class AutoMBAR(MBAR):
     """A more robust version of Multi-state Bennett acceptance ratio (MBAR).
 
     Given that there isn't a single *method* that would allow MBAR to converge
-    at every single cases, the AutoMBAR class is created to iteratively try
+    at every single cases, the AutoMBAR class iteratively tries
     all the available methods to obtain the converged estimate. The fastest
     method *hybr* will be tried first, followed by the most stable method
     *adaptive*. If *adaptive* finds it difficult to converge, *BFGS* will be
