@@ -139,8 +139,8 @@ class AutoMBAR(MBAR):
     used as last resort. Though *BFGS* is not as stable as *adaptive*,
     it has been shown that it could solve some cases where *adaptive* cannot.
 
-    This class is created to facilitate the high-throughput pipeline with
-    the intention of minimising the chance that MBAR solver will not converge.
+    :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid 
+    failures due non-converged MBAR estimates.
 
     Note
     ----
