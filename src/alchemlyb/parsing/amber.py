@@ -81,7 +81,7 @@ class SectionParser(object):
         try:
             self.fileh = anyopen(self.filename, 'r')
         except Exception as ex:  # pragma: no cover
-            logging.exception("ERROR: cannot open file %s" % filename)
+            logger.exception("Cannot open file %s", filename)
         self.lineno = 0
 
     def skip_lines(self, nlines):
@@ -189,11 +189,11 @@ def file_validation(outfile):
     with SectionParser(outfile) as secp:
         line = secp.skip_lines(5)
         if not line:
-            logging.warning('  WARNING: file does not contain any useful data, '
-                            'ignoring file')
+            logger.warning('File does not contain any useful data, '
+                           'ignoring file.')
             invalid = True
         if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
-            logging.warning('  WARNING: no CONTROL DATA found, ignoring file')
+            logger.warning('No CONTROL DATA found, ignoring file.')
             invalid = True
         ntpr, = secp.extract_section('^Nature and format of output:', '^$',
                                      ['ntpr'])
@@ -202,13 +202,13 @@ def file_validation(outfile):
         T, = secp.extract_section('temperature regulation:', '^$',
                                   ['temp0'])
         if not T:
-            logging.error('ERROR: Non-constant temperature MD not '
-                          'currently supported')
+            logger.error('Non-constant temperature MD not '
+                         'currently supported.')
             invalid = True
         clambda, = secp.extract_section('^Free energy options:', '^$',
                                         ['clambda'], '^---')
         if clambda is None:
-            logging.warning('  WARNING: no free energy section found, ignoring file')
+            logger.warning('No free energy section found, ignoring file.')
             invalid = True
 
         mbar_ndata = 0
@@ -224,9 +224,9 @@ def file_validation(outfile):
             clambda_str = '%6.4f' % clambda
 
             if clambda_str not in mbar_lambdas:
-                logging.warning('\n Warning: lamba %s not contained in set of '
-                                'MBAR lambas: %s\nNot using MBAR.' %
-                                (clambda_str, ', '.join(mbar_lambdas)))
+                logger.warning('WARNING: lamba %s not contained in set of '
+                               'MBAR lambas: %s\nNot using MBAR.',
+                               clambda_str, ', '.join(mbar_lambdas))
 
                 have_mbar = False
             else:
@@ -238,12 +238,12 @@ def file_validation(outfile):
                     file_datum.mbar_energies.append([])
 
         if not secp.skip_after('^   3.  ATOMIC '):
-            logging.warning('  WARNING: no ATOMIC section found, ignoring file\n')
+            logger.warning('No ATOMIC section found, ignoring file.')
             invalid = True
 
         t0, = secp.extract_section('^ begin time', '^$', ['coords'])
         if not secp.skip_after('^   4.  RESULTS'):
-            logging.warning('  WARNING: no RESULTS section found, ignoring file\n')
+            logger.warning('No RESULTS section found, ignoring file.')
             invalid = True
     if invalid:
         return False
@@ -304,8 +304,8 @@ def extract_u_nk(outfile, T):
                     file_datum.mbar_energies[lmbda].append(beta * (E - E_ref))
 
         if high_E_cnt:
-            logger.warning('\n WARNING: %i MBAR energ%s > 0.0 kcal/mol' %
-                           (high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is'))
+            logger.warning('%i MBAR energ%s > 0.0 kcal/mol',
+                           high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is')
 
         time = [file_datum.t0 + (frame_index + 1) * file_datum.dt * 1000
                 for frame_index in range(len(file_datum.mbar_energies[0]))]
@@ -379,11 +379,11 @@ def extract_dHdl(outfile, T):
                 finished = True
                 break
     if not finished:  # pragma: no cover
-        logging.warning('  WARNING: prematurely terminated run')
+        logger.warning('  WARNING: prematurely terminated run')
     if not nensec:  # pragma: no cover
-        logging.warning('  WARNING: File %s does not contain any DV/DL data',
+        logger.warning('WARNING: File %s does not contain any DV/DL data',
                         outfile)
-    logging.info('%i data points, %i DV/DL averages', nensec, nenav)
+    logger.info('%i data points, %i DV/DL averages', nensec, nenav)
     # at this step we get info stored in the FEData object for a given amber out file
     file_datum.component_gradients.extend(comps)
     # convert file_datum to the pandas format to make it identical to alchemlyb output format
