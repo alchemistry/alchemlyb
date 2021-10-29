@@ -20,7 +20,7 @@ class TI(BaseEstimator):
         The estimated dimensionless free energy difference between each state.
 
     d_delta_f_ : DataFrame
-        The estimated statistical uncertainty (one standard deviation) in 
+        The estimated statistical uncertainty (one standard deviation) in
         dimensionless free energy differences.
 
     states_ : list
@@ -41,7 +41,7 @@ class TI(BaseEstimator):
 
         Parameters
         ----------
-        dHdl : DataFrame 
+        dHdl : DataFrame
             dHdl[n,k] is the potential energy gradient with respect to lambda
             for each configuration n and lambda k.
 
@@ -54,9 +54,9 @@ class TI(BaseEstimator):
         # obtain the mean and variance of the mean for each state
         # variance calculation assumes no correlation between points
         # used to calculate mean
-        means = dHdl.mean(level=dHdl.index.names[1:])
-        variances = np.square(dHdl.sem(level=dHdl.index.names[1:]))
-        
+        means = dHdl.groupby(level=dHdl.index.names[1:]).mean()
+        variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
+
         # get the lambda names
         l_types = dHdl.index.names[1:]
 
