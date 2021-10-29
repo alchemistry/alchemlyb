@@ -29,6 +29,7 @@ Enhancements
   - Time convergence function forward_backward_convergence
     introduced and plot_convergence now takes dataframe from
     forward_backward_convergence as input (PR #168).
+  - Automatic MBAR solver with fall back (issue #170, PR #172)
 
 Fixes
   - Subsampling now works with bounds and step (PR #167, issue #166).
