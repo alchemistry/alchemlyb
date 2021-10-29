@@ -27,7 +27,8 @@ class MBAR(BaseEstimator):
         available via scipy.optimize.minimize() or scipy.optimize.root().
 
     verbose : bool, optional
-        Set to True if verbose debug output is desired.
+        Set to ``True`` if verbose debug output from :mod:`pymbar` is desired.
+        Output from alchemlyb is logged via :mod:`logging`.
 
     Attributes
     ----------
@@ -45,6 +46,9 @@ class MBAR(BaseEstimator):
     states_ : list
         Lambda states for which free energy differences were obtained.
 
+    See Also
+    --------
+    pymbar.MBAR
     """
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
@@ -107,7 +111,11 @@ class MBAR(BaseEstimator):
                      relative_tolerance=self.relative_tolerance,
                      initial_f_k=self.initial_f_k,
                      solver_protocol=(solver_protocol,))
-
+        self.logger.info("Solved MBAR equations with method %r and "
+                         "maximum_iterations=%d, relative_tolerance=%g", 
+                         solver_protocol['method'],
+                         solver_protocol['options']['maximum_iterations'],
+                         self.relative_tolerance)
         # set attributes
         out = mbar.getFreeEnergyDifferences(return_theta=True)
         return mbar, out
@@ -132,21 +140,22 @@ class MBAR(BaseEstimator):
 class AutoMBAR(MBAR):
     """A more robust version of Multi-state Bennett acceptance ratio (MBAR).
 
-    Given that there isn't a single *method* that would allow MBAR to converge
-    at every single cases, the AutoMBAR class iteratively tries
-    all the available methods to obtain the converged estimate. The fastest
-    method *hybr* will be tried first, followed by the most stable method
-    *adaptive*. If *adaptive* finds it difficult to converge, *BFGS* will be
-    used as last resort. Though *BFGS* is not as stable as *adaptive*,
-    it has been shown that it could solve some cases where *adaptive* cannot.
+    Given that there isn't a single *method* that would allow :class:`MBAR` 
+    to converge for every single use case, the :class:`AutoMBAR` estimator 
+    iteratively tries all the available methods to obtain the converged estimate. 
+    
+    The fastest method *hybr* will be tried first, followed by the most stable method
+    *adaptive*. If *adaptive* does not converge, *BFGS* will be used as last resort. 
+    Although *BFGS* is not as stable as *adaptive*, it has been shown to succeed in  
+    some cases where *adaptive* cannot.
 
     :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid 
     failures due non-converged MBAR estimates.
 
     Note
     ----
-    Unlike :class:`~alchemlyb.estimators.MBAR`, the solver method 
-    is determined by the class.
+    All arguments are described under :class:`MBAR` except that the solver method 
+    is determined by :class:`AutoMBAR` as described above.
 
     See Also
     --------
