@@ -181,7 +181,7 @@ class TestMBAR_fail():
         # The hybr will fail on this while adaptive will work
         mbar = AutoMBAR().fit(alchemlyb.concat([n_uk[:2] for n_uk in
                                                 n_uk_list]))
-        assert isinstance(mbar, MBAR)
+        assert np.isclose(mbar.d_delta_f_.iloc[0, -1], 1.76832, 0.1)
 
 def test_AutoMBAR_BGFS():
     # A case where only BFGS would work
@@ -191,7 +191,7 @@ def test_AutoMBAR_BGFS():
     solver_options = {"maximum_iterations": 10000,"verbose": False}
     solver_protocol = {"method": None, "options": solver_options}
     mbar, out = mbar._do_MBAR(u_nk.T, N_k, solver_protocol)
-    assert len(out) == 3
+    assert np.isclose(out[0][1][0], 12.552409, 0.1)
 
 class TestBAR(FEPestimatorMixin):
     """Tests for BAR.

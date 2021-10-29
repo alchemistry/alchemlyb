@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
+import logging
 
 from sklearn.base import BaseEstimator
 
-from pymbar import MBAR as MBAR_
 import pymbar
 
 class MBAR(BaseEstimator):
@@ -54,6 +54,7 @@ class MBAR(BaseEstimator):
         self.initial_f_k = initial_f_k
         self.method = method
         self.verbose = verbose
+        self.logger = logging.getLogger('alchemlyb.estimators.MBAR')
 
         # handle for pymbar.MBAR object
         self._mbar = None
@@ -102,7 +103,7 @@ class MBAR(BaseEstimator):
         pass
 
     def _do_MBAR(self, u_nk, N_k, solver_protocol):
-        mbar = MBAR_(u_nk.T, N_k,
+        mbar = pymbar.MBAR(u_nk.T, N_k,
                      relative_tolerance=self.relative_tolerance,
                      initial_f_k=self.initial_f_k,
                      solver_protocol=(solver_protocol,))
@@ -159,17 +160,23 @@ class AutoMBAR(MBAR):
                          relative_tolerance=relative_tolerance,
                          initial_f_k=initial_f_k,
                          verbose=verbose, method=None)
+        self.logger = logging.getLogger('alchemlyb.estimators.AutoMBAR')
 
     def _do_MBAR(self, u_nk, N_k, solver_protocol):
+        self.logger.info('Initialise the automatic routine of the MBAR '
+                         'estimator.')
         # Try the fastest method first
         try:
+            self.logger.info('Trying the hybr method.')
             solver_protocol["method"] = 'hybr'
             mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
         except pymbar.utils.ParameterError:
             try:
+                self.logger.info('Trying the adaptive method.')
                 solver_protocol["method"] = 'adaptive'
                 mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
             except pymbar.utils.ParameterError:
+                self.logger.info('Trying the BFGS method.')
                 solver_protocol["method"] = 'BFGS'
                 mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
         return mbar, out

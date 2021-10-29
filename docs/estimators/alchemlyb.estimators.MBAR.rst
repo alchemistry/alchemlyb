@@ -8,6 +8,8 @@ As a generalization of BAR, it uses information from all sampled states to gener
 A more robust version of :class:`~alchemlyb.estimators.MBAR` is provided as
 :class:`~alchemlyb.estimators.AutoMBAR`, where the class will iteratively
 try different means of solving the MBAR estimate to avoid unconverged results.
+The process of iterating different methods is documented in the logger
+*alchemlyb.estimators.AutoMBAR*.
 
 API Reference
 -------------
