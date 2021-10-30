@@ -42,6 +42,11 @@ class Test_automatic_ABFE():
         assert 'ti' in workflow.estimator
         assert 'bar' in workflow.estimator
 
+    def test_summary(self, workflow):
+        '''Test if if the summary is right.'''
+        summary = workflow.generate_result()
+        assert np.isclose(summary['MBAR']['Stages']['TOTAL'], 21.788, 0.1)
+
     def test_O_MBAR(self, workflow):
         '''test if the O_MBAR.pdf has been plotted.'''
         assert os.path.isfile('O_MBAR.pdf')
@@ -123,6 +128,30 @@ class Test_manual_ABFE():
     def test_convergence(self, workflow):
         '''test if the dF_state.pdf has been plotted.'''
         assert os.path.isfile('dF_t.pdf')
+        os.remove('dF_t.pdf')
+        assert len(workflow.convergence) == 10
+
+    def test_convergence_nosample_u_nk(self, workflow):
+        '''test if the dF_state.pdf has been plotted.'''
+        u_nk_sample_list = workflow.u_nk_sample_list
+        delattr(workflow, 'u_nk_sample_list')
+        workflow.check_convergence(10)
+        os.remove('dF_t.pdf')
+        assert len(workflow.convergence) == 10
+        workflow.u_nk_sample_list = u_nk_sample_list
+
+    def test_convergence_nosample_dhdl(self, workflow):
+        '''test if the dF_state.pdf has been plotted.'''
+        dHdl_sample_list = workflow.dHdl_sample_list
+        delattr(workflow, 'dHdl_sample_list')
+        workflow.check_convergence(10, estimator='ti')
+        os.remove('dF_t.pdf')
+        assert len(workflow.convergence) == 10
+        workflow.dHdl_sample_list = dHdl_sample_list
+
+    def test_convergence_dhdl(self, workflow):
+        '''test if the dF_state.pdf has been plotted.'''
+        workflow.check_convergence(10, estimator='ti')
         os.remove('dF_t.pdf')
         assert len(workflow.convergence) == 10
 

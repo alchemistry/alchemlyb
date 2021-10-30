@@ -79,6 +79,8 @@ class ABFE():
         The list of u_nk read from the files.
     dHdl_list : list
         The list of dHdl read from the files.
+    summary : Dataframe
+        The summary of the free energy estimate.
     '''
     def __init__(self, units='kT', software='Gromacs', dir=os.path.curdir,
                  prefix='dhdl', suffix='xvg', T=298, skiptime=0, uncorr=None,
@@ -161,6 +163,7 @@ class ABFE():
                                threshold=threshold)
         if methods is not None:
             self.estimate(methods)
+            self.generate_result()
 
         if overlap is not None:
             ax = self.plot_overlap_matrix(overlap)
