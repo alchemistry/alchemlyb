@@ -2,7 +2,7 @@ Automatic workflow
 ==================
 Though **alchemlyb** is a library offering great flexibility in deriving free
 energy estimate, it also provide a easy pipeline that is similar to
-`Alchemical Analysis `_ and a
+`Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_ and a
 step-by-step version that allows more flexibility.
 
 Note
@@ -12,7 +12,7 @@ This is an experimental feature and is not API stable.
 Fully Automatic analysis
 ------------------------
 A interface similar to
-`Alchemical Analysis `_
+`Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
 could be excuted with a single line of command. ::
 
     >>> import os
@@ -26,13 +26,13 @@ could be excuted with a single line of command. ::
     >>>                 prefix='dhdl', suffix='xvg', T=298, skiptime=10,
     >>>                 uncorr='dhdl', threshold=50,
     >>>                 methods=('mbar', 'bar', 'ti'), out='./',
-    >>>                 resultfilename='result.out', overlap='O_MBAR.pdf',
+    >>>                 overlap='O_MBAR.pdf',
     >>>                 breakdown=True, forwrev=10, log='result.log')
 
 This would give the free energy estimate using all of
 :class:`~alchemlyb.estimators.TI`, :class:`~alchemlyb.estimators.BAR`,
 :class:`~alchemlyb.estimators.MBAR` and the result will be given as
-pandas dataframe to :attr:`alchemlyb.workflows.ABFE.summary` ::
+:class:`pandas.DataFrame` to :attr:`alchemlyb.workflows.ABFE.summary` ::
 
                           MBAR  MBAR_Error        BAR  BAR_Error         TI  TI_Error
     States 0 -- 1     0.065967    0.001293   0.066544   0.001661   0.066663  0.001675
@@ -107,8 +107,8 @@ to the data generated at each stage of the analysis. ::
     >>> workflow.preprocess(skiptime=10, uncorr='dhdl', threshold=50)
     >>> # Run the estimator
     >>> workflow.estimate(methods=('mbar', 'bar', 'ti'))
-    >>> # write the result
-    >>> workflow.write(resultfilename='result.out')
+    >>> # Generate the results
+    >>> summary = workflow.generate_result()
     >>> # Plot the overlap matrix
     >>> workflow.plot_overlap_matrix(overlap='O_MBAR.pdf')
     >>> # Plot the dHdl for TI
@@ -117,8 +117,7 @@ to the data generated at each stage of the analysis. ::
     >>> workflow.plot_dF_state(dF_state='dF_state.pdf')
     >>> # Convergence analysis
     >>> workflow.check_convergence(10, dF_t='dF_t.pdf')
-    >>> # Generate the results
-    >>> summary = workflow.generate_result()
+
 
 
 .. currentmodule:: alchemlyb.workflows.ABFE
@@ -126,7 +125,7 @@ to the data generated at each stage of the analysis. ::
 .. autofunction:: update_units
 .. autofunction:: preprocess
 .. autofunction:: estimate
-.. autofunction:: write
+.. autofunction:: generate_result
 .. autofunction:: plot_overlap_matrix
 .. autofunction:: plot_ti_dhdl
 .. autofunction:: plot_dF_state

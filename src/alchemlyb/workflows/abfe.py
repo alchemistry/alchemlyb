@@ -79,8 +79,6 @@ class ABFE():
         The list of u_nk read from the files.
     dHdl_list : list
         The list of dHdl read from the files.
-    summary : Dataframe
-        The summary of the free energy estimate.
     '''
     def __init__(self, units='kT', software='Gromacs', dir=os.path.curdir,
                  prefix='dhdl', suffix='xvg', T=298, skiptime=0, uncorr=None,
@@ -184,7 +182,7 @@ class ABFE():
 
 
     def update_units(self, units):
-        '''Update the plot and text output to the selected unit.
+        '''Update the unit.
 
         Parameters
         ----------
@@ -192,15 +190,6 @@ class ABFE():
             The unit used for printing and plotting results. {'kcal/mol',
             'kJ/mol', 'kT'}
 
-        Attributes
-        ----------
-        scaling_factor : float
-            The scaling factor to change the unit from kT to the selected unit.
-
-        Note
-        ----
-        The internal representations are all in kT. This function only changes
-        the unit when outputting text file or plotting the results.
         '''
         if units is not None:
             self.logger.info('Set unit to {}.'.format(units))
@@ -379,6 +368,10 @@ class ABFE():
                        bonded     2.374144    0.014995   2.341631   0.005507   2.363828  0.021078
                        TOTAL     35.137291    0.103580  34.860619   0.087022  34.924618  0.119206
 
+        Attributes
+        ----------
+        summary : Dataframe
+            The summary of the free energy estimate.
         '''
 
         # Write estimate
