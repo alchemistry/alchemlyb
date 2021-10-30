@@ -35,6 +35,7 @@ Fixes
   - Subsampling now works with bounds and step (PR #167, issue #166).
   - AMBER parser logger now always logs to alchemlyb.parsers.Amber
     instead of the root logger (PR #173)
+  - updated deprecated pandas aggregation, now using groupby(level).agg (#175)
 
 
 09/17/2021 xiki-tempula, orbeckst
