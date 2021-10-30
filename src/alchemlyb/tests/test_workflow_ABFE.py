@@ -277,6 +277,11 @@ Where only fep-lambda changes but the bonded-lambda is always 0.
         os.remove('dF_t.pdf')
         assert len(workflow.convergence) == 10
 
+    def test_single_estimator_mbar(self, workflow):
+        workflow.estimate(methods='ti')
+        summary = workflow.generate_result()
+        assert np.isclose(summary['TI']['Stages']['TOTAL'], 2.946, 0.1)
+
 class Test_methods():
     '''Test various methods.'''
 
@@ -301,10 +306,20 @@ class Test_methods():
         workflow.u_nk_list = original_u_nk
         workflow.dHdl_list = original_dHdl
 
-    def test_single_estimator(self, workflow):
+    def test_single_estimator_mbar(self, workflow):
         workflow.estimate(methods='mbar')
         assert len(workflow.estimator) == 1
         assert 'mbar' in workflow.estimator
+        summary = workflow.generate_result()
+        assert np.isclose(summary['MBAR']['Stages']['TOTAL'], 2.946, 0.1)
+
+    def test_single_estimator_ti(self, workflow):
+        u_nk_list = workflow.u_nk_list
+        delattr(workflow, 'u_nk_list')
+        workflow.estimate(methods='ti')
+        summary = workflow.generate_result()
+        assert np.isclose(summary['TI']['Stages']['TOTAL'], 2.946, 0.1)
+        workflow.u_nk_list = u_nk_list
 
     def test_bar_convergence(self, workflow):
         workflow.check_convergence(10, estimator='bar')
