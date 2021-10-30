@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 from ..parsing import gmx
 from ..preprocessing.subsampling import decorrelate_dhdl, decorrelate_u_nk
-from ..estimators import MBAR, BAR, TI
+from ..estimators import BAR, TI
+from ..estimators import AutoMBAR as MBAR
 from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
                              plot_dF_state, plot_convergence)
 from ..postprocessors.units import get_unit_converter
