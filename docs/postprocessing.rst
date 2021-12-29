@@ -1,3 +1,5 @@
+.. module:: alchemlyb.postprocessors
+	    
 .. _postprocessing:
 
 Tools for postprocessing

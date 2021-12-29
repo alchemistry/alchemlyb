@@ -54,10 +54,17 @@ The pandas_ package (one of our other primary dependencies) also follows `NEP 29
 
 .. _contact:
 
-Contributing
-------------
-Contributions are very welcome. If you have bug reports or feature requests or questions then please get in touch with us through the `Issue Tracker`_. We also welcome code contributions: have a look at our `Developer Guide`_ and submit a pull request against the `alchemistry/alchemlyb`_ GitHub repository.
+Getting involved
+----------------
+Contributions of all kinds are very welcome.
 
+If you have questions or want to discuss alchemlyb please post in the `alchemlyb Discussions`_.
+
+If you have bug reports or feature requests then please get in touch with us through the `Issue Tracker`_.
+
+We also welcome code contributions: have a look at our `Developer Guide`_. Open an issue with the proposed fix or change in the `Issue Tracker`_ and submit a pull request against the `alchemistry/alchemlyb`_ GitHub repository.
+
+.. _`alchemlyb Discussions`: https://github.com/alchemistry/alchemlyb/discussions
 .. _`Developer Guide`: https://github.com/alchemistry/alchemlyb/wiki/Developer-Guide
 .. _`Issue Tracker`: https://github.com/alchemistry/alchemlyb/issues
 .. _`alchemistry/alchemlyb`: https://github.com/alchemistry/alchemlyb

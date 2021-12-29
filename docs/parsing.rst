@@ -1,3 +1,6 @@
+.. module:: alchemlyb.parsing
+
+
 Parsing data files
 ==================
 **alchemlyb** features parsing submodules for getting raw data from different software packages into common data structures that can be used directly by its :ref:`subsamplers <subsampling>` and :ref:`estimators <estimators>`.
