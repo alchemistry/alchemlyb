@@ -11,15 +11,41 @@ includes:
    molecular dynamics engines such as `GROMACS`_, `AMBER`_, `NAMD`_
    and `other simulation codes`_.
 
-2. Subsamplers for obtaining uncorrelated samples from timeseries data.
+2. Subsamplers for obtaining uncorrelated samples from timeseries data
+   (including extracting independent, equilibrated samples
+   [Chodera2016]_ as implemented in the pymbar_ package).
 
 3. Estimators for obtaining free energies directly from this data, using
    best-practices approaches for multistate Bennett acceptance ratio (MBAR)
-   [Shirts2008]_ and thermodynamic integration (TI).
+   [Shirts2008]_ and BAR (from pymbar_) and thermodynamic integration (TI).
 
-In particular, it uses internally the excellent `pymbar
-<http://pymbar.readthedocs.io/>`_ library for performing MBAR and extracting
-independent, equilibrated samples [Chodera2016]_.
+.. _GROMACS: http://www.gromacs.org/
+.. _AMBER: http://ambermd.org/
+.. _NAMD: http://www.ks.uiuc.edu/Research/namd/
+.. _`other simulation codes`: https://alchemlyb.readthedocs.io/en/latest/parsing.html
+.. _`pymbar`: http://pymbar.readthedocs.io/
+   
+
+Getting involved
+----------------
+
+Contributions of all kinds are very welcome.
+
+If you have questions or want to discuss alchemlyb please post in the `alchemlyb Discussions`_.
+
+If you have bug reports or feature requests then please get in touch with us through the `Issue Tracker`_.
+
+We also welcome code contributions: have a look at our `Developer Guide`_. Open an issue with the proposed fix or change in the `Issue Tracker`_ and submit a pull request against the `alchemistry/alchemlyb`_ GitHub repository.
+
+.. _`alchemlyb Discussions`: https://github.com/alchemistry/alchemlyb/discussions
+.. _`Developer Guide`: https://github.com/alchemistry/alchemlyb/wiki/Developer-Guide
+.. _`Issue Tracker`: https://github.com/alchemistry/alchemlyb/issues
+.. _`alchemistry/alchemlyb`: https://github.com/alchemistry/alchemlyb
+
+   
+
+References
+----------
 
 .. [Shirts2008] Shirts, M.R., and Chodera, J.D. (2008). Statistically optimal
     analysis of samples from multiple equilibrium states. The Journal of Chemical
@@ -29,14 +55,7 @@ independent, equilibrated samples [Chodera2016]_.
     Equilibration Detection in Molecular Simulations. Journal of Chemical Theory
     and Computation 12, 1799–1805.
 
-.. _GROMACS: http://www.gromacs.org/
 
-.. _AMBER: http://ambermd.org/
-
-.. _NAMD: http://www.ks.uiuc.edu/Research/namd/
-
-.. _`other simulation codes`: https://alchemlyb.readthedocs.io/en/latest/parsing.html
-    
 .. |doi| image:: https://zenodo.org/badge/68669096.svg
     :alt: Zenodo DOI
     :scale: 100%
