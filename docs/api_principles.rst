@@ -64,30 +64,18 @@ The library is structured as follows, following a similar style to
     │   ├── mbar_matrix.py
     │   ├── ti_dhdl.py
     │   └── ...
-    └── workflows
+    └── workflows           ### WORK IN PROGRESS
         └── ...
          
 
-The :mod:`~alchemlyb.parsing` submodule contains parsers for individual MD engines, since the output files needed to perform alchemical free energy calculations vary widely and are not standardized.
-Each module at the very least provides an `extract_u_nk` function for extracting reduced potentials (needed for MBAR), as well as an `extract_dHdl` function for extracting derivatives required for thermodynamic integration.
-Other helper functions may be exposed for additional processing, such as generating an XVG file from an EDR file in the case of GROMACS.
-All `extract\_*` functions take similar arguments (a file path,
-parameters such as temperature), and produce standard outputs
-(:class:`pandas.DataFrame` for reduced potentials, :class:`pandas.Series` for derivatives).
+* The :mod:`~alchemlyb.parsing` submodule contains parsers for individual MD engines, since the output files needed to perform alchemical free energy calculations vary widely and are not standardized.  Each module at the very least provides an `extract_u_nk` function for extracting reduced potentials (needed for MBAR), as well as an `extract_dHdl` function for extracting derivatives required for thermodynamic integration.  Other helper functions may be exposed for additional processing, such as generating an XVG file from an EDR file in the case of GROMACS.  All `extract\_*` functions take similar arguments (a file path, parameters such as temperature), and produce standard outputs (:class:`pandas.DataFrame` for reduced potentials, :class:`pandas.Series` for derivatives).
+* The :mod:`~alchemlyb.preprocessing` submodule features functions for subsampling timeseries, as may be desired before feeding them to an estimator.  So far, these are limited to `slicing`, `statistical_inefficiency`, and `equilibrium_detection` functions, many of which make use of subsampling schemes available from :mod:`pymbar`.  These functions are written in such a way that they can be easily composed as parts of complex processing pipelines.
+* The :mod:`~alchemlyb.estimators` module features classes *a la* **scikit-learn** that can be initialized with parameters that determine their behavior and then "trained" on a `fit` method.  MBAR, BAR, and thermodynamic integration (TI) as the major methods are all implemented.  Correct error estimates require the use of time series with independent samples.
+* The :mod:`~alchemlyb.convergence` submodule will feature convenience functions/classes for doing convergence analysis using a given dataset and a chosen estimator.
+* The :mod:`~alchemlyb.postprocessing` submodule contains functions to calculate new quantities or express data in different units.
+* The :mod:`~alchemlyb.visualization` submodule contains convenience plotting functions as known from, for example, `alchemical-analysis.py`_.
+* The :mod:`~alchemlyb.workflows` submodule will contain complete analysis workflows that will serve as larger building blocks for complex analysis pipelines or a command line interface.
 
-The :mod:`~alchemlyb.preprocessing` submodule features functions for subsampling timeseries, as may be desired before feeding them to an estimator.
-So far, these are limited to `slicing`, `statistical_inefficiency`, and `equilibrium_detection` functions, many of which make use of subsampling schemes available from :mod:`pymbar`.
-These functions are written in such a way that they can be easily composed as parts of complex processing pipelines.
-
-The :mod:`~alchemlyb.estimators` module features classes *a la* **scikit-learn** that can be initialized with parameters that determine their behavior and then "trained" on a `fit` method.
-MBAR, BAR, and thermodynamic integration (TI) as the major methods are all implemented.
-Correct error estimates require the use of time series with independent samples.
-
-The :mod:`~alchemlyb.convergence` submodule will feature convenience functions/classes for doing convergence analysis using a given dataset and a chosen estimator.
-
-The :mod:`~alchemlyb.postprocessing` submodule contains functions to calculate new quantities or express data in different units.
-
-The :mod:`~alchemlyb.visualization` submodule contains convenience plotting functions as known from, for example, `alchemical-analysis.py`_.
 
 All of these components lend themselves well to writing clear and flexible pipelines for processing data needed for alchemical free energy calculations, and furthermore allow for scaling up via libraries like `dask`_ or `joblib`_.
 
