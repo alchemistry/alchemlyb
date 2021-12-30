@@ -311,6 +311,7 @@ def _extract_dataframe(xvg, headers=None):
     # drop duplicated columns (see PR #86 https://github.com/alchemistry/alchemlyb/pull/86/)
     df = df[df.columns[~df.columns.str.endswith("[duplicated]")]]
 
+    df.dropna(inplace=True)
     return df
 
 
