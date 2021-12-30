@@ -1,3 +1,6 @@
+.. module:: alchemlyb.preprocessing
+
+
 Preprocessing datasets
 ======================
 It is often the case that some initial pre-processing of raw datasets are desirable before feeding these to an estimator.

@@ -1,3 +1,5 @@
+.. module:: alchemlyb.convergence
+
 Using functions to estimate Convergence
 =======================================
 
@@ -31,4 +33,16 @@ Will give a plot looks like this
    A convergence plot of showing that the forward and backward has converged
    fully.
 
-.. autofunction:: alchemlyb.convergence.forward_backward_convergence
+
+Convergence functions
+---------------------
+
+The currently available connvergence functions:
+
+.. currentmodule:: alchemlyb.convergence
+
+.. autosummary::
+    :toctree: convergence
+
+    convergence
+

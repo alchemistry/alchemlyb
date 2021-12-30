@@ -8,13 +8,13 @@ from .. import concat
 
 
 def forward_backward_convergence(df_list, estimator='mbar', num=10):
-    ''' The forward and backward convergence of the free energy estimate.
+    '''Forward and backward convergence of the free energy estimate.
 
-    Generate the free energy estimate as a function of time in both
-    directions, with the specified number of points in the time. For example,
-    setting `num` to 10 would give the forward convergence which is the free
-    energy estimate from the first 10%, 20%, 30% .. of the data. The
-    Backward would give the estimate from the last 10%, 20%, 30% .. of the
+    Generate the free energy estimate as a function of time in both directions,
+    with the specified number of equally spaced points in the time. For
+    example, setting `num` to 10 would give the forward convergence which is
+    the free energy estimate from the first 10%, 20%, 30%, ... of the data. The
+    Backward would give the estimate from the last 10%, 20%, 30%, ... of the
     data.
 
     Parameters
@@ -45,6 +45,7 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
 
 
     .. versionadded:: 0.6.0
+
     '''
     logger = logging.getLogger('alchemlyb.convergence.'
                                'forward_backward_convergence')

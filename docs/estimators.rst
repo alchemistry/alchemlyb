@@ -1,3 +1,5 @@
+.. module:: alchemlyb.estimators
+
 .. _estimators:
 
 Using estimators to obtain free energies
