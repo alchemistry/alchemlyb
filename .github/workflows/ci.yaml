@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  # run once a day at noon UTC
+  # run weekly (see issue #186)
   schedule:
-    - cron: "0 12 * * *"
+    - cron: "42 3 * * 6"
   push:
     branches:
       - "master"
