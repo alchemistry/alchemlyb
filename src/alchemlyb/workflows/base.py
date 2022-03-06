@@ -56,12 +56,11 @@ class WorkflowBase():
             The result of the convergence analysis.
 
         """
-        self.u_nk_list = []
-        self.dHdl_list = []
-        self.dHdl_sample_list = []
-        self.u_nk_sample_list = []
-        self.result = pd.DataFrame()
-        self.convergence = pd.DataFrame()
+        self.read()
+        self.subsample()
+        self.estimate()
+        self.convergence()
+        self.plot()
 
     def read(self, *args, **kwargs):
         """ The function that reads the files in `file_list` and parse them
