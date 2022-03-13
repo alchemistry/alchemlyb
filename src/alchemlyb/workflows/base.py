@@ -57,7 +57,7 @@ class WorkflowBase():
 
         """
         self.read()
-        self.subsample()
+        self.preprocess()
         self.estimate()
         self.convergence()
         self.plot()
@@ -78,7 +78,7 @@ class WorkflowBase():
         self.u_nk_list = []
         self.dHdl_list = []
 
-    def subsample(self, *args, **kwargs):
+    def preprocess(self, *args, **kwargs):
         """ The function that subsample the u_nk and dHdl in `u_nk_list` and
         `dHdl_list`.
 
