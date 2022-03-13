@@ -15,7 +15,7 @@ step-by-step fashion. ::
     >>> from alchemlyb.workflows.base import WorkflowBase
     >>> workflow = WorkflowBase()
     >>> workflow.read()
-    >>> workflow.subsample()
+    >>> workflow.preprocess()
     >>> workflow.estimate()
     >>> workflow.convergence()
     >>> workflow.plot()
