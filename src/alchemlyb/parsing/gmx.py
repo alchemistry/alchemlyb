@@ -305,8 +305,15 @@ def _extract_dataframe(xvg, headers=None):
 
     header_cnt = len(headers['_raw_lines'])
     df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
-            na_filter=True, memory_map=True, names=cols, dtype=np.float64,
-            float_precision='high')
+            memory_map=True, on_bad_lines='skip')
+    # If names=cols is passed to read_csv, rows with more than the
+    # designated columns will be truncated and used instead of discarded.
+    df.rename(columns={i: name for i, name in enumerate(cols)}, inplace=True)
+    # If dtype=np.float64 and float_precision='high' are passed to read_csv,
+    # 12.345.56 and - cannot be read.
+    df = df.apply(pd.to_numeric, errors='coerce')
+    # drop duplicate
+    df.dropna(inplace=True)
 
     # drop duplicated columns (see PR #86 https://github.com/alchemistry/alchemlyb/pull/86/)
     df = df[df.columns[~df.columns.str.endswith("[duplicated]")]]
