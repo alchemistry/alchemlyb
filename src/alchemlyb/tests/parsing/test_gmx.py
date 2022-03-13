@@ -2,9 +2,6 @@
 
 """
 
-import bz2
-import pytest
-
 from alchemlyb.parsing.gmx import extract_dHdl, extract_u_nk
 from alchemtest.gmx import load_benzene
 from alchemtest.gmx import load_expanded_ensemble_case_1, load_expanded_ensemble_case_2, load_expanded_ensemble_case_3
@@ -198,60 +195,3 @@ def test_extract_dHdl_unit():
     dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
     assert dhdl.attrs['temperature'] == 310
     assert dhdl.attrs['energy_unit'] == 'kT'
-
-class TestRobustGMX():
-    '''Test dropping the row that is wrong in different way'''
-    @staticmethod
-    @pytest.fixture(scope='class')
-    def data():
-        dhdl = extract_dHdl(load_benzene()['data']['Coulomb'][0], 310)
-        with bz2.open(load_benzene()['data']['Coulomb'][0], "rt") as bz_file:
-            text = bz_file.read()
-        return text, len(dhdl)
-
-    def test_sanity(self, data, tmpdir):
-        '''Test if the test routine is working.'''
-        text, length = data
-        new_text = tmpdir.join('text.xvg')
-        new_text.write(text)
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310)
-        assert len(dhdl) == length
-
-    def test_truncated_row(self, data, tmpdir):
-        '''Test the case where the last row has been truncated.'''
-        text, length = data
-        new_text = tmpdir.join('text.xvg')
-        new_text.write(text + '40010.0 27.0\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310)
-        assert len(dhdl) == length
-
-    def test_truncated_number(self, data, tmpdir):
-        '''Test the case where the last row has been truncated and a - has
-        been left.'''
-        text, length = data
-        new_text = tmpdir.join('text.xvg')
-        new_text.write(text + '40010.0 27.0 -\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310)
-        assert len(dhdl) == length
-
-    def test_weirdnumber(self, data, tmpdir):
-        '''Test the case where the last number has been appended a weird
-        number.'''
-        text, length = data
-        new_text = tmpdir.join('text.xvg')
-        # Note the 27.040010.0 which is the sum of 27.0 and 40010.0
-        new_text.write(text + '40010.0 27.040010.0 27.0 0.0 6.7 13.5 20.2 27.0 0.7 27.0 0.0 6.7 '
-                       '13.5 20.2 27.0 0.7\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310)
-        assert len(dhdl) == length
-
-    def test_too_many_cols(self, data, tmpdir):
-        '''Test the case where the row has too many columns.'''
-        text, length = data
-        new_text = tmpdir.join('text.xvg')
-        new_text.write(text +
-                       '40010.0 27.0 0.0 6.7 13.5 20.2 27.0 0.7 27.0 0.0 6.7 13.5 20.2 27.0 0.7\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310)
-        assert len(dhdl) == length
-
-

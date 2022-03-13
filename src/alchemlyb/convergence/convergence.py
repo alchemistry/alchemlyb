@@ -2,8 +2,7 @@ import pandas as pd
 import logging
 import numpy as np
 
-from ..estimators import BAR, TI
-from ..estimators import AutoMBAR as MBAR
+from ..estimators import MBAR, BAR, TI
 from .. import concat
 
 
