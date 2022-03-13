@@ -17,7 +17,7 @@ step-by-step fashion. ::
     >>> workflow.read()
     >>> workflow.preprocess()
     >>> workflow.estimate()
-    >>> workflow.convergence()
+    >>> workflow.check_convergence()
     >>> workflow.plot()
 
 API Reference

@@ -107,7 +107,7 @@ class WorkflowBase():
         """
         self.result = pd.DataFrame()
 
-    def convergence(self, *args, **kwargs):
+    def check_convergence(self, *args, **kwargs):
         """ The function for doing convergence analysis.
 
         Attributes
