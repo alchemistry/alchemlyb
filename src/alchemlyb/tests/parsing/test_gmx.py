@@ -222,7 +222,7 @@ class TestRobustGMX():
         text, length = data
         new_text = tmpdir.join('text.xvg')
         new_text.write(text + '40010.0 27.0\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310)
+        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310, filter=True)
         assert len(dhdl) == length
 
     def test_truncated_number(self, data, tmpdir):
@@ -231,7 +231,7 @@ class TestRobustGMX():
         text, length = data
         new_text = tmpdir.join('text.xvg')
         new_text.write(text + '40010.0 27.0 -\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310)
+        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310, filter=True)
         assert len(dhdl) == length
 
     def test_weirdnumber(self, data, tmpdir):
@@ -242,7 +242,7 @@ class TestRobustGMX():
         # Note the 27.040010.0 which is the sum of 27.0 and 40010.0
         new_text.write(text + '40010.0 27.040010.0 27.0 0.0 6.7 13.5 20.2 27.0 0.7 27.0 0.0 6.7 '
                        '13.5 20.2 27.0 0.7\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310)
+        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310, filter=True)
         assert len(dhdl) == length
 
     def test_too_many_cols(self, data, tmpdir):
@@ -251,7 +251,7 @@ class TestRobustGMX():
         new_text = tmpdir.join('text.xvg')
         new_text.write(text +
                        '40010.0 27.0 0.0 6.7 13.5 20.2 27.0 0.7 27.0 0.0 6.7 13.5 20.2 27.0 0.7\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310)
+        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310, filter=True)
         assert len(dhdl) == length
 
 
