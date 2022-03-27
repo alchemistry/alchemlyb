@@ -59,7 +59,7 @@ class WorkflowBase():
         self.read()
         self.preprocess()
         self.estimate()
-        self.convergence()
+        self.check_convergence()
         self.plot()
 
     def read(self, *args, **kwargs):
