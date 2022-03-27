@@ -6,6 +6,7 @@ import numpy as np
 import logging
 import matplotlib.pyplot as plt
 
+from .base import WorkflowBase
 from ..parsing import gmx
 from ..preprocessing.subsampling import decorrelate_dhdl, decorrelate_u_nk
 from ..estimators import BAR, TI
@@ -18,7 +19,7 @@ from .. import concat
 from .. import __version__
 
 
-class ABFE():
+class ABFE(WorkflowBase):
     '''Alchemical Analysis style automatic workflow.
 
     Parameters
@@ -81,44 +82,41 @@ class ABFE():
         The list of dHdl read from the files.
     '''
     def __init__(self, units='kT', software='Gromacs', dir=os.path.curdir,
-                 prefix='dhdl', suffix='xvg', T=298, skiptime=0, uncorr=None,
-                 threshold=50, methods=None, out=os.path.curdir,
-                 overlap=None, breakdown=None, forwrev=None,
-                 log='result.log'):
+                 prefix='dhdl', suffix='xvg', T=298, out=os.path.curdir):
 
-        logging.basicConfig(filename=log, level=logging.INFO)
+        super().__init__(units, software, T, out)
         self.logger = logging.getLogger('alchemlyb.workflows.ABFE')
         self.logger.info('Initialise Alchemlyb ABFE Workflow')
         self.logger.info('Alchemlyb Version: {}'.format(__version__))
-
-        self.logger.info('Set temperature to {} K.'.format(T))
-        self.T = T
-        self.out = out
+        self.logger.info('Set Temperature to {} K.'.format(T))
+        self.logger.info('Set Software to {}.'.format(software))
 
         self.update_units(units)
 
         self.logger.info('Finding files with prefix: {}, suffix: {} under '
                          'directory {} produced by {}'.format(prefix, suffix,
                                                               dir, software))
-        file_list = glob(join(dir, prefix + '*' + suffix))
+        self.file_list = glob(join(dir, prefix + '*' + suffix))
 
-        self.logger.info('Found {} xvg files.'.format(len(file_list)))
+        self.logger.info('Found {} xvg files.'.format(len(self.file_list)))
         self.logger.info('Unsorted file list: \n{}'.format('\n'.join(
-            file_list)))
+            self.file_list)))
 
         if software.lower() == 'gromacs':
             self.logger.info('Using {} parser to read the data.'.format(
                 software))
-            extract_u_nk = gmx.extract_u_nk
-            extract_dHdl = gmx.extract_dHdl
+            self._extract_u_nk = gmx.extract_u_nk
+            self._extract_dHdl = gmx.extract_dHdl
         else: # pragma: no cover
             raise NameError('{} parser not found.'.format(software))
 
+    def read(self):
+
         u_nk_list = []
         dHdl_list = []
-        for xvg in file_list:
+        for xvg in self.file_list:
             try:
-                u_nk = extract_u_nk(xvg, T=T)
+                u_nk = self._extract_u_nk(xvg, T=self.T)
                 self.logger.info(
                     'Reading {} lines of u_nk from {}'.format(len(u_nk), xvg))
                 u_nk_list.append(u_nk)
@@ -127,7 +125,7 @@ class ABFE():
                     'Error reading read u_nk from {}.'.format(xvg))
 
             try:
-                dhdl = extract_dHdl(xvg, T=T)
+                dhdl = self._extract_dHdl(xvg, T=self.T)
                 self.logger.info(
                     'Reading {} lines of dhdl from {}'.format(len(dhdl), xvg))
                 dHdl_list.append(dhdl)
@@ -139,22 +137,26 @@ class ABFE():
         if len(u_nk_list) > 0:
             self.logger.info('Sort files according to the u_nk.')
             column_names = u_nk_list[0].columns.values.tolist()
-            index_list = sorted(range(len(file_list)),
+            index_list = sorted(range(len(self.file_list)),
                 key=lambda x:column_names.index(
                     u_nk_list[x].reset_index('time').index.values[0]))
         else:
             self.logger.info('Sort files according to the dHdl.')
             column_names = sorted([dHdl.reset_index('time').index.values[0]
                                    for dHdl in dHdl_list])
-            index_list = sorted(range(len(file_list)),
+            index_list = sorted(range(len(self.file_list)),
                 key=lambda x:column_names.index(
                     dHdl_list[x].reset_index('time').index.values[0]))
 
-        self.file_list = [file_list[i] for i in index_list]
+        self.file_list = [self.file_list[i] for i in index_list]
         self.logger.info('Sorted file list: \n{}'.format('\n'.join(
             self.file_list)))
         self.u_nk_list = [u_nk_list[i] for i in index_list]
         self.dHdl_list = [dHdl_list[i] for i in index_list]
+
+    def run(self, skiptime=0, uncorr=None, threshold=50, methods=None,
+            overlap=None, breakdown=None, forwrev=None, *args, **kwargs):
+        self.read()
 
         if uncorr is not None:
             self.preprocess(skiptime=skiptime, uncorr=uncorr,
