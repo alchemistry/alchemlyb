@@ -55,7 +55,7 @@ def test_u_nk_case1():
 
             assert u_nk.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
 
-            assert u_nk.shape == (50001, 28)
+            assert u_nk.shape == (41585, 28)
 
 def test_dHdl_case1():
     """Test that dHdl has the correct form when extracted from expanded ensemble files (case 1).
@@ -68,7 +68,7 @@ def test_dHdl_case1():
             dHdl = extract_dHdl(filename, T=300)
 
             assert dHdl.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
-            assert dHdl.shape == (50001, 4)
+            assert dHdl.shape == (41585, 4)
 
 def test_u_nk_case2():
     """Test that u_nk has the correct form when extracted from expanded ensemble files (case 2).
@@ -82,7 +82,7 @@ def test_u_nk_case2():
 
             assert u_nk.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
 
-            assert u_nk.shape == (25001, 28)
+            assert u_nk.shape == (20769, 28)
 
 def test_u_nk_case3():
     """Test that u_nk has the correct form when extracted from REX files (case 3).
@@ -96,7 +96,7 @@ def test_u_nk_case3():
 
             assert u_nk.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
 
-            assert u_nk.shape == (2500, 28)
+            assert u_nk.shape == (1042, 28)
 
 def test_dHdl_case3():
     """Test that dHdl has the correct form when extracted from REX files (case 3).
@@ -109,7 +109,7 @@ def test_dHdl_case3():
             dHdl = extract_dHdl(filename, T=300)
 
             assert dHdl.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
-            assert dHdl.shape == (2500, 4)
+            assert dHdl.shape == (1042, 4)
 
 def test_u_nk_with_total_energy():
     """Test that the reduced potential is calculated correctly when the total energy is given.
