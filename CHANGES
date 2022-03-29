@@ -13,6 +13,13 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+??/??/2022 xiki-tempula
+  * 0.6.1
+
+Fixes
+  - added AutoMBAR to convergence analysis (#189)
+  
+
 12/28/2021 schlaicha, xiki-tempula, jhenin, ttjoseph, orbeckst
 
   * 0.6.0
