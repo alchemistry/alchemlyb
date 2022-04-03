@@ -21,8 +21,6 @@ The rules for this file:
 Enhancements
   - Add filter function to gmx.extract to make it more robust.
 
-03/04/2022 xiki-tempula
-  * 0.6.1
 
 Fixes
   - added AutoMBAR to convergence analysis (#189)
