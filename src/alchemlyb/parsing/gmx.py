@@ -22,6 +22,8 @@ def extract_u_nk(xvg, T, filter=False):
         Temperature in Kelvin the simulations sampled.
     filter : bool
         Filter out the lines that cannot be parsed.
+        Such as rows with incorrect number of Columns and incorrectly
+        formatted numbers (e.g. 123.45.67, nan or -).
 
     Returns
     -------
@@ -141,6 +143,8 @@ def extract_dHdl(xvg, T, filter=False):
         Temperature in Kelvin the simulations sampled.
     filter : bool
         Filter out the lines that cannot be parsed.
+        Such as rows with incorrect number of Columns and incorrectly
+        formatted numbers (e.g. 123.45.67, nan or -).
 
     Returns
     -------
@@ -295,6 +299,8 @@ def _extract_dataframe(xvg, headers=None, filter=filter):
        reusing if it is already parsed. Direct access by key name
     filter : bool
         Filter out the lines that cannot be parsed.
+        Such as rows with incorrect number of Columns and incorrectly
+        formatted numbers (e.g. 123.45.67, nan or -).
 
     """
     if headers is None:
@@ -310,7 +316,14 @@ def _extract_dataframe(xvg, headers=None, filter=filter):
             for i, col, in enumerate(cols)]
 
     header_cnt = len(headers['_raw_lines'])
-    if filter:
+    if not filter:
+        # default, fast, assumes clean files
+        df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
+                         na_filter=True, memory_map=True, names=cols,
+                         dtype=np.float64,
+                         float_precision='high')
+    else:
+        # slower
         df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
                 memory_map=True, on_bad_lines='skip')
         # If names=cols is passed to read_csv, rows with more than the
@@ -321,11 +334,6 @@ def _extract_dataframe(xvg, headers=None, filter=filter):
         df = df.apply(pd.to_numeric, errors='coerce')
         # drop duplicate
         df.dropna(inplace=True)
-    else:
-        df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
-                         na_filter=True, memory_map=True, names=cols,
-                         dtype=np.float64,
-                         float_precision='high')
 
     # drop duplicated columns (see PR #86 https://github.com/alchemistry/alchemlyb/pull/86/)
     df = df[df.columns[~df.columns.str.endswith("[duplicated]")]]

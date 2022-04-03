@@ -209,49 +209,47 @@ class TestRobustGMX():
             text = bz_file.read()
         return text, len(dhdl)
 
-    def test_sanity(self, data, tmpdir):
+    def test_sanity(self, data, tmp_path):
         '''Test if the test routine is working.'''
         text, length = data
-        new_text = tmpdir.join('text.xvg')
-        new_text.write(text)
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310)
+        new_text = tmp_path / 'text.xvg'
+        new_text.write_text(text)
+        dhdl = extract_dHdl(new_text, 310)
         assert len(dhdl) == length
 
-    def test_truncated_row(self, data, tmpdir):
+    def test_truncated_row(self, data, tmp_path):
         '''Test the case where the last row has been truncated.'''
         text, length = data
-        new_text = tmpdir.join('text.xvg')
-        new_text.write(text + '40010.0 27.0\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310, filter=True)
+        new_text = tmp_path / 'text.xvg'
+        new_text.write_text(text + '40010.0 27.0\n')
+        dhdl = extract_dHdl(new_text, 310, filter=True)
         assert len(dhdl) == length
 
-    def test_truncated_number(self, data, tmpdir):
+    def test_truncated_number(self, data, tmp_path):
         '''Test the case where the last row has been truncated and a - has
         been left.'''
         text, length = data
-        new_text = tmpdir.join('text.xvg')
-        new_text.write(text + '40010.0 27.0 -\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310, filter=True)
+        new_text = tmp_path / 'text.xvg'
+        new_text.write_text(text + '40010.0 27.0 -\n')
+        dhdl = extract_dHdl(new_text, 310, filter=True)
         assert len(dhdl) == length
 
-    def test_weirdnumber(self, data, tmpdir):
+    def test_weirdnumber(self, data, tmp_path):
         '''Test the case where the last number has been appended a weird
         number.'''
         text, length = data
-        new_text = tmpdir.join('text.xvg')
+        new_text = tmp_path / 'text.xvg'
         # Note the 27.040010.0 which is the sum of 27.0 and 40010.0
-        new_text.write(text + '40010.0 27.040010.0 27.0 0.0 6.7 13.5 20.2 27.0 0.7 27.0 0.0 6.7 '
+        new_text.write_text(text + '40010.0 27.040010.0 27.0 0.0 6.7 13.5 20.2 27.0 0.7 27.0 0.0 6.7 '
                        '13.5 20.2 27.0 0.7\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310, filter=True)
+        dhdl = extract_dHdl(new_text, 310, filter=True)
         assert len(dhdl) == length
 
-    def test_too_many_cols(self, data, tmpdir):
+    def test_too_many_cols(self, data, tmp_path):
         '''Test the case where the row has too many columns.'''
         text, length = data
-        new_text = tmpdir.join('text.xvg')
-        new_text.write(text +
+        new_text = tmp_path / 'text.xvg'
+        new_text.write_text(text +
                        '40010.0 27.0 0.0 6.7 13.5 20.2 27.0 0.7 27.0 0.0 6.7 13.5 20.2 27.0 0.7\n')
-        dhdl = extract_dHdl(tmpdir.join('text.xvg'), 310, filter=True)
+        dhdl = extract_dHdl(new_text, 310, filter=True)
         assert len(dhdl) == length
-
-
