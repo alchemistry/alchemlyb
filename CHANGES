@@ -13,7 +13,15 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2022 xiki-tempula
+
+*/*/2022 xiki-tempula
+
+  * 0.7.0
+
+Enhancements
+  - Add filter function to gmx.extract to make it more robust.
+
+03/04/2022 xiki-tempula
   * 0.6.1
 
 Fixes
