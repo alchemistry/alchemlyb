@@ -11,7 +11,7 @@ from ..postprocessors.units import R_kJmol
 k_b = R_kJmol
 
 @_init_attrs
-def extract_u_nk(xvg, T, filter=False):
+def extract_u_nk(xvg, T, filter=True):
     r"""Return reduced potentials `u_nk` from a Hamiltonian differences XVG file.
 
     Parameters
@@ -52,6 +52,10 @@ def extract_u_nk(xvg, T, filter=False):
         the constants used by the corresponding MD engine.
         This leads to slightly different results for GROMACS input compared to
         previous versions of alchemlyb.
+
+    .. versionchanged:: 0.7.0
+        The keyword filter is implemented to ignore the line that cannot be
+        parsed and is turned on by default.
 
     """
 
@@ -132,7 +136,7 @@ def extract_u_nk(xvg, T, filter=False):
     return u_k
 
 @_init_attrs
-def extract_dHdl(xvg, T, filter=False):
+def extract_dHdl(xvg, T, filter=True):
     r"""Return gradients `dH/dl` from a Hamiltonian differences XVG file.
 
     Parameters
@@ -172,6 +176,10 @@ def extract_dHdl(xvg, T, filter=False):
         the constants used by the corresponding MD engine.
         This leads to slightly different results for GROMACS input compared to
         previous versions of alchemlyb.
+
+    .. versionchanged:: 0.7.0
+        The keyword filter is implemented to ignore the line that cannot be
+        parsed and is turned on by default.
 
     """
     beta = 1/(k_b * T)

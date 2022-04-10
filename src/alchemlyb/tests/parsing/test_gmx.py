@@ -51,7 +51,7 @@ def test_u_nk_case1():
 
     for leg in dataset['data']:
         for filename in dataset['data'][leg]:
-            u_nk = extract_u_nk(filename, T=300)
+            u_nk = extract_u_nk(filename, T=300, filter=False)
 
             assert u_nk.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
 
@@ -65,7 +65,7 @@ def test_dHdl_case1():
 
     for leg in dataset['data']:
         for filename in dataset['data'][leg]:
-            dHdl = extract_dHdl(filename, T=300)
+            dHdl = extract_dHdl(filename, T=300, filter=False)
 
             assert dHdl.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
             assert dHdl.shape == (50001, 4)
@@ -78,7 +78,7 @@ def test_u_nk_case2():
 
     for leg in dataset['data']:
         for filename in dataset['data'][leg]:
-            u_nk = extract_u_nk(filename, T=300)
+            u_nk = extract_u_nk(filename, T=300, filter=False)
 
             assert u_nk.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
 
@@ -92,7 +92,7 @@ def test_u_nk_case3():
 
     for leg in dataset['data']:
         for filename in dataset['data'][leg]:
-            u_nk = extract_u_nk(filename, T=300)
+            u_nk = extract_u_nk(filename, T=300, filter=False)
 
             assert u_nk.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
 
@@ -106,7 +106,7 @@ def test_dHdl_case3():
 
     for leg in dataset['data']:
         for filename in dataset['data'][leg]:
-            dHdl = extract_dHdl(filename, T=300)
+            dHdl = extract_dHdl(filename, T=300, filter=False)
 
             assert dHdl.index.names == ['time', 'fep-lambda', 'coul-lambda', 'vdw-lambda', 'restraint-lambda']
             assert dHdl.shape == (2500, 4)
