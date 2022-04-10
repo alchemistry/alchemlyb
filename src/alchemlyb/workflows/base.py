@@ -123,4 +123,4 @@ class WorkflowBase():
         """ The function for producing any plots.
 
         """
-        ...
+        pass
