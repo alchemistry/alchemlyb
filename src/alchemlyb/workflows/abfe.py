@@ -111,7 +111,6 @@ class ABFE(WorkflowBase):
             raise NameError('{} parser not found.'.format(software))
 
     def read(self):
-
         u_nk_list = []
         dHdl_list = []
         for xvg in self.file_list:
@@ -179,7 +178,8 @@ class ABFE(WorkflowBase):
             plt.close(fig)
 
         if forwrev is not None:
-            ax = self.check_convergence(forwrev, estimator='mbar', dF_t='dF_t.pdf')
+            ax = self.check_convergence(forwrev, estimator='autombar',
+                                        dF_t='dF_t.pdf')
             plt.close(ax.figure)
 
 
@@ -580,7 +580,7 @@ class ABFE(WorkflowBase):
                          ''.format(dF_state, self.out))
         return fig
 
-    def check_convergence(self, forwrev, estimator='mbar', dF_t='dF_t.pdf',
+    def check_convergence(self, forwrev, estimator='autombar', dF_t='dF_t.pdf',
                      ax=None):
         '''Compute the forward and backward convergence using
         :func:`~alchemlyb.convergence.forward_backward_convergence`and
@@ -594,7 +594,7 @@ class ABFE(WorkflowBase):
             directions, with the specified number of points in the time plot.
             The number of time points (an integer) must be provided.
         estimator : str
-            The estimator used for convergence analysis. Default: 'mbar'
+            The estimator used for convergence analysis. Default: 'autombar'
         dF_t : str
             The filename for the plot of convergence. Default: 'dF_t.pdf'
         ax : matplotlib.axes.Axes

@@ -68,7 +68,7 @@ class Test_automatic_ABFE():
         assert os.path.isfile(os.path.join(workflow.out, 'dF_t.pdf'))
         assert len(workflow.convergence) == 10
 
-class Test_manual_ABFE():
+class Test_manual_ABFE(Test_automatic_ABFE):
     '''Test the manual workflow for load_ABFE from alchemtest.gmx for three
     stage transformation.'''
 
@@ -88,50 +88,50 @@ class Test_manual_ABFE():
         workflow.plot_dF_state(dF_state='dF_state.pdf')
         workflow.check_convergence(10, dF_t='dF_t.pdf')
         return workflow
-
-    def test_read(self, workflow):
-        '''test if the files has been loaded correctly.'''
-        assert len(workflow.u_nk_list) == 30
-        assert len(workflow.dHdl_list) == 30
-        assert all([len(u_nk) == 1001 for u_nk in workflow.u_nk_list])
-        assert all([len(dHdl) == 1001 for dHdl in workflow.dHdl_list])
-
-    def test_subsample(self, workflow):
-        '''Test if the data has been shrinked by subsampling.'''
-        assert len(workflow.u_nk_sample_list) == 30
-        assert len(workflow.dHdl_sample_list) == 30
-        assert all([len(u_nk) < 1001 for u_nk in workflow.u_nk_sample_list])
-        assert all([len(dHdl) < 1001 for dHdl in workflow.dHdl_sample_list])
-
-    def test_estimator(self, workflow):
-        '''Test if all three estimator has been used.'''
-        assert len(workflow.estimator) == 3
-        assert 'mbar' in workflow.estimator
-        assert 'ti' in workflow.estimator
-        assert 'bar' in workflow.estimator
-
-    def test_O_MBAR(self, workflow):
-        '''test if the O_MBAR.pdf has been plotted.'''
-        assert os.path.isfile(os.path.join(workflow.out, 'O_MBAR.pdf'))
-
-    def test_dhdl_TI(self, workflow):
-        '''test if the dhdl_TI.pdf has been plotted.'''
-        assert os.path.isfile(os.path.join(workflow.out, 'dhdl_TI.pdf'))
-
-    def test_dF_state(self, workflow):
-        '''test if the dF_state.pdf has been plotted.'''
-        assert os.path.isfile(os.path.join(workflow.out, 'dF_state.pdf'))
-
-    def test_convergence(self, workflow):
-        '''test if the dF_state.pdf has been plotted.'''
-        assert os.path.isfile(os.path.join(workflow.out, 'dF_t.pdf'))
-        assert len(workflow.convergence) == 10
-
-    def test_convergence_TI(self, workflow):
-        '''test if the dF_state.pdf has been plotted.'''
-        workflow.check_convergence(10, estimator='ti', dF_t='test_dF_t.pdf')
-        assert os.path.isfile(os.path.join(workflow.out, 'test_dF_t.pdf'))
-        assert len(workflow.convergence) == 10
+    #
+    # def test_read(self, workflow):
+    #     '''test if the files has been loaded correctly.'''
+    #     assert len(workflow.u_nk_list) == 30
+    #     assert len(workflow.dHdl_list) == 30
+    #     assert all([len(u_nk) == 1001 for u_nk in workflow.u_nk_list])
+    #     assert all([len(dHdl) == 1001 for dHdl in workflow.dHdl_list])
+    #
+    # def test_subsample(self, workflow):
+    #     '''Test if the data has been shrinked by subsampling.'''
+    #     assert len(workflow.u_nk_sample_list) == 30
+    #     assert len(workflow.dHdl_sample_list) == 30
+    #     assert all([len(u_nk) < 1001 for u_nk in workflow.u_nk_sample_list])
+    #     assert all([len(dHdl) < 1001 for dHdl in workflow.dHdl_sample_list])
+    #
+    # def test_estimator(self, workflow):
+    #     '''Test if all three estimator has been used.'''
+    #     assert len(workflow.estimator) == 3
+    #     assert 'mbar' in workflow.estimator
+    #     assert 'ti' in workflow.estimator
+    #     assert 'bar' in workflow.estimator
+    #
+    # def test_O_MBAR(self, workflow):
+    #     '''test if the O_MBAR.pdf has been plotted.'''
+    #     assert os.path.isfile(os.path.join(workflow.out, 'O_MBAR.pdf'))
+    #
+    # def test_dhdl_TI(self, workflow):
+    #     '''test if the dhdl_TI.pdf has been plotted.'''
+    #     assert os.path.isfile(os.path.join(workflow.out, 'dhdl_TI.pdf'))
+    #
+    # def test_dF_state(self, workflow):
+    #     '''test if the dF_state.pdf has been plotted.'''
+    #     assert os.path.isfile(os.path.join(workflow.out, 'dF_state.pdf'))
+    #
+    # def test_convergence(self, workflow):
+    #     '''test if the dF_state.pdf has been plotted.'''
+    #     assert os.path.isfile(os.path.join(workflow.out, 'dF_t.pdf'))
+    #     assert len(workflow.convergence) == 10
+    #
+    # def test_convergence_TI(self, workflow):
+    #     '''test if the dF_state.pdf has been plotted.'''
+    #     workflow.check_convergence(10, estimator='ti', dF_t='test_dF_t.pdf')
+    #     assert os.path.isfile(os.path.join(workflow.out, 'test_dF_t.pdf'))
+    #     assert len(workflow.convergence) == 10
 
 
 class Test_automatic_benzene():
