@@ -325,13 +325,12 @@ def _extract_dataframe(xvg, headers=None, filter=filter):
 
     header_cnt = len(headers['_raw_lines'])
     if not filter:
-        # default, fast, assumes clean files
+        # assumes clean files
         df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
                          na_filter=True, memory_map=True, names=cols,
                          dtype=np.float64,
                          float_precision='high')
     else:
-        # slower
         df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
                 memory_map=True, on_bad_lines='skip')
         # If names=cols is passed to read_csv, rows with more than the
