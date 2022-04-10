@@ -57,9 +57,9 @@ class WorkflowBase():
 
         """
         self.read()
-        self.subsample()
+        self.preprocess()
         self.estimate()
-        self.convergence()
+        self.check_convergence()
         self.plot()
 
     def read(self, *args, **kwargs):
@@ -78,7 +78,7 @@ class WorkflowBase():
         self.u_nk_list = []
         self.dHdl_list = []
 
-    def subsample(self, *args, **kwargs):
+    def preprocess(self, *args, **kwargs):
         """ The function that subsample the u_nk and dHdl in `u_nk_list` and
         `dHdl_list`.
 
@@ -107,7 +107,7 @@ class WorkflowBase():
         """
         self.result = pd.DataFrame()
 
-    def convergence(self, *args, **kwargs):
+    def check_convergence(self, *args, **kwargs):
         """ The function for doing convergence analysis.
 
         Attributes
@@ -123,4 +123,4 @@ class WorkflowBase():
         """ The function for producing any plots.
 
         """
-        ...
+        pass

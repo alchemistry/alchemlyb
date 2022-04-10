@@ -12,7 +12,7 @@ class Test_automatic_base():
         workflow.run()
         return workflow
 
-    def test_write(self, workflow, tmpdir):
+    def test_write(self, workflow):
         '''Patch the output directory to tmpdir'''
         workflow.result.to_pickle(os.path.join(workflow.out, 'result.pkl'))
         assert os.path.exists(os.path.join(workflow.out, 'result.pkl'))

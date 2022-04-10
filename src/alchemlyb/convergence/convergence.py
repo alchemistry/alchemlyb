@@ -2,8 +2,7 @@ import pandas as pd
 import logging
 import numpy as np
 
-from ..estimators import BAR, TI
-from ..estimators import AutoMBAR as MBAR
+from ..estimators import MBAR, BAR, TI, AutoMBAR
 from .. import concat
 
 
@@ -21,7 +20,7 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
     ----------
     df_list : list
         List of DataFrame of either dHdl or u_nk.
-    estimator : {'mbar', 'bar', 'ti'}
+    estimator : {'mbar', 'bar', 'ti', 'autombar'}
         Name of the estimators.
     num : int
         The number of time points.
@@ -55,6 +54,9 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
     if estimator.lower() == 'mbar':
         logger.info('Use MBAR estimator for convergence analysis.')
         estimator_fit = MBAR().fit
+    elif estimator.lower() == 'autombar':
+        logger.info('Use AutoMBAR estimator for convergence analysis.')
+        estimator_fit = AutoMBAR().fit
     elif estimator.lower() == 'bar':
         logger.info('Use BAR estimator for convergence analysis.')
         estimator_fit = BAR().fit
