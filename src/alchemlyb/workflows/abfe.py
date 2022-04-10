@@ -96,7 +96,8 @@ class ABFE(WorkflowBase):
         self.logger.info('Finding files with prefix: {}, suffix: {} under '
                          'directory {} produced by {}'.format(prefix, suffix,
                                                               dir, software))
-        self.file_list = glob(join(dir, prefix + '*' + suffix))
+        self.file_list = glob(dir + '/**/' + prefix + '*' + suffix, \
+                         recursive=True)
 
         self.logger.info('Found {} xvg files.'.format(len(self.file_list)))
         self.logger.info('Unsorted file list: \n{}'.format('\n'.join(

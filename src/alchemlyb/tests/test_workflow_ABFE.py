@@ -279,7 +279,9 @@ class Test_automatic_amber():
     @pytest.fixture(scope='session')
     def workflow(tmp_path_factory):
         outdir = tmp_path_factory.mktemp("out")
-        dir = os.path.dirname(load_bace_example()['data']['complex']['vdw'][0])
+        dir, _ = os.path.split(
+            os.path.dirname(load_bace_example()['data']['complex']['vdw'][0]))
+
         workflow = ABFE(units='kcal/mol', software='Amber', dir=dir,
                         prefix='ti', suffix='bz2', T=310, out=str(outdir))
         workflow.read()
@@ -289,4 +291,4 @@ class Test_automatic_amber():
     def test_summary(self, workflow):
         '''Test if if the summary is right.'''
         summary = workflow.generate_result()
-        assert np.isclose(summary['TI']['Stages']['TOTAL'], 0.0, 0.1)
+        assert np.isclose(summary['TI']['Stages']['TOTAL'], 1.40405980473, 0.1)
