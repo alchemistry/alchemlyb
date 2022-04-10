@@ -4,6 +4,7 @@ import os
 
 from alchemlyb.workflows.abfe import ABFE
 from alchemtest.gmx import load_ABFE, load_benzene
+from alchemtest.amber import load_bace_example
 
 class Test_automatic_ABFE():
     '''Test the full automatic workflow for load_ABFE from alchemtest.gmx for
@@ -269,3 +270,23 @@ class Test_methods():
                             None)
         workflow.check_convergence(10, estimator='ti')
         assert len(workflow.convergence) == 10
+
+class Test_automatic_amber():
+    '''Test the full automatic workflow for load_ABFE from alchemtest.gmx for
+    three stage transformation.'''
+
+    @staticmethod
+    @pytest.fixture(scope='session')
+    def workflow(tmp_path_factory):
+        outdir = tmp_path_factory.mktemp("out")
+        dir = os.path.dirname(load_bace_example()['data']['complex']['vdw'][0])
+        workflow = ABFE(units='kcal/mol', software='Amber', dir=dir,
+                        prefix='ti', suffix='bz2', T=310, out=str(outdir))
+        workflow.read()
+        workflow.estimate(methods='ti')
+        return workflow
+
+    def test_summary(self, workflow):
+        '''Test if if the summary is right.'''
+        summary = workflow.generate_result()
+        assert np.isclose(summary['TI']['Stages']['TOTAL'], 0.0, 0.1)

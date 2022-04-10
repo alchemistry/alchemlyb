@@ -7,7 +7,7 @@ import logging
 import matplotlib.pyplot as plt
 
 from .base import WorkflowBase
-from ..parsing import gmx
+from ..parsing import gmx, amber
 from ..preprocessing.subsampling import decorrelate_dhdl, decorrelate_u_nk
 from ..estimators import BAR, TI
 from ..estimators import AutoMBAR as MBAR
@@ -107,6 +107,9 @@ class ABFE(WorkflowBase):
                 software))
             self._extract_u_nk = gmx.extract_u_nk
             self._extract_dHdl = gmx.extract_dHdl
+        elif software.lower() == 'amber':
+            self._extract_u_nk = amber.extract_u_nk
+            self._extract_dHdl = amber.extract_dHdl
         else: # pragma: no cover
             raise NameError('{} parser not found.'.format(software))
 
