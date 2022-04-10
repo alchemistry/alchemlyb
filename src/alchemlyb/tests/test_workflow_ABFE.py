@@ -263,3 +263,9 @@ class Test_methods():
         workflow.estimate()
         assert len(workflow.estimator) == 3
         assert 'mbar' in workflow.estimator
+
+    def test_unprocessed_dhdl(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'dHdl_sample_list',
+                            None)
+        workflow.check_convergence(10, estimator='ti')
+        assert len(workflow.convergence) == 10

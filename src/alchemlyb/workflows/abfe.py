@@ -622,11 +622,11 @@ class ABFE(WorkflowBase):
                 u_nk_list = self.u_nk_sample_list
                 self.logger.info('Subsampled u_nk is available.')
             else:
-                try:
+                if self.u_nk_list is not None:
                     u_nk_list = self.u_nk_list
                     self.logger.info('Subsampled u_nk not available, '
                                      'use original data instead.')
-                except AttributeError:  # pragma: no cover
+                else:  # pragma: no cover
                     self.logger.warning('u_nk is not available.')
             convergence = forward_backward_convergence(u_nk_list,
                                                        estimator=estimator,
@@ -636,11 +636,11 @@ class ABFE(WorkflowBase):
                 dHdl_list = self.dHdl_sample_list
                 self.logger.info('Subsampled dHdl is available.')
             else:
-                try:
+                if self.dHdl_list is not None:
                     dHdl_list = self.dHdl_list
                     self.logger.info('Subsampled dHdl not available, '
                                      'use original data instead.')
-                except AttributeError: # pragma: no cover
+                else:  # pragma: no cover
                     self.logger.warning('dHdl is not available.')
             convergence = forward_backward_convergence(dHdl_list,
                                                        estimator=estimator,
