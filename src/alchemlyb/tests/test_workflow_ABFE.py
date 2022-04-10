@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 import os
-from unittest.mock import patch
 
 from alchemlyb.workflows.abfe import ABFE
 from alchemtest.gmx import load_ABFE, load_benzene
@@ -37,7 +36,7 @@ class Test_automatic_ABFE():
         assert all([len(dHdl) < 1001 for dHdl in workflow.dHdl_sample_list])
 
     def test_estimator(self, workflow):
-        '''Test if all three estimator has been used.'''
+        '''Test if all three estimators have been used.'''
         assert len(workflow.estimator) == 3
         assert 'mbar' in workflow.estimator
         assert 'ti' in workflow.estimator
@@ -50,15 +49,15 @@ class Test_automatic_ABFE():
         assert np.isclose(summary['TI']['Stages']['TOTAL'], 21.8, 0.1)
         assert np.isclose(summary['BAR']['Stages']['TOTAL'], 21.8, 0.1)
 
-    def test_O_MBAR(self, workflow):
+    def test_plot_O_MBAR(self, workflow):
         '''test if the O_MBAR.pdf has been plotted.'''
         assert os.path.isfile(os.path.join(workflow.out, 'O_MBAR.pdf'))
 
-    def test_dhdl_TI(self, workflow):
+    def test_plot_dhdl_TI(self, workflow):
         '''test if the dhdl_TI.pdf has been plotted.'''
         assert os.path.isfile(os.path.join(workflow.out, 'dhdl_TI.pdf'))
 
-    def test_dF_state(self, workflow):
+    def test_plot_dF_state(self, workflow):
         '''test if the dF_state.pdf has been plotted.'''
         assert os.path.isfile(os.path.join(workflow.out, 'dF_state.pdf'))
         assert os.path.isfile(os.path.join(workflow.out, 'dF_state_long.pdf'))
@@ -88,51 +87,27 @@ class Test_manual_ABFE(Test_automatic_ABFE):
         workflow.plot_dF_state(dF_state='dF_state.pdf')
         workflow.check_convergence(10, dF_t='dF_t.pdf')
         return workflow
-    #
-    # def test_read(self, workflow):
-    #     '''test if the files has been loaded correctly.'''
-    #     assert len(workflow.u_nk_list) == 30
-    #     assert len(workflow.dHdl_list) == 30
-    #     assert all([len(u_nk) == 1001 for u_nk in workflow.u_nk_list])
-    #     assert all([len(dHdl) == 1001 for dHdl in workflow.dHdl_list])
-    #
-    # def test_subsample(self, workflow):
-    #     '''Test if the data has been shrinked by subsampling.'''
-    #     assert len(workflow.u_nk_sample_list) == 30
-    #     assert len(workflow.dHdl_sample_list) == 30
-    #     assert all([len(u_nk) < 1001 for u_nk in workflow.u_nk_sample_list])
-    #     assert all([len(dHdl) < 1001 for dHdl in workflow.dHdl_sample_list])
-    #
-    # def test_estimator(self, workflow):
-    #     '''Test if all three estimator has been used.'''
-    #     assert len(workflow.estimator) == 3
-    #     assert 'mbar' in workflow.estimator
-    #     assert 'ti' in workflow.estimator
-    #     assert 'bar' in workflow.estimator
-    #
-    # def test_O_MBAR(self, workflow):
-    #     '''test if the O_MBAR.pdf has been plotted.'''
-    #     assert os.path.isfile(os.path.join(workflow.out, 'O_MBAR.pdf'))
-    #
-    # def test_dhdl_TI(self, workflow):
-    #     '''test if the dhdl_TI.pdf has been plotted.'''
-    #     assert os.path.isfile(os.path.join(workflow.out, 'dhdl_TI.pdf'))
-    #
-    # def test_dF_state(self, workflow):
-    #     '''test if the dF_state.pdf has been plotted.'''
-    #     assert os.path.isfile(os.path.join(workflow.out, 'dF_state.pdf'))
-    #
-    # def test_convergence(self, workflow):
-    #     '''test if the dF_state.pdf has been plotted.'''
-    #     assert os.path.isfile(os.path.join(workflow.out, 'dF_t.pdf'))
-    #     assert len(workflow.convergence) == 10
-    #
-    # def test_convergence_TI(self, workflow):
-    #     '''test if the dF_state.pdf has been plotted.'''
-    #     workflow.check_convergence(10, estimator='ti', dF_t='test_dF_t.pdf')
-    #     assert os.path.isfile(os.path.join(workflow.out, 'test_dF_t.pdf'))
-    #     assert len(workflow.convergence) == 10
 
+    def test_plot_dF_state(self, workflow):
+        '''test if the dF_state.pdf has been plotted.'''
+        assert os.path.isfile(os.path.join(workflow.out, 'dF_state.pdf'))
+
+    def test_convergence_nosample_u_nk(self, workflow, monkeypatch):
+        '''test if the convergence routine would use the unsampled data
+        when the data has not been subsampled.'''
+        monkeypatch.setattr(workflow, 'u_nk_sample_list',
+                            None)
+        workflow.check_convergence(10)
+        assert len(workflow.convergence) == 10
+
+    def test_dhdl_TI_noTI(self, workflow, monkeypatch):
+        '''Test to plot the dhdl_TI when ti estimator is not there'''
+        no_TI = workflow.estimator
+        no_TI.pop('ti')
+        monkeypatch.setattr(workflow, 'estimator',
+                            no_TI)
+        with pytest.raises(ValueError):
+            workflow.plot_ti_dhdl(dhdl_TI='dhdl_TI.pdf')
 
 class Test_automatic_benzene():
     '''Test the full automatic workflow for load_benzene from alchemtest.gmx for
@@ -187,15 +162,15 @@ class Test_automatic_benzene():
 class Test_unpertubed_lambda():
     '''Test the if two lamdas present and one of them is not pertubed.
 
-                                       fep  bound
-time    fep-lambda bound-lambda
-0.0     0.5        0             12.958159      0
-10.0    0.5        0             -1.062968      0
-20.0    0.5        0              1.019020      0
-30.0    0.5        0              5.029051      0
-40.0    0.5        0              7.768072      0
+                                           fep  bound
+    time    fep-lambda bound-lambda
+    0.0     0.5        0             12.958159      0
+    10.0    0.5        0             -1.062968      0
+    20.0    0.5        0              1.019020      0
+    30.0    0.5        0              5.029051      0
+    40.0    0.5        0              7.768072      0
 
-Where only fep-lambda changes but the bonded-lambda is always 0.
+    Where only fep-lambda changes but the bonded-lambda is always 0.
     '''
 
     @staticmethod
@@ -235,7 +210,7 @@ Where only fep-lambda changes but the bonded-lambda is always 0.
         assert os.path.isfile(os.path.join(workflow.out, 'dF_t.pdf'))
         assert len(workflow.convergence) == 10
 
-    def test_single_estimator_mbar(self, workflow):
+    def test_single_estimator_ti(self, workflow):
         workflow.estimate(methods='ti')
         summary = workflow.generate_result()
         assert np.isclose(summary['TI']['Stages']['TOTAL'], 2.946, 0.1)
@@ -245,19 +220,22 @@ class Test_methods():
 
     @staticmethod
     @pytest.fixture(scope='class')
-    def workflow():
+    def workflow(tmp_path_factory):
+        outdir = tmp_path_factory.mktemp("out")
         dir = os.path.dirname(os.path.dirname(
             load_benzene()['data']['Coulomb'][0]))
         dir = os.path.join(dir, '*')
         workflow = ABFE(software='Gromacs', dir=dir, prefix='dhdl',
-                        suffix='bz2', T=310)
+                        suffix='bz2', T=310, out=outdir)
         workflow.read()
         return workflow
 
     def test_uncorr_threshold(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow.u_nk_list,
+        '''Test if the full data will be used when the number of data points
+        are less than the threshold.'''
+        monkeypatch.setattr(workflow, 'u_nk_list',
                             [u_nk[:40] for u_nk in workflow.u_nk_list])
-        monkeypatch.setattr(workflow.dHdl_list,
+        monkeypatch.setattr(workflow, 'dHdl_list',
                             [dHdl[:40] for dHdl in workflow.dHdl_list])
         workflow.preprocess(threshold=50)
         assert all([len(u_nk) == 40 for u_nk in workflow.u_nk_sample_list])
@@ -274,15 +252,14 @@ class Test_methods():
         workflow.estimate(methods='ti')
         summary = workflow.generate_result()
         assert np.isclose(summary['TI']['Stages']['TOTAL'], 2.946, 0.1)
-        workflow.u_nk_list = u_nk_list
 
     def test_bar_convergence(self, workflow):
         workflow.check_convergence(10, estimator='bar')
-        assert os.path.isfile('dF_t.pdf')
-        os.remove('dF_t.pdf')
+        assert os.path.isfile(os.path.join(workflow.out, 'dF_t.pdf'))
 
-    def test_unprocessed_n_uk(self, workflow):
-        workflow.u_nk_sample_list = []
+    def test_unprocessed_n_uk(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'u_nk_sample_list',
+                            None)
         workflow.estimate()
         assert len(workflow.estimator) == 3
         assert 'mbar' in workflow.estimator

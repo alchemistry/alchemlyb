@@ -28,7 +28,7 @@ class ABFE(WorkflowBase):
         The unit used for printing and plotting results. {'kcal/mol', 'kJ/mol',
         'kT'}. Default: 'kT'.
     software : str
-        The software used for generating input. {'Gromacs', }
+        The software used for generating input. {'GROMACS', }
     dir : str
         Directory in which data files are stored. Default: os.path.curdir.
     prefix : str
@@ -152,6 +152,8 @@ class ABFE(WorkflowBase):
             self.file_list)))
         self.u_nk_list = [u_nk_list[i] for i in index_list]
         self.dHdl_list = [dHdl_list[i] for i in index_list]
+        self.u_nk_sample_list = None
+        self.dHdl_sample_list = None
 
     def run(self, skiptime=0, uncorr=None, threshold=50, methods=None,
             overlap=None, breakdown=None, forwrev=None, *args, **kwargs):
@@ -294,18 +296,18 @@ class ABFE(WorkflowBase):
         self.estimator = {}
         # Use unprocessed data if preprocess is not performed.
         if 'ti' in methods:
-            try:
+            if self.dHdl_sample_list is not None:
                 dHdl = concat(self.dHdl_sample_list)
-            except (AttributeError, ValueError):
+            else:
                 dHdl = concat(self.dHdl_list)
                 self.logger.warning('dHdl has not been preprocessed.')
             self.logger.info(
                 'A total {} lines of dHdl is used.'.format(len(dHdl)))
 
         if 'bar' in methods or 'mbar' in methods:
-            try:
+            if self.u_nk_sample_list is not None:
                 u_nk = concat(self.u_nk_sample_list)
-            except (AttributeError, ValueError):
+            else:
                 u_nk = concat(self.u_nk_list)
                 self.logger.warning('u_nk has not been preprocessed.')
             self.logger.info(
@@ -547,6 +549,8 @@ class ABFE(WorkflowBase):
             self.logger.info('Plot TI dHdl to {} under {}.'
                              ''.format(dhdl_TI, self.out))
             return ax
+        else:
+            raise ValueError('No TI data available in estimators.')
 
     def plot_dF_state(self, dF_state='dF_state.pdf', labels=None, colors=None,
                       orientation='portrait', nb=10):
@@ -613,11 +617,11 @@ class ABFE(WorkflowBase):
         self.logger.info('Start convergence analysis.')
         self.logger.info('Check data availability.')
 
-        if estimator.lower() in ['mbar', 'bar']:
-            try:
+        if estimator.lower() in ['mbar', 'bar', 'autombar']:
+            if self.u_nk_sample_list is not None:
                 u_nk_list = self.u_nk_sample_list
                 self.logger.info('Subsampled u_nk is available.')
-            except AttributeError:
+            else:
                 try:
                     u_nk_list = self.u_nk_list
                     self.logger.info('Subsampled u_nk not available, '
@@ -628,10 +632,10 @@ class ABFE(WorkflowBase):
                                                        estimator=estimator,
                                                        num=forwrev)
         else:
-            try:
+            if self.dHdl_sample_list is not None:
                 dHdl_list = self.dHdl_sample_list
                 self.logger.info('Subsampled dHdl is available.')
-            except AttributeError:
+            else:
                 try:
                     dHdl_list = self.dHdl_list
                     self.logger.info('Subsampled dHdl not available, '
