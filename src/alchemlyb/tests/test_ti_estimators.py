@@ -34,7 +34,7 @@ def gmx_benzene_vdw_dHdl():
 def gmx_expanded_ensemble_case_1_dHdl():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_1()
 
-    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300, filter=False)
                       for filename in dataset['data']['AllStates']])
 
     return dHdl
@@ -42,7 +42,7 @@ def gmx_expanded_ensemble_case_1_dHdl():
 def gmx_expanded_ensemble_case_2_dHdl():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_2()
 
-    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300, filter=False)
                       for filename in dataset['data']['AllStates']])
 
     return dHdl
@@ -50,7 +50,7 @@ def gmx_expanded_ensemble_case_2_dHdl():
 def gmx_expanded_ensemble_case_3_dHdl():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_3()
 
-    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([gmx.extract_dHdl(filename, T=300, filter=False)
                       for filename in dataset['data']['AllStates']])
 
     return dHdl
