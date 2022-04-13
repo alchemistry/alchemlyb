@@ -36,7 +36,7 @@ def gmx_benzene_vdw_u_nk():
 def gmx_expanded_ensemble_case_1():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_1()
 
-    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300, filter=False)
                       for filename in dataset['data']['AllStates']])
 
     return u_nk
@@ -44,7 +44,7 @@ def gmx_expanded_ensemble_case_1():
 def gmx_expanded_ensemble_case_2():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_2()
 
-    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300, filter=False)
                       for filename in dataset['data']['AllStates']])
 
     return u_nk
@@ -52,7 +52,7 @@ def gmx_expanded_ensemble_case_2():
 def gmx_expanded_ensemble_case_3():
     dataset = alchemtest.gmx.load_expanded_ensemble_case_3()
 
-    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([gmx.extract_u_nk(filename, T=300, filter=False)
                       for filename in dataset['data']['AllStates']])
 
     return u_nk
