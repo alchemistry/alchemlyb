@@ -30,13 +30,11 @@ jobs:
     # More info on options: https://github.com/conda-incubator/setup-miniconda
     - uses: mamba-org/provision-with-micromamba@main
       with:
-        python-version: ${{ matrix.python-version }}
         environment-file: devtools/conda-envs/test_env.yaml
-
-        activate-environment: test
-        auto-update-conda: false
-        auto-activate-base: false
-        show-channel-urls: true
+        environment-name: test
+        extra-specs: |
+            python=${{ matrix.python-version }}
+            pytest=${{ matrix.pytest }}
 
     - name: Install alchemtest
       # conda setup requires this special shell
