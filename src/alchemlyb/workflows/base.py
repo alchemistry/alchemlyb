@@ -28,7 +28,7 @@ class WorkflowBase():
 
     """
     def __init__(self, units='kT', software='Gromacs', T=298, out='./', *args,
-    **kwargs):
+                 **kwargs):
 
         self.T = T
         self.software = software
