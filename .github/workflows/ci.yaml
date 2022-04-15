@@ -54,6 +54,8 @@ jobs:
 
       run: |
         pytest -v --cov=alchemlyb --cov-report=xml --color=yes src/alchemlyb/tests
+      env:
+        MPLBACKEND: agg
 
     - name: Codecov
       uses: codecov/codecov-action@v1.5.2
