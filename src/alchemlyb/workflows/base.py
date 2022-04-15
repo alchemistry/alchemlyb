@@ -37,7 +37,7 @@ class WorkflowBase():
         self.out = out
 
     def run(self, *args, **kwargs):
-        """ Run the flow in an automatic fashion.
+        """ Run the workflow in an automatic fashion.
 
         Attributes
         ----------
