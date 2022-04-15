@@ -42,7 +42,7 @@ jobs:
       run: |
         python -m pip install https://github.com/alchemistry/alchemtest/archive/master.zip
 
-    - name: Install package (with no dependencis)
+    - name: Install package (with no dependencies)
       # conda setup requires this special shell
       shell: bash -l {0}
       run: |
