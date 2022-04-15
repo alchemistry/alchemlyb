@@ -23,7 +23,7 @@ Changes
     (#171, PR #183)
 
 Enhancements
-  - Add a base class for the workflow.
+  - Add a base class for workflows (PR #188).
   - Add filter function to gmx.extract to make it more robust (PR #183): can filter 
     incomplete/corrupted lines (#126, #171) with filter=True.
 
