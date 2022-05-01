@@ -231,6 +231,11 @@ class Test_methods():
         workflow.read()
         return workflow
 
+    def test_run_none(self, workflow):
+        '''Don't run anything'''
+        workflow.run(uncorr=None, methods=None, overlap=None, breakdown=None,
+                     forwrev=None)
+
     def test_uncorr_threshold(self, workflow, monkeypatch):
         '''Test if the full data will be used when the number of data points
         are less than the threshold.'''

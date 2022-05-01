@@ -143,7 +143,7 @@ class ABFE(WorkflowBase):
             index_list = sorted(range(len(self.file_list)),
                 key=lambda x:column_names.index(
                     u_nk_list[x].reset_index('time').index.values[0]))
-        else: # pragma: no cover
+        else:
             self.logger.info('Sort files according to the dHdl.')
             column_names = sorted([dHdl.reset_index('time').index.values[0]
                                    for dHdl in dHdl_list])
