@@ -18,9 +18,14 @@ The rules for this file:
 
   * 0.7.0
 
+Changes
+  - gmx parser now defaults to dropping NaN and corrupted lines (filter=True) 
+    (#171, PR #183)
+
 Enhancements
+  - Add filter function to gmx.extract to make it more robust (PR #183): can filter 
+    incomplete/corrupted lines (#126, #171) with filter=True.
   - Add a base class for the workflow.
-  - Add filter function to gmx.extract to make it more robust.
 
 
 Fixes
