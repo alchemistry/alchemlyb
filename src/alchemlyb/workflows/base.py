@@ -56,11 +56,11 @@ class WorkflowBase():
             The result of the convergence analysis.
 
         """
-        self.read()
-        self.preprocess()
-        self.estimate()
-        self.check_convergence()
-        self.plot()
+        self.read(*args, **kwargs)
+        self.preprocess(*args, **kwargs)
+        self.estimate(*args, **kwargs)
+        self.check_convergence(*args, **kwargs)
+        self.plot(*args, **kwargs)
 
     def read(self, *args, **kwargs):
         """ The function that reads the files in `file_list` and parse them
