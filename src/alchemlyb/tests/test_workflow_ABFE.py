@@ -258,6 +258,10 @@ class Test_methods():
         workflow.check_convergence(10, estimator='bar')
         assert os.path.isfile(os.path.join(workflow.out, 'dF_t.pdf'))
 
+    def test_ti_convergence(self, workflow):
+        workflow.check_convergence(10, estimator='ti')
+        assert os.path.isfile(os.path.join(workflow.out, 'dF_t.pdf'))
+
     def test_unprocessed_n_uk(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, 'u_nk_sample_list',
                             None)
