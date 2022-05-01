@@ -11,7 +11,7 @@ class WorkflowBase():
         'kT'}. Default: 'kT'.
 
     software : string, optional
-        The software used for generating input. {'Gromacs', }
+        The software used for generating input. {'Gromacs', 'Amber'}
 
     T : float, optional,
         Temperature in K. Default: 298.
