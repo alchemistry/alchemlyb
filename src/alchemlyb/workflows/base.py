@@ -3,6 +3,14 @@ import pandas as pd
 class WorkflowBase():
     """The base class for the Workflow.
 
+    This is the base class for the creation of new Workflow. The
+    initialisation method takes in the MD engine, unit, temperature and
+    output directory. The goal of the initialisation is to check the input
+    files and store them in
+    :attr:`~alchemlyb.workflows.WorkflowBase.file_list`
+    such that they can be read by the
+    :func:`~alchemlyb.workflows.WorkflowBase.read` method.
+
     Parameters
     ----------
 
@@ -11,7 +19,7 @@ class WorkflowBase():
         'kT'}. Default: 'kT'.
 
     software : string, optional
-        The software used for generating input. {'Gromacs', }
+        The software used for generating input. {'Gromacs', 'Amber'}
 
     T : float, optional,
         Temperature in K. Default: 298.
@@ -28,8 +36,7 @@ class WorkflowBase():
 
     """
     def __init__(self, units='kT', software='Gromacs', T=298, out='./', *args,
-    **kwargs):
-
+                 **kwargs):
         self.T = T
         self.software = software
         self.unit = units
@@ -37,7 +44,22 @@ class WorkflowBase():
         self.out = out
 
     def run(self, *args, **kwargs):
-        """ Run the flow in an automatic fashion.
+        """ Run the workflow in an automatic fashion.
+
+        This method would execute the
+        :func:`~alchemlyb.workflows.WorkflowBase.read`,
+        :func:`~alchemlyb.workflows.WorkflowBase.preprocess`,
+        :func:`~alchemlyb.workflows.WorkflowBase.estimate`,
+        :func:`~alchemlyb.workflows.WorkflowBase.check_convergence`,
+        :func:`~alchemlyb.workflows.WorkflowBase.plot`
+        sequentially such that the whole analysis could be done automatically.
+
+        This method takes in an arbitrary number of arguments and pass all
+        of them to the underlying methods. The methods will be selecting the
+        keywords that they would like to use.
+
+        Running this method would generate the resulting attributes for the
+        user to retrieve the results.
 
         Attributes
         ----------
@@ -56,11 +78,11 @@ class WorkflowBase():
             The result of the convergence analysis.
 
         """
-        self.read()
-        self.preprocess()
-        self.estimate()
-        self.check_convergence()
-        self.plot()
+        self.read(*args, **kwargs)
+        self.preprocess(*args, **kwargs)
+        self.estimate(*args, **kwargs)
+        self.check_convergence(*args, **kwargs)
+        self.plot(*args, **kwargs)
 
     def read(self, *args, **kwargs):
         """ The function that reads the files in `file_list` and parse them

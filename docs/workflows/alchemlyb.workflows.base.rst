@@ -6,19 +6,22 @@ template for the workflow development.
 The workflow should be able to run in an automatic fashion. ::
 
     >>> from alchemlyb.workflows.base import WorkflowBase
-    >>> workflow = WorkflowBase()
-    >>> workflow.run()
+    >>> workflow = WorkflowBase(units='kT', software='Gromacs', T=298,
+        out='./', *args, **kwargs)
+    >>> workflow.run(*args, **kwargs)
 
 Three main functions are provided such that the workflow could be run in a
 step-by-step fashion. ::
 
     >>> from alchemlyb.workflows.base import WorkflowBase
-    >>> workflow = WorkflowBase()
-    >>> workflow.read()
-    >>> workflow.preprocess()
-    >>> workflow.estimate()
-    >>> workflow.check_convergence()
-    >>> workflow.plot()
+    >>> workflow = WorkflowBase(units='kT', software='Gromacs', T=298,
+        out='./', *args, **kwargs)
+    >>> workflow.read(*args, **kwargs)
+    >>> workflow.preprocess(*args, **kwargs)
+    >>> workflow.estimate(*args, **kwargs)
+    >>> workflow.check_convergence(*args, **kwargs)
+    >>> workflow.plot(*args, **kwargs)
+
 
 API Reference
 -------------
