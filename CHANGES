@@ -23,13 +23,13 @@ Changes
     (#171, PR #183)
 
 Enhancements
+  - Add a base class for workflows (PR #188).
   - Add filter function to gmx.extract to make it more robust (PR #183): can filter 
     incomplete/corrupted lines (#126, #171) with filter=True.
-    
 
 Fixes
   - added AutoMBAR to convergence analysis (#189)
-  
+
 
 12/28/2021 schlaicha, xiki-tempula, jhenin, ttjoseph, orbeckst
 
@@ -77,7 +77,7 @@ Fixes
 Changes
   - alchemlyb adopts NEP29
     https://numpy.org/neps/nep-0029-deprecation_policy.html
-    to effectively only support the last 2-3 minor Python versions    
+    to effectively only support the last 2-3 minor Python versions
   - Removed support for Python 2.7 and 3.6 (issue #130, #140):
     supported/tested Python versions are 3.7, 3.8, 3.9 on
     Linux, macOS, and Windows
@@ -85,11 +85,11 @@ Changes
     constants used by the corresponding MD engine (issue #125, PR #129).
     This leads to small changes in results from GROMACS simulations in kT
     compared to the previous releases, with a relative difference on the order
-    of 1e-7.    
+    of 1e-7.
   - Added unit-awareness: the base unit remains kT but dataframes need to
     carry the unit and temperature in a DataFrame.attrs so that dataframes
     can be easily converted to different energy units (issue #125)
-  - The parser outputs dataframe with metadata (issue #125, PR #129).    
+  - The parser outputs dataframe with metadata (issue #125, PR #129).
   - Visualisation module will change the data according to input unit
     (issue #125, PR #129).
   - Bump the minimum pandas version to 1.2 (issue #130, #140).
@@ -104,7 +104,7 @@ Fixes
     compatible with pandas.concat() (issue #150, PR #152).
   - Fix the support for pandas >= 1.3 by skipping 1.3.0 (issue #147, PR #148).
   - Fix separate_dhdl not work for multiple columns (issue #149, PR #151).
-  
+
 
 06/08/2021 orbeckst
 
@@ -136,7 +136,7 @@ Changes
   * 0.4.0
 
 Enhancements
-  - Allow the dhdl from TI estimator to be separated for multiple lambda 
+  - Allow the dhdl from TI estimator to be separated for multiple lambda
     (PR #121).
   - Allow the convergence to be plotted. (PR #121)
   - Allow automatic sorting and duplication removal during subsampling

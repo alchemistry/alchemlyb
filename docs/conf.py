@@ -181,3 +181,5 @@ intersphinx_mapping = {'https://docs.python.org/': None,
 # generate stub pages where directed with autosummary
 #autosummary_generate = True
 autosummary_generate_overwrite = False
+# Ensure that the documentation is generated not by alphabetic order.
+autodoc_member_order = 'bysource'
