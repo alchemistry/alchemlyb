@@ -28,7 +28,7 @@ class ABFE(WorkflowBase):
         The unit used for printing and plotting results. {'kcal/mol', 'kJ/mol',
         'kT'}. Default: 'kT'.
     software : str
-        The software used for generating input. {'GROMACS', }
+        The software used for generating input. {'GROMACS', 'AMBER'}
     dir : str
         Directory in which data files are stored. Default: os.path.curdir.
     prefix : str
@@ -37,38 +37,9 @@ class ABFE(WorkflowBase):
         Suffix for datafile sets. Default: 'xvg'.
     T : float
         Temperature in K. Default: 298.
-    skiptime : float
-        Discard data prior to this specified time as 'equilibration' data. Units
-        picoseconds. Default: 0.
-    uncorr : str
-        The observable to be used for the autocorrelation analysis; 'dhdl'
-        (obtained as a sum over those energy components that are changing).
-        Default: `dhdl`
-    threshold : int
-        Proceed with correlated samples if the number of uncorrelated samples is
-        found to be less than this number. If 0 is given, the time series
-        analysis will not be performed at all. Default: 50.
-    methods : str
-        A list of the methods to esitimate the free energy with. Default: None.
     out : str
         Directory in which the output files produced by this script will be
         stored. Default: os.path.curdir.
-    overlap : str
-        The filename for the plot of overlap matrix. Default: None. (not
-        plotting).
-    breakdown : bool
-        Plot the free energy differences evaluated for each pair of adjacent
-        states for all methods, including the dH/dlambda curve for TI. Default:
-        None. (not plotting).
-    forwrev : int
-        Plot the free energy change as a function of time in both directions,
-        with the specified number of points in the time plot. The number of time
-        points (an integer) must be provided. Default: None. (not doing
-        convergence analysis).
-    log : str
-        The filename of the log file. The workflow logs under
-        alchemlyb.workflows.ABFE. Default:
-        'result.log'
 
     Attributes
     ----------
@@ -76,10 +47,6 @@ class ABFE(WorkflowBase):
         The logging object.
     file_list : list
         The list of filenames sorted by the lambda state.
-    u_nk_list : list
-        The list of u_nk read from the files.
-    dHdl_list : list
-        The list of dHdl read from the files.
     '''
     def __init__(self, units='kT', software='Gromacs', dir=os.path.curdir,
                  prefix='dhdl', suffix='xvg', T=298, out=os.path.curdir):
@@ -96,7 +63,7 @@ class ABFE(WorkflowBase):
         self.logger.info('Finding files with prefix: {}, suffix: {} under '
                          'directory {} produced by {}'.format(prefix, suffix,
                                                               dir, software))
-        self.file_list = glob(dir + '/**/' + prefix + '*' + suffix, \
+        self.file_list = glob(dir + '/**/' + prefix + '*' + suffix,
                          recursive=True)
 
         self.logger.info('Found {} xvg files.'.format(len(self.file_list)))
@@ -115,6 +82,16 @@ class ABFE(WorkflowBase):
             raise NameError('{} parser not found.'.format(software))
 
     def read(self):
+        '''Read the u_nk and dHdL data from the
+        :attr:`~alchemlyb.workflows.ABFE.file_list`
+
+        Attributes
+        ----------
+        u_nk_list : list
+            A list of :class:`pandas.DataFrame` of u_nk.
+        dHdl_list : list
+            A list of :class:`pandas.DataFrame` of dHdl.
+        '''
         u_nk_list = []
         dHdl_list = []
         for xvg in self.file_list:
@@ -161,6 +138,44 @@ class ABFE(WorkflowBase):
 
     def run(self, skiptime=0, uncorr=None, threshold=50, methods=None,
             overlap=None, breakdown=None, forwrev=None, *args, **kwargs):
+        ''' The method for running the automatic analysis.
+
+        Parameters
+        ----------
+        skiptime : float
+            Discard data prior to this specified time as 'equilibration' data. Units
+            picoseconds. Default: 0.
+        uncorr : str
+            The observable to be used for the autocorrelation analysis; 'dhdl'
+            (obtained as a sum over those energy components that are changing).
+            Default: `dhdl`
+        threshold : int
+            Proceed with correlated samples if the number of uncorrelated samples is
+            found to be less than this number. If 0 is given, the time series
+            analysis will not be performed at all. Default: 50.
+        methods : str
+            A list of the methods to esitimate the free energy with. Default: None.
+
+        overlap : str
+            The filename for the plot of overlap matrix. Default: None. (not
+            plotting).
+        breakdown : bool
+            Plot the free energy differences evaluated for each pair of adjacent
+            states for all methods, including the dH/dlambda curve for TI. Default:
+            None. (not plotting).
+        forwrev : int
+            Plot the free energy change as a function of time in both directions,
+            with the specified number of points in the time plot. The number of time
+            points (an integer) must be provided. Default: None. (not doing
+            convergence analysis).
+
+        Attributes
+        ----------
+        summary : Dataframe
+            The summary of the free energy estimate.
+        convergence : DataFrame
+            The summary of the convergence results.
+        '''
         self.read()
 
         if uncorr is not None:

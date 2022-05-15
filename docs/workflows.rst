@@ -13,4 +13,5 @@ For developers, the skeleton of the workflow should follow the example in
     :toctree: workflows
 
     base
+    ABFE
 
