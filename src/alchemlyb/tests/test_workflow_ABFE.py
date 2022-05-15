@@ -16,7 +16,7 @@ class Test_automatic_ABFE():
         outdir = tmp_path_factory.mktemp("out")
         dir = os.path.dirname(load_ABFE()['data']['complex'][0])
         workflow = ABFE(units='kcal/mol', software='Gromacs', dir=dir,
-                        prefix='dhdl', suffix='xvg', T=310, out=str(outdir))
+                        prefix='dhdl', suffix='xvg', T=310, outdirectory=str(outdir))
         workflow.run(skiptime=10, uncorr='dhdl', threshold=50,
                      methods=('mbar', 'bar', 'ti'), overlap='O_MBAR.pdf',
                      breakdown=True, forwrev=10)
@@ -78,7 +78,7 @@ class Test_manual_ABFE(Test_automatic_ABFE):
         outdir = tmp_path_factory.mktemp("out")
         dir = os.path.dirname(load_ABFE()['data']['complex'][0])
         workflow = ABFE(software='Gromacs', dir=dir, prefix='dhdl',
-                        suffix='xvg', T=310, out=str(outdir))
+                        suffix='xvg', T=310, outdirectory=str(outdir))
         workflow.update_units('kcal/mol')
         workflow.read()
         workflow.preprocess(skiptime=10, uncorr='dhdl', threshold=50)
@@ -123,7 +123,7 @@ class Test_automatic_benzene():
         dir = os.path.join(dir, '*')
         workflow = ABFE(units='kcal/mol', software='Gromacs', dir=dir,
                         prefix='dhdl', suffix='bz2', T=310,
-                        out=outdir)
+                        outdirectory=outdir)
         workflow.run(skiptime=0, uncorr='dhdl', threshold=50,
                         methods=('mbar', 'bar', 'ti'), overlap='O_MBAR.pdf',
                         breakdown=True, forwrev=10)
@@ -182,7 +182,7 @@ class Test_unpertubed_lambda():
             load_benzene()['data']['Coulomb'][0]))
         dir = os.path.join(dir, '*')
         workflow = ABFE(software='Gromacs', dir=dir, prefix='dhdl',
-                        suffix='bz2', T=310, out=outdir)
+                        suffix='bz2', T=310, outdirectory=outdir)
         workflow.read()
         # Block the n_uk
         workflow.u_nk_list = []
@@ -227,7 +227,7 @@ class Test_methods():
             load_benzene()['data']['Coulomb'][0]))
         dir = os.path.join(dir, '*')
         workflow = ABFE(software='Gromacs', dir=dir, prefix='dhdl',
-                        suffix='bz2', T=310, out=outdir)
+                        suffix='bz2', T=310, outdirectory=outdir)
         workflow.read()
         return workflow
 
@@ -292,7 +292,7 @@ class Test_automatic_amber():
             os.path.dirname(load_bace_example()['data']['complex']['vdw'][0]))
 
         workflow = ABFE(units='kcal/mol', software='Amber', dir=dir,
-                        prefix='ti', suffix='bz2', T=310, out=str(outdir))
+                        prefix='ti', suffix='bz2', T=310, outdirectory=str(outdir))
         workflow.read()
         workflow.estimate(methods='ti')
         return workflow
