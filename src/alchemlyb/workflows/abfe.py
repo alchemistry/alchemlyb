@@ -37,7 +37,7 @@ class ABFE(WorkflowBase):
         Suffix for datafile sets. Default: 'xvg'.
     T : float
         Temperature in K. Default: 298.
-    out : str
+    outdirectory : str
         Directory in which the output files produced by this script will be
         stored. Default: os.path.curdir.
 
@@ -49,9 +49,9 @@ class ABFE(WorkflowBase):
         The list of filenames sorted by the lambda state.
     '''
     def __init__(self, units='kT', software='Gromacs', dir=os.path.curdir,
-                 prefix='dhdl', suffix='xvg', T=298, out=os.path.curdir):
+                 prefix='dhdl', suffix='xvg', T=298, outdirectory=os.path.curdir):
 
-        super().__init__(units, software, T, out)
+        super().__init__(units, software, T, outdirectory)
         self.logger = logging.getLogger('alchemlyb.workflows.ABFE')
         self.logger.info('Initialise Alchemlyb ABFE Workflow')
         self.logger.info('Alchemlyb Version: {}'.format(__version__))
