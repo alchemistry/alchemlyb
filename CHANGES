@@ -24,6 +24,7 @@ Changes
 
 Enhancements
   - Add a base class for workflows (PR #188).
+  - Add the ABFE workflow (PR #114).
   - Add filter function to gmx.extract to make it more robust (PR #183): can filter 
     incomplete/corrupted lines (#126, #171) with filter=True.
 

@@ -65,7 +65,8 @@ The library is structured as follows, following a similar style to
     │   ├── ti_dhdl.py
     │   └── ...
     └── workflows           ### WORK IN PROGRESS
-        └── ...
+    │   ├── base.py
+    │   ├── abfe.py
          
 
 * The :mod:`~alchemlyb.parsing` submodule contains parsers for individual MD engines, since the output files needed to perform alchemical free energy calculations vary widely and are not standardized.  Each module at the very least provides an `extract_u_nk` function for extracting reduced potentials (needed for MBAR), as well as an `extract_dHdl` function for extracting derivatives required for thermodynamic integration.  Other helper functions may be exposed for additional processing, such as generating an XVG file from an EDR file in the case of GROMACS.  All `extract\_*` functions take similar arguments (a file path, parameters such as temperature), and produce standard outputs (:class:`pandas.DataFrame` for reduced potentials, :class:`pandas.Series` for derivatives).
