@@ -136,8 +136,9 @@ class ABFE(WorkflowBase):
         self.u_nk_sample_list = None
         self.dHdl_sample_list = None
 
-    def run(self, skiptime=0, uncorr=None, threshold=50, methods=None,
-            overlap=None, breakdown=None, forwrev=None, *args, **kwargs):
+    def run(self, skiptime=0, uncorr='dhdl', threshold=50,
+            methods=('mbar', 'bar', 'ti'), overlap='O_MBAR.pdf',
+            breakdown=True, forwrev=10, *args, **kwargs):
         ''' The method for running the automatic analysis.
 
         Parameters
@@ -148,26 +149,25 @@ class ABFE(WorkflowBase):
         uncorr : str
             The observable to be used for the autocorrelation analysis; 'dhdl'
             (obtained as a sum over those energy components that are changing).
-            Default: `dhdl`
+            Specify as `None` will not uncorrelate the data. Default: `dhdl`.
         threshold : int
             Proceed with correlated samples if the number of uncorrelated samples is
             found to be less than this number. If 0 is given, the time series
             analysis will not be performed at all. Default: 50.
         methods : str
-            A list of the methods to esitimate the free energy with. Default: None.
-
+            A list of the methods to esitimate the free energy with. Default:
+            `('mbar', 'bar', 'ti')`.
         overlap : str
-            The filename for the plot of overlap matrix. Default: None. (not
-            plotting).
+            The filename for the plot of overlap matrix. Default: `O_MBAR.pdf`.
         breakdown : bool
             Plot the free energy differences evaluated for each pair of adjacent
             states for all methods, including the dH/dlambda curve for TI. Default:
-            None. (not plotting).
+            True.
         forwrev : int
             Plot the free energy change as a function of time in both directions,
             with the specified number of points in the time plot. The number of time
-            points (an integer) must be provided. Default: None. (not doing
-            convergence analysis).
+            points (an integer) must be provided. Specify as `None` will not do
+            the convergence analysis. Default: 10.
 
         Attributes
         ----------

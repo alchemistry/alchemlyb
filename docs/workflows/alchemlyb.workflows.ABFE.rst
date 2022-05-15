@@ -55,17 +55,6 @@ The forward and backward convergence will be plotted to `dF_t.pdf` using
 :class:`~alchemlyb.estimators.MBAR` and save in
 :attr:`~alchemlyb.workflows.ABFE.convergence`.
 
-.. currentmodule:: alchemlyb.workflows
-
-.. autoclass:: ABFE
-    :no-index:
-    :members:
-    .. automethod:: run
-
-
-
-
-
 Semi-automatic analysis
 -----------------------
 The same analysis could also performed in steps allowing access and modification
@@ -100,14 +89,8 @@ to the data generated at each stage of the analysis. ::
     >>> # Convergence analysis
     >>> workflow.check_convergence(10, dF_t='dF_t.pdf')
 
-.. currentmodule:: alchemlyb.workflows.ABFE
-
-.. autofunction:: update_units
-.. autofunction:: read
-.. autofunction:: preprocess
-.. autofunction:: estimate
-.. autofunction:: generate_result
-.. autofunction:: plot_overlap_matrix
-.. autofunction:: plot_ti_dhdl
-.. autofunction:: plot_dF_state
-.. autofunction:: check_convergence
+API Reference
+-------------
+.. autoclass:: alchemlyb.workflows.ABFE
+    :members:
+    :inherited-members:
