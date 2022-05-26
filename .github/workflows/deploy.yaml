@@ -26,7 +26,7 @@ defaults:
 
 jobs:
   build_wheels:
-    environment: deploy
+    # environment: deploy
     if: "github.repository == 'alchemistry/alchemlyb'"
     name: Build pure Python wheel and tarball
     runs-on: ubuntu-latest
