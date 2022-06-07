@@ -19,6 +19,8 @@ The rules for this file:
   * 0.7.0
 
 Changes
+  - Deployment to PyPI is now done automatically using github actions
+    (Issue #193)
   - gmx parser now defaults to dropping NaN and corrupted lines (filter=True) 
     (#171, PR #183)
 
@@ -28,6 +30,8 @@ Enhancements
     incomplete/corrupted lines (#126, #171) with filter=True.
 
 Fixes
+  - Fixes setup.py and setup.cfg to prevent installations with Python versions
+    lower than 3.7 (Issue #193)
   - added AutoMBAR to convergence analysis (#189)
 
 
