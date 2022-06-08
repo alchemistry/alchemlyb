@@ -3,7 +3,7 @@
 """
 import os
 from os import PathLike
-from typing import IO, Optional
+from typing import IO, Optional, Union
 import bz2
 import gzip
 import zipfile
@@ -16,7 +16,7 @@ def gzip_open(filename, mode):
     mode += 't' if mode in ['r','w','a','x'] else ''
     return gzip.open(filename, mode)
 
-def anyopen(datafile: PathLike | IO, mode='r', compression=None):
+def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
     """Return a file stream for file or stream, even if compressed.
 
     Supports files compressed with bzip2 (.bz2), gzip (.gz), and zip (.zip)
