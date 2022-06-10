@@ -12,9 +12,11 @@ def bz2_open(filename, mode):
     mode += 't' if mode in ['r','w','a','x'] else ''
     return bz2.open(filename, mode)
 
+
 def gzip_open(filename, mode):
     mode += 't' if mode in ['r','w','a','x'] else ''
     return gzip.open(filename, mode)
+
 
 def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
     """Return a file stream for file or stream, even if compressed.
@@ -34,13 +36,14 @@ def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
     mode : str
         Mode for stream; usually 'r' or 'w'.
     compression : str
-        Use to specify compression.
-        Must be one of 'bz2', 'gz'.
+        Use to specify compression. Must be one of 'bz2', 'gz'.
+        Overrides use of extension for determining compression if `datafile` is
+        a file.
 
     Returns
     -------
     stream : stream
-        Open stream for reading.
+        Open stream for reading or writing, depending on mode.
 
     """
     # opener for each type of file
@@ -60,14 +63,20 @@ def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
         elif compression in compressions:
             compressor = compressions[compression]
             return compressor(datafile, mode=mode)
+        else:
+            raise ValueError("`datafile` is a stream, but specified `compression` '{compression}' is not supported")
 
     # otherwise, treat as a file
-    ext = os.path.splitext(datafile)[1]
+    # allow compression to override any extension on the file
+    if compression in compressions:
+        opener = compressions[compression]
 
-    if ext in extensions:
-       opener = extensions[ext]
-
-    else:
-        opener = open
+    # use extension to determine the compression used, if present
+    elif compression is None:
+        ext = os.path.splitext(datafile)[1]
+        if ext in extensions:
+            opener = extensions[ext]
+        else:
+            opener = open
 
     return opener(datafile, mode)
