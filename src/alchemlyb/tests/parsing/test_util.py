@@ -16,6 +16,7 @@ def test_gzip():
             with anyopen(filename, 'r') as f:
                 assert type(f.readline()) is str
 
+
 def test_gzip_stream():
     """Test that `anyopen` reads streams with specified compression.
 
@@ -25,8 +26,9 @@ def test_gzip_stream():
     for leg in dataset['data']:
         for filename in dataset['data'][leg]:
             with open(filename, 'rb') as f:
-                with anyopen(f, mode='r', compression='gz') as f_uc:
+                with anyopen(f, mode='r', compression='gzip') as f_uc:
                     assert type(f_uc.readline()) is str
+
 
 def test_gzip_stream_wrong():
     """Test that `anyopen` gives failure for attempting to decompress gzip
@@ -38,9 +40,10 @@ def test_gzip_stream_wrong():
     for leg in dataset['data']:
         for filename in dataset['data'][leg]:
             with open(filename, 'rb') as f:
-                with anyopen(f, mode='r', compression='bz2') as f_uc:
+                with anyopen(f, mode='r', compression='bzip2') as f_uc:
                     with pytest.raises(OSError, match='Invalid data stream'):
                         assert type(f_uc.readline()) is str
+
 
 def test_gzip_stream_wrong_no_compression():
     """Test that `anyopen` gives passthrough when no compression specified on a
@@ -55,15 +58,16 @@ def test_gzip_stream_wrong_no_compression():
                 with anyopen(f, mode='r') as f_uc:
                     assert type(f_uc.readline()) is bytes
 
-@pytest.mark.parametrize('compression', ['bz2', 'gz'])
-def test_file_roundtrip(compression, tmp_path):
-    """Test that roundtripping write/read to a file works with `anyopen`
+
+@pytest.mark.parametrize('extension', ['bz2', 'gz'])
+def test_file_roundtrip(extension, tmp_path):
+    """Test that roundtripping write/read to a file works with `anyopen`.
 
     """
 
     data = "my momma told me to pick the very best one and you are not it"
 
-    filepath = tmp_path / f'testfile.txt.{compression}'
+    filepath = tmp_path / f'testfile.txt.{extension}'
     with anyopen(filepath, mode='w') as f:
         f.write(data)
 
@@ -72,9 +76,30 @@ def test_file_roundtrip(compression, tmp_path):
 
     assert data_out == data
 
-@pytest.mark.parametrize('compression', ['bz2', 'gz'])
-def test_file_roundtrip(compression):
-    """Test that roundtripping write/read to a file works with `anyopen`
+
+@pytest.mark.parametrize('extension,compression',
+        [('bz2', 'gzip'), ('gz', 'bzip2')])
+def test_file_roundtrip_force_compression(extension, compression, tmp_path):
+    """Test that roundtripping write/read to a file works with `anyopen`,
+    in which we force compression despite different extension.
+
+    """
+
+    data = "my momma told me to pick the very best one and you are not it"
+
+    filepath = tmp_path / f'testfile.txt.{extension}'
+    with anyopen(filepath, mode='w', compression=compression) as f:
+        f.write(data)
+
+    with anyopen(filepath, 'r', compression=compression) as f:
+        data_out = f.read()
+
+    assert data_out == data
+
+
+@pytest.mark.parametrize('compression', ['bzip2', 'gzip'])
+def test_stream_roundtrip(compression):
+    """Test that roundtripping write/read to a stream works with `anyopen`
 
     """
 

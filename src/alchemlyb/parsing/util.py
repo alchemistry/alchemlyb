@@ -36,7 +36,7 @@ def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
     mode : str
         Mode for stream; usually 'r' or 'w'.
     compression : str
-        Use to specify compression. Must be one of 'bz2', 'gz'.
+        Use to specify compression. Must be one of 'bzip2', 'gzip'.
         Overrides use of extension for determining compression if `datafile` is
         a file.
 
@@ -51,8 +51,8 @@ def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
                   '.gz': gzip_open}
 
     # compression selections available
-    compressions = {'bz2': bz2_open,
-                    'gz': gzip_open}
+    compressions = {'bzip2': bz2_open,
+                    'gzip': gzip_open}
 
     # if `datafile` is a stream
     if ((hasattr(datafile, 'read') and any((i in mode for i in ('r',)))) or 
