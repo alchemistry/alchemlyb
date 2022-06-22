@@ -68,6 +68,29 @@ class TestSlicing:
     def test_basic_slicing(self, data, size):
         assert len(self.slicer(data, lower=1000, upper=34000, step=5)) == size
 
+    @pytest.mark.parametrize(('data', 'lower', 'upper'),
+                             [
+                                 (gmx_benzene_dHdl(), 1000, 34000),
+                                 (gmx_benzene_u_nk(), 1000, 34000),
+                             ])
+    def test_lower_and_upper_bound(self, data, lower, upper):
+        """
+        Test that the lower and upper time is respected
+        """
+        original_length = len(data)
+        # Check that the input data is appropriate for the test
+        assert any(data.reset_index()['time'] < lower)
+        assert any(data.reset_index()['time'] > upper)
+
+        # Slice data, and check that we don't observe times outside
+        # the prescribed range
+        sliced = self.slicer(data, lower=lower, upper=upper, step=5)
+        assert all(sliced.reset_index()['time'] >= lower)
+        assert all(sliced.reset_index()['time'] <= upper)
+
+        # Make sure we didn't change input data
+        assert len(data) == original_length
+
     @pytest.mark.parametrize('data', [gmx_benzene_dHdl(),
                                       gmx_benzene_u_nk()])
     def test_disordered_exception(self, data):
@@ -212,6 +235,97 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
         data = gmx_benzene_dHdl()
         with pytest.raises(ValueError):
             self.slicer(data, series=series)
+
+    @pytest.mark.parametrize(('data', 'lower', 'upper'),
+                             [
+                                 (gmx_benzene_dHdl(), 1000, 34000),
+                                 (gmx_benzene_u_nk(), 1000, 34000),
+                             ])
+    def test_lower_and_upper_bound_slicer(self, data, lower, upper):
+        """
+        Test that the lower and upper time is respected when using statistical_inefficiency
+        without a series. In this case, statistical_inefficiency should behave like slicing
+        """
+        original_length = len(data)
+        # Check that the input data is appropriate for the test
+        assert any(data.reset_index()['time'] < lower)
+        assert any(data.reset_index()['time'] > upper)
+
+        # Slice data, and check that we don't observe times outside
+        # the prescribed range
+        sliced = self.slicer(data,
+                             series=None,
+                             lower=lower,
+                             upper=upper,
+                             step=5)
+        assert all(sliced.reset_index()['time'] >= lower)
+        assert all(sliced.reset_index()['time'] <= upper)
+
+        # Make sure we didn't change input data
+        assert len(data) == original_length
+
+    @pytest.mark.parametrize(('data', 'lower', 'upper'),
+                             [
+                                 (gmx_benzene_dHdl(), 1000, 34000),
+                                 (gmx_benzene_u_nk(), 1000, 34000),
+                             ])
+    def test_lower_and_upper_bound_inefficiency(self, data, lower, upper):
+        """
+        Test that the lower and upper time is respected when using statistical_inefficiency
+        with a series. In this case, statistical_inefficiency should slice the series, then
+        subsample the data frame.
+        """
+        original_length = len(data)
+        # Check that the input data is appropriate for the test
+        assert any(data.reset_index()['time'] < lower)
+        assert any(data.reset_index()['time'] > upper)
+
+        # Subsample data, and check that we don't observe times outside
+        # the prescribed range
+        sliced = self.slicer(data,
+                             series=data.sum(axis=1),
+                             lower=lower,
+                             upper=upper,
+                             step=5)
+        assert all(sliced.reset_index()['time'] >= lower)
+        assert all(sliced.reset_index()['time'] <= upper)
+        # Make sure we didn't change input data
+        assert len(data) == original_length
+
+    @pytest.mark.parametrize(('data', 'lower', 'upper', 'conservative'),
+                             [
+                                 (gmx_benzene_dHdl(), 1000, 34000, True),
+                                 (gmx_benzene_u_nk(), 1000, 34000, True),
+                                 (gmx_benzene_dHdl(), 1000, 34000, False),
+                                 (gmx_benzene_u_nk(), 1000, 34000, False),
+                             ])
+    def test_slicing_inefficiency_equivalence(self, data, lower, upper, conservative):
+        """
+        Test that first slicing the data frame, then subsampling is equivalent to
+        subsampling with lower / upper bounds set
+        """
+        original_length = len(data)
+        # Check that the input data is appropriate for the test
+        assert any(data.reset_index()['time'] < lower)
+        assert any(data.reset_index()['time'] > upper)
+
+        # Slice dataframe, then subsample it based on the sum of its components
+        sliced_data = slicing(data, lower=lower, upper=upper)
+        subsampled_sliced_data = self.slicer(sliced_data,
+                                             series=sliced_data.sum(axis=1),
+                                             conservative=conservative)
+
+        # Make sure we didn't change input data
+        assert len(data) == original_length
+        # Subsample the dataframe based on the sum of its components while
+        # also specifying the slicing range
+        subsampled_data = self.slicer(data,
+                                      series=data.sum(axis=1),
+                                      lower=lower,
+                                      upper=upper,
+                                      conservative=conservative)
+
+        assert (subsampled_sliced_data == subsampled_data).all(axis=None)
 
 
 class TestEquilibriumDetection(TestSlicing, CorrelatedPreprocessors):
