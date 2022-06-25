@@ -9,7 +9,8 @@ Fully Automatic analysis
 ------------------------
 A interface similar to
 `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
-could be excuted with two lines of command. ::
+could be excuted using :mod:`~alchemlyb.workflows.ABFE` with two lines of
+command. ::
 
     >>> import os
     >>> from alchemtest.gmx import load_ABFE
@@ -19,12 +20,40 @@ could be excuted with two lines of command. ::
     >>> print(dir)
     'alchemtest/gmx/ABFE/complex'
     >>> workflow = ABFE(units='kcal/mol', software='Gromacs', dir=dir,
-    >>>                 prefix='dhdl', suffix='xvg', T=298, out='./')
+    >>>                 prefix='dhdl', suffix='xvg', T=298, outdirectory='./')
     >>> workflow.run(skiptime=10, uncorr='dhdl', threshold=50,
     >>>              methods=('mbar', 'bar', 'ti'), overlap='O_MBAR.pdf',
     >>>              breakdown=True, forwrev=10)
 
-This would give the free energy estimate using all of
+
+File Input
+^^^^^^^^^^
+
+This command expects the energy files to be structured in two ways. It could
+either be ::
+    simulation
+    ├── lambda_0
+    │   ├── prod.xvg
+    │   └── ...
+    ├── lambda_1
+    │   ├── prod.xvg
+    │   └── ...
+    └── ...
+
+Where :code:`dir='simulation/lambda_*', prefix='prod', suffix='xvg'`.
+Or ::
+
+    dhdl_files
+    ├── dhdl_0.xvg
+    ├── dhdl_1.xvg
+    └── ...
+
+Where :code:`dir='dhdl_files', prefix='dhdl_', suffix='xvg'`.
+
+output
+^^^^^^
+
+The command would give the free energy estimate using all of
 :class:`~alchemlyb.estimators.TI`, :class:`~alchemlyb.estimators.BAR`,
 :class:`~alchemlyb.estimators.MBAR` and the result will be stored in
 :attr:`~alchemlyb.workflows.ABFE.summary` as :class:`pandas.Dataframe`. ::
@@ -43,15 +72,20 @@ This would give the free energy estimate using all of
            bonded     2.374144    0.014995   2.341631   0.005507   2.363828  0.021078
            TOTAL     35.137291    0.103580  34.860619   0.087022  34.924618  0.119206
 
+Output Files
+^^^^^^^^^^^^
+
+The output plots will be writen to the folder specified by `outdirectory`.
+
 The :ref:`overlay matrix for the MBAR estimator <plot_overlap_matrix>` will be
-plotted and saved to `O_MBAR.pdf`.
+plotted and saved to :file:`O_MBAR.pdf`.
 
-The :ref:`dHdl for TI <plot_TI_dhdl>` will be plotted to `dhdl_TI.pdf`.
+The :ref:`dHdl for TI <plot_TI_dhdl>` will be plotted to :file:`dhdl_TI.pdf`.
 
-The :ref:`dF states <plot_dF_states>` will be plotted to `dF_state.pdf` in
-portrait model and `dF_state_long.pdf` in landscape model.
+The :ref:`dF states <plot_dF_states>` will be plotted to :file:`dF_state.pdf` in
+portrait model and :file:`dF_state_long.pdf` in landscape model.
 
-The forward and backward convergence will be plotted to `dF_t.pdf` using
+The forward and backward convergence will be plotted to :file:`dF_t.pdf` using
 :class:`~alchemlyb.estimators.MBAR` and save in
 :attr:`~alchemlyb.workflows.ABFE.convergence`.
 
@@ -69,7 +103,7 @@ to the data generated at each stage of the analysis. ::
     'alchemtest/gmx/ABFE/complex'
     >>> # Load the data
     >>> workflow = ABFE(software='Gromacs', dir=dir,
-    >>>                 prefix='dhdl', suffix='xvg', T=298, out='./')
+    >>>                 prefix='dhdl', suffix='xvg', T=298, outdirectory='./')
     >>> # Set the unit.
     >>> workflow.update_units('kcal/mol')
     >>> # Read the data

@@ -281,7 +281,7 @@ class Test_methods():
         assert len(workflow.convergence) == 10
 
 class Test_automatic_amber():
-    '''Test the full automatic workflow for load_ABFE from alchemtest.gmx for
+    '''Test the full automatic workflow for load_ABFE from alchemtest.amber for
     three stage transformation.'''
 
     @staticmethod

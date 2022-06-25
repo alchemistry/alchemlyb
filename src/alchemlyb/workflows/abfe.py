@@ -20,7 +20,12 @@ from .. import __version__
 
 
 class ABFE(WorkflowBase):
-    '''Alchemical Analysis style automatic workflow.
+    '''Workflow for absolute and relative binding free energy calculations.
+
+    This workflow provides functionality similar to the ``alchemical-analysis.py`` script.
+    It loads multiple input files from alchemical free energy calculations and computes the
+    free energies between different alchemical windows using different estimators. It
+    produces plots to aid in the assessment of convergence.
 
     Parameters
     ----------
@@ -28,9 +33,12 @@ class ABFE(WorkflowBase):
         The unit used for printing and plotting results. {'kcal/mol', 'kJ/mol',
         'kT'}. Default: 'kT'.
     software : str
-        The software used for generating input. {'GROMACS', 'AMBER'}
+        The software used for generating input (case-insensitive). {'GROMACS', 'AMBER'}.
+        This option chooses the appropriate parser for the input file.
     dir : str
         Directory in which data files are stored. Default: os.path.curdir.
+        The input files are searched using the pattern of
+        `dir + '/**/' + prefix + '*' + suffix.
     prefix : str
         Prefix for datafile sets. Default: 'dhdl'.
     suffix : str
@@ -40,6 +48,8 @@ class ABFE(WorkflowBase):
     outdirectory : str
         Directory in which the output files produced by this script will be
         stored. Default: os.path.curdir.
+    ignore_warnings : bool
+        Turn all errors into warnings.
 
     Attributes
     ----------
@@ -49,9 +59,12 @@ class ABFE(WorkflowBase):
         The list of filenames sorted by the lambda state.
     '''
     def __init__(self, units='kT', software='Gromacs', dir=os.path.curdir,
-                 prefix='dhdl', suffix='xvg', T=298, outdirectory=os.path.curdir):
+                 prefix='dhdl', suffix='xvg', T=298,
+                 outdirectory=os.path.curdir,
+                 ignore_warnings=False):
 
         super().__init__(units, software, T, outdirectory)
+        self.ignore_warnings = ignore_warnings
         self.logger = logging.getLogger('alchemlyb.workflows.ABFE')
         self.logger.info('Initialise Alchemlyb ABFE Workflow')
         self.logger.info(f'Alchemlyb Version: f{__version__}')
@@ -78,7 +91,7 @@ class ABFE(WorkflowBase):
             self._extract_u_nk = amber.extract_u_nk
             self._extract_dHdl = amber.extract_dHdl
         else: # pragma: no cover
-            raise NameError(f'{software} parser not found.')
+            raise NotImplementedError(f'{software} parser not found.')
 
     def read(self):
         '''Read the u_nk and dHdL data from the
@@ -93,39 +106,37 @@ class ABFE(WorkflowBase):
         '''
         u_nk_list = []
         dHdl_list = []
-        for xvg in self.file_list:
+        for file in self.file_list:
             try:
-                u_nk = self._extract_u_nk(xvg, T=self.T)
+                u_nk = self._extract_u_nk(file, T=self.T)
                 self.logger.info(
-                    f'Reading {len(u_nk)} lines of u_nk from {xvg}')
+                    f'Reading {len(u_nk)} lines of u_nk from {file}')
                 u_nk_list.append(u_nk)
             except: # pragma: no cover
-                self.logger.warning(
-                    f'Error reading read u_nk from {xvg}.')
+                msg = f'Error reading read u_nk from {file}.'
+                if self.ignore_warnings:
+                    self.logger.warning(msg)
+                else:
+                    raise ValueError(msg)
 
             try:
-                dhdl = self._extract_dHdl(xvg, T=self.T)
+                dhdl = self._extract_dHdl(file, T=self.T)
                 self.logger.info(
-                    f'Reading {len(dhdl)} lines of dhdl from {xvg}')
+                    f'Reading {len(dhdl)} lines of dhdl from {file}')
                 dHdl_list.append(dhdl)
             except: # pragma: no cover
-                self.logger.warning(
-                    f'Error reading read dhdl from {xvg}.')
+                msg = f'Error reading read dhdl from {file}.'
+                if self.ignore_warnings:
+                    self.logger.warning(msg)
+                else:
+                    raise ValueError(msg)
 
         # Sort the files according to the state
-        if len(u_nk_list) > 0:
-            self.logger.info('Sort files according to the u_nk.')
-            column_names = u_nk_list[0].columns.values.tolist()
-            index_list = sorted(range(len(self.file_list)),
-                key=lambda x:column_names.index(
-                    u_nk_list[x].reset_index('time').index.values[0]))
-        else:
-            self.logger.info('Sort files according to the dHdl.')
-            column_names = sorted([dHdl.reset_index('time').index.values[0]
-                                   for dHdl in dHdl_list])
-            index_list = sorted(range(len(self.file_list)),
-                key=lambda x:column_names.index(
-                    dHdl_list[x].reset_index('time').index.values[0]))
+        self.logger.info('Sort files according to the u_nk.')
+        column_names = u_nk_list[0].columns.values.tolist()
+        index_list = sorted(range(len(self.file_list)),
+            key=lambda x:column_names.index(
+                u_nk_list[x].reset_index('time').index.values[0]))
 
         self.file_list = [self.file_list[i] for i in index_list]
         self.logger.info("Sorted file list: \n %s", '\n'.join(self.file_list))
@@ -147,24 +158,24 @@ class ABFE(WorkflowBase):
         uncorr : str
             The observable to be used for the autocorrelation analysis; 'dhdl'
             (obtained as a sum over those energy components that are changing).
-            Specify as `None` will not uncorrelate the data. Default: `dhdl`.
+            Specify as `None` will not uncorrelate the data. Default: 'dhdl'.
         threshold : int
             Proceed with correlated samples if the number of uncorrelated samples is
             found to be less than this number. If 0 is given, the time series
             analysis will not be performed at all. Default: 50.
-        methods : str
-            A list of the methods to esitimate the free energy with. Default:
+        methods : str or list of str
+            A list of the methods to estimate the free energy with. Default:
             `('mbar', 'bar', 'ti')`.
         overlap : str
-            The filename for the plot of overlap matrix. Default: `O_MBAR.pdf`.
+            The filename for the plot of overlap matrix. Default: 'O_MBAR.pdf'.
         breakdown : bool
             Plot the free energy differences evaluated for each pair of adjacent
             states for all methods, including the dH/dlambda curve for TI. Default:
-            True.
+            ``True``.
         forwrev : int
             Plot the free energy change as a function of time in both directions,
             with the specified number of points in the time plot. The number of time
-            points (an integer) must be provided. Specify as `None` will not do
+            points (an integer) must be provided. Specify as ``None`` will not do
             the convergence analysis. Default: 10.
 
         Attributes
@@ -202,19 +213,18 @@ class ABFE(WorkflowBase):
             plt.close(ax.figure)
 
 
-    def update_units(self, units):
+    def update_units(self, units=None):
         '''Update the unit.
 
         Parameters
         ----------
-        units : str
-            The unit used for printing and plotting results. {'kcal/mol',
-            'kJ/mol', 'kT'}
+        units : {'kcal/mol', 'kJ/mol', 'kT'}
+            The unit used for printing and plotting results.
 
         '''
         if units is not None:
             self.logger.info(f'Set unit to {units}.')
-            self.units = units
+            self.units = units or None
         else: # pragma: no cover
             pass
 
@@ -293,7 +303,7 @@ class ABFE(WorkflowBase):
 
         Parameters
         ----------
-        methods : str
+        methods : str or list of str
             A list of the methods to esitimate the free energy with. Default:
             ['TI', 'BAR', 'MBAR'].
 
