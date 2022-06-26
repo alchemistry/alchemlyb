@@ -38,7 +38,7 @@ class ABFE(WorkflowBase):
     dir : str
         Directory in which data files are stored. Default: os.path.curdir.
         The input files are searched using the pattern of
-        `dir + '/**/' + prefix + '*' + suffix.
+        ``dir + '/**/' + prefix + '*' + suffix``.
     prefix : str
         Prefix for datafile sets. Default: 'dhdl'.
     suffix : str
