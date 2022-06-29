@@ -6,7 +6,6 @@ from os import PathLike
 from typing import IO, Optional, Union
 import bz2
 import gzip
-import zipfile
 
 def bz2_open(filename, mode):
     mode += 't' if mode in ['r','w','a','x'] else ''
@@ -23,10 +22,18 @@ def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
 
     Supports files compressed with bzip2 (.bz2) and gzip (.gz) compression
     schemes. The appropriate extension must be present for the function to
-    properly handle the file.
+    properly handle the file without specifying `compression`.
 
     If giving a stream for `datafile`, then you must specify `compression` if
-    the stream is compressed.
+    the stream is compressed. Otherwise the stream will be passed through
+    as-is.
+
+    If `datafile` is a filepath, then `compression` will take precedence over
+    any extension on the filename. Leaving `compression` as `None` will rely on
+    the extension for determining compression, if any.
+
+    .. versionchanged:: 0.7.0
+       Removed stated support for zip, given broken implementation.
 
     Parameters
     ----------
@@ -40,10 +47,15 @@ def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
         Overrides use of extension for determining compression if `datafile` is
         a file.
 
+        .. versionadded:: 0.7.0
+
     Returns
     -------
     stream : stream
         Open stream for reading or writing, depending on mode.
+
+        .. versionchanged:: 0.7.0
+           Explicit support for writing added.
 
     """
     # opener for each type of file
