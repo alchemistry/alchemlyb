@@ -119,3 +119,25 @@ def test_stream_roundtrip(compression):
             data_out = f.read()
 
         assert data_out == data
+
+def test_stream_unsupported_compression():
+    """Test that we throw a ValueError when an unsupported compression is used.
+
+    """
+
+    compression="fakez"
+
+    data = b"my momma told me to pick the very best one and you are not it"
+
+    with io.BytesIO() as stream:
+
+        # write to stream
+        stream.write(data)
+
+        # start at the beginning
+        stream.seek(0)
+
+        # read from stream
+        with pytest.raises(ValueError):
+            with anyopen(stream, 'r', compression=compression) as f:
+                data_out = f.read()
