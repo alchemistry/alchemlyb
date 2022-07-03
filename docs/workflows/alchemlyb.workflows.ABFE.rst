@@ -68,7 +68,7 @@ Where :code:`dir='dhdl_files', prefix='dhdl_', suffix='xvg'`.
 output
 ^^^^^^
 
-The command would give the free energy estimate using all of
+The workflow returns the free energy estimate using all of
 :class:`~alchemlyb.estimators.TI`, :class:`~alchemlyb.estimators.BAR`,
 :class:`~alchemlyb.estimators.MBAR`. For ABFE calculations, the alchemical
 transformation is usually done is three stages, the *bonded*, *coul* and *vdw*
