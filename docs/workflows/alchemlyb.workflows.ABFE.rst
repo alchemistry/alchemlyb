@@ -7,10 +7,19 @@ step-by-step version that allows more flexibility.
 
 Fully Automatic analysis
 ------------------------
-A interface similar to
-`Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
-could be excuted using :mod:`~alchemlyb.workflows.ABFE` with two lines of
-command. ::
+*Absolute binding free energy* (ABFE) calculations can be analyzed with
+two lines of code in a fully automated manner (similar to 
+`Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_).
+In this case, any parameters are set when invoking :class:`~alchemlyb.workflows.abfe.ABFE`
+and reasonable defaults are chosen for any parameters not set explicitly. The two steps
+are to
+
+1. initialize an instance of the  :class:`~alchemlyb.workflows.abfe.ABFE` class
+2. invoke the :meth:`~alchemlyb.workflows.abfe.ABFE.run` method to execute
+   complete workflow.
+   
+For a GROMACS ABFE simulation, executing the workflow would look similar
+to the following code::
 
     >>> import os
     >>> from alchemtest.gmx import load_ABFE
