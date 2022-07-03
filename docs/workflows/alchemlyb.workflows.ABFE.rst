@@ -15,6 +15,9 @@ command. ::
     >>> import os
     >>> from alchemtest.gmx import load_ABFE
     >>> from alchemlyb.workflows import ABFE
+    >>> # Enable the logger
+    >>> import logging
+    >>> logging.basicConfig(filename='ABFE.log', level=logging.INFO)
     >>> # Obtain the path of the data
     >>> dir = os.path.dirname(load_ABFE()['data']['complex'][0])
     >>> print(dir)
@@ -26,11 +29,15 @@ command. ::
     >>>              breakdown=True, forwrev=10)
 
 
+See :mod:`~alchemlyb.workflows.ABFE` for the explanation with regard to the
+parameters. The next two sections explains the output of the workflow and a
+set of analysis that allows the user to examine the quality of the estimate.
+
 File Input
 ^^^^^^^^^^
 
-This command expects the energy files to be structured in two ways. It could
-either be ::
+This command expects the energy files to be structured in two common ways. It
+could either be ::
     simulation
     ├── lambda_0
     │   ├── prod.xvg
@@ -40,8 +47,7 @@ either be ::
     │   └── ...
     └── ...
 
-Where :code:`dir='simulation/lambda_*', prefix='prod', suffix='xvg'`.
-Or ::
+Where :code:`dir='simulation/lambda_*', prefix='prod', suffix='xvg'`. Or ::
 
     dhdl_files
     ├── dhdl_0.xvg
@@ -55,8 +61,14 @@ output
 
 The command would give the free energy estimate using all of
 :class:`~alchemlyb.estimators.TI`, :class:`~alchemlyb.estimators.BAR`,
-:class:`~alchemlyb.estimators.MBAR` and the result will be stored in
-:attr:`~alchemlyb.workflows.ABFE.summary` as :class:`pandas.Dataframe`. ::
+:class:`~alchemlyb.estimators.MBAR`. For ABFE calculations, the alchemical
+transformation is usually done is three stages, the *bonded*, *coul* and *vdw*
+which corresponds to the free energy contribution from applying the
+restraint to restraint the ligand to the protein, decouple/annihilate the
+coulombic interaction between the ligand and the protein and
+decouple/annihilate the protein-ligand lennard jones interactions. The result
+will be stored in :attr:`~alchemlyb.workflows.ABFE.summary` as
+:class:`pandas.Dataframe`. ::
 
 
                           MBAR  MBAR_Error        BAR  BAR_Error         TI  TI_Error
@@ -75,19 +87,25 @@ The command would give the free energy estimate using all of
 Output Files
 ^^^^^^^^^^^^
 
-The output plots will be writen to the folder specified by `outdirectory`.
+For quality assessment, a couple of plots were generated and writen to
+the folder specified by `outdirectory`.
 
 The :ref:`overlay matrix for the MBAR estimator <plot_overlap_matrix>` will be
-plotted and saved to :file:`O_MBAR.pdf`.
+plotted and saved to :file:`O_MBAR.pdf`, which examines the overlap between
+different lambda windows.
 
-The :ref:`dHdl for TI <plot_TI_dhdl>` will be plotted to :file:`dhdl_TI.pdf`.
+The :ref:`dHdl for TI <plot_TI_dhdl>` will be plotted to
+:file:`dhdl_TI.pdf`, allows one to examine if the lambda scheduling has
+covered the change of the gradient in the lambda space.
 
 The :ref:`dF states <plot_dF_states>` will be plotted to :file:`dF_state.pdf` in
-portrait model and :file:`dF_state_long.pdf` in landscape model.
+portrait model and :file:`dF_state_long.pdf` in landscape model, which
+allows the user to example the contributions from each lambda window.
 
 The forward and backward convergence will be plotted to :file:`dF_t.pdf` using
 :class:`~alchemlyb.estimators.MBAR` and save in
-:attr:`~alchemlyb.workflows.ABFE.convergence`.
+:attr:`~alchemlyb.workflows.ABFE.convergence`, which allows the user to
+examine if the simulation time is enough to achieve a converged result.
 
 Semi-automatic analysis
 -----------------------

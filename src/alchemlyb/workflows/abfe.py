@@ -153,8 +153,8 @@ class ABFE(WorkflowBase):
         Parameters
         ----------
         skiptime : float
-            Discard data prior to this specified time as 'equilibration' data. Units
-            picoseconds. Default: 0.
+            Discard data prior to this specified time as 'equilibration' data.
+            Units are specified by the corresponding MD Engine. Default: 0.
         uncorr : str
             The observable to be used for the autocorrelation analysis; 'dhdl'
             (obtained as a sum over those energy components that are changing).
@@ -236,11 +236,11 @@ class ABFE(WorkflowBase):
         ----------
         skiptime : float
             Discard data prior to this specified time as 'equilibration' data.
-            Units picoseconds. Default: 0.
+            Units are specified by the corresponding MD Engine. Default: 0.
         uncorr : str
             The observable to be used for the autocorrelation analysis; 'dhdl'
             (obtained as a sum over those energy components that are changing).
-            Default: `dhdl`
+            Default: 'dhdl'
         threshold : int
             Proceed with correlated samples if the number of uncorrelated
             samples is found to be less than this number. If 0 is given, the
