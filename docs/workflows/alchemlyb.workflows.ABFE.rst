@@ -15,19 +15,19 @@ and reasonable defaults are chosen for any parameters not set explicitly. The tw
 are to
 
 1. initialize an instance of the  :class:`~alchemlyb.workflows.abfe.ABFE` class
-2. invoke the :meth:`~alchemlyb.workflows.abfe.ABFE.run` method to execute
+2. invoke the :meth:`~alchemlyb.workflows.ABFE.run` method to execute
    complete workflow.
    
 For a GROMACS ABFE simulation, executing the workflow would look similar
 to the following code::
 
-    >>> import os
     >>> from alchemtest.gmx import load_ABFE
     >>> from alchemlyb.workflows import ABFE
     >>> # Enable the logger
     >>> import logging
     >>> logging.basicConfig(filename='ABFE.log', level=logging.INFO)
     >>> # Obtain the path of the data
+    >>> import os
     >>> dir = os.path.dirname(load_ABFE()['data']['complex'][0])
     >>> print(dir)
     'alchemtest/gmx/ABFE/complex'
@@ -65,7 +65,7 @@ Where :code:`dir='simulation/lambda_*', prefix='prod', suffix='xvg'`. Or ::
 
 Where :code:`dir='dhdl_files', prefix='dhdl_', suffix='xvg'`.
 
-output
+Output
 ^^^^^^
 
 The workflow returns the free energy estimate using all of
@@ -96,7 +96,7 @@ will be stored in :attr:`~alchemlyb.workflows.ABFE.summary` as
 Output Files
 ^^^^^^^^^^^^
 
-For quality assessment, a couple of plots were generated and writen to
+For quality assessment, a couple of plots were generated and written to
 the folder specified by `outdirectory`.
 
 The :ref:`overlay matrix for the MBAR estimator <plot_overlap_matrix>` will be
@@ -121,10 +121,10 @@ Semi-automatic analysis
 The same analysis could also performed in steps allowing access and modification
 to the data generated at each stage of the analysis. ::
 
-    >>> import os
     >>> from alchemtest.gmx import load_ABFE
     >>> from alchemlyb.workflows import ABFE
     >>> # Obtain the path of the data
+    >>> import os
     >>> dir = os.path.dirname(load_ABFE()['data']['complex'][0])
     >>> print(dir)
     'alchemtest/gmx/ABFE/complex'

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from .base import WorkflowBase
 from ..parsing import gmx, amber
 from ..preprocessing.subsampling import decorrelate_dhdl, decorrelate_u_nk
-from ..estimators import BAR, TI
+from ..estimators import BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
 from ..estimators import AutoMBAR as MBAR
 from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
                              plot_dF_state, plot_convergence)
@@ -183,7 +183,9 @@ class ABFE(WorkflowBase):
         summary : Dataframe
             The summary of the free energy estimate.
         convergence : DataFrame
-            The summary of the convergence results.
+            The summary of the convergence results. See
+            :func:`~alchemlyb.convergence.forward_backward_convergence` for
+            further explanation.
         '''
         self.read()
 
@@ -520,8 +522,8 @@ class ABFE(WorkflowBase):
         overlap : str
             The filename for the plot of overlap matrix. Default: 'O_MBAR.pdf'
         ax : matplotlib.axes.Axes
-            Matplotlib axes object where the plot will be drawn on. If ax=None,
-            a new axes will be generated.
+            Matplotlib axes object where the plot will be drawn on. If
+            ``ax=None``, a new axes will be generated.
 
         Returns
         -------
@@ -607,7 +609,7 @@ class ABFE(WorkflowBase):
                      ax=None):
         '''Compute the forward and backward convergence using
         :func:`~alchemlyb.convergence.forward_backward_convergence`and
-        plotted with
+        plot with
         :func:`~alchemlyb.visualisation.plot_convergence`.
 
         Parameters
@@ -616,7 +618,7 @@ class ABFE(WorkflowBase):
             Plot the free energy change as a function of time in both
             directions, with the specified number of points in the time plot.
             The number of time points (an integer) must be provided.
-        estimator : str
+        estimator : {'TI', 'BAR', 'MBAR', 'AutoMBAR'}
             The estimator used for convergence analysis. Default: 'autombar'
         dF_t : str
             The filename for the plot of convergence. Default: 'dF_t.pdf'
@@ -634,9 +636,9 @@ class ABFE(WorkflowBase):
             An axes with the convergence drawn.
         '''
         self.logger.info('Start convergence analysis.')
-        self.logger.info('Check data availability.')
+        self.logger.info('Checking data availability.')
 
-        if estimator.lower() in ['mbar', 'bar', 'autombar']:
+        if estimator.lower() in [x.lower() for x in FEP_ESTIMATORS]:
             if self.u_nk_sample_list is not None:
                 u_nk_list = self.u_nk_sample_list
                 self.logger.info('Subsampled u_nk is available.')
@@ -650,7 +652,9 @@ class ABFE(WorkflowBase):
             convergence = forward_backward_convergence(u_nk_list,
                                                        estimator=estimator,
                                                        num=forwrev)
-        else:
+        elif estimator.lower() in [x.lower() for x in TI_ESTIMATORS]:
+            self.logger.warning('No valid FEP estimator or dataset found. '
+                                'Fallback to TI.')
             if self.dHdl_sample_list is not None:
                 dHdl_list = self.dHdl_sample_list
                 self.logger.info('Subsampled dHdl is available.')
@@ -664,6 +668,11 @@ class ABFE(WorkflowBase):
             convergence = forward_backward_convergence(dHdl_list,
                                                        estimator=estimator,
                                                        num=forwrev)
+        else:
+            msg = f"Estimator {estimator} is not supported. Choose one from " \
+                  f"{FEP_ESTIMATORS+TI_ESTIMATORS}."
+            self.logger.error(msg)
+            raise ValueError(msg)
 
         self.convergence = get_unit_converter(self.units)(convergence)
 

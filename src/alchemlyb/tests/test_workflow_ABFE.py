@@ -263,6 +263,10 @@ class Test_methods():
         workflow.check_convergence(10, estimator='bar')
         assert len(workflow.convergence) == 10
 
+    def test_convergence_invalid_estimator(self, workflow):
+        with pytest.raises(ValueError):
+            workflow.check_convergence(10, estimator='aaa')
+
     def test_ti_convergence(self, workflow):
         workflow.check_convergence(10, estimator='ti')
         assert len(workflow.convergence) == 10
