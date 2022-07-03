@@ -14,7 +14,7 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
-*/*/2022 xiki-tempula
+*/*/2022 xiki-tempula, IAlibay, dotsdl, orbeckst
 
   * 0.7.0
 
@@ -23,12 +23,14 @@ Changes
     (Issue #193)
   - gmx parser now defaults to dropping NaN and corrupted lines (filter=True) 
     (#171, PR #183)
+  - remove broken .zip support from util.anyopen() (PR #197)
 
 Enhancements
   - Add a base class for workflows (PR #188).
   - Add the ABFE workflow (PR #114).
   - Add filter function to gmx.extract to make it more robust (PR #183): can filter 
     incomplete/corrupted lines (#126, #171) with filter=True.
+  - Add support to util.anyopen() for taking filelike objects (PR #197)
 
 Fixes
   - Fixes setup.py and setup.cfg to prevent installations with Python versions
