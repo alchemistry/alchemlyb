@@ -85,8 +85,7 @@ class TestSlicing:
                                  (gmx_benzene_dHdl(), 1000, 34000),
                                  (gmx_benzene_u_nk(), 1000, 34000),
                              ])
-    @pytest.mark.parametrize('conservative', [True, False])
-    def test_data_is_unchanged(self, data, lower, upper, conservative):
+    def test_data_is_unchanged(self, data, lower, upper):
         """
         Test that slicing does not change the underlying data
         """
@@ -98,8 +97,7 @@ class TestSlicing:
         sliced = self.slicer(data,
                              lower=lower,
                              upper=upper,
-                             step=5,
-                             conservative=conservative)
+                             step=5)
         assert len(data) == original_length
 
     @pytest.mark.parametrize(('data', 'lower', 'upper'),
@@ -107,8 +105,7 @@ class TestSlicing:
                                  (gmx_benzene_dHdl(), 1000, 34000),
                                  (gmx_benzene_u_nk(), 1000, 34000),
                              ])
-    @pytest.mark.parametrize('conservative', [True, False])
-    def test_lower_and_upper_bound(self, data, lower, upper, conservative):
+    def test_lower_and_upper_bound(self, data, lower, upper):
         """
         Test that the lower and upper time is respected
         """
@@ -120,8 +117,7 @@ class TestSlicing:
         sliced = self.slicer(data,
                              lower=lower,
                              upper=upper,
-                             step=5,
-                             conservative=conservative)
+                             step=5)
         assert all(sliced.reset_index()['time'] >= lower)
         assert all(sliced.reset_index()['time'] <= upper)
 
