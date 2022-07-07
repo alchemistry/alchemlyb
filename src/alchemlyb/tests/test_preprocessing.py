@@ -80,15 +80,17 @@ class TestSlicing:
     def test_basic_slicing(self, data, size):
         assert len(self.slicer(data, lower=1000, upper=34000, step=5)) == size
 
-    @pytest.mark.parametrize(('data', 'lower', 'upper'),
+    @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
-                                 (gmx_benzene_dHdl(), 1000, 34000),
-                                 (gmx_benzene_u_nk(), 1000, 34000),
+                                 (gmx_benzene_dHdl, 1000, 34000),
+                                 (gmx_benzene_u_nk, 1000, 34000),
                              ])
-    def test_data_is_unchanged(self, data, lower, upper):
+    def test_data_is_unchanged(self, dataloader, lower, upper, request):
         """
         Test that slicing does not change the underlying data
         """
+        # Load data
+        data = request.getfixturevalue(dataloader)
         # Check that the input data is appropriate for the test
         _check_data_is_outside_bounds(data, lower, upper)
 
@@ -100,15 +102,17 @@ class TestSlicing:
                              step=5)
         assert len(data) == original_length
 
-    @pytest.mark.parametrize(('data', 'lower', 'upper'),
+    @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
-                                 (gmx_benzene_dHdl(), 1000, 34000),
-                                 (gmx_benzene_u_nk(), 1000, 34000),
+                                 (gmx_benzene_dHdl, 1000, 34000),
+                                 (gmx_benzene_u_nk, 1000, 34000),
                              ])
-    def test_lower_and_upper_bound(self, data, lower, upper):
+    def test_lower_and_upper_bound(self, dataloader, lower, upper, request):
         """
         Test that the lower and upper time is respected
         """
+        # Load data
+        data = request.getfixturevalue(dataloader)
         # Check that the input data is appropriate for the test
         _check_data_is_outside_bounds(data, lower, upper)
 
@@ -266,14 +270,16 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
         with pytest.raises(ValueError):
             self.slicer(data, series=series)
 
-    @pytest.mark.parametrize(('data', 'lower', 'upper'),
+    @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
-                                 (gmx_benzene_dHdl(), 1000, 34000),
-                                 (gmx_benzene_u_nk(), 1000, 34000),
+                                 (gmx_benzene_dHdl, 1000, 34000),
+                                 (gmx_benzene_u_nk, 1000, 34000),
                              ])
     @pytest.mark.parametrize('use_series', [True, False])
     @pytest.mark.parametrize('conservative', [True, False])
-    def test_data_is_unchanged(self, data, use_series, lower, upper, conservative):
+    def test_data_is_unchanged(
+            self, dataloader, use_series, lower, upper, conservative, request
+    ):
         """
         Test that using statistical_inefficiency does not change the underlying data
 
@@ -282,6 +288,8 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
         calculations are performed. We want to test both behaviors. The behavior
         is toggled using the `use_series` argument.
         """
+        # Load data
+        data = request.getfixturevalue(dataloader)
         # Check that the input data is appropriate for the test
         _check_data_is_outside_bounds(data, lower, upper)
 
@@ -298,14 +306,16 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
                     conservative=conservative)
         assert len(data) == original_length
 
-    @pytest.mark.parametrize(('data', 'lower', 'upper'),
+    @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
-                                 (gmx_benzene_dHdl(), 1000, 34000),
-                                 (gmx_benzene_u_nk(), 1000, 34000),
+                                 (gmx_benzene_dHdl, 1000, 34000),
+                                 (gmx_benzene_u_nk, 1000, 34000),
                              ])
     @pytest.mark.parametrize('use_series', [True, False])
     @pytest.mark.parametrize('conservative', [True, False])
-    def test_lower_and_upper_bound_slicer(self, data, use_series, lower, upper, conservative):
+    def test_lower_and_upper_bound_slicer(
+            self, dataloader, use_series, lower, upper, conservative, request
+    ):
         """
         Test that the lower and upper time is respected when using statistical_inefficiency
 
@@ -314,6 +324,8 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
         calculations are performed. We want to test both behaviors. The behavior
         is toggled using the `use_series` argument.
         """
+        # Load data
+        data = request.getfixturevalue(dataloader)
         # Check that the input data is appropriate for the test
         _check_data_is_outside_bounds(data, lower, upper)
 
@@ -331,19 +343,21 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
         assert all(sliced.reset_index()['time'] >= lower)
         assert all(sliced.reset_index()['time'] <= upper)
 
-    @pytest.mark.parametrize(('data', 'lower', 'upper'),
+    @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
-                                 (gmx_benzene_dHdl(), 1000, 34000),
-                                 (gmx_benzene_u_nk(), 1000, 34000),
-                                 (gmx_benzene_dHdl(), 1000, 34000),
-                                 (gmx_benzene_u_nk(), 1000, 34000),
+                                 (gmx_benzene_dHdl, 1000, 34000),
+                                 (gmx_benzene_u_nk, 1000, 34000),
                              ])
     @pytest.mark.parametrize('conservative', [True, False])
-    def test_slicing_inefficiency_equivalence(self, data, lower, upper, conservative):
+    def test_slicing_inefficiency_equivalence(
+            self, dataloader, lower, upper, conservative, request
+    ):
         """
         Test that first slicing the data frame, then subsampling is equivalent to
         subsampling with lower / upper bounds set
         """
+        # Load data
+        data = request.getfixturevalue(dataloader)
         # Check that the input data is appropriate for the test
         _check_data_is_outside_bounds(data, lower, upper)
 
