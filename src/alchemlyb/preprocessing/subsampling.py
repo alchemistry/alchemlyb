@@ -241,6 +241,11 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
        inefficiency was _rounded_ (instead of ``ceil()``) and thus one could
        end up with correlated data.
 
+    .. versionchanged:: 0.7.0
+       Fixed a bug that would effectively ignore the ``lower`` and ``step``
+       keywords when returning the subsampled DataFrame object. See
+       https://github.com/alchemistry/alchemlyb/issues/198 for more details.
+
     """
     if _check_multiple_times(df):
         if drop_duplicates:
