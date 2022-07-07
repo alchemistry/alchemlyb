@@ -241,6 +241,12 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
        inefficiency was _rounded_ (instead of ``ceil()``) and thus one could
        end up with correlated data.
 
+    .. versionchanged:: 0.7.0
+       Fixed a bug that would effectively ignore the ``lower`` and ``step``
+       keywords when returning the subsampled DataFrame object. See
+       `issue #198 <https://github.com/alchemistry/alchemlyb/issues/198>`_ for 
+       more details.
+
     """
     if _check_multiple_times(df):
         if drop_duplicates:
@@ -295,6 +301,7 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
             raise ValueError("series and data must be sampled at the same times")
                
         series = slicing(series, lower=lower, upper=upper, step=step)
+        df = slicing(df, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series (could use fft=True but needs test)
         statinef  = statisticalInefficiency(series, fast=False)

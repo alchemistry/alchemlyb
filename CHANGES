@@ -14,7 +14,7 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
-*/*/2022 xiki-tempula, IAlibay, dotsdl, orbeckst
+*/*/2022 xiki-tempula, IAlibay, dotsdl, orbeckst, ptmerz
 
   * 0.7.0
 
@@ -35,6 +35,8 @@ Fixes
   - Fixes setup.py and setup.cfg to prevent installations with Python versions
     lower than 3.7 (Issue #193)
   - added AutoMBAR to convergence analysis (#189)
+  - Fixed subsampling in statistical_inefficiency when lower or step keywords
+    are used (Issue #198, PR #199)
 
 
 12/28/2021 schlaicha, xiki-tempula, jhenin, ttjoseph, orbeckst
