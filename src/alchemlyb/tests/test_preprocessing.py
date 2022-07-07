@@ -15,11 +15,14 @@ from alchemtest.gmx import load_benzene, load_ABFE
 
 import alchemtest.gmx
 
-
 def gmx_benzene_dHdl():
     dataset = alchemtest.gmx.load_benzene()
     return gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
 
+@pytest.fixture()
+def gmx_benzene_dHdl_fixture():
+    dataset = alchemtest.gmx.load_benzene()
+    return gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
 
 @pytest.fixture()
 def gmx_ABFE():
@@ -40,7 +43,6 @@ def gmx_ABFE_u_nk():
 def gmx_benzene_u_nk_fixture():
     dataset = alchemtest.gmx.load_benzene()
     return gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
-
 
 def gmx_benzene_u_nk():
     dataset = alchemtest.gmx.load_benzene()
@@ -82,8 +84,8 @@ class TestSlicing:
 
     @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
-                                 (gmx_benzene_dHdl, 1000, 34000),
-                                 (gmx_benzene_u_nk, 1000, 34000),
+                                 ('gmx_benzene_dHdl_fixture', 1000, 34000),
+                                 ('gmx_benzene_u_nk_fixture', 1000, 34000),
                              ])
     def test_data_is_unchanged(self, dataloader, lower, upper, request):
         """
@@ -104,8 +106,8 @@ class TestSlicing:
 
     @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
-                                 (gmx_benzene_dHdl, 1000, 34000),
-                                 (gmx_benzene_u_nk, 1000, 34000),
+                                 ('gmx_benzene_dHdl_fixture', 1000, 34000),
+                                 ('gmx_benzene_u_nk_fixture', 1000, 34000),
                              ])
     def test_lower_and_upper_bound(self, dataloader, lower, upper, request):
         """
@@ -272,8 +274,8 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
 
     @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
-                                 (gmx_benzene_dHdl, 1000, 34000),
-                                 (gmx_benzene_u_nk, 1000, 34000),
+                                 ('gmx_benzene_dHdl_fixture', 1000, 34000),
+                                 ('gmx_benzene_u_nk_fixture', 1000, 34000),
                              ])
     @pytest.mark.parametrize('use_series', [True, False])
     @pytest.mark.parametrize('conservative', [True, False])
@@ -308,8 +310,8 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
 
     @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
-                                 (gmx_benzene_dHdl, 1000, 34000),
-                                 (gmx_benzene_u_nk, 1000, 34000),
+                                 ('gmx_benzene_dHdl_fixture', 1000, 34000),
+                                 ('gmx_benzene_u_nk_fixture', 1000, 34000),
                              ])
     @pytest.mark.parametrize('use_series', [True, False])
     @pytest.mark.parametrize('conservative', [True, False])
@@ -345,8 +347,8 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
 
     @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
-                                 (gmx_benzene_dHdl, 1000, 34000),
-                                 (gmx_benzene_u_nk, 1000, 34000),
+                                 ('gmx_benzene_dHdl_fixture', 1000, 34000),
+                                 ('gmx_benzene_u_nk_fixture', 1000, 34000),
                              ])
     @pytest.mark.parametrize('conservative', [True, False])
     def test_slicing_inefficiency_equivalence(
