@@ -19,10 +19,12 @@ def gmx_benzene_dHdl():
     dataset = alchemtest.gmx.load_benzene()
     return gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
 
+# When issue #206 is addressed make the gmx_benzene_dHdl() function the 
+# fixture, remove the wrapper below, and replace 
+# gmx_benzene_dHdl_fixture --> gmx_benzene_dHdl
 @pytest.fixture()
 def gmx_benzene_dHdl_fixture():
-    dataset = alchemtest.gmx.load_benzene()
-    return gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
+    return gmx_benzene_dHdl()
 
 @pytest.fixture()
 def gmx_ABFE():

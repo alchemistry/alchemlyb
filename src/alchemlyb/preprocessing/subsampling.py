@@ -244,7 +244,8 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
     .. versionchanged:: 0.7.0
        Fixed a bug that would effectively ignore the ``lower`` and ``step``
        keywords when returning the subsampled DataFrame object. See
-       https://github.com/alchemistry/alchemlyb/issues/198 for more details.
+       `issue #198 <https://github.com/alchemistry/alchemlyb/issues/198>`_ for 
+       more details.
 
     """
     if _check_multiple_times(df):
