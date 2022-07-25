@@ -39,14 +39,15 @@ or as a `conda`_ package from the `conda-forge (alchemlyb)`_ channel
   conda install -c conda-forge alchemlyb 
 
 
-**Update** with ::
+**Update** with ``pip`` ::
 
   pip install --update alchemlyb
 
-when using ``pip`` or with ``conda`` run ::
+or with ``conda`` run ::
 
   conda update -c conda-forge alchemlyb
 
+to get the latest released version.
 
 .. _`PyPi (alchemlyb)`: https://pypi.org/project/alchemlyb/
 .. _`conda`: https://conda.io/
