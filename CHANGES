@@ -13,6 +13,19 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+??/??/2022 orbeckst
+
+  * 1.0.0
+
+Changes
+
+
+Enhancements
+
+
+Fixes
+  - documented conda installation (available since 0.6.0) (#192)
+
 
 07/22/2022 xiki-tempula, IAlibay, dotsdl, orbeckst, ptmerz
 
