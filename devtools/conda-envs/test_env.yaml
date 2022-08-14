@@ -5,7 +5,7 @@ dependencies:
 - python
 - numpy
 - pandas
-- pymbar
+- pymbar >=3.0.5,<4
 - scipy
 - scikit-learn
 - matplotlib
@@ -13,4 +13,5 @@ dependencies:
   # Testing
 - pytest
 - pytest-cov
+- pytest-xdist
 - codecov

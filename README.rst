@@ -1,7 +1,7 @@
 alchemlyb: the simple alchemistry library
 =========================================
 
-|doi| |docs| |build| |cov|
+|doi| |docs| |build| |cov| |anaconda|
 
 **alchemlyb** makes alchemical free energy calculations easier to do
 by leveraging the full power and flexibility of the PyData stack. It
@@ -24,7 +24,34 @@ includes:
 .. _NAMD: http://www.ks.uiuc.edu/Research/namd/
 .. _`other simulation codes`: https://alchemlyb.readthedocs.io/en/latest/parsing.html
 .. _`pymbar`: http://pymbar.readthedocs.io/
-   
+
+
+Installation
+------------
+
+**Install** via ``pip`` from `PyPi (alchemlyb)`_ ::
+
+  pip install alchemlyb
+
+or as a `conda`_ package from the `conda-forge (alchemlyb)`_ channel
+::
+
+  conda install -c conda-forge alchemlyb 
+
+
+**Update** with ``pip`` ::
+
+  pip install --update alchemlyb
+
+or with ``conda`` run ::
+
+  conda update -c conda-forge alchemlyb
+
+to get the latest released version.
+
+.. _`PyPi (alchemlyb)`: https://pypi.org/project/alchemlyb/
+.. _`conda`: https://conda.io/
+.. _`conda-forge (alchemlyb)`: https://anaconda.org/conda-forge/alchemlyb
 
 Getting involved
 ----------------
@@ -76,3 +103,8 @@ References
     :scale: 100%
     :target: https://codecov.io/gh/alchemistry/alchemlyb
 
+
+.. |anaconda| image:: https://anaconda.org/conda-forge/alchemlyb/badges/version.svg
+   :alt: anaconda package
+   :scale: 100%	 
+   :target: https://anaconda.org/conda-forge/alchemlyb
