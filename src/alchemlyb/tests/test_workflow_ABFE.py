@@ -114,20 +114,24 @@ class Test_manual_ABFE(Test_automatic_ABFE):
         monkeypatch.setattr(workflow, 'estimator', {})
         assert workflow.plot_overlap_matrix() is None
 
-    def test_nou_nk_for_check_convergence(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, 'u_nk_list', [])
-        monkeypatch.setattr(workflow, 'u_nk_sample_list', [])
+    def test_no_u_nk_for_check_convergence(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'u_nk_list', None)
+        monkeypatch.setattr(workflow, 'u_nk_sample_list', None)
         with pytest.raises(ValueError):
             workflow.check_convergence(10, estimator='MBAR')
 
-    def test_nodHdl_for_check_convergence(self, workflow, monkeypatch):
+    def test_no_dHdl_for_check_convergence(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, 'dHdl_list', None)
         monkeypatch.setattr(workflow, 'dHdl_sample_list', None)
         with pytest.raises(ValueError):
             workflow.check_convergence(10, estimator='TI')
 
-    def test_no_update_units(self, workflow, monkeypatch):
+    def test_no_update_units(self, workflow):
         assert workflow.update_units() is None
+
+    def test_no_name_estimate(self, workflow):
+        with pytest.raises(ValueError):
+            workflow.estimate('aaa')
 
 
 class Test_automatic_benzene():
