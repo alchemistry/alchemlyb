@@ -121,20 +121,20 @@ class Test_manual_ABFE(Test_automatic_ABFE):
             workflow.check_convergence(10, estimator='MBAR')
 
     def test_nodHdl_for_check_convergence(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, 'dHdl_list', [])
-        monkeypatch.setattr(workflow, 'dHdl_sample_list', [])
+        monkeypatch.setattr(workflow, 'dHdl_list', None)
+        monkeypatch.setattr(workflow, 'dHdl_sample_list', None)
         with pytest.raises(ValueError):
             workflow.check_convergence(10, estimator='TI')
 
     def test_nou_nk_for_estimate(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, 'u_nk_list', [])
-        monkeypatch.setattr(workflow, 'u_nk_sample_list', [])
+        monkeypatch.setattr(workflow, 'u_nk_list', None)
+        monkeypatch.setattr(workflow, 'u_nk_sample_list', None)
         with pytest.raises(ValueError):
             workflow.estimate(methods='MBAR')
 
     def test_nodHdl_for_estimate(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, 'dHdl_list', [])
-        monkeypatch.setattr(workflow, 'dHdl_sample_list', [])
+        monkeypatch.setattr(workflow, 'dHdl_list', None)
+        monkeypatch.setattr(workflow, 'dHdl_sample_list', None)
         with pytest.raises(ValueError):
             workflow.estimate(methods='TI')
 
