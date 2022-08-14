@@ -150,7 +150,7 @@ class ABFE(WorkflowBase):
         self.dHdl_sample_list = None
 
     def run(self, skiptime=0, uncorr='dhdl', threshold=50,
-            methods=('mbar', 'bar', 'ti'), overlap='O_MBAR.pdf',
+            methods=('MABR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
             breakdown=True, forwrev=10, *args, **kwargs):
         ''' The method for running the automatic analysis.
 
@@ -169,7 +169,7 @@ class ABFE(WorkflowBase):
             analysis will not be performed at all. Default: 50.
         methods : str or list of str
             A list of the methods to estimate the free energy with. Default:
-            `('mbar', 'bar', 'ti')`.
+            `('MABR', 'BAR', 'TI')`.
         overlap : str
             The filename for the plot of overlap matrix. Default: 'O_MBAR.pdf'.
         breakdown : bool
@@ -214,7 +214,7 @@ class ABFE(WorkflowBase):
             plt.close(fig)
 
         if forwrev is not None:
-            ax = self.check_convergence(forwrev, estimator='autombar',
+            ax = self.check_convergence(forwrev, estimator='MBAR',
                                         dF_t='dF_t.pdf')
             plt.close(ax.figure)
 
@@ -488,7 +488,7 @@ class ABFE(WorkflowBase):
                 self.logger.info(
                     f'Stage {stage} is from state {start} to state {end}.')
                 result = delta_f_.iloc[start, end]
-                if estimator_name != 'bar':
+                if estimator_name != 'BAR':
                     error = d_delta_f_.iloc[start, end]
                 else:
                     error = np.sqrt(sum(
@@ -499,7 +499,7 @@ class ABFE(WorkflowBase):
 
             # Total result
             result = delta_f_.iloc[0, -1]
-            if estimator_name != 'bar':
+            if estimator_name != 'BAR':
                 error = d_delta_f_.iloc[0, -1]
             else:
                 error = np.sqrt(sum(
@@ -540,8 +540,8 @@ class ABFE(WorkflowBase):
             An axes with the overlap matrix drawn.
         '''
         self.logger.info('Plot overlap matrix.')
-        if 'mbar' in self.estimator:
-            ax = plot_mbar_overlap_matrix(self.estimator['mbar'].overlap_matrix,
+        if 'MBAR' in self.estimator:
+            ax = plot_mbar_overlap_matrix(self.estimator['MBAR'].overlap_matrix,
                                           ax=ax)
             ax.figure.savefig(join(self.out, overlap))
             self.logger.info(f'Plot overlap matrix to {self.out} under {overlap}.')
@@ -574,8 +574,8 @@ class ABFE(WorkflowBase):
             An axes with the TI dhdl drawn.
         '''
         self.logger.info('Plot TI dHdl.')
-        if 'ti' in self.estimator:
-            ax = plot_ti_dhdl(self.estimator['ti'], units=self.units,
+        if 'TI' in self.estimator:
+            ax = plot_ti_dhdl(self.estimator['TI'], units=self.units,
                               labels=labels, colors=colors, ax=ax)
             ax.figure.savefig(join(self.out, dhdl_TI))
             self.logger.info(f'Plot TI dHdl to {dhdl_TI} under {self.out}.')
@@ -614,7 +614,7 @@ class ABFE(WorkflowBase):
         self.logger.info(f'Plot dF state to {dF_state} under {self.out}.')
         return fig
 
-    def check_convergence(self, forwrev, estimator='autombar', dF_t='dF_t.pdf',
+    def check_convergence(self, forwrev, estimator='MBAR', dF_t='dF_t.pdf',
                      ax=None):
         '''Compute the forward and backward convergence using
         :func:`~alchemlyb.convergence.forward_backward_convergence`and
