@@ -1,5 +1,5 @@
 import pandas as pd
-
+from warnings import warn
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
@@ -46,15 +46,6 @@ def concat(objs, *args, **kwargs):
  
  
     .. versionadded:: 0.5.0'''
-    # Sanity check
-    try:
-        attrs = objs[0].attrs
-    except IndexError: # except empty list as input
-        raise ValueError('No objects to concatenate')
-
-    for obj in objs:
-        if attrs != obj.attrs:
-            raise ValueError('All pandas objects should have the same attrs.')
-    new = pd.concat(objs, *args, **kwargs)
-    new.attrs = attrs
-    return new
+    warn('This method will be deprecated in 1.0.0. Use pd.concat instead.',
+         DeprecationWarning,)
+    return pd.concat(objs, *args, **kwargs)
