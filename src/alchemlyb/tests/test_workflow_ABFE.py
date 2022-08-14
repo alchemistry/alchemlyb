@@ -340,3 +340,8 @@ class Test_automatic_amber():
         '''Test if if the summary is right.'''
         summary = workflow.generate_result()
         assert np.isclose(summary['TI']['Stages']['TOTAL'], 1.40405980473, 0.1)
+
+def test_no_parser():
+    with pytest.raises(NotImplementedError):
+        workflow = ABFE(units='kcal/mol', software='aaa',
+                        prefix='ti', suffix='bz2', T=310)

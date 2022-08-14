@@ -90,7 +90,7 @@ class ABFE(WorkflowBase):
         elif software.lower() == 'amber':
             self._extract_u_nk = amber.extract_u_nk
             self._extract_dHdl = amber.extract_dHdl
-        else: # pragma: no cover
+        else:
             raise NotImplementedError(f'{software} parser not found.')
 
     def read(self):
