@@ -110,6 +110,35 @@ class Test_manual_ABFE(Test_automatic_ABFE):
         with pytest.raises(ValueError):
             workflow.plot_ti_dhdl(dhdl_TI='dhdl_TI.pdf')
 
+    def test_noMBAR_for_plot_overlap_matrix(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'estimator', {})
+        assert workflow.plot_overlap_matrix() is None
+
+    def test_nou_nk_for_check_convergence(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'u_nk_list', [])
+        monkeypatch.setattr(workflow, 'u_nk_sample_list', [])
+        with pytest.raises(ValueError):
+            workflow.check_convergence(10, estimator='MBAR')
+
+    def test_nodHdl_for_check_convergence(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'dHdl_list', [])
+        monkeypatch.setattr(workflow, 'dHdl_sample_list', [])
+        with pytest.raises(ValueError):
+            workflow.check_convergence(10, estimator='TI')
+
+    def test_nou_nk_for_estimate(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'u_nk_list', [])
+        monkeypatch.setattr(workflow, 'u_nk_sample_list', [])
+        with pytest.raises(ValueError):
+            workflow.estimate(methods='MBAR')
+
+    def test_nodHdl_for_estimate(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'dHdl_list', [])
+        monkeypatch.setattr(workflow, 'dHdl_sample_list', [])
+        with pytest.raises(ValueError):
+            workflow.estimate(methods='TI')
+
+
 class Test_automatic_benzene():
     '''Test the full automatic workflow for load_benzene from alchemtest.gmx for
     single stage transformation.'''

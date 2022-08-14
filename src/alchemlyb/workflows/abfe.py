@@ -361,10 +361,7 @@ class ABFE(WorkflowBase):
             elif estimator == 'TI' and len(dHdl) > 0:
                 self.logger.info('Run TI estimator.')
                 self.estimator[estimator] = TI().fit(dHdl)
-            elif estimator in FEP_ESTIMATORS: # pragma: no cover
-                self.logger.warning(f'{estimator} estimator require u_nk')
-            else:
-                self.logger.warning(f'{estimator} estimator require dHdl')
+
 
     def generate_result(self):
         '''Summarise the result into a dataframe.
@@ -432,13 +429,10 @@ class ABFE(WorkflowBase):
             stages = u_nk.reset_index('time').index.names
             self.logger.info('use the stage name from u_nk')
         except:
-            try:
-                dHdl = self.dHdl_list[0]
-                stages = dHdl.reset_index('time').index.names
-                self.logger.info('use the stage name from dHdl')
-            except: # pragma: no cover
-                stages = []
-                self.logger.warning('No stage name found in dHdl or u_nk')
+            dHdl = self.dHdl_list[0]
+            stages = dHdl.reset_index('time').index.names
+            self.logger.info('use the stage name from dHdl')
+
         for stage in stages:
             data_dict['name'].append(stage.split('-')[0])
             data_dict['state'].append('Stages')
@@ -454,14 +448,14 @@ class ABFE(WorkflowBase):
             d_delta_f_ = estimator.d_delta_f_
             # Write the estimator header
 
-            col_names.append(estimator_name.upper())
-            col_names.append(estimator_name.upper() + '_Error')
-            data_dict[estimator_name.upper()] = []
-            data_dict[estimator_name.upper() + '_Error'] = []
+            col_names.append(estimator_name)
+            col_names.append(estimator_name + '_Error')
+            data_dict[estimator_name] = []
+            data_dict[estimator_name + '_Error'] = []
             for index in range(1, num_states):
-                data_dict[estimator_name.upper()].append(
+                data_dict[estimator_name].append(
                     delta_f_.iloc[index-1, index])
-                data_dict[estimator_name.upper() + '_Error'].append(
+                data_dict[estimator_name + '_Error'].append(
                     d_delta_f_.iloc[index - 1, index])
 
             self.logger.info(f'Generate the staged result from estimator {estimator_name}')
@@ -546,7 +540,7 @@ class ABFE(WorkflowBase):
             ax.figure.savefig(join(self.out, overlap))
             self.logger.info(f'Plot overlap matrix to {self.out} under {overlap}.')
             return ax
-        else: # pragma: no cover
+        else:
             self.logger.warning('MBAR estimator not found. '
                                 'Overlap matrix not plotted.')
 
@@ -656,8 +650,9 @@ class ABFE(WorkflowBase):
                     u_nk_list = self.u_nk_list
                     self.logger.info('Subsampled u_nk not available, '
                                      'use original data instead.')
-                else:  # pragma: no cover
-                    self.logger.warning('u_nk is not available.')
+                else:
+                    self.logger.error(f'u_nk is needed for the f{estimator} estimator.')
+                    raise ValueError(f'u_nk is needed for the f{estimator} estimator.')
             convergence = forward_backward_convergence(u_nk_list,
                                                        estimator=estimator,
                                                        num=forwrev)
@@ -672,8 +667,11 @@ class ABFE(WorkflowBase):
                     dHdl_list = self.dHdl_list
                     self.logger.info('Subsampled dHdl not available, '
                                      'use original data instead.')
-                else:  # pragma: no cover
-                    self.logger.warning('dHdl is not available.')
+                else:
+                    self.logger.error(
+                        f'dHdl is needed for the f{estimator} estimator.')
+                    raise ValueError(
+                        f'dHdl is needed for the f{estimator} estimator.')
             convergence = forward_backward_convergence(dHdl_list,
                                                        estimator=estimator,
                                                        num=forwrev)
