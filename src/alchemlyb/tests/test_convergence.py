@@ -30,7 +30,7 @@ def test_convergence_mbar(gmx_benzene):
 
 def test_convergence_autombar(gmx_benzene):
     dHdl, u_nk = gmx_benzene
-    convergence = forward_backward_convergence(u_nk, 'AutoMBAR')
+    convergence = forward_backward_convergence(u_nk, 'MBAR')
     assert convergence.shape == (10, 5)
     assert convergence.iloc[0, 0] == pytest.approx(3.02, 0.01)
     assert convergence.iloc[0, 2] == pytest.approx(3.06, 0.01)

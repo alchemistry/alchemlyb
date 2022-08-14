@@ -494,8 +494,8 @@ class ABFE(WorkflowBase):
                     error = np.sqrt(sum(
                         [d_delta_f_.iloc[start, start+1]**2
                          for i in range(start, end + 1)]))
-                data_dict[estimator_name.upper()].append(result)
-                data_dict[estimator_name.upper() + '_Error'].append(error)
+                data_dict[estimator_name].append(result)
+                data_dict[estimator_name + '_Error'].append(error)
 
             # Total result
             result = delta_f_.iloc[0, -1]
@@ -505,8 +505,8 @@ class ABFE(WorkflowBase):
                 error = np.sqrt(sum(
                     [d_delta_f_.iloc[i, i + 1] ** 2
                      for i in range(num_states - 1)]))
-            data_dict[estimator_name.upper()].append(result)
-            data_dict[estimator_name.upper() + '_Error'].append(error)
+            data_dict[estimator_name].append(result)
+            data_dict[estimator_name + '_Error'].append(error)
         summary = pd.DataFrame.from_dict(data_dict)
 
         summary = summary.set_index(['state', 'name'])
@@ -632,7 +632,7 @@ class ABFE(WorkflowBase):
         dF_t : str
             The filename for the plot of convergence. Default: 'dF_t.pdf'
         ax : matplotlib.axes.Axes
-            Matplotlib axes object where the plot will be drawn on. If ax=None,
+            Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
             a new axes will be generated.
 
         Attributes
