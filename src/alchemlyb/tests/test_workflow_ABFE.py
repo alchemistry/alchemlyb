@@ -18,7 +18,7 @@ class Test_automatic_ABFE():
         workflow = ABFE(units='kcal/mol', software='Gromacs', dir=dir,
                         prefix='dhdl', suffix='xvg', T=310, outdirectory=str(outdir))
         workflow.run(skiptime=10, uncorr='dhdl', threshold=50,
-                     methods=('mbar', 'bar', 'ti'), overlap='O_MBAR.pdf',
+                     methods=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
                      breakdown=True, forwrev=10)
         return workflow
 
@@ -39,9 +39,9 @@ class Test_automatic_ABFE():
     def test_estimator(self, workflow):
         '''Test if all three estimators have been used.'''
         assert len(workflow.estimator) == 3
-        assert 'mbar' in workflow.estimator
-        assert 'ti' in workflow.estimator
-        assert 'bar' in workflow.estimator
+        assert 'MBAR' in workflow.estimator
+        assert 'TI' in workflow.estimator
+        assert 'BAR' in workflow.estimator
 
     def test_summary(self, workflow):
         '''Test if if the summary is right.'''
@@ -82,7 +82,7 @@ class Test_manual_ABFE(Test_automatic_ABFE):
         workflow.update_units('kcal/mol')
         workflow.read()
         workflow.preprocess(skiptime=10, uncorr='dhdl', threshold=50)
-        workflow.estimate(methods=('mbar', 'bar', 'ti'))
+        workflow.estimate(methods=('MBAR', 'BAR', 'TI'))
         workflow.plot_overlap_matrix(overlap='O_MBAR.pdf')
         workflow.plot_ti_dhdl(dhdl_TI='dhdl_TI.pdf')
         workflow.plot_dF_state(dF_state='dF_state.pdf')
@@ -104,7 +104,7 @@ class Test_manual_ABFE(Test_automatic_ABFE):
     def test_dhdl_TI_noTI(self, workflow, monkeypatch):
         '''Test to plot the dhdl_TI when ti estimator is not there'''
         no_TI = workflow.estimator
-        no_TI.pop('ti')
+        no_TI.pop('TI')
         monkeypatch.setattr(workflow, 'estimator',
                             no_TI)
         with pytest.raises(ValueError):
@@ -125,7 +125,7 @@ class Test_automatic_benzene():
                         prefix='dhdl', suffix='bz2', T=310,
                         outdirectory=outdir)
         workflow.run(skiptime=0, uncorr='dhdl', threshold=50,
-                        methods=('mbar', 'bar', 'ti'), overlap='O_MBAR.pdf',
+                        methods=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
                         breakdown=True, forwrev=10)
         return workflow
 
@@ -139,9 +139,9 @@ class Test_automatic_benzene():
     def test_estimator(self, workflow):
         '''Test if all three estimators have been used.'''
         assert len(workflow.estimator) == 3
-        assert 'mbar' in workflow.estimator
-        assert 'ti' in workflow.estimator
-        assert 'bar' in workflow.estimator
+        assert 'MBAR' in workflow.estimator
+        assert 'TI' in workflow.estimator
+        assert 'BAR' in workflow.estimator
 
     def test_O_MBAR(self, workflow):
         '''test if the O_MBAR.pdf has been plotted.'''
@@ -192,10 +192,10 @@ class Test_unpertubed_lambda():
             dHdl.insert(1, 'bound', [1.0, ] * len(dHdl))
             dHdl.set_index('bound-lambda', append=True, inplace=True)
 
-        workflow.estimate(methods=('ti', ))
+        workflow.estimate(methods=('TI', ))
         workflow.plot_ti_dhdl(dhdl_TI='dhdl_TI.pdf')
         workflow.plot_dF_state(dF_state='dF_state.pdf')
-        workflow.check_convergence(10, dF_t='dF_t.pdf', estimator='ti')
+        workflow.check_convergence(10, dF_t='dF_t.pdf', estimator='TI')
         return workflow
 
     def test_dhdl_TI(self, workflow):
@@ -212,7 +212,7 @@ class Test_unpertubed_lambda():
         assert len(workflow.convergence) == 10
 
     def test_single_estimator_ti(self, workflow):
-        workflow.estimate(methods='ti')
+        workflow.estimate(methods='TI')
         summary = workflow.generate_result()
         assert np.isclose(summary['TI']['Stages']['TOTAL'], 2.946, 0.1)
 
@@ -248,19 +248,19 @@ class Test_methods():
         assert all([len(dHdl) == 40 for dHdl in workflow.dHdl_sample_list])
 
     def test_single_estimator_mbar(self, workflow):
-        workflow.estimate(methods='mbar')
+        workflow.estimate(methods='MBAR')
         assert len(workflow.estimator) == 1
-        assert 'mbar' in workflow.estimator
+        assert 'MBAR' in workflow.estimator
         summary = workflow.generate_result()
         assert np.isclose(summary['MBAR']['Stages']['TOTAL'], 2.946, 0.1)
 
     def test_single_estimator_ti(self, workflow):
-        workflow.estimate(methods='ti')
+        workflow.estimate(methods='TI')
         summary = workflow.generate_result()
         assert np.isclose(summary['TI']['Stages']['TOTAL'], 2.946, 0.1)
 
     def test_bar_convergence(self, workflow):
-        workflow.check_convergence(10, estimator='bar')
+        workflow.check_convergence(10, estimator='BAR')
         assert len(workflow.convergence) == 10
 
     def test_convergence_invalid_estimator(self, workflow):
@@ -268,7 +268,7 @@ class Test_methods():
             workflow.check_convergence(10, estimator='aaa')
 
     def test_ti_convergence(self, workflow):
-        workflow.check_convergence(10, estimator='ti')
+        workflow.check_convergence(10, estimator='TI')
         assert len(workflow.convergence) == 10
 
     def test_unprocessed_n_uk(self, workflow, monkeypatch):
@@ -276,12 +276,12 @@ class Test_methods():
                             None)
         workflow.estimate()
         assert len(workflow.estimator) == 3
-        assert 'mbar' in workflow.estimator
+        assert 'MBAR' in workflow.estimator
 
     def test_unprocessed_dhdl(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, 'dHdl_sample_list',
                             None)
-        workflow.check_convergence(10, estimator='ti')
+        workflow.check_convergence(10, estimator='TI')
         assert len(workflow.convergence) == 10
 
 class Test_automatic_amber():
@@ -296,9 +296,9 @@ class Test_automatic_amber():
             os.path.dirname(load_bace_example()['data']['complex']['vdw'][0]))
 
         workflow = ABFE(units='kcal/mol', software='Amber', dir=dir,
-                        prefix='ti', suffix='bz2', T=310, outdirectory=str(outdir))
+                        prefix='TI', suffix='bz2', T=310, outdirectory=str(outdir))
         workflow.read()
-        workflow.estimate(methods='ti')
+        workflow.estimate(methods='TI')
         return workflow
 
     def test_summary(self, workflow):
