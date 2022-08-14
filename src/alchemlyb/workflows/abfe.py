@@ -231,7 +231,7 @@ class ABFE(WorkflowBase):
         if units is not None:
             self.logger.info(f'Set unit to {units}.')
             self.units = units or None
-        else: # pragma: no cover
+        else:
             pass
 
     def preprocess(self, skiptime=0, uncorr='dhdl', threshold=50):
@@ -283,7 +283,7 @@ class ABFE(WorkflowBase):
                     self.logger.info(f'Take {len(subsample)} uncorrelated '
                                      f'u_nk for state {index}.')
                     self.u_nk_sample_list.append(subsample)
-        else: # pragma: no cover
+        else:
             self.logger.info('No u_nk data being subsampled')
 
         if len(self.dHdl_list) > 0:
@@ -301,7 +301,7 @@ class ABFE(WorkflowBase):
                     self.logger.info(f'Take {len(subsample)} uncorrelated '
                                      f'dHdl for state {index}.')
                     self.dHdl_sample_list.append(subsample)
-        else: # pragma: no cover
+        else:
             self.logger.info('No dHdl data being subsampled')
 
     def estimate(self, methods=('MBAR', 'BAR', 'TI')):
@@ -352,13 +352,13 @@ class ABFE(WorkflowBase):
                 f'A total {len(u_nk)} lines of u_nk is used.')
 
         for estimator in methods:
-            if estimator == 'MBAR' and len(u_nk) > 0:
+            if estimator == 'MBAR':
                 self.logger.info('Run MBAR estimator.')
                 self.estimator[estimator] = MBAR().fit(u_nk)
-            elif estimator == 'BAR' and len(u_nk) > 0:
+            elif estimator == 'BAR':
                 self.logger.info('Run BAR estimator.')
                 self.estimator[estimator] = BAR().fit(u_nk)
-            elif estimator == 'TI' and len(dHdl) > 0:
+            elif estimator == 'TI':
                 self.logger.info('Run TI estimator.')
                 self.estimator[estimator] = TI().fit(dHdl)
 

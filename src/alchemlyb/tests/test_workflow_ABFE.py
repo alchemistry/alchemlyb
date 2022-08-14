@@ -126,17 +126,8 @@ class Test_manual_ABFE(Test_automatic_ABFE):
         with pytest.raises(ValueError):
             workflow.check_convergence(10, estimator='TI')
 
-    def test_nou_nk_for_estimate(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, 'u_nk_list', None)
-        monkeypatch.setattr(workflow, 'u_nk_sample_list', None)
-        with pytest.raises(ValueError):
-            workflow.estimate(methods='MBAR')
-
-    def test_nodHdl_for_estimate(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, 'dHdl_list', None)
-        monkeypatch.setattr(workflow, 'dHdl_sample_list', None)
-        with pytest.raises(ValueError):
-            workflow.estimate(methods='TI')
+    def test_no_update_units(self, workflow, monkeypatch):
+        assert workflow.update_units() is None
 
 
 class Test_automatic_benzene():
@@ -275,6 +266,16 @@ class Test_methods():
         workflow.preprocess(threshold=50)
         assert all([len(u_nk) == 40 for u_nk in workflow.u_nk_sample_list])
         assert all([len(dHdl) == 40 for dHdl in workflow.dHdl_sample_list])
+
+    def test_no_u_nk_preprocess(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'u_nk_list', [])
+        workflow.preprocess(threshold=50)
+        assert len(workflow.u_nk_list) == 0
+
+    def test_no_dHdl_preprocess(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'dHdl_list', [])
+        workflow.preprocess(threshold=50)
+        assert len(workflow.dHdl_list) == 0
 
     def test_single_estimator_mbar(self, workflow):
         workflow.estimate(methods='MBAR')
