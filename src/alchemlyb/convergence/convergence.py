@@ -2,11 +2,12 @@ import pandas as pd
 import logging
 import numpy as np
 
-from ..estimators import MBAR, BAR, TI, AutoMBAR
+from ..estimators import BAR, TI
+from ..estimators import AutoMBAR as MBAR
 from .. import concat
 
 
-def forward_backward_convergence(df_list, estimator='mbar', num=10):
+def forward_backward_convergence(df_list, estimator='MBAR', num=10):
     '''Forward and backward convergence of the free energy estimate.
 
     Generate the free energy estimate as a function of time in both directions,
@@ -20,7 +21,7 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
     ----------
     df_list : list
         List of DataFrame of either dHdl or u_nk.
-    estimator : {'mbar', 'bar', 'ti', 'autombar'}
+    estimator : {'MBAR', 'BAR', 'TI'}
         Name of the estimators.
     num : int
         The number of time points.
@@ -51,16 +52,13 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
     logger.info('Start convergence analysis.')
     logger.info('Check data availability.')
 
-    if estimator.lower() == 'mbar':
-        logger.info('Use MBAR estimator for convergence analysis.')
-        estimator_fit = MBAR().fit
-    elif estimator.lower() == 'autombar':
+    if estimator == 'MBAR':
         logger.info('Use AutoMBAR estimator for convergence analysis.')
-        estimator_fit = AutoMBAR().fit
-    elif estimator.lower() == 'bar':
+        estimator_fit = MBAR().fit
+    elif estimator == 'BAR':
         logger.info('Use BAR estimator for convergence analysis.')
         estimator_fit = BAR().fit
-    elif estimator.lower() == 'ti':
+    elif estimator == 'TI':
         logger.info('Use TI estimator for convergence analysis.')
         estimator_fit = TI().fit
     else:

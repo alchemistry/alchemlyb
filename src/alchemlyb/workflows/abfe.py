@@ -115,8 +115,10 @@ class ABFE(WorkflowBase):
             except: # pragma: no cover
                 msg = f'Error reading read u_nk from {file}.'
                 if self.ignore_warnings:
-                    self.logger.warning(msg)
+                    self.logger.exception(msg +
+                        'This exception is being ignored because ignore_warnings=True.')
                 else:
+                    self.logger.error(msg)
                     raise ValueError(msg)
 
             try:
@@ -127,8 +129,10 @@ class ABFE(WorkflowBase):
             except: # pragma: no cover
                 msg = f'Error reading read dhdl from {file}.'
                 if self.ignore_warnings:
-                    self.logger.warning(msg)
+                    self.logger.exception(msg +
+                        'This exception is being ignored because ignore_warnings=True.')
                 else:
+                    self.logger.error(msg)
                     raise ValueError(msg)
 
         # Sort the files according to the state
@@ -300,30 +304,36 @@ class ABFE(WorkflowBase):
         else: # pragma: no cover
             self.logger.info('No dHdl data being subsampled')
 
-    def estimate(self, methods=('mbar', 'bar', 'ti')):
+    def estimate(self, methods=('MBAR', 'BAR', 'TI')):
         '''Estimate the free energy using the selected estimator.
 
         Parameters
         ----------
         methods : str or list of str
-            A list of the methods to esitimate the free energy with. Default:
+            A list of the methods to estimate the free energy with. Default:
             ['TI', 'BAR', 'MBAR'].
 
         Attributes
         ----------
         estimator : dict
-            The dictionary of estimators. The key for MBAR is 'mbar', for BAR is
-            'bar' and for TI is 'ti'.
+            The dictionary of estimators. The keys are in ['TI', 'BAR',
+            'MBAR'].
         '''
         # Make estimators into a tuple
         if isinstance(methods, str):
             methods = (methods, )
 
+        for estimator in methods:
+            if estimator not in (FEP_ESTIMATORS + TI_ESTIMATORS):
+                msg = f"Estimator {estimator} is not available in {FEP_ESTIMATORS + TI_ESTIMATORS}."
+                self.logger.error(msg)
+                raise ValueError(msg)
+
         self.logger.info(
             f"Start running estimator: {','.join(methods)}.")
         self.estimator = {}
         # Use unprocessed data if preprocess is not performed.
-        if 'ti' in methods:
+        if 'TI' in methods:
             if self.dHdl_sample_list is not None:
                 dHdl = concat(self.dHdl_sample_list)
             else:
@@ -332,7 +342,7 @@ class ABFE(WorkflowBase):
             self.logger.info(
                 f'A total {len(dHdl)} lines of dHdl is used.')
 
-        if 'bar' in methods or 'mbar' in methods:
+        if 'BAR' in methods or 'MBAR' in methods:
             if self.u_nk_sample_list is not None:
                 u_nk = concat(self.u_nk_sample_list)
             else:
@@ -342,20 +352,19 @@ class ABFE(WorkflowBase):
                 f'A total {len(u_nk)} lines of u_nk is used.')
 
         for estimator in methods:
-            if estimator.lower() == 'mbar' and len(u_nk) > 0:
+            if estimator == 'MBAR' and len(u_nk) > 0:
                 self.logger.info('Run MBAR estimator.')
-                self.estimator['mbar'] = MBAR().fit(u_nk)
-            elif estimator.lower() == 'bar' and len(u_nk) > 0:
+                self.estimator[estimator] = MBAR().fit(u_nk)
+            elif estimator == 'BAR' and len(u_nk) > 0:
                 self.logger.info('Run BAR estimator.')
-                self.estimator['bar'] = BAR().fit(u_nk)
-            elif estimator.lower() == 'ti' and len(dHdl) > 0:
+                self.estimator[estimator] = BAR().fit(u_nk)
+            elif estimator == 'TI' and len(dHdl) > 0:
                 self.logger.info('Run TI estimator.')
-                self.estimator['ti'] = TI().fit(dHdl)
-            elif estimator.lower() == 'mbar' or estimator.lower() == 'bar': # pragma: no cover
-                self.logger.warning('MBAR or BAR estimator require u_nk')
-            else: # pragma: no cover
-                self.logger.warning(
-                    f'{estimator} is not a valid estimator.')
+                self.estimator[estimator] = TI().fit(dHdl)
+            elif estimator in FEP_ESTIMATORS: # pragma: no cover
+                self.logger.warning(f'{estimator} estimator require u_nk')
+            else:
+                self.logger.warning(f'{estimator} estimator require dHdl')
 
     def generate_result(self):
         '''Summarise the result into a dataframe.
@@ -410,8 +419,8 @@ class ABFE(WorkflowBase):
         self.logger.info('Summarise the estimate into a dataframe.')
         # Make the header name
         self.logger.info('Generate the row names.')
-        eitimator_names = list(self.estimator.keys())
-        num_states = len(self.estimator[eitimator_names[0]].states_)
+        estimator_names = list(self.estimator.keys())
+        num_states = len(self.estimator[estimator_names[0]].states_)
         data_dict = {'name': [],
                      'state': []}
         for i in range(num_states - 1):
@@ -556,7 +565,7 @@ class ABFE(WorkflowBase):
             list of colors for plotting all the alchemical transformations.
             Default: ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
         ax : matplotlib.axes.Axes
-            Matplotlib axes object where the plot will be drawn on. If ax=None,
+            Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
             a new axes will be generated.
 
         Returns
@@ -618,8 +627,8 @@ class ABFE(WorkflowBase):
             Plot the free energy change as a function of time in both
             directions, with the specified number of points in the time plot.
             The number of time points (an integer) must be provided.
-        estimator : {'TI', 'BAR', 'MBAR', 'AutoMBAR'}
-            The estimator used for convergence analysis. Default: 'autombar'
+        estimator : {'TI', 'BAR', 'MBAR'}
+            The estimator used for convergence analysis. Default: 'MBAR'
         dF_t : str
             The filename for the plot of convergence. Default: 'dF_t.pdf'
         ax : matplotlib.axes.Axes
@@ -638,7 +647,7 @@ class ABFE(WorkflowBase):
         self.logger.info('Start convergence analysis.')
         self.logger.info('Checking data availability.')
 
-        if estimator.lower() in [x.lower() for x in FEP_ESTIMATORS]:
+        if estimator in FEP_ESTIMATORS:
             if self.u_nk_sample_list is not None:
                 u_nk_list = self.u_nk_sample_list
                 self.logger.info('Subsampled u_nk is available.')
@@ -652,7 +661,7 @@ class ABFE(WorkflowBase):
             convergence = forward_backward_convergence(u_nk_list,
                                                        estimator=estimator,
                                                        num=forwrev)
-        elif estimator.lower() in [x.lower() for x in TI_ESTIMATORS]:
+        elif estimator in TI_ESTIMATORS:
             self.logger.warning('No valid FEP estimator or dataset found. '
                                 'Fallback to TI.')
             if self.dHdl_sample_list is not None:

@@ -73,7 +73,7 @@ The workflow returns the free energy estimate using all of
 :class:`~alchemlyb.estimators.MBAR`. For ABFE calculations, the alchemical
 transformation is usually done is three stages, the *bonded*, *coul* and *vdw*
 which corresponds to the free energy contribution from applying the
-restraint to restraint the ligand to the protein, decouple/annihilate the
+restraint to restrain the ligand to the protein, decouple/annihilate the
 coulombic interaction between the ligand and the protein and
 decouple/annihilate the protein-ligand lennard jones interactions. The result
 will be stored in :attr:`~alchemlyb.workflows.ABFE.summary` as
