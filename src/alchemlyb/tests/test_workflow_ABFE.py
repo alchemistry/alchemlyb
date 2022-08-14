@@ -296,7 +296,8 @@ class Test_automatic_amber():
             os.path.dirname(load_bace_example()['data']['complex']['vdw'][0]))
 
         workflow = ABFE(units='kcal/mol', software='Amber', dir=dir,
-                        prefix='TI', suffix='bz2', T=310, outdirectory=str(outdir))
+                        prefix='ti', suffix='bz2', T=310, outdirectory=str(
+                outdir))
         workflow.read()
         workflow.estimate(methods='TI')
         return workflow
