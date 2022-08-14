@@ -100,7 +100,7 @@ def extract_u_nk(xvg, T, filter=True):
         cols.append(u_col)
 
     u_k = pd.DataFrame(u_k, columns=cols,
-                       index=pd.Float64Index(times.values, name='time'))
+                       index=pd.Index(times.values, name='time', dtype='Float64'))
 
     # create columns for each lambda, indicating state each row sampled from
     # if state is None run as expanded ensemble data or REX
@@ -207,7 +207,7 @@ def extract_dHdl(xvg, T, filter=True):
     cols = [l.split('-')[0] for l in lambdas]
 
     dHdl = pd.DataFrame(dHdl.values, columns=cols,
-                        index=pd.Float64Index(times.values, name='time'))
+                        index=pd.Index(times.values, name='time', dtype='Float64'))
 
     # create columns for each lambda, indicating state each row sampled from
     # if state is None run as expanded ensemble data or REX

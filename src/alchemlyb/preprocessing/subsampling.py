@@ -130,13 +130,13 @@ def decorrelate_dhdl(df, drop_duplicates=True, sort=True, **kwargs):
 
 def _check_multiple_times(df):
     if isinstance(df, pd.Series):
-        return df.sort_index(0).reset_index('time', name='').duplicated('time').any()
+        return df.sort_index(axis=0).reset_index('time', name='').duplicated('time').any()
     else:
-        return df.sort_index(0).reset_index('time').duplicated('time').any()
+        return df.sort_index(axis=0).reset_index('time').duplicated('time').any()
 
 
 def _check_sorted(df):
-    return df.reset_index(0)['time'].is_monotonic_increasing
+    return df.reset_index(axis=0)['time'].is_monotonic_increasing
 
 
 def slicing(df, lower=None, upper=None, step=None, force=False):
