@@ -18,7 +18,7 @@ The rules for this file:
   * 1.0.0
 
 Changes
-
+  - Drop support for py3.7 (Issue #179, PR #214)
 
 Enhancements
 
