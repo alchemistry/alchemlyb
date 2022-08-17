@@ -1,4 +1,5 @@
 import pandas as pd
+
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
@@ -45,6 +46,7 @@ def concat(objs, *args, **kwargs):
  
  
     .. versionadded:: 0.5.0'''
+    # Sanity check
     try:
         attrs = objs[0].attrs
     except IndexError: # except empty list as input
