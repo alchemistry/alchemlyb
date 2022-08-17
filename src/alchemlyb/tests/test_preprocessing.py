@@ -150,7 +150,7 @@ class TestSlicing:
 
         """
         with pytest.raises(KeyError):
-            self.slicer(data.sort_index(0), lower=200)
+            self.slicer(data.sort_index(axis=0), lower=200)
 
     def test_subsample_bounds_and_step(self, gmx_ABFE):
         """Make sure that slicing the series also works
