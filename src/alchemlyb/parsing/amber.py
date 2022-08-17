@@ -36,7 +36,7 @@ def convert_to_pandas(file_datum):
         frame_time = file_datum.t0 + (frame_index + 1) * file_datum.dt * 1000
         data_dic["time"].append(frame_time)
     df = pd.DataFrame(data_dic["dHdl"], columns=["dHdl"],
-                      index=pd.Float64Index(data_dic["time"], name='time'))
+                      index=pd.Index(data_dic["time"], name='time', dtype='Float64'))
     df["lambdas"] = data_dic["lambdas"][0]
     df = df.reset_index().set_index(['time'] + ['lambdas'])
     return df
