@@ -136,7 +136,7 @@ def _check_multiple_times(df):
 
 
 def _check_sorted(df):
-    return df.reset_index(axis=0)['time'].is_monotonic_increasing
+    return df.reset_index(0)['time'].is_monotonic_increasing
 
 
 def slicing(df, lower=None, upper=None, step=None, force=False):
