@@ -1,7 +1,6 @@
 """Functions for subsampling datasets.
 
 """
-import numpy as np
 import pandas as pd
 from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
@@ -42,6 +41,7 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     ----
     The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
     but can loose data.
+
 
     .. versionadded:: 0.6.0
     .. versionchanged:: 0.7.0
@@ -88,8 +88,9 @@ def decorrelate_dhdl(df, drop_duplicates=True, sort=True,
     ----
     The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
     but can loose data.
-    .. versionadded:: 0.6.0
 
+
+    .. versionadded:: 0.6.0
     .. versionchanged:: 0.7.0
        Add the remove_burnin keyword to allow unequilibrated frames to be removed.
     """
@@ -127,6 +128,7 @@ def u_nk2series(df, method='dhdl'):
         :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
         or
         :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
+
 
     .. versionadded:: 0.7.0
     """
@@ -189,6 +191,7 @@ def dhdl2series(df, method=''):
         :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
         or
         :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
+
 
     .. versionadded:: 0.7.0
     """
@@ -485,6 +488,8 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
     See Also
     --------
     pymbar.timeseries.detectEquilibration : detailed background
+    pymbar.timeseries.subsampleCorrelatedData : used for subsampling
+
 
     .. versionchanged:: 0.7.0
        Add the drop_duplicates and sort keyword to unify the behaviour between

@@ -420,7 +420,7 @@ class Test_Units():
         assert new_dhdl.attrs['temperature'] == 310
         assert new_dhdl.attrs['energy_unit'] == 'kT'
 
-@pytest.mark.parametrize(('method', 'size',), [('dhdl', 2001),
+@pytest.mark.parametrize(('method', 'size'), [('dhdl', 2001),
                                               ('dhdl_all', 2001),
                                               ('dE', 2001)])
 def test_decorrelate_u_nk_single_l(gmx_benzene_u_nk_fixture, method, size):
