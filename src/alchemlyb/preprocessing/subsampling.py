@@ -7,6 +7,7 @@ from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
 
+
 def u_nk2series(df, method='dhdl'):
     """Convert an u_nk DataFrame into a series based on the selected method
     for subsampling.
@@ -69,12 +70,13 @@ def u_nk2series(df, method='dhdl'):
             # for the state that is the last state, take the state-1
         else:
             series = df.iloc[:, index - 1]
-    else: # pragma: no cover
+    else:  # pragma: no cover
         raise ValueError(
             'Decorrelation method {} not found.'.format(method))
     return series
 
-def dhdl2series(df, method='dhdl'):
+
+def dhdl2series(df, method=''):
     """Convert a dhdl DataFrame to a series for subsampling.
 
     Parameters
@@ -97,9 +99,11 @@ def dhdl2series(df, method='dhdl'):
     series = df.sum(axis=1)
     return series
 
+
 def _check_multiple_times(df):
     if isinstance(df, pd.Series):
-        return df.sort_index(0).reset_index('time', name='').duplicated('time').any()
+        return df.sort_index(0).reset_index('time', name='').duplicated(
+            'time').any()
     else:
         return df.sort_index(0).reset_index('time').duplicated('time').any()
 
@@ -107,6 +111,121 @@ def _check_multiple_times(df):
 def _check_sorted(df):
     return df.reset_index(0)['time'].is_monotonic_increasing
 
+
+def _drop_duplicates(df, series=None):
+    """Drop the duplication in the ``df`` which could be Dataframe or
+    Series, if series is provided, format the series such that it has the
+    same length as ``df``.
+
+    Parameters
+    ----------
+    df : DataFrame or Series
+        DataFrame or Series where duplication will be dropped.
+    series : Series
+        series to be formatted in the same way as df.
+
+    Returns
+    -------
+    df : DataFrame or Series
+        Formatted DataFrame or Series.
+    series : Series
+        Formatted Series.
+    """
+    if isinstance(df, pd.Series):
+        # remove the duplicate based on time
+        drop_duplicates_series = df.reset_index('time', name=''). \
+            drop_duplicates('time')
+        # Rest the time index
+        lambda_names = ['time', ]
+        lambda_names.extend(drop_duplicates_series.index.names)
+        df = drop_duplicates_series.set_index('time', append=True). \
+            reorder_levels(lambda_names)
+    else:
+        # remove the duplicate based on time
+        drop_duplicates_df = df.reset_index('time').drop_duplicates('time')
+        # Rest the time index
+        lambda_names = ['time', ]
+        lambda_names.extend(drop_duplicates_df.index.names)
+        df = drop_duplicates_df.set_index('time', append=True). \
+            reorder_levels(lambda_names)
+
+    # Do the same withing with the series
+    if series is not None:
+        # remove the duplicate based on time
+        drop_duplicates_series = series.reset_index('time', name=''). \
+            drop_duplicates('time')
+        # Rest the time index
+        lambda_names = ['time', ]
+        lambda_names.extend(drop_duplicates_series.index.names)
+        series = drop_duplicates_series.set_index('time', append=True). \
+            reorder_levels(lambda_names)
+    return df, series
+
+def _sort_by_time(df, series=None):
+    """Sort the ``df`` by time which could be Dataframe or
+    Series, if series is provided, sort the series as well.
+
+    Parameters
+    ----------
+    df : DataFrame or Series
+        DataFrame or Series to be sorted by time.
+    series : Series
+        series to be sorted by time.
+
+    Returns
+    -------
+    df : DataFrame or Series
+        Formatted DataFrame or Series.
+    series : Series
+        Formatted Series.
+    """
+    df = df.sort_index(level='time')
+
+    if series is not None:
+        series = series.sort_index(level='time')
+    return df, series
+
+def _prepare_input(df, series, drop_duplicates, sort):
+    """Prepare and check the input to be used for statistical_inefficiency or equilibrium_detection.
+
+    Parameters
+    ----------
+    df : DataFrame or Series
+        DataFrame or Series to be Prepared and checked.
+    series : Series
+        series to be Prepared and checked.
+
+    Returns
+    -------
+    df : DataFrame or Series
+        Formatted DataFrame or Series.
+    series : Series
+        Formatted Series.
+    """
+    if _check_multiple_times(df):
+        if drop_duplicates:
+            df, series = _drop_duplicates(df, series)
+        else:
+            raise KeyError(
+                "Duplicate time values found; statistical inefficiency "
+                "only works on a single, contiguous, "
+                "and sorted timeseries.")
+
+    if not _check_sorted(df):
+        if sort:
+            df, series = _sort_by_time(df, series)
+        else:
+            raise KeyError(
+                "Statistical inefficiency only works as expected if "
+                "values are sorted by time, increasing.")
+
+    if series is not None:
+        if (len(series) != len(df) or
+                not all(
+                    series.reset_index()['time'] == df.reset_index()['time'])):
+            raise ValueError(
+                "series and data must be sampled at the same times")
+    return df, series
 
 def slicing(df, lower=None, upper=None, step=None, force=False):
     """Subsample a DataFrame using simple slicing.
@@ -145,8 +264,11 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
 
     return df
 
-def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
-                             conservative=True, drop_duplicates=False, sort=False):
+
+def statistical_inefficiency(df, series=None, lower=None, upper=None,
+                             step=None,
+                             conservative=True, drop_duplicates=False,
+                             sort=False):
     """Subsample a DataFrame based on the calculated statistical inefficiency
     of a timeseries.
 
@@ -211,61 +333,14 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
        end up with correlated data.
 
     """
-    if _check_multiple_times(df):
-        if drop_duplicates:
-            if isinstance(df, pd.Series):
-                # remove the duplicate based on time
-                drop_duplicates_series = df.reset_index('time', name='').\
-                    drop_duplicates('time')
-                # Rest the time index
-                lambda_names = ['time',]
-                lambda_names.extend(drop_duplicates_series.index.names)
-                df = drop_duplicates_series.set_index('time', append=True).\
-                    reorder_levels(lambda_names)
-            else:
-                # remove the duplicate based on time
-                drop_duplicates_df = df.reset_index('time').drop_duplicates('time')
-                # Rest the time index
-                lambda_names = ['time',]
-                lambda_names.extend(drop_duplicates_df.index.names)
-                df = drop_duplicates_df.set_index('time', append=True).\
-                    reorder_levels(lambda_names)
-
-            # Do the same withing with the series
-            if series is not None:
-                # remove the duplicate based on time
-                drop_duplicates_series = series.reset_index('time', name='').\
-                    drop_duplicates('time')
-                # Rest the time index
-                lambda_names = ['time',]
-                lambda_names.extend(drop_duplicates_series.index.names)
-                series = drop_duplicates_series.set_index('time', append=True).\
-                    reorder_levels(lambda_names)
-
-        else:
-            raise KeyError("Duplicate time values found; statistical inefficiency "
-                           "only works on a single, contiguous, "
-                           "and sorted timeseries.")
-
-    if not _check_sorted(df):
-        if sort:
-            df = df.sort_index(level='time')
-
-            if series is not None:
-                series = series.sort_index(level='time')
-        else:
-            raise KeyError("Statistical inefficiency only works as expected if "
-                           "values are sorted by time, increasing.")
+    df, series = _prepare_input(df, series, drop_duplicates, sort)
 
     if series is not None:
-        if (len(series) != len(df) or
-            not all(series.reset_index()['time'] == df.reset_index()['time'])):
-            raise ValueError("series and data must be sampled at the same times")
-               
         series = slicing(series, lower=lower, upper=upper, step=step)
+        df = slicing(df, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series (could use fft=True but needs test)
-        statinef  = statisticalInefficiency(series, fast=False)
+        statinef = statisticalInefficiency(series, fast=False)
 
         # use the subsampleCorrelatedData function to get the subsample index
         indices = subsampleCorrelatedData(series, g=statinef,
@@ -277,7 +352,8 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
     return df
 
 
-def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
+def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
+                          drop_duplicates=False, sort=False):
     """Subsample a DataFrame using automated equilibrium detection on a timeseries.
 
     If `series` is ``None``, then this function will behave the same as
@@ -296,6 +372,10 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
         Upper bound to pre-slice `series` to (inclusive).
     step : int
         Step between `series` items to pre-slice by.
+    drop_duplicates : bool
+        Drop the duplicated lines based on time.
+    sort : bool
+        Sort the Dataframe based on the time column.
 
     Returns
     -------
@@ -307,28 +387,20 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None):
     pymbar.timeseries.detectEquilibration : detailed background
 
     """
-    if _check_multiple_times(df):
-        raise KeyError("Duplicate time values found; equilibrium detection "
-                       "is only meaningful for a single, contiguous, "
-                       "and sorted timeseries.")
-
-    if not _check_sorted(df):
-        raise KeyError("Equilibrium detection only works as expected if "
-                       "values are sorted by time, increasing.")
+    df, series = _prepare_input(df, series, drop_duplicates, sort)
 
     if series is not None:
         series = slicing(series, lower=lower, upper=upper, step=step)
+        df = slicing(df, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series, with equilibrium detection
-        t, statinef, Neff_max  = detectEquilibration(series.values)
+        t, statinef, Neff_max = detectEquilibration(series.values)
 
-        # we round up
-        statinef = int(np.rint(statinef))
+        series_equil = series[t:]
+        df_equil = df[t:]
 
-        # subsample according to statistical inefficiency
-        series = series.iloc[t::statinef]
-
-        df = df.loc[series.index]
+        indices = subsampleCorrelatedData(series_equil, g=statinef)
+        df = df_equil.iloc[indices]
     else:
         df = slicing(df, lower=lower, upper=upper, step=step)
 
