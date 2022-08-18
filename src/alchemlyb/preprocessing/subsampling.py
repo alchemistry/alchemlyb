@@ -7,6 +7,99 @@ from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
 
+def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
+                     sort=True, remove_burnin=False, **kwargs):
+    """Subsample a u_nk DataFrame based on the selected method.
+    The method can be either 'dhdl_all' (obtained as a sum over all energy
+    components) or 'dhdl' (obtained as the energy components that are
+    changing; default) or 'dE'. In the latter case the energy differences
+    dE_{i,i+1} (dE_{i,i-1} for the last lambda) are used.
+    This is a wrapper function around the function
+    :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency` or
+    :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
+
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame to be subsampled according to the selected method.
+    method : {'dhdl', 'dhdl_all', 'dE'}
+        Method for decorrelating the data.
+    drop_duplicates : bool
+        Drop the duplicated lines based on time.
+    sort : bool
+        Sort the Dataframe based on the time column.
+    remove_burnin : bool
+        Whether to perform equilibrium detection (``True``) or just do
+        statistical inefficiency (``False``).
+    **kwargs :
+        Additional keyword arguments for
+        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
+    Returns
+    -------
+    DataFrame
+        `df` subsampled according to selected `method`.
+    Note
+    ----
+    The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
+    but can loose data.
+    .. versionadded:: 0.6.0
+    """
+    kwargs['drop_duplicates'] = drop_duplicates
+    kwargs['sort'] = sort
+
+    series = u_nk2series(df, method)
+
+    if remove_burnin:
+        return equilibrium_detection(df, series, **kwargs)
+    else:
+        return statistical_inefficiency(df, series, **kwargs)
+
+def decorrelate_dhdl(df, drop_duplicates=True, sort=True,
+                     remove_burnin=False, **kwargs):
+    """Subsample a dhdl DataFrame.
+    This is a wrapper function around the function
+    :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency` and
+    :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
+
+    Parameters
+    ----------
+    df : DataFrame
+        DataFrame to subsample according to the selected method.
+    drop_duplicates : bool
+        Drop the duplicated lines based on time.
+    sort : bool
+        Sort the Dataframe based on the time column.
+    remove_burnin : bool
+        Whether to perform equilibrium detection (``True``) or just do
+        statistical inefficiency (``False``).
+    **kwargs :
+        Additional keyword arguments for
+        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
+        or :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
+
+    Returns
+    -------
+    DataFrame
+        `df` subsampled.
+    Note
+    ----
+    The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
+    but can loose data.
+    .. versionadded:: 0.6.0
+
+    .. versionchanged:: 0.7.0
+       Add the remove_burnin keyword to allow unequilibrated frames to be removed.
+    """
+
+    kwargs['drop_duplicates'] = drop_duplicates
+    kwargs['sort'] = sort
+
+    series = dhdl2series(df)
+
+    if remove_burnin:
+        return equilibrium_detection(df, series, **kwargs)
+    else:
+        return statistical_inefficiency(df, series, **kwargs)
 
 def u_nk2series(df, method='dhdl'):
     """Convert an u_nk DataFrame into a series based on the selected method
@@ -389,6 +482,10 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
     See Also
     --------
     pymbar.timeseries.detectEquilibration : detailed background
+
+    .. versionchanged:: 0.7.0
+       Add the drop_duplicates and sort keyword to unify the behaviour between
+       equilibrium_detection and statistical_inefficiency.
 
     """
     df, series = _prepare_input(df, series, drop_duplicates, sort)
