@@ -266,9 +266,8 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
 
 
 def statistical_inefficiency(df, series=None, lower=None, upper=None,
-                             step=None,
-                             conservative=True, drop_duplicates=False,
-                             sort=False):
+                             step=None, conservative=True,
+                             drop_duplicates=False, sort=False):
     """Subsample a DataFrame based on the calculated statistical inefficiency
     of a timeseries.
 
