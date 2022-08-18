@@ -266,7 +266,7 @@ def extract_u_nk(fep_files, T):
                             lambda2: win_de_arr})
 
                     # join the new window's df to existing df
-                    u_nk = pd.concat([u_nk, tempDF], sort=True)
+                    u_nk = pd.concat([u_nk, tempDF], sort=False)
 
                     # reset values for next window of fepout file
                     win_de = []

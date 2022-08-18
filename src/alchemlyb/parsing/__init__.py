@@ -7,8 +7,8 @@ def _init_attrs(func):
     and the energy unit is initiated as dataframe.attrs['energy_unit'] = 'kT'.
     '''
     @wraps(func)
-    def wrapper(outfile, T):
-        dataframe = func(outfile, T)
+    def wrapper(outfile, T, *args, **kwargs):
+        dataframe = func(outfile, T, *args, **kwargs)
         if dataframe is not None:
             dataframe.attrs['temperature'] = T
             dataframe.attrs['energy_unit'] = 'kT'

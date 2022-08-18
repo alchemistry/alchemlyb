@@ -80,6 +80,7 @@ We also welcome code contributions: have a look at our `Developer Guide`_. Open 
     convergence
     postprocessing
     visualisation
+    workflows
 
 .. toctree::
    :maxdepth: 1

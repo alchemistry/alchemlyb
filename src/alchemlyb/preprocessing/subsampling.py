@@ -102,10 +102,9 @@ def dhdl2series(df, method=''):
 
 def _check_multiple_times(df):
     if isinstance(df, pd.Series):
-        return df.sort_index(0).reset_index('time', name='').duplicated(
-            'time').any()
+        return df.sort_index(axis=0).reset_index('time', name='').duplicated('time').any()
     else:
-        return df.sort_index(0).reset_index('time').duplicated('time').any()
+        return df.sort_index(axis=0).reset_index('time').duplicated('time').any()
 
 
 def _check_sorted(df):
@@ -330,6 +329,12 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None,
        ``pymbar.timeseries.statisticalInefficiency()``; previously, the statistical
        inefficiency was _rounded_ (instead of ``ceil()``) and thus one could
        end up with correlated data.
+
+    .. versionchanged:: 0.7.0
+       Fixed a bug that would effectively ignore the ``lower`` and ``step``
+       keywords when returning the subsampled DataFrame object. See
+       `issue #198 <https://github.com/alchemistry/alchemlyb/issues/198>`_ for 
+       more details.
 
     """
     df, series = _prepare_input(df, series, drop_duplicates, sort)

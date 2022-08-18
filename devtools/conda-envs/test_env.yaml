@@ -1,4 +1,4 @@
-name: alchemlyb
+name: test
 channels:
 - conda-forge
 dependencies:
@@ -9,3 +9,9 @@ dependencies:
 - scipy
 - scikit-learn
 - matplotlib
+
+  # Testing
+- pytest
+- pytest-cov
+- pytest-xdist
+- codecov

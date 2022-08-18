@@ -55,6 +55,4 @@ def concat(objs, *args, **kwargs):
     for obj in objs:
         if attrs != obj.attrs:
             raise ValueError('All pandas objects should have the same attrs.')
-    new = pd.concat(objs, *args, **kwargs)
-    new.attrs = attrs
-    return new
+    return pd.concat(objs, *args, **kwargs)

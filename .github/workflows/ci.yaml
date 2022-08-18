@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  # run once a day at noon UTC
+  # run weekly (see issue #186)
   schedule:
-    - cron: "0 12 * * *"
+    - cron: "42 3 * * 6"
   push:
     branches:
       - "master"
@@ -11,55 +11,53 @@ on:
     branches:
       - "master"
 
+
 concurrency:
-  group: "${{ github.ref }}-${{ github.head_ref }}"
+  group: "${{ github.ref }}-${{ github.head_ref }}-${{ github.workflow }}"
   cancel-in-progress: true
+
+
+defaults:
+  run:
+    shell: bash -l {0}
+
 
 jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macOS-latest", "windows-latest"]
-        python-version: ["3.7", "3.8", "3.9", "3.10"]   
+        python-version: ["3.8", "3.9", "3.10"]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
-    - name: Setup python
-      uses: actions/setup-python@v2
+    # More info on options: https://github.com/conda-incubator/setup-miniconda
+    - uses: mamba-org/provision-with-micromamba@main
       with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Display Python version
-      run: python -c "import sys; print(sys.version)"
-
-    - name: Install some dependencies (binary only, no version restrictions)
-      run: |
-        python -m pip install wheel
-        python -m pip install --only-binary=numpy numpy
-        python -m pip install --only-binary=scipy scipy
-        python -m pip install --only-binary=matplotlib matplotlib
-
-    - name: Install pytest, pytest plugins
-      run: |
-        python -m pip install pytest pytest-cov pytest-pep8
+        environment-file: devtools/conda-envs/test_env.yaml
+        environment-name: test
+        extra-specs: |
+            python=${{ matrix.python-version }}
 
     - name: Install alchemtest
       run: |
         python -m pip install https://github.com/alchemistry/alchemtest/archive/master.zip
 
-    - name: Install package (with remaining dependencis)
+    - name: Install package (with no dependencies)
       run: |
-        python -m pip install .
+        python -m pip install . --no-deps
 
     - name: Run tests
       run: |
-        pytest -v --cov alchemlyb --cov-report=xml --color=yes src/alchemlyb/tests
+        pytest -v -n 2 --cov=alchemlyb --cov-report=xml --color=yes src/alchemlyb/tests
+      env:
+        MPLBACKEND: agg
 
     - name: Codecov
-      uses: codecov/codecov-action@v1.5.2
+      uses: codecov/codecov-action@v2
       with:
         name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
         file: ./coverage.xml

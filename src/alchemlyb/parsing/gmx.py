@@ -11,7 +11,7 @@ from ..postprocessors.units import R_kJmol
 k_b = R_kJmol
 
 @_init_attrs
-def extract_u_nk(xvg, T):
+def extract_u_nk(xvg, T, filter=True):
     r"""Return reduced potentials `u_nk` from a Hamiltonian differences XVG file.
 
     Parameters
@@ -20,6 +20,10 @@ def extract_u_nk(xvg, T):
         Path to XVG file to extract data from.
     T : float
         Temperature in Kelvin the simulations sampled.
+    filter : bool
+        Filter out the lines that cannot be parsed.
+        Such as rows with incorrect number of Columns and incorrectly
+        formatted numbers (e.g. 123.45.67, nan or -).
 
     Returns
     -------
@@ -49,6 +53,10 @@ def extract_u_nk(xvg, T):
         This leads to slightly different results for GROMACS input compared to
         previous versions of alchemlyb.
 
+    .. versionchanged:: 0.7.0
+        The keyword filter is implemented to ignore the line that cannot be
+        parsed and is turned on by default.
+
     """
 
     h_col_match = r"\xD\f{}H \xl\f{}"
@@ -59,7 +67,7 @@ def extract_u_nk(xvg, T):
     state, lambdas, statevec = _extract_state(xvg)
 
     # extract a DataFrame from XVG data
-    df = _extract_dataframe(xvg)
+    df = _extract_dataframe(xvg, filter=filter)
 
     times = df[df.columns[0]]
 
@@ -92,7 +100,7 @@ def extract_u_nk(xvg, T):
         cols.append(u_col)
 
     u_k = pd.DataFrame(u_k, columns=cols,
-                       index=pd.Float64Index(times.values, name='time'))
+                       index=pd.Index(times.values, name='time', dtype='Float64'))
 
     # create columns for each lambda, indicating state each row sampled from
     # if state is None run as expanded ensemble data or REX
@@ -128,7 +136,7 @@ def extract_u_nk(xvg, T):
     return u_k
 
 @_init_attrs
-def extract_dHdl(xvg, T):
+def extract_dHdl(xvg, T, filter=True):
     r"""Return gradients `dH/dl` from a Hamiltonian differences XVG file.
 
     Parameters
@@ -137,6 +145,10 @@ def extract_dHdl(xvg, T):
         Path to XVG file to extract data from.
     T : float
         Temperature in Kelvin the simulations sampled.
+    filter : bool
+        Filter out the lines that cannot be parsed.
+        Such as rows with incorrect number of Columns and incorrectly
+        formatted numbers (e.g. 123.45.67, nan or -).
 
     Returns
     -------
@@ -165,6 +177,10 @@ def extract_dHdl(xvg, T):
         This leads to slightly different results for GROMACS input compared to
         previous versions of alchemlyb.
 
+    .. versionchanged:: 0.7.0
+        The keyword filter is implemented to ignore the line that cannot be
+        parsed and is turned on by default.
+
     """
     beta = 1/(k_b * T)
 
@@ -172,7 +188,7 @@ def extract_dHdl(xvg, T):
     state, lambdas, statevec = _extract_state(xvg, headers)
 
     # extract a DataFrame from XVG data
-    df = _extract_dataframe(xvg, headers)
+    df = _extract_dataframe(xvg, headers, filter=filter)
 
     times = df[df.columns[0]]
 
@@ -191,7 +207,7 @@ def extract_dHdl(xvg, T):
     cols = [l.split('-')[0] for l in lambdas]
 
     dHdl = pd.DataFrame(dHdl.values, columns=cols,
-                        index=pd.Float64Index(times.values, name='time'))
+                        index=pd.Index(times.values, name='time', dtype='Float64'))
 
     # create columns for each lambda, indicating state each row sampled from
     # if state is None run as expanded ensemble data or REX
@@ -276,7 +292,7 @@ def _extract_legend(xvg):
     return state_legend
 
 
-def _extract_dataframe(xvg, headers=None):
+def _extract_dataframe(xvg, headers=None, filter=filter):
     """Extract a DataFrame from XVG data using Pandas `read_csv()`.
 
     pd.read_csv() shows the same behavior building pandas Dataframe with better
@@ -289,6 +305,10 @@ def _extract_dataframe(xvg, headers=None):
     headers: dict
        headers dictionary to search header information, reduced I/O by
        reusing if it is already parsed. Direct access by key name
+    filter : bool
+        Filter out the lines that cannot be parsed.
+        Such as rows with incorrect number of Columns and incorrectly
+        formatted numbers (e.g. 123.45.67, nan or -).
 
     """
     if headers is None:
@@ -304,9 +324,23 @@ def _extract_dataframe(xvg, headers=None):
             for i, col, in enumerate(cols)]
 
     header_cnt = len(headers['_raw_lines'])
-    df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
-            na_filter=True, memory_map=True, names=cols, dtype=np.float64,
-            float_precision='high')
+    if not filter:
+        # assumes clean files
+        df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
+                         na_filter=True, memory_map=True, names=cols,
+                         dtype=np.float64,
+                         float_precision='high')
+    else:
+        df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
+                memory_map=True, on_bad_lines='skip')
+        # If names=cols is passed to read_csv, rows with more than the
+        # designated columns will be truncated and used instead of discarded.
+        df.rename(columns={i: name for i, name in enumerate(cols)}, inplace=True)
+        # If dtype=np.float64 and float_precision='high' are passed to read_csv,
+        # 12.345.56 and - cannot be read.
+        df = df.apply(pd.to_numeric, errors='coerce')
+        # drop duplicate
+        df.dropna(inplace=True)
 
     # drop duplicated columns (see PR #86 https://github.com/alchemistry/alchemlyb/pull/86/)
     df = df[df.columns[~df.columns.str.endswith("[duplicated]")]]
