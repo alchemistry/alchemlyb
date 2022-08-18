@@ -42,7 +42,10 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     ----
     The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
     but can loose data.
+
     .. versionadded:: 0.6.0
+    .. versionchanged:: 0.7.0
+       Add the remove_burnin keyword to allow unequilibrated frames to be removed.
     """
     kwargs['drop_duplicates'] = drop_duplicates
     kwargs['sort'] = sort
