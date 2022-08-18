@@ -7,47 +7,32 @@ from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
 
-def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
-                     sort=True, **kwargs):
-    """Subsample a u_nk DataFrame based on the selected method.
+def u_nk2series(df, method='dhdl'):
+    """Convert an u_nk DataFrame into a series based on the selected method
+    for subsampling.
 
     The method can be either 'dhdl_all' (obtained as a sum over all energy
     components) or 'dhdl' (obtained as the energy components that are
     changing; default) or 'dE'. In the latter case the energy differences
     dE_{i,i+1} (dE_{i,i-1} for the last lambda) are used.
 
-    This is a wrapper function around the function
-    :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
-
     Parameters
     ----------
     df : DataFrame
-        DataFrame to be subsampled according to the selected method.
+        DataFrame to be converted according to the selected method.
     method : {'dhdl', 'dhdl_all', 'dE'}
-        Method for decorrelating the data.
-    drop_duplicates : bool
-        Drop the duplicated lines based on time.
-    sort : bool
-        Sort the Dataframe based on the time column.
-    **kwargs :
-        Additional keyword arguments for
-        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
+        Method for converting the data.
 
     Returns
     -------
-    DataFrame
-        `df` subsampled according to selected `method`.
+    Series
+        `series` to be used as input for
+        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
+        or
+        :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
 
-    Note
-    ----
-    The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
-    but can loose data.
-
-    .. versionadded:: 0.6.0
+    .. versionadded:: 0.7.0
     """
-    kwargs['drop_duplicates'] = drop_duplicates
-    kwargs['sort'] = sort
-
     # Check if the input is u_nk
     try:
         key = df.index.values[0][1:]
@@ -87,46 +72,30 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     else: # pragma: no cover
         raise ValueError(
             'Decorrelation method {} not found.'.format(method))
-    return statistical_inefficiency(df, series, **kwargs)
+    return series
 
-def decorrelate_dhdl(df, drop_duplicates=True, sort=True, **kwargs):
-    """Subsample a dhdl DataFrame.
-
-    This is a wrapper function around the function
-    :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
+def dhdl2series(df, method='dhdl'):
+    """Convert a dhdl DataFrame to a series for subsampling.
 
     Parameters
     ----------
     df : DataFrame
         DataFrame to subsample according to the selected method.
-    drop_duplicates : bool
-        Drop the duplicated lines based on time.
-    sort : bool
-        Sort the Dataframe based on the time column.
-    **kwargs :
-        Additional keyword arguments for
-        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
+    method : string
+        An input mirrored based on u_nk2series, not being used.
 
     Returns
     -------
-    DataFrame
-        `df` subsampled.
+    Series
+        `series` to be used as input for
+        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
+        or
+        :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
 
-    Note
-    ----
-    The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
-    but can loose data.
-
-
-    .. versionadded:: 0.6.0
+    .. versionadded:: 0.7.0
     """
-
-    kwargs['drop_duplicates'] = drop_duplicates
-    kwargs['sort'] = sort
-
     series = df.sum(axis=1)
-
-    return statistical_inefficiency(df, series, **kwargs)
+    return series
 
 def _check_multiple_times(df):
     if isinstance(df, pd.Series):
@@ -289,7 +258,6 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None, step=None,
                            "values are sorted by time, increasing.")
 
     if series is not None:
-    
         if (len(series) != len(df) or
             not all(series.reset_index()['time'] == df.reset_index()['time'])):
             raise ValueError("series and data must be sampled at the same times")
