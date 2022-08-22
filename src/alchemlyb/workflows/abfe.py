@@ -29,6 +29,8 @@ class ABFE(WorkflowBase):
 
     Parameters
     ----------
+    T : float
+        Temperature in K.
     units : str
         The unit used for printing and plotting results. {'kcal/mol', 'kJ/mol',
         'kT'}. Default: 'kT'.
@@ -43,8 +45,6 @@ class ABFE(WorkflowBase):
         Prefix for datafile sets. Default: 'dhdl'.
     suffix : str
         Suffix for datafile sets. Default: 'xvg'.
-    T : float
-        Temperature in K. Default: 298.
     outdirectory : str
         Directory in which the output files produced by this script will be
         stored. Default: os.path.curdir.
@@ -58,8 +58,8 @@ class ABFE(WorkflowBase):
     file_list : list
         The list of filenames sorted by the lambda state.
     '''
-    def __init__(self, units='kT', software='Gromacs', dir=os.path.curdir,
-                 prefix='dhdl', suffix='xvg', T=298,
+    def __init__(self, T, units='kT', software='GROMACS', dir=os.path.curdir,
+                 prefix='dhdl', suffix='xvg',
                  outdirectory=os.path.curdir,
                  ignore_warnings=False):
 
@@ -83,11 +83,11 @@ class ABFE(WorkflowBase):
         self.logger.info("Unsorted file list: \n %s", '\n'.join(
             self.file_list))
 
-        if software.lower() == 'gromacs':
+        if software == 'GROMACS':
             self.logger.info(f'Using {software} parser to read the data.')
             self._extract_u_nk = gmx.extract_u_nk
             self._extract_dHdl = gmx.extract_dHdl
-        elif software.lower() == 'amber':
+        elif software == 'AMBER':
             self._extract_u_nk = amber.extract_u_nk
             self._extract_dHdl = amber.extract_dHdl
         else:
@@ -112,8 +112,8 @@ class ABFE(WorkflowBase):
                 self.logger.info(
                     f'Reading {len(u_nk)} lines of u_nk from {file}')
                 u_nk_list.append(u_nk)
-            except: # pragma: no cover
-                msg = f'Error reading read u_nk from {file}.'
+            except Exception as exc: # pragma: no cover
+                msg = f'Error reading read u_nk from {file}.\n{exc}'
                 if self.ignore_warnings:
                     self.logger.exception(msg +
                         'This exception is being ignored because ignore_warnings=True.')
@@ -126,8 +126,8 @@ class ABFE(WorkflowBase):
                 self.logger.info(
                     f'Reading {len(dhdl)} lines of dhdl from {file}')
                 dHdl_list.append(dhdl)
-            except: # pragma: no cover
-                msg = f'Error reading read dhdl from {file}.'
+            except Exception as exc: # pragma: no cover
+                msg = f'Error reading read dhdl from {file}.\n{exc}'
                 if self.ignore_warnings:
                     self.logger.exception(msg +
                         'This exception is being ignored because ignore_warnings=True.')
@@ -150,7 +150,7 @@ class ABFE(WorkflowBase):
         self.dHdl_sample_list = None
 
     def run(self, skiptime=0, uncorr='dhdl', threshold=50,
-            methods=('MABR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
+            estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
             breakdown=True, forwrev=10, *args, **kwargs):
         ''' The method for running the automatic analysis.
 
@@ -167,9 +167,9 @@ class ABFE(WorkflowBase):
             Proceed with correlated samples if the number of uncorrelated samples is
             found to be less than this number. If 0 is given, the time series
             analysis will not be performed at all. Default: 50.
-        methods : str or list of str
-            A list of the methods to estimate the free energy with. Default:
-            `('MABR', 'BAR', 'TI')`.
+        estimators : str or list of str
+            A list of the estimators to estimate the free energy with. Default:
+            `('MBAR', 'BAR', 'TI')`.
         overlap : str
             The filename for the plot of overlap matrix. Default: 'O_MBAR.pdf'.
         breakdown : bool
@@ -196,8 +196,8 @@ class ABFE(WorkflowBase):
         if uncorr is not None:
             self.preprocess(skiptime=skiptime, uncorr=uncorr,
                                threshold=threshold)
-        if methods is not None:
-            self.estimate(methods)
+        if estimators is not None:
+            self.estimate(estimators)
             self.generate_result()
 
         if overlap is not None:
@@ -302,36 +302,47 @@ class ABFE(WorkflowBase):
         else:
             self.logger.info('No dHdl data being subsampled')
 
-    def estimate(self, methods=('MBAR', 'BAR', 'TI')):
+    def estimate(self, estimators=('MBAR', 'BAR', 'TI'), **kwargs):
         '''Estimate the free energy using the selected estimator.
 
         Parameters
         ----------
-        methods : str or list of str
-            A list of the methods to estimate the free energy with. Default:
+        estimators : str or list of str
+            A list of the estimators to estimate the free energy with. Default:
             ['TI', 'BAR', 'MBAR'].
+
+        kwargs : dict
+            Keyword arguments to be passed to the estimator.
 
         Attributes
         ----------
         estimator : dict
             The dictionary of estimators. The keys are in ['TI', 'BAR',
             'MBAR'].
+
+        Note
+        -----
+        :class:`~alchemlyb.estimators.AutoMBAR` is used when
+        ``estimators='MBAR'``, supply ``method`` keyword
+        (:code:`estimate(estimators='MBAR', method='adaptive')`) to restore the
+        behavior of :class:`~alchemlyb.estimators.MBAR`.
+
         '''
         # Make estimators into a tuple
-        if isinstance(methods, str):
-            methods = (methods, )
+        if isinstance(estimators, str):
+            estimators = (estimators, )
 
-        for estimator in methods:
+        for estimator in estimators:
             if estimator not in (FEP_ESTIMATORS + TI_ESTIMATORS):
                 msg = f"Estimator {estimator} is not available in {FEP_ESTIMATORS + TI_ESTIMATORS}."
                 self.logger.error(msg)
                 raise ValueError(msg)
 
         self.logger.info(
-            f"Start running estimator: {','.join(methods)}.")
+            f"Start running estimator: {','.join(estimators)}.")
         self.estimator = {}
         # Use unprocessed data if preprocess is not performed.
-        if 'TI' in methods:
+        if 'TI' in estimators:
             if self.dHdl_sample_list is not None:
                 dHdl = concat(self.dHdl_sample_list)
             else:
@@ -340,7 +351,7 @@ class ABFE(WorkflowBase):
             self.logger.info(
                 f'A total {len(dHdl)} lines of dHdl is used.')
 
-        if 'BAR' in methods or 'MBAR' in methods:
+        if 'BAR' in estimators or 'MBAR' in estimators:
             if self.u_nk_sample_list is not None:
                 u_nk = concat(self.u_nk_sample_list)
             else:
@@ -349,16 +360,16 @@ class ABFE(WorkflowBase):
             self.logger.info(
                 f'A total {len(u_nk)} lines of u_nk is used.')
 
-        for estimator in methods:
+        for estimator in estimators:
             if estimator == 'MBAR':
                 self.logger.info('Run MBAR estimator.')
-                self.estimator[estimator] = MBAR().fit(u_nk)
+                self.estimator[estimator] = MBAR(**kwargs).fit(u_nk)
             elif estimator == 'BAR':
                 self.logger.info('Run BAR estimator.')
-                self.estimator[estimator] = BAR().fit(u_nk)
+                self.estimator[estimator] = BAR(**kwargs).fit(u_nk)
             elif estimator == 'TI':
                 self.logger.info('Run TI estimator.')
-                self.estimator[estimator] = TI().fit(dHdl)
+                self.estimator[estimator] = TI(**kwargs).fit(dHdl)
 
 
     def generate_result(self):
@@ -607,7 +618,7 @@ class ABFE(WorkflowBase):
         return fig
 
     def check_convergence(self, forwrev, estimator='MBAR', dF_t='dF_t.pdf',
-                     ax=None):
+                     ax=None, **kwargs):
         '''Compute the forward and backward convergence using
         :func:`~alchemlyb.convergence.forward_backward_convergence`and
         plot with
@@ -626,6 +637,8 @@ class ABFE(WorkflowBase):
         ax : matplotlib.axes.Axes
             Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
             a new axes will be generated.
+        kwargs : dict
+            Keyword arguments to be passed to the estimator.
 
         Attributes
         ----------
@@ -635,6 +648,13 @@ class ABFE(WorkflowBase):
         -------
         matplotlib.axes.Axes
             An axes with the convergence drawn.
+
+        Note
+        -----
+        :class:`~alchemlyb.estimators.AutoMBAR` is used when
+        ``estimator='MBAR'``, supply ``method`` keyword
+        (:code:`check_convergence(10, estimator='MBAR', method='adaptive')`) to
+        restore the behavior of :class:`~alchemlyb.estimators.MBAR`.
         '''
         self.logger.info('Start convergence analysis.')
         self.logger.info('Checking data availability.')
@@ -653,7 +673,7 @@ class ABFE(WorkflowBase):
                     raise ValueError(f'u_nk is needed for the f{estimator} estimator.')
             convergence = forward_backward_convergence(u_nk_list,
                                                        estimator=estimator,
-                                                       num=forwrev)
+                                                       num=forwrev, **kwargs)
         elif estimator in TI_ESTIMATORS:
             self.logger.warning('No valid FEP estimator or dataset found. '
                                 'Fallback to TI.')
@@ -672,7 +692,7 @@ class ABFE(WorkflowBase):
                         f'dHdl is needed for the f{estimator} estimator.')
             convergence = forward_backward_convergence(dHdl_list,
                                                        estimator=estimator,
-                                                       num=forwrev)
+                                                       num=forwrev, **kwargs)
         else:
             msg = f"Estimator {estimator} is not supported. Choose one from " \
                   f"{FEP_ESTIMATORS+TI_ESTIMATORS}."

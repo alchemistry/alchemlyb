@@ -18,7 +18,7 @@ are to
    complete workflow.
    
 For a GROMACS ABFE simulation, executing the workflow would look similar
-to the following code::
+to the following code (The log is configured by logger) ::
 
     >>> from alchemtest.gmx import load_ABFE
     >>> from alchemlyb.workflows import ABFE
@@ -39,17 +39,18 @@ to the following code::
 
 The workflow uses the :class:`~alchemlyb.parsing` to parse the data from the
 energy files, remove the initial unequilibrated frames and decorrelate the data
-with :class:`~alchemlyb.preprocessing.subsampling`. The dataset
+with :class:`~alchemlyb.preprocessing.subsampling`. The decorrelated dataset
 :ref:`dHdl <dHdl>` and :ref:`u_nk <u_nk>` are then passed to
 :class:`~alchemlyb.estimators` for free energy estimation. The workflow will
 also perform a set of analysis that allows the user to examine the quality of
-the estimation, which is explained in the next two sections.
+the estimation.
 
 File Input
 ^^^^^^^^^^
 
 This command expects the energy files to be structured in two common ways. It
 could either be ::
+
     simulation
     ├── lambda_0
     │   ├── prod.xvg
@@ -115,7 +116,7 @@ portrait model and :file:`dF_state_long.pdf` in landscape model, which
 allows the user to example the contributions from each lambda window.
 
 The forward and backward convergence will be plotted to :file:`dF_t.pdf` using
-:class:`~alchemlyb.estimators.MBAR` and save in
+:class:`~alchemlyb.estimators.MBAR` and saved in
 :attr:`~alchemlyb.workflows.ABFE.convergence`, which allows the user to
 examine if the simulation time is enough to achieve a converged result.
 

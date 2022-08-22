@@ -15,10 +15,10 @@ class Test_automatic_ABFE():
     def workflow(tmp_path_factory):
         outdir = tmp_path_factory.mktemp("out")
         dir = os.path.dirname(load_ABFE()['data']['complex'][0])
-        workflow = ABFE(units='kcal/mol', software='Gromacs', dir=dir,
+        workflow = ABFE(units='kcal/mol', software='GROMACS', dir=dir,
                         prefix='dhdl', suffix='xvg', T=310, outdirectory=str(outdir))
         workflow.run(skiptime=10, uncorr='dhdl', threshold=50,
-                     methods=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
+                     estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
                      breakdown=True, forwrev=10)
         return workflow
 
@@ -68,6 +68,19 @@ class Test_automatic_ABFE():
         assert os.path.isfile(os.path.join(workflow.out, 'dF_t.pdf'))
         assert len(workflow.convergence) == 10
 
+    def test_estimator_method(self, workflow, monkeypatch):
+        '''Test if the method keyword could be passed to the AutoMBAR estimator.'''
+        monkeypatch.setattr(workflow, 'estimator',
+                            dict())
+        workflow.estimate(estimators='MBAR', method='adaptive')
+        assert 'MBAR' in workflow.estimator
+
+    def test_convergence_method(self, workflow, monkeypatch):
+        '''Test if the method keyword could be passed to the AutoMBAR estimator from convergence.'''
+        monkeypatch.setattr(workflow, 'convergence', None)
+        workflow.check_convergence(2, estimator='MBAR', method='adaptive')
+        assert len(workflow.convergence) == 2
+
 class Test_manual_ABFE(Test_automatic_ABFE):
     '''Test the manual workflow for load_ABFE from alchemtest.gmx for three
     stage transformation.'''
@@ -77,12 +90,12 @@ class Test_manual_ABFE(Test_automatic_ABFE):
     def workflow(tmp_path_factory):
         outdir = tmp_path_factory.mktemp("out")
         dir = os.path.dirname(load_ABFE()['data']['complex'][0])
-        workflow = ABFE(software='Gromacs', dir=dir, prefix='dhdl',
+        workflow = ABFE(software='GROMACS', dir=dir, prefix='dhdl',
                         suffix='xvg', T=310, outdirectory=str(outdir))
         workflow.update_units('kcal/mol')
         workflow.read()
         workflow.preprocess(skiptime=10, uncorr='dhdl', threshold=50)
-        workflow.estimate(methods=('MBAR', 'BAR', 'TI'))
+        workflow.estimate(estimators=('MBAR', 'BAR', 'TI'))
         workflow.plot_overlap_matrix(overlap='O_MBAR.pdf')
         workflow.plot_ti_dhdl(dhdl_TI='dhdl_TI.pdf')
         workflow.plot_dF_state(dF_state='dF_state.pdf')
@@ -145,11 +158,11 @@ class Test_automatic_benzene():
         dir = os.path.dirname(os.path.dirname(
             load_benzene()['data']['Coulomb'][0]))
         dir = os.path.join(dir, '*')
-        workflow = ABFE(units='kcal/mol', software='Gromacs', dir=dir,
+        workflow = ABFE(units='kcal/mol', software='GROMACS', dir=dir,
                         prefix='dhdl', suffix='bz2', T=310,
                         outdirectory=outdir)
         workflow.run(skiptime=0, uncorr='dhdl', threshold=50,
-                        methods=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
+                        estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
                         breakdown=True, forwrev=10)
         return workflow
 
@@ -205,7 +218,7 @@ class Test_unpertubed_lambda():
         dir = os.path.dirname(os.path.dirname(
             load_benzene()['data']['Coulomb'][0]))
         dir = os.path.join(dir, '*')
-        workflow = ABFE(software='Gromacs', dir=dir, prefix='dhdl',
+        workflow = ABFE(software='GROMACS', dir=dir, prefix='dhdl',
                         suffix='bz2', T=310, outdirectory=outdir)
         workflow.read()
         # Block the n_uk
@@ -216,7 +229,7 @@ class Test_unpertubed_lambda():
             dHdl.insert(1, 'bound', [1.0, ] * len(dHdl))
             dHdl.set_index('bound-lambda', append=True, inplace=True)
 
-        workflow.estimate(methods=('TI', ))
+        workflow.estimate(estimators=('TI', ))
         workflow.plot_ti_dhdl(dhdl_TI='dhdl_TI.pdf')
         workflow.plot_dF_state(dF_state='dF_state.pdf')
         workflow.check_convergence(10, dF_t='dF_t.pdf', estimator='TI')
@@ -236,7 +249,7 @@ class Test_unpertubed_lambda():
         assert len(workflow.convergence) == 10
 
     def test_single_estimator_ti(self, workflow):
-        workflow.estimate(methods='TI')
+        workflow.estimate(estimators='TI')
         summary = workflow.generate_result()
         assert np.isclose(summary['TI']['Stages']['TOTAL'], 2.946, 0.1)
 
@@ -250,14 +263,14 @@ class Test_methods():
         dir = os.path.dirname(os.path.dirname(
             load_benzene()['data']['Coulomb'][0]))
         dir = os.path.join(dir, '*')
-        workflow = ABFE(software='Gromacs', dir=dir, prefix='dhdl',
+        workflow = ABFE(software='GROMACS', dir=dir, prefix='dhdl',
                         suffix='bz2', T=310, outdirectory=outdir)
         workflow.read()
         return workflow
 
     def test_run_none(self, workflow):
         '''Don't run anything'''
-        workflow.run(uncorr=None, methods=None, overlap=None, breakdown=None,
+        workflow.run(uncorr=None, estimators=None, overlap=None, breakdown=None,
                      forwrev=None)
 
     def test_uncorr_threshold(self, workflow, monkeypatch):
@@ -282,14 +295,14 @@ class Test_methods():
         assert len(workflow.dHdl_list) == 0
 
     def test_single_estimator_mbar(self, workflow):
-        workflow.estimate(methods='MBAR')
+        workflow.estimate(estimators='MBAR')
         assert len(workflow.estimator) == 1
         assert 'MBAR' in workflow.estimator
         summary = workflow.generate_result()
         assert np.isclose(summary['MBAR']['Stages']['TOTAL'], 2.946, 0.1)
 
     def test_single_estimator_ti(self, workflow):
-        workflow.estimate(methods='TI')
+        workflow.estimate(estimators='TI')
         summary = workflow.generate_result()
         assert np.isclose(summary['TI']['Stages']['TOTAL'], 2.946, 0.1)
 
@@ -329,11 +342,11 @@ class Test_automatic_amber():
         dir, _ = os.path.split(
             os.path.dirname(load_bace_example()['data']['complex']['vdw'][0]))
 
-        workflow = ABFE(units='kcal/mol', software='Amber', dir=dir,
+        workflow = ABFE(units='kcal/mol', software='AMBER', dir=dir,
                         prefix='ti', suffix='bz2', T=310, outdirectory=str(
                 outdir))
         workflow.read()
-        workflow.estimate(methods='TI')
+        workflow.estimate(estimators='TI')
         return workflow
 
     def test_summary(self, workflow):

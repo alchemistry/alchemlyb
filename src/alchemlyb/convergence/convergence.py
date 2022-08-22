@@ -1,13 +1,15 @@
-import pandas as pd
 import logging
+from warnings import warn
+
+import pandas as pd
 import numpy as np
 
-from ..estimators import BAR, TI
+from ..estimators import BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
 from ..estimators import AutoMBAR as MBAR
 from .. import concat
 
 
-def forward_backward_convergence(df_list, estimator='MBAR', num=10):
+def forward_backward_convergence(df_list, estimator='MBAR', num=10, **kwargs):
     '''Forward and backward convergence of the free energy estimate.
 
     Generate the free energy estimate as a function of time in both directions,
@@ -25,6 +27,8 @@ def forward_backward_convergence(df_list, estimator='MBAR', num=10):
         Name of the estimators.
     num : int
         The number of time points.
+    kwargs : dict
+        Keyword arguments to be passed to the estimator.
 
     Returns
     -------
@@ -45,25 +49,29 @@ def forward_backward_convergence(df_list, estimator='MBAR', num=10):
 
 
     .. versionadded:: 0.6.0
+    .. versionchanged:: 1.0.0
+        The ``estimator`` accepts uppercase input.
 
     '''
     logger = logging.getLogger('alchemlyb.convergence.'
                                'forward_backward_convergence')
     logger.info('Start convergence analysis.')
     logger.info('Check data availability.')
+    if estimator.upper() != estimator:
+        warn("Using lower-case strings for the 'estimator' kwarg in "
+             "convergence.forward_backward_convergence() is deprecated in "
+             "1.0.0 and only upper case will be accepted in 2.0.0",
+            DeprecationWarning)
+        estimator = estimator.upper()
 
-    if estimator == 'MBAR':
-        logger.info('Use AutoMBAR estimator for convergence analysis.')
-        estimator_fit = MBAR().fit
-    elif estimator == 'BAR':
-        logger.info('Use BAR estimator for convergence analysis.')
-        estimator_fit = BAR().fit
-    elif estimator == 'TI':
-        logger.info('Use TI estimator for convergence analysis.')
-        estimator_fit = TI().fit
+    if estimator not in (FEP_ESTIMATORS + TI_ESTIMATORS):
+        msg = f"Estimator {estimator} is not available in {FEP_ESTIMATORS + TI_ESTIMATORS}."
+        logger.error(msg)
+        raise ValueError(msg)
     else:
-        raise ValueError(
-            '{} is not a valid estimator.'.format(estimator))
+        # select estimator class by name
+        estimator_fit = globals()[estimator](**kwargs).fit
+        logger.info(f'Use {estimator} estimator for convergence analysis.')
 
     logger.info('Begin forward analysis')
     forward_list = []

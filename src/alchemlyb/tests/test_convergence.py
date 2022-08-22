@@ -48,5 +48,15 @@ def test_convergence_bar(gmx_benzene):
 
 def test_convergence_wrong_estimator(gmx_benzene):
     dHdl, u_nk = gmx_benzene
-    with pytest.raises(ValueError, match="{} is not a valid estimator".format("www")):
-        convergence = forward_backward_convergence(u_nk, 'www')
+    with pytest.raises(ValueError, match="is not available in"):
+        forward_backward_convergence(u_nk, 'www')
+
+def test_convergence_wrong_cases(gmx_benzene):
+    dHdl, u_nk = gmx_benzene
+    with pytest.warns(DeprecationWarning, match="Using lower-case strings for"):
+        forward_backward_convergence(u_nk, 'mbar')
+
+def test_convergence_method(gmx_benzene):
+    dHdl, u_nk = gmx_benzene
+    convergence = forward_backward_convergence(u_nk, 'MBAR', num=2, method='adaptive')
+    assert len(convergence) == 2
