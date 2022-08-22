@@ -655,7 +655,7 @@ class ABFE(WorkflowBase):
         ``estimator='MBAR'``, supply ``method`` keyword to restore the behavior
         of :class:`~alchemlyb.estimators.MBAR`.
         (:code:`check_convergence(10, estimator='MBAR', method='adaptive')`)
-        
+
         '''
         self.logger.info('Start convergence analysis.')
         self.logger.info('Checking data availability.')

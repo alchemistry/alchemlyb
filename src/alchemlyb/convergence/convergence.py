@@ -48,6 +48,14 @@ def forward_backward_convergence(df_list, estimator='MBAR', num=10, **kwargs):
             9  3.044149       0.016405  3.044385        0.016402            1.0
 
 
+    Note
+    -----
+    :class:`~alchemlyb.estimators.AutoMBAR` is used when ``estimator='MBAR'``,
+    supply ``method`` keyword to restore the behavior of
+    :class:`~alchemlyb.estimators.MBAR`.
+    (:code:`forward_backward_convergence(u_nk, 'MBAR', num=2, method='adaptive')`)
+
+
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
         The ``estimator`` accepts uppercase input.
