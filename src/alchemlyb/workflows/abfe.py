@@ -231,8 +231,6 @@ class ABFE(WorkflowBase):
         if units is not None:
             self.logger.info(f'Set unit to {units}.')
             self.units = units or None
-        else:
-            pass
 
     def preprocess(self, skiptime=0, uncorr='dhdl', threshold=50):
         '''Preprocess the data by removing the equilibration time and

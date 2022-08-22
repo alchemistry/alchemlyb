@@ -7,10 +7,10 @@ of the results and step-by-step version that allows more flexibility.
 For developers, the skeleton of the workflow should follow the example in
 :class:`alchemlyb.workflows.base.WorkflowBase`.
 
-For users, **alchemlyb** offered a workflow :class:`alchemlyb.workflows.ABFE`
+For users, **alchemlyb** offers a workflow :class:`alchemlyb.workflows.ABFE`
 similar to
 `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_
-for doing automatic ABFE analysis.
+for doing automatic absolute binding free energy (ABFE) analysis.
 
 .. currentmodule:: alchemlyb.workflows
 

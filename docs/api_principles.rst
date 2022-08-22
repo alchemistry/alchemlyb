@@ -75,8 +75,8 @@ The library is structured as follows, following a similar style to
 * The :mod:`~alchemlyb.convergence` submodule features convenience functions/classes for doing convergence analysis using a given dataset and a chosen estimator.
 * The :mod:`~alchemlyb.postprocessors` submodule contains functions to calculate new quantities or express data in different units.
 * The :mod:`~alchemlyb.visualisation` submodule contains convenience plotting functions as known from, for example, `alchemical-analysis.py`_.
-* The :mod:`~alchemlyb.workflows` submodule will contain complete analysis workflows that will serve as larger building blocks for complex analysis pipelines or a command line interface.
-
+* The :mod:`~alchemlyb.workflows` submodule contains complete analysis workflows ...
+   For example, :mod:`alchemlyb.workflows.abfe` implements a complete absolute binding free energy calculation.".
 
 All of these components lend themselves well to writing clear and flexible pipelines for processing data needed for alchemical free energy calculations, and furthermore allow for scaling up via libraries like `dask`_ or `joblib`_.
 
