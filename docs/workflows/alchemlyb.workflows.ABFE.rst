@@ -18,7 +18,7 @@ are to
    complete workflow.
    
 For a GROMACS ABFE simulation, executing the workflow would look similar
-to the following code (The log is configured by logger) ::
+to the following code (The log is configured by logger). ::
 
     >>> from alchemtest.gmx import load_ABFE
     >>> from alchemlyb.workflows import ABFE

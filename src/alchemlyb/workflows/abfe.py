@@ -323,9 +323,9 @@ class ABFE(WorkflowBase):
         Note
         -----
         :class:`~alchemlyb.estimators.AutoMBAR` is used when
-        ``estimators='MBAR'``, supply ``method`` keyword
-        (:code:`estimate(estimators='MBAR', method='adaptive')`) to restore the
+        ``estimators='MBAR'``, supply ``method`` keyword to restore the
         behavior of :class:`~alchemlyb.estimators.MBAR`.
+        (:code:`estimate(estimators='MBAR', method='adaptive')`)
 
         '''
         # Make estimators into a tuple
@@ -652,9 +652,10 @@ class ABFE(WorkflowBase):
         Note
         -----
         :class:`~alchemlyb.estimators.AutoMBAR` is used when
-        ``estimator='MBAR'``, supply ``method`` keyword
-        (:code:`check_convergence(10, estimator='MBAR', method='adaptive')`) to
-        restore the behavior of :class:`~alchemlyb.estimators.MBAR`.
+        ``estimator='MBAR'``, supply ``method`` keyword to restore the behavior
+        of :class:`~alchemlyb.estimators.MBAR`.
+        (:code:`check_convergence(10, estimator='MBAR', method='adaptive')`)
+        
         '''
         self.logger.info('Start convergence analysis.')
         self.logger.info('Checking data availability.')
