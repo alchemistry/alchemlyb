@@ -33,7 +33,7 @@ def convert_to_pandas(file_datum):
         data_dic["dHdl"].append(frame_dhdl)
         data_dic["lambdas"].append(file_datum.clambda)
         # here we need to convert dt to ps unit from ns
-        frame_time = file_datum.t0 + (frame_index + 1) * file_datum.dt * 1000
+        frame_time = file_datum.t0 + (frame_index + 1) * file_datum.dt * file_datum.ntpr
         data_dic["time"].append(frame_time)
     df = pd.DataFrame(data_dic["dHdl"], columns=["dHdl"],
                       index=pd.Index(data_dic["time"], name='time', dtype='Float64'))
@@ -165,7 +165,7 @@ class SectionParser(object):
 class FEData(object):
     """A simple struct container to collect data from individual files."""
 
-    __slots__ = ['clambda', 't0', 'dt', 'T', 'gradients',
+    __slots__ = ['clambda', 't0', 'dt', 'T', 'ntpr', 'gradients',
                  'component_gradients', 'mbar_energies',
                  'have_mbar', 'mbar_lambdas', 'mbar_lambda_idx']
 
@@ -174,6 +174,7 @@ class FEData(object):
         self.t0 = -1.0
         self.dt = -1.0
         self.T = -1.0
+        self.ntpr = -1
         self.gradients = []
         self.component_gradients = []
         self.mbar_energies = []
@@ -250,6 +251,7 @@ def file_validation(outfile):
     file_datum.clambda = clambda
     file_datum.t0 = t0
     file_datum.dt = dt
+    file_datum.ntpr = ntpr
     file_datum.T = T
     file_datum.have_mbar = have_mbar
     return file_datum
@@ -307,7 +309,7 @@ def extract_u_nk(outfile, T):
             logger.warning('%i MBAR energ%s > 0.0 kcal/mol',
                            high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is')
 
-        time = [file_datum.t0 + (frame_index + 1) * file_datum.dt * 1000
+        time = [file_datum.t0 + (frame_index + 1) * file_datum.dt * file_datum.ntpr 
                 for frame_index in range(len(file_datum.mbar_energies[0]))]
 
     return pd.DataFrame(file_datum.mbar_energies,
