@@ -151,7 +151,7 @@ class ABFE(WorkflowBase):
 
     def run(self, skiptime=0, uncorr='dhdl', threshold=50,
             estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
-            breakdown=True, forwrev=10, *args, **kwargs):
+            breakdown=True, forwrev=None, *args, **kwargs):
         ''' The method for running the automatic analysis.
 
         Parameters
@@ -180,7 +180,11 @@ class ABFE(WorkflowBase):
             Plot the free energy change as a function of time in both directions,
             with the specified number of points in the time plot. The number of time
             points (an integer) must be provided. Specify as ``None`` will not do
-            the convergence analysis. Default: 10.
+            the convergence analysis. Default: None. By default, 'MBAR'
+            estimator will be used for convergence analysis. If the dataset
+            does not contain u_nk, please run
+            meth:`~alchemlyb.workflows.ABFE.check_convergence` manually
+            with estimator='TI'.
 
         Attributes
         ----------
@@ -490,6 +494,8 @@ class ABFE(WorkflowBase):
                         end = states.index(lambda_max)
                 self.logger.info(
                     f'Stage {stage} is from state {start} to state {end}.')
+                # This assumes that the indexes are sorted as the
+                # preprocessing should sort the index of the df.
                 result = delta_f_.iloc[start, end]
                 if estimator_name != 'BAR':
                     error = d_delta_f_.iloc[start, end]
@@ -501,6 +507,8 @@ class ABFE(WorkflowBase):
                 data_dict[estimator_name + '_Error'].append(error)
 
             # Total result
+            # This assumes that the indexes are sorted as the
+            # preprocessing should sort the index of the df.
             result = delta_f_.iloc[0, -1]
             if estimator_name != 'BAR':
                 error = d_delta_f_.iloc[0, -1]
@@ -670,8 +678,12 @@ class ABFE(WorkflowBase):
                     self.logger.info('Subsampled u_nk not available, '
                                      'use original data instead.')
                 else:
-                    self.logger.error(f'u_nk is needed for the f{estimator} estimator.')
-                    raise ValueError(f'u_nk is needed for the f{estimator} estimator.')
+                    msg = f"u_nk is needed for the f{estimator} estimator. " \
+                          f"If the dataset only has dHdl, " \
+                          f"run ABFE.check_convergence(estimator='TI') to " \
+                          f"use a TI estimator."
+                    self.logger.error(msg)
+                    raise ValueError(msg)
             convergence = forward_backward_convergence(u_nk_list,
                                                        estimator=estimator,
                                                        num=forwrev, **kwargs)

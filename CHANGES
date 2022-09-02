@@ -19,6 +19,9 @@ The rules for this file:
 
 Changes
   - Drop support for py3.7 (Issue #179, PR #214)
+  - forward_backward_convergence will use AutoMBAR as backend when `MBAR` is
+  selected as the estimator (PR #114).
+  - AutoMBAR accepts the `method` argument (PR #114).
 
 Enhancements
   - Add a base class for workflows (PR #188).
