@@ -172,7 +172,7 @@ class AutoMBAR(MBAR):
 
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
-        The AutoMBAR accepts method argument.
+       AutoMBAR accepts the `method` argument.
     """
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
                  initial_f_k=None, verbose=False, method=None):
