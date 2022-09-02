@@ -33,7 +33,7 @@ to the following code (The log is configured by logger). ::
     >>> workflow = ABFE(units='kcal/mol', software='Gromacs', dir=dir,
     >>>                 prefix='dhdl', suffix='xvg', T=298, outdirectory='./')
     >>> workflow.run(skiptime=10, uncorr='dhdl', threshold=50,
-    >>>              methods=('mbar', 'bar', 'ti'), overlap='O_MBAR.pdf',
+    >>>              methods=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
     >>>              breakdown=True, forwrev=10)
 
 
