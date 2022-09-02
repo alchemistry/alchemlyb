@@ -62,7 +62,9 @@ def forward_backward_convergence(df_list, estimator='MBAR', num=10, **kwargs):
 
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
-        The ``estimator`` accepts uppercase input.
+       The ``estimator`` accepts uppercase input.
+       The default for using ``estimator='MBAR'`` was changed from 
+       :class:`~alchemlyb.estimators.MBAR` to :class:`~alchemlyb.estimators.AutoMBAR`.
 
     '''
     logger = logging.getLogger('alchemlyb.convergence.'
