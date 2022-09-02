@@ -112,7 +112,7 @@ class ABFE(WorkflowBase):
                 self.logger.info(
                     f'Reading {len(u_nk)} lines of u_nk from {file}')
                 u_nk_list.append(u_nk)
-            except Exception as exc: # pragma: no cover
+            except Exception as exc:
                 msg = f'Error reading read u_nk from {file}.\n{exc}'
                 if self.ignore_warnings:
                     self.logger.exception(msg +
@@ -126,7 +126,7 @@ class ABFE(WorkflowBase):
                 self.logger.info(
                     f'Reading {len(dhdl)} lines of dhdl from {file}')
                 dHdl_list.append(dhdl)
-            except Exception as exc: # pragma: no cover
+            except Exception as exc:
                 msg = f'Error reading read dhdl from {file}.\n{exc}'
                 if self.ignore_warnings:
                     self.logger.exception(msg +
