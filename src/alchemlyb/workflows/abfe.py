@@ -113,13 +113,13 @@ class ABFE(WorkflowBase):
                     f'Reading {len(u_nk)} lines of u_nk from {file}')
                 u_nk_list.append(u_nk)
             except Exception as exc:
-                msg = f'Error reading read u_nk from {file}.\n{exc}'
+                msg = f'Error reading read u_nk from {file}.'
                 if self.ignore_warnings:
-                    self.logger.exception(msg +
+                    self.logger.exception(msg + f'\n{exc}\n' +
                         'This exception is being ignored because ignore_warnings=True.')
                 else:
                     self.logger.error(msg)
-                    raise ValueError(msg)
+                    raise ValueError(msg) from exc
 
             try:
                 dhdl = self._extract_dHdl(file, T=self.T)
@@ -127,13 +127,13 @@ class ABFE(WorkflowBase):
                     f'Reading {len(dhdl)} lines of dhdl from {file}')
                 dHdl_list.append(dhdl)
             except Exception as exc:
-                msg = f'Error reading read dhdl from {file}.\n{exc}'
+                msg = f'Error reading read dhdl from {file}.'
                 if self.ignore_warnings:
-                    self.logger.exception(msg +
+                    self.logger.exception(msg + f'\n{exc}\n' +
                         'This exception is being ignored because ignore_warnings=True.')
                 else:
                     self.logger.error(msg)
-                    raise ValueError(msg)
+                    raise ValueError(msg) from exc
 
         # Sort the files according to the state
         self.logger.info('Sort files according to the u_nk.')
@@ -181,8 +181,9 @@ class ABFE(WorkflowBase):
             with the specified number of points in the time plot. The number of time
             points (an integer) must be provided. Specify as ``None`` will not do
             the convergence analysis. Default: None. By default, 'MBAR'
-            estimator will be used for convergence analysis. If the dataset
-            does not contain u_nk, please run
+            estimator will be used for convergence analysis, as it is
+            usually the fastest converging method. If the dataset does not
+            contain u_nk, please run
             meth:`~alchemlyb.workflows.ABFE.check_convergence` manually
             with estimator='TI'.
 
