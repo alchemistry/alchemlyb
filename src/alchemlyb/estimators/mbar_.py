@@ -160,6 +160,9 @@ class AutoMBAR(MBAR):
         When a specific method is set, AutoMBAR will behave in the same way
         as MBAR.
 
+        .. versionadded:: 1.0.0
+        
+
     Note
     ----
     All arguments are described under :class:`MBAR` except that the solver method 
