@@ -25,6 +25,10 @@ def forward_backward_convergence(df_list, estimator='MBAR', num=10, **kwargs):
         List of DataFrame of either dHdl or u_nk.
     estimator : {'MBAR', 'BAR', 'TI'}
         Name of the estimators.
+        See the important note below on the use of "MBAR".
+
+        .. deprecated:: 1.0.0
+           Lower case input is also accepted until release 2.0.0.
     num : int
         The number of time points.
     kwargs : dict
