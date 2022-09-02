@@ -156,7 +156,7 @@ class AutoMBAR(MBAR):
     ----------
 
     method : str, optional, default=None
-        The optimization routine to use. This parameter is default to None.
+        The optimization routine to use. This parameter defaults to ``None``.
         When a specific method is set, AutoMBAR will behave in the same ways
         as MBAR.
 
