@@ -25,13 +25,16 @@ def invalid_file(request):
                           for filename in leg])
 def test_dHdl(filename,
               names=('time', 'lambdas'),
-              shape=(500, 1)):
+              shape=(500, 1),
+              first_time=22.0,
+              last_time=1020.0):
     """Test that dHdl has the correct form when extracted from files."""
     dHdl = extract_dHdl(filename, T=300)
 
     assert dHdl.index.names == names
     assert dHdl.shape == shape
-
+    assert dHdl.index.values[0][0] == first_time
+    assert dHdl.index.values[-1][0] == last_time
 
 @pytest.mark.parametrize("mbar_filename",
                          [mbar_filename
