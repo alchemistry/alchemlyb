@@ -23,16 +23,18 @@ def invalid_file(request):
                          [filename
                           for leg in load_simplesolvated()['data'].values()
                           for filename in leg])
-def test_dHdl(filename,
-              names=('time', 'lambdas'),
-              shape=(500, 1),
-              first_time=22.0,
-              last_time=1020.0):
+def test_dHdl(filename, names=('time', 'lambdas'), shape=(500, 1)):
     """Test that dHdl has the correct form when extracted from files."""
     dHdl = extract_dHdl(filename, T=300)
-
     assert dHdl.index.names == names
     assert dHdl.shape == shape
+
+@pytest.mark.parametrize("filename",
+                         [filename
+                          for leg in load_simplesolvated()['data'].values()
+                          for filename in leg])
+def test_dHdl_time_reading(filename, first_time=22.0, last_time=1020.0):
+    dHdl = extract_dHdl(filename, T=300)
     assert dHdl.index.values[0][0] == first_time
     assert dHdl.index.values[-1][0] == last_time
 
@@ -47,6 +49,14 @@ def test_u_nk(mbar_filename,
 
     assert u_nk.index.names == names
 
+@pytest.mark.parametrize("mbar_filename",
+                         [mbar_filename
+                          for leg in load_bace_example()['data']['complex'].values()
+                          for mbar_filename in leg])
+def test_u_nk_time_reading(mbar_filename, first_time=22.0, last_time=1020.0):
+    u_nk = extract_dHdl(mbar_filename, T=300)
+    assert u_nk.index.values[0][0] == first_time
+    assert u_nk.index.values[-1][0] == last_time
 
 @pytest.mark.parametrize("improper_filename",
                          [improper_filename
