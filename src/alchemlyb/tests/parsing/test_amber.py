@@ -11,7 +11,7 @@ from alchemtest.amber import load_simplesolvated
 from alchemtest.amber import load_invalidfiles
 from alchemtest.amber import load_bace_example
 from alchemtest.amber import load_bace_improper
-
+from numpy import isclose 
 
 @pytest.fixture(scope="module",
                 params=[filename for filename in load_invalidfiles()['data'][0]])
@@ -35,8 +35,8 @@ def test_dHdl(filename, names=('time', 'lambdas'), shape=(500, 1)):
                           for filename in leg])
 def test_dHdl_time_reading(filename, first_time=22.0, last_time=1020.0):
     dHdl = extract_dHdl(filename, T=300)
-    assert dHdl.index.values[0][0] == first_time
-    assert dHdl.index.values[-1][0] == last_time
+    assert isclose(dHdl.index.values[0][0], first_time)
+    assert isclose(dHdl.index.values[-1][0], last_time)
 
 @pytest.mark.parametrize("mbar_filename",
                          [mbar_filename
@@ -55,8 +55,8 @@ def test_u_nk(mbar_filename,
                           for mbar_filename in leg])
 def test_u_nk_time_reading(mbar_filename, first_time=22.0, last_time=1020.0):
     u_nk = extract_dHdl(mbar_filename, T=300)
-    assert u_nk.index.values[0][0] == first_time
-    assert u_nk.index.values[-1][0] == last_time
+    assert isclose(u_nk.index.values[0][0], first_time)
+    assert isclose(u_nk.index.values[-1][0], last_time)
 
 @pytest.mark.parametrize("improper_filename",
                          [improper_filename
