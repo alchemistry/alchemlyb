@@ -13,16 +13,21 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2022 orbeckst
+??/??/2022 orbeckst, xiki-tempula
 
   * 1.0.0
 
 Changes
   - Drop support for py3.7 (Issue #179, PR #214)
+  - forward_backward_convergence will use AutoMBAR as backend when `MBAR` is
+    selected as the estimator (PR #114).
+  - AutoMBAR accepts the `method` argument (PR #114).
 
 Enhancements
   - Refactor the subsampling module to add u_nk2series and dhdl2series to
     convert u_nk and dHdl to series. (PR #218)
+  - Add a base class for workflows (PR #188).
+  - Add the ABFE workflow (PR #114).
 
 
 Fixes
@@ -41,7 +46,6 @@ Changes
   - remove broken .zip support from util.anyopen() (PR #197)
 
 Enhancements
-  - Add a base class for workflows (PR #188).
   - Add filter function to gmx.extract to make it more robust (PR #183): can filter 
     incomplete/corrupted lines (#126, #171) with filter=True.
   - Add support to util.anyopen() for taking filelike objects (PR #197)
