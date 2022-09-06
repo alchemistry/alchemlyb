@@ -2,6 +2,7 @@
 
 """
 import pytest
+from numpy import isclose 
 
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemlyb.parsing.amber import extract_u_nk
@@ -11,7 +12,6 @@ from alchemtest.amber import load_simplesolvated
 from alchemtest.amber import load_invalidfiles
 from alchemtest.amber import load_bace_example
 from alchemtest.amber import load_bace_improper
-from numpy import isclose 
 
 @pytest.fixture(scope="module",
                 params=[filename for filename in load_invalidfiles()['data'][0]])
