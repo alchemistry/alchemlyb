@@ -14,7 +14,7 @@ High-level functions
 Two high-level functions
 :func:`~alchemlyb.preprocessing.subsampling.decorrelate_u_nk` and
 :func:`~alchemlyb.preprocessing.subsampling.decorrelate_dhdl` can be used to
-preprocess the :ref:`dHdl <dHdl>` or :ref:`u_nk <u_nk>` in a automatic
+preprocess the :ref:`dHdl <dHdl>` or :ref:`u_nk <u_nk>` in an automatic
 fashion. The following code could remove the initial burnin period and
 decorrelate the data. ::
 
