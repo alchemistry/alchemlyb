@@ -119,7 +119,7 @@ class ABFE(WorkflowBase):
                         'This exception is being ignored because ignore_warnings=True.')
                 else:
                     self.logger.error(msg)
-                    raise exc from ValueError(msg)
+                    raise OSError(msg) from exc
 
             try:
                 dhdl = self._extract_dHdl(file, T=self.T)
@@ -133,7 +133,7 @@ class ABFE(WorkflowBase):
                         'This exception is being ignored because ignore_warnings=True.')
                 else:
                     self.logger.error(msg)
-                    raise exc from ValueError(msg)
+                    raise OSError(msg) from exc
 
         # Sort the files according to the state
         self.logger.info('Sort files according to the u_nk.')
