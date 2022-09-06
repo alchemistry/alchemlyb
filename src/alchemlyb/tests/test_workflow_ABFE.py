@@ -278,7 +278,8 @@ class Test_methods():
             raise IOError('Error read u_nk.')
         monkeypatch.setattr(workflow, '_extract_u_nk',
                             extract_u_nk)
-        with pytest.raises(IOError, match='Error read u_nk.'):
+        with pytest.raises(OSError,
+                           match=r'Error reading u_nk .*/dhdl\.xvg\.bz2'):
             workflow.read()
 
     def test_read_invalid_dHdl(self, workflow, monkeypatch):
@@ -286,7 +287,8 @@ class Test_methods():
             raise IOError('Error read dHdl.')
         monkeypatch.setattr(workflow, '_extract_dHdl',
                             extract_dHdl)
-        with pytest.raises(IOError, match='Error read dHdl.'):
+        with pytest.raises(OSError,
+                           match=r'Error reading dHdl .*/dhdl\.xvg\.bz2'):
             workflow.read()
 
     def test_uncorr_threshold(self, workflow, monkeypatch):
