@@ -22,7 +22,7 @@ Changes
 
 Enhancements
   - Refactor the subsampling module to add u_nk2series and dhdl2series to
-  convert u_nk and dHdl to series. (PR #218)
+    convert u_nk and dHdl to series. (PR #218)
 
 
 Fixes
