@@ -15,8 +15,8 @@ Two high-level functions
 :func:`~alchemlyb.preprocessing.subsampling.decorrelate_u_nk` and
 :func:`~alchemlyb.preprocessing.subsampling.decorrelate_dhdl` can be used to
 preprocess the :ref:`dHdl <dHdl>` or :ref:`u_nk <u_nk>` in an automatic
-fashion. The following code could remove the initial burnin period and
-decorrelate the data. ::
+fashion. The following code removes an initial "burnin" period and
+decorrelates the data. ::
 
     >>> from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
     >>> from alchemlyb.preprocessing.subsampling import (decorrelate_u_nk,
