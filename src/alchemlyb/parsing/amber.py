@@ -23,17 +23,19 @@ logger = logging.getLogger("alchemlyb.parsers.Amber")
 k_b = R_kJmol * kJ2kcal
 
 
-def convert_to_pandas(file_datum, time:list):
+def convert_to_pandas(file_datum):
     """Convert the data structure from numpy to pandas format"""
     data_dic = {}
     data_dic["dHdl"] = []
     data_dic["lambdas"] = []
-    for frame_dhdl in file_datum.gradients:
+    data_dic["time"] = []
+    for frame_index, frame_dhdl in enumerate(file_datum.gradients, start=1):
         data_dic["dHdl"].append(frame_dhdl)
         data_dic["lambdas"].append(file_datum.clambda)
+        data_dic["time"].append(file_datum.t_0 + frame_index * file_datum.d_t * file_datum.ntpr)
     dh_dl_df = pd.DataFrame(data_dic["dHdl"], columns=["dHdl"],
-                      index=pd.Index(time, name='time', dtype='Float64'))
-    dh_dl_df["lambdas"] = data_dic["lambdas"][0]  # file_datum.clambda  # data_dic["lambdas"][0]
+                      index=pd.Index(data_dic["time"], name='time', dtype='Float64'))
+    dh_dl_df["lambdas"] = data_dic["lambdas"][0]
     # print(data_dic["lambdas"][0], file_datum.clambda)
     dh_dl_df = dh_dl_df.reset_index().set_index(['time'] + ['lambdas'])
     return dh_dl_df
@@ -127,10 +129,11 @@ class SectionParser():
                 # NOTE: I changed the method to check if the value is int or float
                 if '*' in value:  # Fortran format overflow
                     result.append(float('Inf'))
-                try:
-                    result.append(int(value))
-                except ValueError:
-                    result.append(float(value))
+                else:
+                    try:
+                        result.append(int(value))
+                    except ValueError:
+                        result.append(float(value))
             else:  # section may be incomplete
                 result.append(None)
         return result
@@ -190,14 +193,14 @@ def file_validation(outfile:str, extract_mbar:bool):
         if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
             logger.warning('No CONTROL DATA found, ignoring file.')
             invalid = True
-        file_datum.ntpr = secp.extract_section('^Nature and format of output:', '^$', ['ntpr'])
+        file_datum.ntpr, = secp.extract_section('^Nature and format of output:', '^$', ['ntpr'])
         file_datum.nstlim, file_datum.d_t = secp.extract_section(
             'Molecular dynamics:', '^$', ['nstlim', 'dt'])
         file_datum.T, = secp.extract_section('temperature regulation:', '^$', ['temp0'])
         if not file_datum.T:
             logger.error('Non-constant temperature MD not currently supported.')
             invalid = True
-        file_datum.clambda = secp.extract_section(
+        file_datum.clambda, = secp.extract_section(
             '^Free energy options:', '^$', ['clambda'], '^---')
         if file_datum.clambda is None:
             logger.warning('No free energy section found, ignoring file.')
@@ -238,10 +241,10 @@ def file_validation(outfile:str, extract_mbar:bool):
         if not secp.skip_after('^   4.  RESULTS'):
             logger.warning('No RESULTS section found, ignoring file.')
             invalid = True
-    if extract_mbar and not file_datum.have_mbar:
-        raise Exception(f'ERROR: No MBAR energies found in file {outfile}.')
     if invalid:
         return None
+    if extract_mbar and not file_datum.have_mbar:
+        raise Exception(f'ERROR: No MBAR energies found in file {outfile}.')
     return file_datum
 
 
@@ -327,9 +330,6 @@ def extract_dHdl_and_u_nk(
                 f'WARNING: {n_high_en} MBAR energ{"ies are" if n_high_en > 1 else "y is"}'
                 ' > 0.0 kcal/mol')
 
-    time = [file_datum.t_0 + (frame_index + 1) * file_datum.d_t * file_datum.ntpr
-            for frame_index in range(len(file_datum.mbar_energies[0]))]
-
     if not finished:  # pragma: no cover
         logger.warning('  WARNING: prematurely terminated run')
 
@@ -339,13 +339,16 @@ def extract_dHdl_and_u_nk(
         logger.info(f'{n_en_sections} DV/DL data points')
 
 
-    dh_dl = convert_to_pandas(file_datum, time=time)
-    dh_dl['dHdl'] *= beta
-
-    u_nk = pd.DataFrame(file_datum.mbar_energies,
-                        columns=pd.MultiIndex.from_arrays([time, np.repeat(file_datum.clambda,
-                                                           len(time))], names=['time', 'lambdas']),
-                        index=np.array(file_datum.mbar_lambdas, dtype=np.float64)).T
+    if return_dh_dl:
+        dh_dl = convert_to_pandas(file_datum)
+        dh_dl['dHdl'] *= beta
+    if return_u_nk:
+        time = [file_datum.t_0 + (frame_index + 1) * file_datum.d_t * file_datum.ntpr
+                for frame_index in range(len(file_datum.mbar_energies[0]))]
+        u_nk = pd.DataFrame(file_datum.mbar_energies,
+                            columns=pd.MultiIndex.from_arrays([time, np.repeat(file_datum.clambda,
+                                                            len(time))], names=['time', 'lambdas']),
+                            index=np.array(file_datum.mbar_lambdas, dtype=np.float64)).T
 
     if return_dh_dl and return_u_nk:
         return dh_dl, u_nk
