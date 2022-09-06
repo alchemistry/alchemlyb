@@ -54,7 +54,7 @@ def test_u_nk(mbar_filename,
                           for leg in load_bace_example()['data']['complex'].values()
                           for mbar_filename in leg])
 def test_u_nk_time_reading(mbar_filename, first_time=22.0, last_time=1020.0):
-    u_nk = extract_dHdl(mbar_filename, T=300)
+    u_nk = extract_u_nk(mbar_filename, T=300)
     assert isclose(u_nk.index.values[0][0], first_time)
     assert isclose(u_nk.index.values[-1][0], last_time)
 
