@@ -49,7 +49,7 @@ def test_convergence_bar(gmx_benzene):
 def test_convergence_wrong_estimator(gmx_benzene):
     dHdl, u_nk = gmx_benzene
     with pytest.raises(ValueError, match="is not available in"):
-        forward_backward_convergence(u_nk, 'www')
+        forward_backward_convergence(u_nk, 'WWW')
 
 def test_convergence_wrong_cases(gmx_benzene):
     dHdl, u_nk = gmx_benzene
