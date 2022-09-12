@@ -8,9 +8,15 @@ def _init_attrs(func):
     '''
     @wraps(func)
     def wrapper(outfile, T, *args, **kwargs):
-        dataframe = func(outfile, T, *args, **kwargs)
-        if dataframe is not None:
-            dataframe.attrs['temperature'] = T
-            dataframe.attrs['energy_unit'] = 'kT'
-        return dataframe
+        results = func(outfile, T, *args, **kwargs)
+        if results is not None:
+            if isinstance(results, tuple):
+                for item in results:
+                    item.attrs['temperature'] = T
+                    item.attrs['energy_unit'] = 'kT'
+            else:
+                results.attrs['temperature'] = T
+                results.attrs['energy_unit'] = 'kT'
+        return results
+
     return wrapper
