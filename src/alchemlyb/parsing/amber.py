@@ -196,7 +196,7 @@ class FEData():
     # pylint: disable=too-many-instance-attributes
     __slots__ = ['clambda', 't_0', 'd_t', 'T', 'ntpr', 'gradients',
                 'mbar_energies', 'nstlim', 'mbar_ndata',
-                 'have_mbar', 'mbar_lambdas', 'mbar_lambda_idx']
+                'have_mbar', 'mbar_lambdas', 'mbar_lambda_idx']
 
     def __init__(self):
         self.clambda = None
@@ -224,8 +224,8 @@ class FEData():
             '^Free energy options:', '^$', ['clambda'], '^---')
         if not self.T:
             logger.warning(
-                '"temp0" value not fond, '
-                'non-constant temperature MD not supported.')
+                '"temp0" value not fond,'
+                ' non-constant temperature MD not supported.')
             return None
         if self.clambda is None:
             logger.warning('No free energy section found, ignoring file.')
@@ -297,7 +297,7 @@ def file_validation(outfile:str, extract_mbar:bool) -> Optional[type[FEData]]:
 
 @_init_attrs
 def _extract_dHdl_and_u_nk(
-    outfile:str, T:Optional[float] = None,
+    outfile:str, T:float,
     return_dh_dl:bool = True,
     return_u_nk:bool = True):
     """Return reduced potentials `u_nk` and gradients ``dH/dl`` from Amber outputfile.
@@ -308,7 +308,7 @@ def _extract_dHdl_and_u_nk(
         Path to Amber .out file to extract data from.
     T : float
         Temperature in Kelvin at which the simulations were performed;
-        needed to generated the reduced potential (in units of kT)
+        needed to generated the reduced potential
 
     Returns
     -------
@@ -328,9 +328,7 @@ def _extract_dHdl_and_u_nk(
     if file_datum is None:  # pragma: no cover
         return None
 
-    if T is None:
-        T = file_datum.T
-    elif not np.isclose(T, file_datum.T):
+    if not np.isclose(T, file_datum.T):
         logger.warning(
             f'WARNING: the temperature read from the input file ({file_datum.T} K),'
             f' is different from the temperature passed as parameter ({T} K)')
@@ -402,7 +400,7 @@ def _extract_dHdl_and_u_nk(
 
 
 @_init_attrs
-def extract_dHdl(outfile:str, T:Optional[float] = None):
+def extract_dHdl(outfile:str, T:float):
     """Return gradients ```dH/dl`` from Amber TI outputfile.
 
     Parameters
@@ -428,7 +426,7 @@ def extract_dHdl(outfile:str, T:Optional[float] = None):
 
 
 @_init_attrs
-def extract_u_nk(outfile:str, T:Optional[float] = None):
+def extract_u_nk(outfile:str, T:float):
     """Return reduced potentials ``u_nk`` from Amber outputfile.
 
     Parameters
