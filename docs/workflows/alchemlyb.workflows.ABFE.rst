@@ -30,7 +30,7 @@ to the following code (The log is configured by logger). ::
     >>> dir = os.path.dirname(load_ABFE()['data']['complex'][0])
     >>> print(dir)
     'alchemtest/gmx/ABFE/complex'
-    >>> workflow = ABFE(units='kcal/mol', software='Gromacs', dir=dir,
+    >>> workflow = ABFE(units='kcal/mol', software='GROMACS', dir=dir,
     >>>                 prefix='dhdl', suffix='xvg', T=298, outdirectory='./')
     >>> workflow.run(skiptime=10, uncorr='dhdl', threshold=50,
     >>>              methods=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
@@ -133,7 +133,7 @@ to the data generated at each stage of the analysis. ::
     >>> print(dir)
     'alchemtest/gmx/ABFE/complex'
     >>> # Load the data
-    >>> workflow = ABFE(software='Gromacs', dir=dir,
+    >>> workflow = ABFE(software='GROMACS', dir=dir,
     >>>                 prefix='dhdl', suffix='xvg', T=298, outdirectory='./')
     >>> # Set the unit.
     >>> workflow.update_units('kcal/mol')

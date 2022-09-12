@@ -428,6 +428,16 @@ def test_decorrelate_u_nk_single_l(gmx_benzene_u_nk_fixture, method, size):
                                 drop_duplicates=True,
                                 sort=True)) == size
 
+def test_decorrelate_u_nk_burnin(gmx_benzene_u_nk_fixture):
+    assert len(decorrelate_u_nk(gmx_benzene_u_nk_fixture, method='dhdl',
+                                drop_duplicates=True,
+                                sort=True, remove_burnin=True)) == 2743
+
+def test_decorrelate_dhdl_burnin(gmx_benzene_dHdl_fixture):
+    assert len(decorrelate_dhdl(gmx_benzene_dHdl_fixture,
+                                drop_duplicates=True,
+                                sort=True, remove_burnin=True)) == 2848
+
 @pytest.mark.parametrize(('method', 'size'), [('dhdl', 501),
                                               ('dhdl_all', 1001),
                                               ('dE', 334)])

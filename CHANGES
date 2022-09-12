@@ -22,8 +22,13 @@ Changes
   - forward_backward_convergence will use AutoMBAR as backend when `MBAR` is
     selected as the estimator (PR #114).
   - AutoMBAR accepts the `method` argument (PR #114).
+  - Refactor the subsampling module to unify the behaviour of
+    equilibrium_detection and statistical_inefficiency (PR #218).
 
 Enhancements
+  - Add u_nk2series and dhdl2series to convert u_nk and dHdl to series (PR
+    #218).
+  - Add remove_burnin keyword to decorrelate_u_nk and decorrelate_dhdl (PR #218).
   - Add a base class for workflows (PR #188).
   - Add the ABFE workflow (PR #114).
 
