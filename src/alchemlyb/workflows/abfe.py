@@ -143,7 +143,7 @@ class ABFE(WorkflowBase):
                 u_nk_list[x].reset_index('time').index.values[0]))
 
         self.file_list = [self.file_list[i] for i in index_list]
-        self.logger.info("Sorted file list: \n %s", '\n'.join(self.file_list))
+        self.logger.info("Sorted file list: \n%s", '\n'.join(self.file_list))
         self.u_nk_list = [u_nk_list[i] for i in index_list]
         self.dHdl_list = [dHdl_list[i] for i in index_list]
         self.u_nk_sample_list = None
