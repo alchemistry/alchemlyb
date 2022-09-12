@@ -7,9 +7,10 @@ Most of the file parsing parts are based on `alchemical-analysis`_.
 
 # pylint: disable=broad-except, logging-fstring-interpolation, disable=unbalanced-tuple-unpacking, invalid-name
 
+from typing import Optional
+
 import re
 import logging
-import typing
 
 import pandas as pd
 import numpy as np
@@ -22,6 +23,9 @@ logger = logging.getLogger("alchemlyb.parsers.Amber")
 
 k_b = R_kJmol * kJ2kcal
 
+DVDL_COMPS = ['BOND', 'ANGLE', 'DIHED', '1-4 NB', '1-4 EEL', 'VDWAALS',
+              'EELEC', 'RESTRAINT']
+_FP_RE = r'[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
 
 def convert_to_pandas(file_datum):
     """Convert the data structure from numpy to pandas format"""
@@ -40,11 +44,38 @@ def convert_to_pandas(file_datum):
     dh_dl_df = dh_dl_df.reset_index().set_index(['time'] + ['lambdas'])
     return dh_dl_df
 
+def _process_mbar_lambdas(secp):
+    """
+    Extract the lambda points used to compute MBAR energies from an AMBER MDOUT file.
+    Parameters
+    ----------
+    secp: SectionParser object from AMBER MDOUT file.
 
-DVDL_COMPS = ['BOND', 'ANGLE', 'DIHED', '1-4 NB', '1-4 EEL', 'VDWAALS',
-              'EELEC', 'RESTRAINT']
-_FP_RE = r'[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
+    Returns
+    -------
+    mbar_lambdas: lambda values used for MBAR energy collection in simulation.
 
+    """
+
+    in_mbar = False
+    mbar_lambdas = []
+
+    for line in secp:
+        if line.startswith('    MBAR - lambda values considered:'):
+            in_mbar = True
+            continue
+
+        if in_mbar:
+            if line.startswith('    Extra'):
+                break
+
+            if 'total' in line:
+                data = line.split()
+                mbar_lambdas.extend(data[2:])
+            else:
+                mbar_lambdas.extend(line.split())
+
+    return mbar_lambdas
 
 def any_none(sequence):
     """Check if any element of a sequence is None."""
@@ -54,7 +85,6 @@ def any_none(sequence):
             return True
 
     return False
-
 
 def _pre_gen(it, first):
     """A generator that returns first first if it exists."""
@@ -67,7 +97,6 @@ def _pre_gen(it, first):
             yield next(it)
         except StopIteration:
             return
-
 
 class SectionParser():
     """
@@ -107,6 +136,7 @@ class SectionParser():
         Extract data values (int, float) in fields from a section marked
         with start and end regexes. Do not read further than limit regex.
         """
+        # pylint: disable=too-many-arguments
         inside = False
         lines = []
         for line in _pre_gen(self, extra):
@@ -163,8 +193,9 @@ class SectionParser():
 class FEData():
     """A simple struct container to collect data from individual files."""
 
+    # pylint: disable=too-many-instance-attributes
     __slots__ = ['clambda', 't_0', 'd_t', 'T', 'ntpr', 'gradients',
-                'mbar_energies', 'nstlim',
+                'mbar_energies', 'nstlim', 'mbar_ndata',
                  'have_mbar', 'mbar_lambdas', 'mbar_lambda_idx']
 
     def __init__(self):
@@ -174,83 +205,99 @@ class FEData():
         self.T = None
         self.nstlim = None
         self.ntpr = None
+        self.mbar_ndata = None
+        self.mbar_lambda_idx = None
+        self.have_mbar = False
         self.gradients = []
         self.mbar_energies = []
-        self.have_mbar = False
         self.mbar_lambdas = []
-        self.mbar_lambda_idx = -1
 
-
-def file_validation(outfile:str, extract_mbar:bool):
-    """validate the energy output file """
-    file_datum = FEData()
-    invalid = False
-    with SectionParser(outfile) as secp:
-        line = secp.skip_lines(5)
-        if not line:
-            logger.warning('File does not contain any useful data, ignoring file.')
-            invalid = True
-        if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
-            logger.warning('No CONTROL DATA found, ignoring file.')
-            invalid = True
-        file_datum.ntpr, = secp.extract_section('^Nature and format of output:', '^$', ['ntpr'])
-        file_datum.nstlim, file_datum.d_t = secp.extract_section(
+    def extract_first_parameters(self, secp: type[SectionParser]):
+        """extract simulation parateters from the start of the file"""
+        self.ntpr, = secp.extract_section(
+            '^Nature and format of output:', '^$', ['ntpr'])
+        self.nstlim, self.d_t = secp.extract_section(
             'Molecular dynamics:', '^$', ['nstlim', 'dt'])
-        file_datum.T, = secp.extract_section('temperature regulation:', '^$', ['temp0'])
-        if not file_datum.T:
-            logger.error('Non-constant temperature MD not currently supported.')
-            invalid = True
-        file_datum.clambda, = secp.extract_section(
+        self.T, = secp.extract_section(
+            'temperature regulation:', '^$', ['temp0'])
+        self.clambda, = secp.extract_section(
             '^Free energy options:', '^$', ['clambda'], '^---')
-        if file_datum.clambda is None:
+        if not self.T:
+            logger.warning(
+                '"temp0" value not fond, '
+                'non-constant temperature MD not supported.')
+            return None
+        if self.clambda is None:
             logger.warning('No free energy section found, ignoring file.')
-            invalid = True
+            return None
+        return "Done"
 
-        mbar_ndata = 0
+    def get_mbar_init(self, secp: type[SectionParser]):
+        """initialize the object to read MBAR information"""
+        self.have_mbar, bar_intervall = secp.extract_section(
+            '^FEP MBAR options:', '^$', ['ifmbar', 'bar_intervall'], '^---')
 
-        # NOTE: MBAR data read only if needed
-        # NOTE: errors in parsing MBAR should not break dHdl parsing
-        if extract_mbar:
-            file_datum.have_mbar, mbar_ndata = secp.extract_section(
-                '^FEP MBAR options:', '^$', ['ifmbar', 'bar_intervall'], '^---')
+        self.mbar_ndata = int(self.nstlim / bar_intervall) if self.have_mbar else 0
+        self.mbar_lambdas = _process_mbar_lambdas(secp)
+        clambda_str = f'{self.clambda:6.4f}'
+        if clambda_str not in self.mbar_lambdas:
+            logger.warning(
+                f'WARNING: lamba {clambda_str} not contained in set of '
+                f'MBAR lambas: {", ".join(self.mbar_lambdas)}\nNot using MBAR.')
+            self.have_mbar = False
         else:
-            file_datum.have_mbar = False
+            mbar_nlambda = len(self.mbar_lambdas)
+            self.mbar_lambda_idx = self.mbar_lambdas.index(clambda_str)
+            for _ in range(mbar_nlambda):
+                self.mbar_energies.append([])
 
-        if file_datum.have_mbar:
-            mbar_ndata = int(file_datum.nstlim / mbar_ndata)
-            file_datum.mbar_lambdas = _process_mbar_lambdas(secp)
-            clambda_str = f'{file_datum.clambda:6.4f}'
-
-            if clambda_str not in file_datum.mbar_lambdas:
-                logger.warning(f'WARNING: lamba {clambda_str} not contained in set of '
-                               f'MBAR lambas: {", ".join(file_datum.mbar_lambdas)}\n'
-                               'Not using MBAR.')
-
-                file_datum.have_mbar = False
-            else:
-                mbar_nlambda = len(file_datum.mbar_lambdas)
-                file_datum.mbar_lambda_idx = file_datum.mbar_lambdas.index(clambda_str)
-                for _ in range(mbar_nlambda):
-                    file_datum.mbar_energies.append([])
-
+    def extract_last_parameters(self, secp: type[SectionParser]):
+        """extract simulation parateters from the end of the file"""
         if not secp.skip_after('^   3.  ATOMIC '):
             logger.warning('No ATOMIC section found, ignoring file.')
-            invalid = True
-
-        file_datum.t_0, = secp.extract_section('^ begin time', '^$', ['coords'])
+            return None
+        self.t_0, = secp.extract_section('^ begin time', '^$', ['coords'])
         if not secp.skip_after('^   4.  RESULTS'):
             logger.warning('No RESULTS section found, ignoring file.')
-            invalid = True
-    if invalid:
+            return None
+        return "Done"
+
+def _skip_first_lines(secp: type[SectionParser]):
+    line = secp.skip_lines(5)
+    if not line:
+        logger.warning('File does not contain any useful data, ignoring file.')
         return None
-    if extract_mbar and not file_datum.have_mbar:
-        raise Exception(f'ERROR: No MBAR energies found in file {outfile}.')
-    return file_datum
+    if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
+        logger.warning('No CONTROL DATA found, ignoring file.')
+        return None
+    return "Done"
+
+def file_validation(outfile:str, extract_mbar:bool) -> Optional[type[FEData]]:
+    """validate the energy output file and return a FEData object"""
+    file_datum = FEData()
+    is_invalid = False
+    with SectionParser(outfile) as secp:
+        if _skip_first_lines(secp) is not None:
+            if file_datum.extract_first_parameters(secp) is not None:
+                if extract_mbar:
+                    file_datum.get_mbar_init(secp)
+                    if not file_datum.have_mbar:
+                        logger.exception(
+                            f'ERROR: No MBAR energies found in file {outfile}.')
+                else:
+                    file_datum.have_mbar = False
+                if file_datum.extract_last_parameters(secp) is None:
+                    is_invalid = True
+            else:
+                is_invalid = True
+        else:
+            is_invalid = True
+    return None if is_invalid else file_datum
 
 
 @_init_attrs
-def extract_dHdl_and_u_nk(
-    outfile:str, T:typing.Optional[float] = None,
+def _extract_dHdl_and_u_nk(
+    outfile:str, T:Optional[float] = None,
     return_dh_dl:bool = True,
     return_u_nk:bool = True):
     """Return reduced potentials `u_nk` and gradients ``dH/dl`` from Amber outputfile.
@@ -277,23 +324,20 @@ def extract_dHdl_and_u_nk(
         the constants used by the corresponding MD engine.
 
     """
-    if return_u_nk:
-        file_datum = file_validation(outfile, extract_mbar=True)
-    else:
-        file_datum = file_validation(outfile, extract_mbar=False)
+    file_datum = file_validation(outfile, extract_mbar=return_u_nk)
     if file_datum is None:  # pragma: no cover
         return None
 
     if T is None:
         T = file_datum.T
     elif not np.isclose(T, file_datum.T):
-        logger.warning(f'  WARNING: the temperature read from the input file ({file_datum.T} K), '
-        'is different from the temperature passed as parameter ({T} K)')
+        logger.warning(
+            f'WARNING: the temperature read from the input file ({file_datum.T} K),'
+            f' is different from the temperature passed as parameter ({T} K)')
     beta = 1/(k_b * T)
 
     finished = False
     with SectionParser(outfile) as secp:
-        line = secp.skip_lines(5)
         n_en_sections = 0
         old_nstep = -1
         in_average_section = False
@@ -303,7 +347,7 @@ def extract_dHdl_and_u_nk(
                 in_average_section = True
             if line.startswith(' NSTEP'):
                 if in_average_section:
-                    _ = secp.extract_section('^ NSTEP', '^ ---', ['NSTEP'] + DVDL_COMPS, extra=line)
+                    secp.extract_section('^ NSTEP', '^ ---', ['NSTEP'] + DVDL_COMPS, extra=line)
                     in_average_section = False
                 else:
                     nstep, dvdl = secp.extract_section(
@@ -338,10 +382,9 @@ def extract_dHdl_and_u_nk(
             logger.warning(f'WARNING: File {outfile} does not contain any DV/DL data')
         logger.info(f'{n_en_sections} DV/DL data points')
 
-
-    if return_dh_dl:
         dh_dl = convert_to_pandas(file_datum)
         dh_dl['dHdl'] *= beta
+
     if return_u_nk:
         time = [file_datum.t_0 + (frame_index + 1) * file_datum.d_t * file_datum.ntpr
                 for frame_index in range(len(file_datum.mbar_energies[0]))]
@@ -359,7 +402,7 @@ def extract_dHdl_and_u_nk(
 
 
 @_init_attrs
-def extract_dHdl(outfile:str, T:typing.Optional[float] = None):
+def extract_dHdl(outfile:str, T:Optional[float] = None):
     """Return gradients ```dH/dl`` from Amber TI outputfile.
 
     Parameters
@@ -381,11 +424,11 @@ def extract_dHdl(outfile:str, T:typing.Optional[float] = None):
 
     """
 
-    return extract_dHdl_and_u_nk(outfile=outfile, T=T, return_dh_dl=True, return_u_nk=False)
+    return _extract_dHdl_and_u_nk(outfile=outfile, T=T, return_dh_dl=True, return_u_nk=False)
 
 
 @_init_attrs
-def extract_u_nk(outfile:str, T:typing.Optional[float] = None):
+def extract_u_nk(outfile:str, T:Optional[float] = None):
     """Return reduced potentials ``u_nk`` from Amber outputfile.
 
     Parameters
@@ -405,38 +448,4 @@ def extract_u_nk(outfile:str, T:typing.Optional[float] = None):
         the constants used by the corresponding MD engine.
 
     """
-    return extract_dHdl_and_u_nk(outfile=outfile, T=T, return_dh_dl=False, return_u_nk=True)
-
-
-def _process_mbar_lambdas(secp):
-    """
-    Extract the lambda points used to compute MBAR energies from an AMBER MDOUT file.
-    Parameters
-    ----------
-    secp: SectionParser object from AMBER MDOUT file.
-
-    Returns
-    -------
-    mbar_lambdas: lambda values used for MBAR energy collection in simulation.
-
-    """
-
-    in_mbar = False
-    mbar_lambdas = []
-
-    for line in secp:
-        if line.startswith('    MBAR - lambda values considered:'):
-            in_mbar = True
-            continue
-
-        if in_mbar:
-            if line.startswith('    Extra'):
-                break
-
-            if 'total' in line:
-                data = line.split()
-                mbar_lambdas.extend(data[2:])
-            else:
-                mbar_lambdas.extend(line.split())
-
-    return mbar_lambdas
+    return _extract_dHdl_and_u_nk(outfile=outfile, T=T, return_dh_dl=False, return_u_nk=True)
