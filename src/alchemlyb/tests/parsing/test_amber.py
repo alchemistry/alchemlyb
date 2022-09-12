@@ -12,7 +12,8 @@ from alchemtest.amber import load_simplesolvated
 from alchemtest.amber import load_invalidfiles
 from alchemtest.amber import load_bace_example
 from alchemtest.amber import load_bace_improper
-
+from alchemtest.amber import load_single_u_nk_file
+from alchemtest.amber import load_single_dHdl_file
 
 @pytest.fixture(
     scope="module", params=list(load_invalidfiles()['data'][0]))
@@ -28,6 +29,19 @@ def test_invalidfiles(invalid_file):
     function returning False if the file is invalid
     """
     assert file_validation(invalid_file, extract_mbar=True) is None
+
+@pytest.mark.parametrize("filename", load_single_dHdl_file())
+def test_dHdl_time_reading(filename, first_time=22.0, last_time=1020.0):
+    dHdl = extract_dHdl(filename, T=500)
+    assert isclose(dHdl.index.values[0][0], first_time)
+    assert isclose(dHdl.index.values[-1][0], last_time)
+
+
+@pytest.mark.parametrize("filename", load_single_u_nk_file())
+def test_u_nk_time_reading(filename, first_time=22.0, last_time=1020.0):
+    u_nk = extract_u_nk(filename, T=500)
+    assert isclose(u_nk.index.values[0][0], first_time)
+    assert isclose(u_nk.index.values[-1][0], last_time)
 
 
 def test_any_none():
