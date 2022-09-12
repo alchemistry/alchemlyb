@@ -274,7 +274,7 @@ class ABFE(WorkflowBase):
                 # Find the starting frame
 
                 u_nk = u_nk[u_nk.index.get_level_values('time') >= skiptime]
-                subsample = decorrelate_u_nk(u_nk, uncorr)
+                subsample = decorrelate_u_nk(u_nk, uncorr, remove_burnin=True)
 
                 if len(subsample) < threshold:
                     self.logger.warning(f'Number of u_nk {len(subsample)} '
@@ -293,7 +293,7 @@ class ABFE(WorkflowBase):
             self.dHdl_sample_list = []
             for index, dHdl in enumerate(self.dHdl_list):
                 dHdl = dHdl[dHdl.index.get_level_values('time') >= skiptime]
-                subsample = decorrelate_dhdl(dHdl)
+                subsample = decorrelate_dhdl(dHdl, remove_burnin=True)
                 if len(subsample) < threshold:
                     self.logger.warning(f'Number of dHdl {len(subsample)} for '
                                         f'state {index} is less than the '

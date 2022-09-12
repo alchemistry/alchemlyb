@@ -32,7 +32,8 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
         statistical inefficiency (``False``).
     **kwargs :
         Additional keyword arguments for
-        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`.
+        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
+        or :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
     Returns
     -------
     DataFrame
@@ -40,11 +41,11 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     Note
     ----
     The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
-    but can loose data.
+    but can lose data.
 
 
     .. versionadded:: 0.6.0
-    .. versionchanged:: 0.7.0
+    .. versionchanged:: 1.0.0
        Add the remove_burnin keyword to allow unequilibrated frames to be removed.
     """
     kwargs['drop_duplicates'] = drop_duplicates
@@ -91,7 +92,7 @@ def decorrelate_dhdl(df, drop_duplicates=True, sort=True,
 
 
     .. versionadded:: 0.6.0
-    .. versionchanged:: 0.7.0
+    .. versionchanged:: 1.0.0
        Add the remove_burnin keyword to allow unequilibrated frames to be removed.
     """
 
@@ -130,7 +131,7 @@ def u_nk2series(df, method='dhdl'):
         :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
 
 
-    .. versionadded:: 0.7.0
+    .. versionadded:: 1.0.0
     """
     # Check if the input is u_nk
     try:
@@ -193,7 +194,7 @@ def dhdl2series(df, method=''):
         :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
 
 
-    .. versionadded:: 0.7.0
+    .. versionadded:: 1.0.0
     """
     series = df.sum(axis=1)
     return series
@@ -429,7 +430,7 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None,
        inefficiency was _rounded_ (instead of ``ceil()``) and thus one could
        end up with correlated data.
 
-    .. versionchanged:: 0.7.0
+    .. versionchanged:: 1.0.0
        Fixed a bug that would effectively ignore the ``lower`` and ``step``
        keywords when returning the subsampled DataFrame object. See
        `issue #198 <https://github.com/alchemistry/alchemlyb/issues/198>`_ for 
@@ -491,9 +492,10 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
     pymbar.timeseries.subsampleCorrelatedData : used for subsampling
 
 
-    .. versionchanged:: 0.7.0
+    .. versionchanged:: 1.0.0
        Add the drop_duplicates and sort keyword to unify the behaviour between
-       equilibrium_detection and statistical_inefficiency.
+    :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency` or
+    :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
 
     """
     df, series = _prepare_input(df, series, drop_duplicates, sort)
