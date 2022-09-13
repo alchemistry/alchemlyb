@@ -35,6 +35,7 @@ Enhancements
 
 Fixes
   - documented conda installation (available since 0.6.0) (#192)
+  - AMBER parsers now use 'ntpr' information to read time properly (#221)
 
 
 07/22/2022 xiki-tempula, IAlibay, dotsdl, orbeckst, ptmerz
