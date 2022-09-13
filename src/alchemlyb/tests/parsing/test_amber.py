@@ -2,6 +2,7 @@
 
 """
 import pytest
+from numpy import isclose
 
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemlyb.parsing.amber import extract_u_nk
@@ -11,21 +12,65 @@ from alchemtest.amber import load_simplesolvated
 from alchemtest.amber import load_invalidfiles
 from alchemtest.amber import load_bace_example
 from alchemtest.amber import load_bace_improper
+from alchemtest.amber import load_single_u_nk_file
+from alchemtest.amber import load_single_dHdl_file
 
-# pylint: disable=missing-function-docstring, invalid-name, bare-except
 
 @pytest.fixture(
-    scope="module", params=[filename for filename in load_invalidfiles()['data'][0]])
-def invalid_file(request):
+    name="invalid_file", scope="module",
+    params=list(load_invalidfiles()['data'][0]))
+def fixture_invalid_file(request):
+    """
+    Set 'invalid_file' for the subsequent tests, 
+    returning each file in load_invalidfiles
+    """
     return request.param
+
+
+@pytest.fixture(name="single_u_nk", scope="module")
+def fixture_single_u_nk():
+    """return a single file to check u_unk parsing"""
+    return load_single_u_nk_file()[0]
+
+
+@pytest.fixture(name="single_dHdl", scope="module")
+def fixture_single_dHdl():
+    """return a single file to check u_unk parsing"""
+    return load_single_dHdl_file()[0]
+
 
 def test_any_none():
     """Test the any None function to ensure if the None value will be caught"""
     None_value_result = [150000, None, None, None, None, None, None, None, None]
     assert any_none(None_value_result) is True
 
+
+def test_invalidfiles(invalid_file):
+    """
+    Test the file validation function to ensure the 
+    function returning False if the file is invalid
+    """
+    assert file_validation(invalid_file) is False
+
+
 def test_dHdl_invalidfiles(invalid_file):
+    """Test if we catch possible parsing errors in invalid files"""
     assert extract_dHdl(invalid_file, T=298.0) is None
+
+
+def test_dHdl_time_reading(single_dHdl, first_time=22.0, last_time=1020.0):
+    """Test if time information is read correctly when extracting dHdl"""
+    dHdl = extract_dHdl(single_dHdl, T=298.0)
+    assert isclose(dHdl.index.values[0][0], first_time)
+    assert isclose(dHdl.index.values[-1][0], last_time)
+
+
+def test_u_nk_time_reading(single_u_nk, first_time=22.0, last_time=1020.0):
+    """Test if time information is read correctly when extracting u_nk"""
+    u_nk = extract_u_nk(single_u_nk, T=298.0)
+    assert isclose(u_nk.index.values[0][0], first_time)
+    assert isclose(u_nk.index.values[-1][0], last_time)
+
 
 @pytest.mark.parametrize("filename",
                          [filename
@@ -63,13 +108,5 @@ def test_u_nk_improper(improper_filename,
     try:
         u_nk = extract_u_nk(improper_filename, T=298.0)
         assert u_nk.index.names == names
-    except:
+    except Exception:
         assert '0.5626' in improper_filename
-
-
-def test_invalidfiles(invalid_file):
-    """
-    Test the file validation function to ensure the 
-    function returning False if the file is invalid
-    """
-    assert file_validation(invalid_file, extract_mbar=True) is None
