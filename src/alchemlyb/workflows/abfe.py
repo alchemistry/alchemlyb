@@ -323,7 +323,7 @@ class ABFE(WorkflowBase):
         ----------
         estimator : dict
             The dictionary of estimators. The keys are in ['TI', 'BAR',
-            'MBAR']. note that the estimators are in their original form where
+            'MBAR']. Note that the estimators are in their original form where
             no unit conversion has been attempted.
 
         Note
