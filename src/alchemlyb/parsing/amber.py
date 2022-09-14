@@ -182,6 +182,7 @@ class FEData(object):
 
 
 def file_validation(outfile):
+    # pylint: disable = unbalanced-tuple-unpacking
     """validate the energy output file """
     file_datum = FEData()
     invalid = False
@@ -317,6 +318,7 @@ def extract_u_nk(outfile, T):
 
 @_init_attrs
 def extract_dHdl(outfile, T):
+    # pylint: disable = unbalanced-tuple-unpacking
     """Return gradients ``dH/dl`` from Amber TI outputfile.
 
     Parameters
@@ -350,7 +352,6 @@ def extract_dHdl(outfile, T):
         nenav = 0
         old_nstep = -1
         old_comp_nstep = -1
-        high_E_cnt = 0
         in_comps = False
         for line in secp:
             if 'DV/DL, AVERAGES OVER' in line:
