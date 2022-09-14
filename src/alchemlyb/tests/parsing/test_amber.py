@@ -2,7 +2,7 @@
 
 """
 import pytest
-from numpy import isclose
+from numpy.testing import assert_allclose
 
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemlyb.parsing.amber import extract_u_nk
@@ -59,15 +59,15 @@ def test_dHdl_invalidfiles(invalid_file):
 def test_dHdl_time_reading(single_dHdl, first_time=22.0, last_time=1020.0):
     """Test if time information is read correctly when extracting dHdl"""
     dHdl = extract_dHdl(single_dHdl, T=300)
-    assert isclose(dHdl.index.values[0][0], first_time)
-    assert isclose(dHdl.index.values[-1][0], last_time)
+    assert_allclose(dHdl.index.values[0][0], first_time)
+    assert_allclose(dHdl.index.values[-1][0], last_time)
 
 
 def test_u_nk_time_reading(single_u_nk, first_time=22.0, last_time=1020.0):
     """Test if time information is read correctly when extracting u_nk"""
     u_nk = extract_u_nk(single_u_nk, T=300)
-    assert isclose(u_nk.index.values[0][0], first_time)
-    assert isclose(u_nk.index.values[-1][0], last_time)
+    assert_allclose(u_nk.index.values[0][0], first_time)
+    assert_allclose(u_nk.index.values[-1][0], last_time)
 
 
 @pytest.mark.parametrize("filename",
