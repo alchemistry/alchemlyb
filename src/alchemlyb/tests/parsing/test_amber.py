@@ -12,8 +12,6 @@ from alchemtest.amber import load_simplesolvated
 from alchemtest.amber import load_invalidfiles
 from alchemtest.amber import load_bace_example
 from alchemtest.amber import load_bace_improper
-from alchemtest.amber import load_single_u_nk_file
-from alchemtest.amber import load_single_dHdl_file
 
 
 @pytest.fixture(
@@ -30,13 +28,13 @@ def fixture_invalid_file(request):
 @pytest.fixture(name="single_u_nk", scope="module")
 def fixture_single_u_nk():
     """return a single file to check u_unk parsing"""
-    return load_single_u_nk_file()[0]
+    return load_bace_example().data['solvated']['vdw'][0]
 
 
 @pytest.fixture(name="single_dHdl", scope="module")
 def fixture_single_dHdl():
     """return a single file to check u_unk parsing"""
-    return load_single_dHdl_file()[0]
+    return load_simplesolvated().data['charge'][0]
 
 
 def test_any_none():
