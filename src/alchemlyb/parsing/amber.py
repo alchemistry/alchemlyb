@@ -78,7 +78,7 @@ class SectionParser(object):
         self.filename = filename
         try:
             self.fileh = anyopen(self.filename, 'r')
-        except Exception:  # pragma: no cover
+        except Exception as ex:  # pragma: no cover
             logger.exception("Cannot open file %s", filename)
         self.lineno = 0
 
@@ -126,7 +126,7 @@ class SectionParser(object):
                               % (field, _FP_RE), line)
             if match:
                 value = match.group(1)
-                # NOTE: assumes fields are only integers or floats
+                # FIXME: assumes fields are only integers or floats
                 if '*' in value:  # Fortran format overflow
                     result.append(float('Inf'))
                 # NOTE: check if this is a sufficient test for int
