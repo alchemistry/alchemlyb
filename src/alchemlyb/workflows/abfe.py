@@ -219,18 +219,19 @@ class ABFE(WorkflowBase):
         use_FEP = False
         use_TI = False
 
-        if isinstance(estimators, str):
-            estimators = [estimators, ]
-        for estimator in estimators:
-            if estimator in FEP_ESTIMATORS:
-                use_FEP = True
-            elif estimator in TI_ESTIMATORS:
-                use_TI = True
-            else:
-                msg = f"Estimator {estimator} is not supported. Choose one from " \
-                      f"{FEP_ESTIMATORS + TI_ESTIMATORS}."
-                self.logger.error(msg)
-                raise ValueError(msg)
+        if estimators is not None:
+            if isinstance(estimators, str):
+                estimators = [estimators, ]
+            for estimator in estimators:
+                if estimator in FEP_ESTIMATORS:
+                    use_FEP = True
+                elif estimator in TI_ESTIMATORS:
+                    use_TI = True
+                else:
+                    msg = f"Estimator {estimator} is not supported. Choose one from " \
+                          f"{FEP_ESTIMATORS + TI_ESTIMATORS}."
+                    self.logger.error(msg)
+                    raise ValueError(msg)
 
         self.read(use_FEP, use_TI)
 
