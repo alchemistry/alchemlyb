@@ -273,23 +273,35 @@ class Test_methods():
         workflow.run(uncorr=None, estimators=None, overlap=None, breakdown=None,
                      forwrev=None)
 
-    def test_read_invalid_u_nk(self, workflow, monkeypatch):
+    @pytest.mark.parametrize('ignore_warnings', [True, False])
+    def test_read_invalid_u_nk(self, workflow, monkeypatch, ignore_warnings):
         def extract_u_nk(self, T):
             raise IOError('Error read u_nk.')
         monkeypatch.setattr(workflow, '_extract_u_nk',
                             extract_u_nk)
-        with pytest.raises(OSError,
-                           match=r'Error reading u_nk .*dhdl\.xvg\.bz2'):
-            workflow.read()
+        monkeypatch.setattr(workflow, 'ignore_warnings',
+                            ignore_warnings)
+        if not ignore_warnings:
+            with pytest.raises(OSError,
+                               match=r'Error reading u_nk .*dhdl\.xvg\.bz2'):
+                workflow.read()
+        else:
+            assert workflow.read() is None
 
-    def test_read_invalid_dHdl(self, workflow, monkeypatch):
+    @pytest.mark.parametrize('ignore_warnings', [True, False])
+    def test_read_invalid_dHdl(self, workflow, monkeypatch, ignore_warnings):
         def extract_dHdl(self, T):
             raise IOError('Error read dHdl.')
         monkeypatch.setattr(workflow, '_extract_dHdl',
                             extract_dHdl)
-        with pytest.raises(OSError,
-                           match=r'Error reading dHdl .*dhdl\.xvg\.bz2'):
-            workflow.read()
+        monkeypatch.setattr(workflow, 'ignore_warnings',
+                            ignore_warnings)
+        if not ignore_warnings:
+            with pytest.raises(OSError,
+                               match=r'Error reading dHdl .*dhdl\.xvg\.bz2'):
+                workflow.read()
+        else:
+            assert workflow.read() is None
 
     def test_uncorr_threshold(self, workflow, monkeypatch):
         '''Test if the full data will be used when the number of data points
