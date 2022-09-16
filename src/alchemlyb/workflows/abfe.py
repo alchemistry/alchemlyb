@@ -233,7 +233,7 @@ class ABFE(WorkflowBase):
                     self.logger.error(msg)
                     raise ValueError(msg)
 
-        self.read(use_FEP, use_TI)
+            self.read(use_FEP, use_TI)
 
         if uncorr is not None:
             self.preprocess(skiptime=skiptime, uncorr=uncorr,
