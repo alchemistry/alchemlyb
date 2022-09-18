@@ -281,7 +281,7 @@ def extract_u_nk(outfile, T):
     if not file_validation(outfile):   # pragma: no cover
         return None
 
-    if not np.isclose(T, file_datum.T):
+    if not np.isclose(T, file_datum.T, atol=0.01):
         logger.warning(
             'WARNING: the temperature read from the input file (%.2f K),'
             ' is different from the temperature passed as parameter (%.2f K)' % (file_datum.T, T))
@@ -347,7 +347,7 @@ def extract_dHdl(outfile, T):
     if not file_validation(outfile):
         return None
 
-    if not np.isclose(T, file_datum.T):
+    if not np.isclose(T, file_datum.T, atol=0.01):
         logger.warning(
             'WARNING: the temperature read from the input file (%.2f K),'
             ' is different from the temperature passed as parameter (%.2f K)' % (file_datum.T, T))
