@@ -200,10 +200,8 @@ def file_validation(outfile):
                                           ['nstlim', 'dt'])
         T, = secp.extract_section('temperature regulation:', '^$',
                                   ['temp0'])
-        if not T:
-            logger.error('Non-constant temperature MD not '
-                         'currently supported.')
-            invalid = True
+        if not T:  # NOTE maybe we could remove this check completely
+            logger.warning('WARNING: no valid "temp0" record found in file')
         clambda, = secp.extract_section('^Free energy options:', '^$',
                                         ['clambda'], '^---')
         if clambda is None:
@@ -282,6 +280,12 @@ def extract_u_nk(outfile, T):
     file_datum = file_validation(outfile)
     if not file_validation(outfile):   # pragma: no cover
         return None
+
+    if not np.isclose(T, file_datum.T):
+        logger.warning(
+            'WARNING: the temperature read from the input file (%.2f K),'
+            ' is different from the temperature passed as parameter (%.2f K)' % (file_datum.T, T))
+
     if not file_datum.have_mbar:
         raise Exception('ERROR: No MBAR energies found! Cannot parse file.')
     with SectionParser(outfile) as secp:
@@ -342,6 +346,12 @@ def extract_dHdl(outfile, T):
     file_datum = file_validation(outfile)
     if not file_validation(outfile):
         return None
+
+    if not np.isclose(T, file_datum.T):
+        logger.warning(
+            'WARNING: the temperature read from the input file (%.2f K),'
+            ' is different from the temperature passed as parameter (%.2f K)' % (file_datum.T, T))
+
     finished = False
     comps = []
     with SectionParser(outfile) as secp:
