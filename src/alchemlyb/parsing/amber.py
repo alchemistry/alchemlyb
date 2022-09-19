@@ -122,18 +122,19 @@ class SectionParser(object):
         line = ''.join(lines)
         result = []
         for field in fields:
-            match = re.search(r' %s\s+=\s+(\*+|%s|\d+)'
-                              % (field, _FP_RE), line)
+            match = re.search(fr' {field}\s+=\s+(\*+|{_FP_RE}|\d+)', line)
             if match:
                 value = match.group(1)
-                # FIXME: assumes fields are only integers or floats
-                if '*' in value:  # Fortran format overflow
+                if '*' in value:  # catch fortran format overflow
                     result.append(float('Inf'))
-                # NOTE: check if this is a sufficient test for int
-                elif '.' not in value and re.search(r'\d+', value):
-                    result.append(int(value))
                 else:
-                    result.append(float(value))
+                    try:
+                        result.append(int(value))
+                    except ValueError:
+                        try:
+                            result.append(float(value))
+                        except ValueError:
+                            result.append(str(value))
             else:  # section may be incomplete
                 result.append(None)
         return result
