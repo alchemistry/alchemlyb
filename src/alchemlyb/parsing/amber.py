@@ -200,10 +200,8 @@ def file_validation(outfile):
                                           ['nstlim', 'dt'])
         T, = secp.extract_section('temperature regulation:', '^$',
                                   ['temp0'])
-        if not T:
-            logger.error('Non-constant temperature MD not '
-                         'currently supported.')
-            invalid = True
+        if not T:  # NOTE maybe we could remove this check completely
+            logger.warning('WARNING: no valid "temp0" record found in file')
         clambda, = secp.extract_section('^Free energy options:', '^$',
                                         ['clambda'], '^---')
         if clambda is None:
@@ -282,6 +280,13 @@ def extract_u_nk(outfile, T):
     file_datum = file_validation(outfile)
     if not file_validation(outfile):   # pragma: no cover
         return None
+
+    if not np.isclose(T, file_datum.T, atol=0.01):
+        msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
+        msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
+        logger.error(msg)
+        raise ValueError(msg)
+
     if not file_datum.have_mbar:
         raise Exception('ERROR: No MBAR energies found! Cannot parse file.')
     with SectionParser(outfile) as secp:
@@ -342,6 +347,13 @@ def extract_dHdl(outfile, T):
     file_datum = file_validation(outfile)
     if not file_validation(outfile):
         return None
+
+    if not np.isclose(T, file_datum.T, atol=0.01):
+        msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
+        msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
+        logger.error(msg)
+        raise ValueError(msg)
+
     finished = False
     comps = []
     with SectionParser(outfile) as secp:
@@ -373,7 +385,7 @@ def extract_dHdl(outfile, T):
     if not nensec:  # pragma: no cover
         logger.warning('WARNING: File %s does not contain any DV/DL data',
                         outfile)
-    logger.info(f'{nensec} DV/DL data points')
+    logger.info(f'Read {nensec} DV/DL data points')
     # at this step we get info stored in the FEData object for a given amber out file
     file_datum.component_gradients.extend(comps)
     # convert file_datum to the pandas format to make it identical to alchemlyb output format
