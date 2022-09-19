@@ -71,24 +71,24 @@ def test_u_nk_time_reading(single_u_nk, first_time=22.0, last_time=1020.0):
     assert_allclose(u_nk.index.values[-1][0], last_time)
 
 
-def test_wrong_T_should_raise_warning_in_extract_dHdl(caplog, single_dHdl, T=300.0):
+def test_wrong_T_should_raise_warning_in_extract_dHdl(single_dHdl, T=300.0):
     """
     Test if calling extract_dHdl with differnt T from what's
     read from the AMBER file gives a warning
     """
-    caplog.set_level(logging.WARNING)
-    _ = extract_dHdl(single_dHdl, T=T)
-    assert "the temperature read from the input file" in caplog.text
+    with pytest.raises(ValueError) as exc_info:
+        _ = extract_dHdl(single_dHdl, T=T)
+    assert "is different from the temperature passed as parameter" in str(exc_info.value)
 
 
-def test_wrong_T_should_raise_warning_in_extract_u_nk(caplog, single_u_nk, T=300.0):
+def test_wrong_T_should_raise_warning_in_extract_u_nk(single_u_nk, T=300.0):
     """
     Test if calling extract_u_nk with differnt T from what's
     read from the AMBER file gives a warning
     """
-    caplog.set_level(logging.WARNING)
-    _ = extract_u_nk(single_u_nk, T=T)
-    assert "the temperature read from the input file" in caplog.text
+    with pytest.raises(ValueError) as exc_info:
+        _ = extract_u_nk(single_u_nk, T=T)
+    assert "is different from the temperature passed as parameter" in str(exc_info.value)
 
 
 @pytest.mark.parametrize("filename",

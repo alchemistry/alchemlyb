@@ -282,9 +282,10 @@ def extract_u_nk(outfile, T):
         return None
 
     if not np.isclose(T, file_datum.T, atol=0.01):
-        logger.warning(
-            'WARNING: the temperature read from the input file (%.2f K),'
-            ' is different from the temperature passed as parameter (%.2f K)' % (file_datum.T, T))
+        msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
+        msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
+        logger.error(msg)
+        raise ValueError(msg)
 
     if not file_datum.have_mbar:
         raise Exception('ERROR: No MBAR energies found! Cannot parse file.')
@@ -348,9 +349,10 @@ def extract_dHdl(outfile, T):
         return None
 
     if not np.isclose(T, file_datum.T, atol=0.01):
-        logger.warning(
-            'WARNING: the temperature read from the input file (%.2f K),'
-            ' is different from the temperature passed as parameter (%.2f K)' % (file_datum.T, T))
+        msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
+        msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
+        logger.error(msg)
+        raise ValueError(msg)
 
     finished = False
     comps = []
@@ -383,7 +385,7 @@ def extract_dHdl(outfile, T):
     if not nensec:  # pragma: no cover
         logger.warning('WARNING: File %s does not contain any DV/DL data',
                         outfile)
-    logger.info(f'{nensec} DV/DL data points')
+    logger.info(f'Read {nensec} DV/DL data points')
     # at this step we get info stored in the FEData object for a given amber out file
     file_datum.component_gradients.extend(comps)
     # convert file_datum to the pandas format to make it identical to alchemlyb output format
