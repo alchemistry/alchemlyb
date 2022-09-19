@@ -208,7 +208,7 @@ class TestBAR(FEPestimatorMixin):
                               (gmx_water_particle_with_total_energy, -11.675, 0.065055),
                               (gmx_water_particle_with_potential_energy, -11.724, 0.064964),
                               (gmx_water_particle_without_energy, -11.660, 0.064914),
-                              (amber_bace_example_complex_vdw, 2.37846, 0.050899),
+                              (amber_bace_example_complex_vdw, 2.39294, 0.051192),
                               (namd_tyr2ala, 11.0044, 0.10235),
                               (namd_idws, 0.221147, 0.041003),
                               (namd_idws_restarted, 7.081127, 0.0344211),
