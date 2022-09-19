@@ -84,7 +84,7 @@ def gmx_water_particle_without_energy():
 def amber_bace_example_complex_vdw():
     dataset = alchemtest.amber.load_bace_example()
 
-    u_nk = alchemlyb.concat([amber.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([amber.extract_u_nk(filename, T=298.0)
                       for filename in dataset['data']['complex']['vdw']])
     return u_nk
 
