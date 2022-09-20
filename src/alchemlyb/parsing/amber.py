@@ -131,10 +131,7 @@ class SectionParser(object):
                     try:
                         result.append(int(value))
                     except ValueError:
-                        try:
-                            result.append(float(value))
-                        except ValueError:
-                            result.append(str(value))
+                        result.append(float(value))
             else:  # section may be incomplete
                 result.append(None)
         return result
