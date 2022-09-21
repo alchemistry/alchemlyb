@@ -8,7 +8,6 @@ from numpy.testing import assert_allclose
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemlyb.parsing.amber import extract_u_nk
 from alchemlyb.parsing.amber import file_validation
-from alchemlyb.parsing.amber import any_none
 from alchemtest.amber import load_simplesolvated
 from alchemtest.amber import load_invalidfiles
 from alchemtest.amber import load_bace_example
@@ -36,12 +35,6 @@ def fixture_single_u_nk():
 def fixture_single_dHdl():
     """return a single file to check u_unk parsing"""
     return load_simplesolvated().data['charge'][0]
-
-
-def test_any_none():
-    """Test the any None function to ensure if the None value will be caught"""
-    None_value_result = [150000, None, None, None, None, None, None, None, None]
-    assert any_none(None_value_result) is True
 
 
 def test_invalidfiles(invalid_file):
