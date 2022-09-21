@@ -24,6 +24,9 @@ Changes
   - AutoMBAR accepts the `method` argument (PR #114).
   - Refactor the subsampling module to unify the behaviour of
     equilibrium_detection and statistical_inefficiency (PR #218).
+  - For ABFE workflow, dHdl will only be read when a TI estimator is chosen.
+    Similarly, u_nk will only be read when FEP estimators are chosen. (PR #231)
+
 
 Enhancements
   - Add u_nk2series and dhdl2series to convert u_nk and dHdl to series (PR
