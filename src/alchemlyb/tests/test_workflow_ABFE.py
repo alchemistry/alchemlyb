@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 import os
-import logging
 
 from alchemlyb.workflows.abfe import ABFE
 from alchemtest.gmx import load_ABFE, load_benzene
@@ -273,6 +272,18 @@ class Test_methods():
         '''Don't run anything'''
         workflow.run(uncorr=None, estimators=None, overlap=None, breakdown=None,
                      forwrev=None)
+
+    def test_run_single_estimator(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'u_nk_list', [])
+        monkeypatch.setattr(workflow, 'dHdl_list', [])
+        workflow.run(uncorr=None, estimators='TI', overlap=None, breakdown=None,
+                     forwrev=None)
+
+    def test_run_invalid_estimator(self, workflow):
+        with pytest.raises(ValueError,
+                           match=r'Estimator aaa is not supported.'):
+            workflow.run(uncorr=None, estimators='aaa', overlap=None, breakdown=None,
+                         forwrev=None)
 
     @pytest.mark.parametrize('read_u_nk', [True, False])
     @pytest.mark.parametrize('read_dHdl', [True, False])
