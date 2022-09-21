@@ -45,16 +45,6 @@ DVDL_COMPS = ['BOND', 'ANGLE', 'DIHED', '1-4 NB', '1-4 EEL', 'VDWAALS',
 _FP_RE = r'[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
 
 
-def any_none(sequence):
-    """Check if any element of a sequence is None."""
-
-    for element in sequence:
-        if element is None:
-            return True
-
-    return False
-
-
 def _pre_gen(it, first):
     """A generator that returns first first if it exists."""
 
@@ -295,7 +285,7 @@ def extract_u_nk(outfile, T):
                 mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
                                             extra=line)
 
-                if any_none(mbar):
+                if None in mbar:
                     continue
 
                 E_ref = mbar[file_datum.mbar_lambda_idx]
