@@ -276,7 +276,7 @@ class Test_methods():
     def test_run_single_estimator(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, 'u_nk_list', [])
         monkeypatch.setattr(workflow, 'dHdl_list', [])
-        workflow.run(uncorr=None, estimators='TI', overlap=None, breakdown=None,
+        workflow.run(uncorr=None, estimators='MBAR', overlap=None, breakdown=True,
                      forwrev=None)
 
     def test_run_invalid_estimator(self, workflow):
