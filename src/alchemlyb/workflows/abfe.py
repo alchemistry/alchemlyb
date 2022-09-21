@@ -111,6 +111,9 @@ class ABFE(WorkflowBase):
         dHdl_list : list
             A list of :class:`pandas.DataFrame` of dHdl.
         '''
+        self.u_nk_sample_list = None
+        self.dHdl_sample_list = None
+
         u_nk_list = []
         dHdl_list = []
         for file in self.file_list:
@@ -154,11 +157,14 @@ class ABFE(WorkflowBase):
                                         'time').index.values[0]))
         elif read_dHdl:
             self.logger.info('Sort files according to the dHdl.')
-            column_names = dHdl_list[0].columns.values.tolist()
             index_list = sorted(range(len(self.file_list)),
-                                key=lambda x: column_names.index(
+                                key=lambda x:
                                     dHdl_list[x].reset_index(
-                                        'time').index.values[0]))
+                                        'time').index.values[0])
+        else:
+            self.u_nk_list = []
+            self.dHdl_list = []
+            return
 
         self.file_list = [self.file_list[i] for i in index_list]
         self.logger.info("Sorted file list: \n%s", '\n'.join(self.file_list))
@@ -171,8 +177,7 @@ class ABFE(WorkflowBase):
             self.dHdl_list = [dHdl_list[i] for i in index_list]
         else:
             self.dHdl_list = []
-        self.u_nk_sample_list = None
-        self.dHdl_sample_list = None
+
 
     def run(self, skiptime=0, uncorr='dhdl', threshold=50,
             estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
