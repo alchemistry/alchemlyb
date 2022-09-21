@@ -290,37 +290,23 @@ class Test_methods():
         else:
             assert len(workflow.dHdl_list) == 0
 
-    @pytest.mark.parametrize('ignore_warnings', [True, False])
-    def test_read_invalid_u_nk(self, workflow, monkeypatch, ignore_warnings, caplog):
+    def test_read_invalid_u_nk(self, workflow, monkeypatch):
         def extract_u_nk(self, T):
             raise IOError('Error read u_nk.')
         monkeypatch.setattr(workflow, '_extract_u_nk',
                             extract_u_nk)
-        monkeypatch.setattr(workflow, 'ignore_warnings',
-                            ignore_warnings)
-        if not ignore_warnings:
-            with pytest.raises(OSError,
-                               match=r'Error reading u_nk .*dhdl\.xvg\.bz2'):
-                workflow.read()
-        else:
-            with caplog.at_level(logging.ERROR):
-                workflow.read()
-                assert 'This exception is being ignored because ignore_warnings=True.' not in caplog.text
+        with pytest.raises(OSError,
+                           match=r'Error reading u_nk .*dhdl\.xvg\.bz2'):
+            workflow.read()
 
-    @pytest.mark.parametrize('ignore_warnings', [True, False])
-    def test_read_invalid_dHdl(self, workflow, monkeypatch, ignore_warnings):
+    def test_read_invalid_dHdl(self, workflow, monkeypatch):
         def extract_dHdl(self, T):
             raise IOError('Error read dHdl.')
         monkeypatch.setattr(workflow, '_extract_dHdl',
                             extract_dHdl)
-        monkeypatch.setattr(workflow, 'ignore_warnings',
-                            ignore_warnings)
-        if not ignore_warnings:
-            with pytest.raises(OSError,
-                               match=r'Error reading dHdl .*dhdl\.xvg\.bz2'):
-                workflow.read()
-        else:
-            assert workflow.read() is None
+        with pytest.raises(OSError,
+                           match=r'Error reading dHdl .*dhdl\.xvg\.bz2'):
+            workflow.read()
 
     def test_uncorr_threshold(self, workflow, monkeypatch):
         '''Test if the full data will be used when the number of data points
