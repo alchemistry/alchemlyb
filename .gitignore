@@ -8,3 +8,5 @@ src/alchemlyb.egg-info/
 __pycache__
 .coverage.*
 *~
+dist/
+

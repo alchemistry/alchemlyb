@@ -35,7 +35,12 @@ Enhancements
 
 Fixes
   - documented conda installation (available since 0.6.0) (#192)
-
+  - AMBER parsers now use 'ntpr' information to read time properly (issue #221, PR #224)
+  - AMBER parsers now skip the reading of averages (issue #226, PR #230)
+  - AMBER parsers now check if the T provided by the user is the same
+    at which the simulations were run (issue #225, PR #232)
+  - changed how int/float are read from AMBER files (issue #229, PR #235)
+  - substitute the any_none() function with a check "if None in" in the AMBER parser (issue #236, PR #237)
 
 07/22/2022 xiki-tempula, IAlibay, dotsdl, orbeckst, ptmerz
 

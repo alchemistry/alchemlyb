@@ -7,7 +7,6 @@ Most of the file parsing parts are inherited from
 
 """
 
-import os
 import re
 import logging
 
@@ -32,8 +31,7 @@ def convert_to_pandas(file_datum):
     for frame_index, frame_dhdl in enumerate(file_datum.gradients):
         data_dic["dHdl"].append(frame_dhdl)
         data_dic["lambdas"].append(file_datum.clambda)
-        # here we need to convert dt to ps unit from ns
-        frame_time = file_datum.t0 + (frame_index + 1) * file_datum.dt * 1000
+        frame_time = file_datum.t0 + (frame_index + 1) * file_datum.dt * file_datum.ntpr
         data_dic["time"].append(frame_time)
     df = pd.DataFrame(data_dic["dHdl"], columns=["dHdl"],
                       index=pd.Index(data_dic["time"], name='time', dtype='Float64'))
@@ -45,16 +43,6 @@ def convert_to_pandas(file_datum):
 DVDL_COMPS = ['BOND', 'ANGLE', 'DIHED', '1-4 NB', '1-4 EEL', 'VDWAALS',
               'EELEC', 'RESTRAINT']
 _FP_RE = r'[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
-
-
-def any_none(sequence):
-    """Check if any element of a sequence is None."""
-
-    for element in sequence:
-        if element is None:
-            return True
-
-    return False
 
 
 def _pre_gen(it, first):
@@ -85,7 +73,7 @@ class SectionParser(object):
         self.lineno = 0
 
     def skip_lines(self, nlines):
-        """Skip a given number of files."""
+        """Skip a given number of lines."""
         lineno = 0
         for line in self:
             lineno += 1
@@ -124,18 +112,16 @@ class SectionParser(object):
         line = ''.join(lines)
         result = []
         for field in fields:
-            match = re.search(r' %s\s+=\s+(\*+|%s|\d+)'
-                              % (field, _FP_RE), line)
+            match = re.search(fr' {field}\s+=\s+(\*+|{_FP_RE}|\d+)', line)
             if match:
                 value = match.group(1)
-                # FIXME: assumes fields are only integers or floats
-                if '*' in value:  # Fortran format overflow
+                if '*' in value:  # catch fortran format overflow
                     result.append(float('Inf'))
-                # NOTE: check if this is a sufficient test for int
-                elif '.' not in value and re.search(r'\d+', value):
-                    result.append(int(value))
                 else:
-                    result.append(float(value))
+                    try:
+                        result.append(int(value))
+                    except ValueError:
+                        result.append(float(value))
             else:  # section may be incomplete
                 result.append(None)
         return result
@@ -165,7 +151,7 @@ class SectionParser(object):
 class FEData(object):
     """A simple struct container to collect data from individual files."""
 
-    __slots__ = ['clambda', 't0', 'dt', 'T', 'gradients',
+    __slots__ = ['clambda', 't0', 'dt', 'T', 'ntpr', 'gradients',
                  'component_gradients', 'mbar_energies',
                  'have_mbar', 'mbar_lambdas', 'mbar_lambda_idx']
 
@@ -174,6 +160,7 @@ class FEData(object):
         self.t0 = -1.0
         self.dt = -1.0
         self.T = -1.0
+        self.ntpr = -1
         self.gradients = []
         self.component_gradients = []
         self.mbar_energies = []
@@ -201,10 +188,8 @@ def file_validation(outfile):
                                           ['nstlim', 'dt'])
         T, = secp.extract_section('temperature regulation:', '^$',
                                   ['temp0'])
-        if not T:
-            logger.error('Non-constant temperature MD not '
-                         'currently supported.')
-            invalid = True
+        if not T:  # NOTE maybe we could remove this check completely
+            logger.warning('WARNING: no valid "temp0" record found in file')
         clambda, = secp.extract_section('^Free energy options:', '^$',
                                         ['clambda'], '^---')
         if clambda is None:
@@ -250,6 +235,7 @@ def file_validation(outfile):
     file_datum.clambda = clambda
     file_datum.t0 = t0
     file_datum.dt = dt
+    file_datum.ntpr = ntpr
     file_datum.T = T
     file_datum.have_mbar = have_mbar
     return file_datum
@@ -282,6 +268,13 @@ def extract_u_nk(outfile, T):
     file_datum = file_validation(outfile)
     if not file_validation(outfile):   # pragma: no cover
         return None
+
+    if not np.isclose(T, file_datum.T, atol=0.01):
+        msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
+        msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
+        logger.error(msg)
+        raise ValueError(msg)
+
     if not file_datum.have_mbar:
         raise Exception('ERROR: No MBAR energies found! Cannot parse file.')
     with SectionParser(outfile) as secp:
@@ -292,7 +285,7 @@ def extract_u_nk(outfile, T):
                 mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
                                             extra=line)
 
-                if any_none(mbar):
+                if None in mbar:
                     continue
 
                 E_ref = mbar[file_datum.mbar_lambda_idx]
@@ -307,7 +300,7 @@ def extract_u_nk(outfile, T):
             logger.warning('%i MBAR energ%s > 0.0 kcal/mol',
                            high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is')
 
-        time = [file_datum.t0 + (frame_index + 1) * file_datum.dt * 1000
+        time = [file_datum.t0 + (frame_index + 1) * file_datum.dt * file_datum.ntpr 
                 for frame_index in range(len(file_datum.mbar_energies[0]))]
 
     return pd.DataFrame(file_datum.mbar_energies,
@@ -342,39 +335,36 @@ def extract_dHdl(outfile, T):
     file_datum = file_validation(outfile)
     if not file_validation(outfile):
         return None
+
+    if not np.isclose(T, file_datum.T, atol=0.01):
+        msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
+        msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
+        logger.error(msg)
+        raise ValueError(msg)
+
     finished = False
     comps = []
     with SectionParser(outfile) as secp:
         line = secp.skip_lines(5)
         nensec = 0
-        nenav = 0
         old_nstep = -1
-        old_comp_nstep = -1
-        high_E_cnt = 0
-        in_comps = False
+        into_average_section = False
         for line in secp:
-            if 'DV/DL, AVERAGES OVER' in line:
-                in_comps = True
-            if line.startswith(' NSTEP'):
-                if in_comps:
-                    # CHECK the result
-                    result = secp.extract_section('^ NSTEP', '^ ---',
-                                                  ['NSTEP'] + DVDL_COMPS,
-                                                  extra=line)
-                    if result[0] != old_comp_nstep and not any_none(result):
-                        comps.append([float(E) for E in result[1:]])
-                        nenav += 1
-                        old_comp_nstep = result[0]
-                    in_comps = False
-                else:
-                    nstep, dvdl = secp.extract_section('^ NSTEP', '^ ---',
-                                                       ['NSTEP', 'DV/DL'],
-                                                       extra=line)
-                    if nstep != old_nstep and dvdl is not None \
-                            and nstep is not None:
-                        file_datum.gradients.append(dvdl)
-                        nensec += 1
-                        old_nstep = nstep
+            if 'DV/DL, AVERAGES OVER' in line \
+                or "      A V E R A G E S   O V E R" in line:
+                into_average_section = True
+            if line.startswith(' NSTEP') and into_average_section:
+                _ = secp.skip_lines(1)
+                into_average_section = False
+            elif line.startswith(' NSTEP'):
+                nstep, dvdl = secp.extract_section('^ NSTEP', '^ ---',
+                                                   ['NSTEP', 'DV/DL'],
+                                                   extra=line)
+                if nstep != old_nstep and dvdl is not None \
+                        and nstep is not None:
+                    file_datum.gradients.append(dvdl)
+                    nensec += 1
+                    old_nstep = nstep
             if line == '   5.  TIMINGS\n':
                 finished = True
                 break
@@ -383,7 +373,7 @@ def extract_dHdl(outfile, T):
     if not nensec:  # pragma: no cover
         logger.warning('WARNING: File %s does not contain any DV/DL data',
                         outfile)
-    logger.info('%i data points, %i DV/DL averages', nensec, nenav)
+    logger.info(f'Read {nensec} DV/DL data points')
     # at this step we get info stored in the FEData object for a given amber out file
     file_datum.component_gradients.extend(comps)
     # convert file_datum to the pandas format to make it identical to alchemlyb output format
