@@ -48,8 +48,6 @@ class ABFE(WorkflowBase):
     outdirectory : str
         Directory in which the output files produced by this script will be
         stored. Default: os.path.curdir.
-    ignore_warnings : bool
-        Turn all errors into warnings.
 
     Attributes
     ----------
@@ -60,11 +58,9 @@ class ABFE(WorkflowBase):
     '''
     def __init__(self, T, units='kT', software='GROMACS', dir=os.path.curdir,
                  prefix='dhdl', suffix='xvg',
-                 outdirectory=os.path.curdir,
-                 ignore_warnings=False):
+                 outdirectory=os.path.curdir):
 
         super().__init__(units, software, T, outdirectory)
-        self.ignore_warnings = ignore_warnings
         self.logger = logging.getLogger('alchemlyb.workflows.ABFE')
         self.logger.info('Initialise Alchemlyb ABFE Workflow')
         self.logger.info(f'Alchemlyb Version: f{__version__}')
@@ -125,12 +121,8 @@ class ABFE(WorkflowBase):
                     u_nk_list.append(u_nk)
                 except Exception as exc:
                     msg = f'Error reading u_nk from {file}.'
-                    if self.ignore_warnings:
-                        self.logger.exception(msg + f'\n{exc}\n' +
-                            'This exception is being ignored because ignore_warnings=True.')
-                    else:
-                        self.logger.error(msg)
-                        raise OSError(msg) from exc
+                    self.logger.error(msg)
+                    raise OSError(msg) from exc
 
             if read_dHdl:
                 try:
@@ -140,12 +132,8 @@ class ABFE(WorkflowBase):
                     dHdl_list.append(dhdl)
                 except Exception as exc:
                     msg = f'Error reading dHdl from {file}.'
-                    if self.ignore_warnings:
-                        self.logger.exception(msg + f'\n{exc}\n' +
-                            'This exception is being ignored because ignore_warnings=True.')
-                    else:
-                        self.logger.error(msg)
-                        raise OSError(msg) from exc
+                    self.logger.error(msg)
+                    raise OSError(msg) from exc
 
         # Sort the files according to the state
         if read_u_nk:

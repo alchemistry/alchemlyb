@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import os
+import logging
 
 from alchemlyb.workflows.abfe import ABFE
 from alchemtest.gmx import load_ABFE, load_benzene
@@ -290,7 +291,7 @@ class Test_methods():
             assert len(workflow.dHdl_list) == 0
 
     @pytest.mark.parametrize('ignore_warnings', [True, False])
-    def test_read_invalid_u_nk(self, workflow, monkeypatch, ignore_warnings):
+    def test_read_invalid_u_nk(self, workflow, monkeypatch, ignore_warnings, caplog):
         def extract_u_nk(self, T):
             raise IOError('Error read u_nk.')
         monkeypatch.setattr(workflow, '_extract_u_nk',
@@ -302,7 +303,9 @@ class Test_methods():
                                match=r'Error reading u_nk .*dhdl\.xvg\.bz2'):
                 workflow.read()
         else:
-            assert workflow.read() is None
+            with caplog.at_level(logging.ERROR):
+                workflow.read()
+                assert 'This exception is being ignored because ignore_warnings=True.' not in caplog.text
 
     @pytest.mark.parametrize('ignore_warnings', [True, False])
     def test_read_invalid_dHdl(self, workflow, monkeypatch, ignore_warnings):
