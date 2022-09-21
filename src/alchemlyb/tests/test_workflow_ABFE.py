@@ -273,6 +273,34 @@ class Test_methods():
         workflow.run(uncorr=None, estimators=None, overlap=None, breakdown=None,
                      forwrev=None)
 
+    def test_run_single_estimator(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, 'u_nk_list', [])
+        monkeypatch.setattr(workflow, 'dHdl_list', [])
+        workflow.run(uncorr=None, estimators='MBAR', overlap=None, breakdown=True,
+                     forwrev=None)
+
+    def test_run_invalid_estimator(self, workflow):
+        with pytest.raises(ValueError,
+                           match=r'Estimator aaa is not supported.'):
+            workflow.run(uncorr=None, estimators='aaa', overlap=None, breakdown=None,
+                         forwrev=None)
+
+    @pytest.mark.parametrize('read_u_nk', [True, False])
+    @pytest.mark.parametrize('read_dHdl', [True, False])
+    def test_read_TI_FEP(self, workflow, monkeypatch, read_u_nk, read_dHdl):
+        monkeypatch.setattr(workflow, 'u_nk_list', [])
+        monkeypatch.setattr(workflow, 'dHdl_list', [])
+        workflow.read(read_u_nk, read_dHdl)
+        if read_u_nk:
+            assert len(workflow.u_nk_list) == 5
+        else:
+            assert len(workflow.u_nk_list) == 0
+
+        if read_dHdl:
+            assert len(workflow.dHdl_list) == 5
+        else:
+            assert len(workflow.dHdl_list) == 0
+
     def test_read_invalid_u_nk(self, workflow, monkeypatch):
         def extract_u_nk(self, T):
             raise IOError('Error read u_nk.')

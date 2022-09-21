@@ -48,8 +48,6 @@ class ABFE(WorkflowBase):
     outdirectory : str
         Directory in which the output files produced by this script will be
         stored. Default: os.path.curdir.
-    ignore_warnings : bool
-        Turn all errors into warnings.
 
     Attributes
     ----------
@@ -60,11 +58,9 @@ class ABFE(WorkflowBase):
     '''
     def __init__(self, T, units='kT', software='GROMACS', dir=os.path.curdir,
                  prefix='dhdl', suffix='xvg',
-                 outdirectory=os.path.curdir,
-                 ignore_warnings=False):
+                 outdirectory=os.path.curdir):
 
         super().__init__(units, software, T, outdirectory)
-        self.ignore_warnings = ignore_warnings
         self.logger = logging.getLogger('alchemlyb.workflows.ABFE')
         self.logger.info('Initialise Alchemlyb ABFE Workflow')
         self.logger.info(f'Alchemlyb Version: f{__version__}')
@@ -93,9 +89,16 @@ class ABFE(WorkflowBase):
         else:
             raise NotImplementedError(f'{software} parser not found.')
 
-    def read(self):
+    def read(self, read_u_nk=True, read_dHdl=True):
         '''Read the u_nk and dHdL data from the
         :attr:`~alchemlyb.workflows.ABFE.file_list`
+
+        Parameters
+        ----------
+        read_u_nk : bool
+            Whether to read the u_nk.
+        read_dHdl : bool
+            Whether to read the dHdl.
 
         Attributes
         ----------
@@ -104,50 +107,65 @@ class ABFE(WorkflowBase):
         dHdl_list : list
             A list of :class:`pandas.DataFrame` of dHdl.
         '''
+        self.u_nk_sample_list = None
+        self.dHdl_sample_list = None
+
         u_nk_list = []
         dHdl_list = []
         for file in self.file_list:
-            try:
-                u_nk = self._extract_u_nk(file, T=self.T)
-                self.logger.info(
-                    f'Reading {len(u_nk)} lines of u_nk from {file}')
-                u_nk_list.append(u_nk)
-            except Exception as exc:
-                msg = f'Error reading u_nk from {file}.'
-                if self.ignore_warnings:
-                    self.logger.exception(msg + f'\n{exc}\n' +
-                        'This exception is being ignored because ignore_warnings=True.')
-                else:
+            if read_u_nk:
+                try:
+                    u_nk = self._extract_u_nk(file, T=self.T)
+                    self.logger.info(
+                        f'Reading {len(u_nk)} lines of u_nk from {file}')
+                    u_nk_list.append(u_nk)
+                except Exception as exc:
+                    msg = f'Error reading u_nk from {file}.'
                     self.logger.error(msg)
                     raise OSError(msg) from exc
 
-            try:
-                dhdl = self._extract_dHdl(file, T=self.T)
-                self.logger.info(
-                    f'Reading {len(dhdl)} lines of dhdl from {file}')
-                dHdl_list.append(dhdl)
-            except Exception as exc:
-                msg = f'Error reading dHdl from {file}.'
-                if self.ignore_warnings:
-                    self.logger.exception(msg + f'\n{exc}\n' +
-                        'This exception is being ignored because ignore_warnings=True.')
-                else:
+            if read_dHdl:
+                try:
+                    dhdl = self._extract_dHdl(file, T=self.T)
+                    self.logger.info(
+                        f'Reading {len(dhdl)} lines of dhdl from {file}')
+                    dHdl_list.append(dhdl)
+                except Exception as exc:
+                    msg = f'Error reading dHdl from {file}.'
                     self.logger.error(msg)
                     raise OSError(msg) from exc
 
         # Sort the files according to the state
-        self.logger.info('Sort files according to the u_nk.')
-        column_names = u_nk_list[0].columns.values.tolist()
-        index_list = sorted(range(len(self.file_list)),
-            key=lambda x:column_names.index(
-                u_nk_list[x].reset_index('time').index.values[0]))
+        if read_u_nk:
+            self.logger.info('Sort files according to the u_nk.')
+            column_names = u_nk_list[0].columns.values.tolist()
+            index_list = sorted(range(len(self.file_list)),
+                                key=lambda x: column_names.index(
+                                    u_nk_list[x].reset_index(
+                                        'time').index.values[0]))
+        elif read_dHdl:
+            self.logger.info('Sort files according to the dHdl.')
+            index_list = sorted(range(len(self.file_list)),
+                                key=lambda x:
+                                    dHdl_list[x].reset_index(
+                                        'time').index.values[0])
+        else:
+            self.u_nk_list = []
+            self.dHdl_list = []
+            return
 
         self.file_list = [self.file_list[i] for i in index_list]
         self.logger.info("Sorted file list: \n%s", '\n'.join(self.file_list))
-        self.u_nk_list = [u_nk_list[i] for i in index_list]
-        self.dHdl_list = [dHdl_list[i] for i in index_list]
-        self.u_nk_sample_list = None
-        self.dHdl_sample_list = None
+        if read_u_nk:
+            self.u_nk_list = [u_nk_list[i] for i in index_list]
+        else:
+            self.u_nk_list = []
+
+        if read_dHdl:
+            self.dHdl_list = [dHdl_list[i] for i in index_list]
+        else:
+            self.dHdl_list = []
+
 
     def run(self, skiptime=0, uncorr='dhdl', threshold=50,
             estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
@@ -196,7 +214,24 @@ class ABFE(WorkflowBase):
             :func:`~alchemlyb.convergence.forward_backward_convergence` for
             further explanation.
         '''
-        self.read()
+        use_FEP = False
+        use_TI = False
+
+        if estimators is not None:
+            if isinstance(estimators, str):
+                estimators = [estimators, ]
+            for estimator in estimators:
+                if estimator in FEP_ESTIMATORS:
+                    use_FEP = True
+                elif estimator in TI_ESTIMATORS:
+                    use_TI = True
+                else:
+                    msg = f"Estimator {estimator} is not supported. Choose one from " \
+                          f"{FEP_ESTIMATORS + TI_ESTIMATORS}."
+                    self.logger.error(msg)
+                    raise ValueError(msg)
+
+            self.read(use_FEP, use_TI)
 
         if uncorr is not None:
             self.preprocess(skiptime=skiptime, uncorr=uncorr,
@@ -205,13 +240,14 @@ class ABFE(WorkflowBase):
             self.estimate(estimators)
             self.generate_result()
 
-        if overlap is not None:
+        if overlap is not None and use_FEP:
             ax = self.plot_overlap_matrix(overlap)
             plt.close(ax.figure)
 
         if breakdown:
-            ax = self.plot_ti_dhdl()
-            plt.close(ax.figure)
+            if use_TI:
+                ax = self.plot_ti_dhdl()
+                plt.close(ax.figure)
             fig = self.plot_dF_state()
             plt.close(fig)
             fig = self.plot_dF_state(dF_state='dF_state_long.pdf',
