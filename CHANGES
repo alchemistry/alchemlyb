@@ -35,7 +35,10 @@ Enhancements
 
 Fixes
   - documented conda installation (available since 0.6.0) (#192)
-  - AMBER parsers now use 'ntpr' information to read time properly (#221)
+  - AMBER parsers now use 'ntpr' information to read time properly (issue #221, PR #224)
+  - AMBER parsers now skip the reading of averages (issue #226, PR #230)
+  - AMBER parsers now check if the T provided by the user is the same
+    at which the simulations were run (issue #225, PR #232)
 
 
 07/22/2022 xiki-tempula, IAlibay, dotsdl, orbeckst, ptmerz

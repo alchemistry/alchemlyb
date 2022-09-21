@@ -389,7 +389,7 @@ class Test_automatic_amber():
             os.path.dirname(load_bace_example()['data']['complex']['vdw'][0]))
 
         workflow = ABFE(units='kcal/mol', software='AMBER', dir=dir,
-                        prefix='ti', suffix='bz2', T=310, outdirectory=str(
+                        prefix='ti', suffix='bz2', T=298.0, outdirectory=str(
                 outdir))
         workflow.read()
         workflow.estimate(estimators='TI')
@@ -403,4 +403,4 @@ class Test_automatic_amber():
 def test_no_parser():
     with pytest.raises(NotImplementedError):
         workflow = ABFE(units='kcal/mol', software='aaa',
-                        prefix='ti', suffix='bz2', T=310)
+                        prefix='ti', suffix='bz2', T=298.0)

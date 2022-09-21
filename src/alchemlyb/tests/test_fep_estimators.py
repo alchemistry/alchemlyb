@@ -84,7 +84,7 @@ def gmx_water_particle_without_energy():
 def amber_bace_example_complex_vdw():
     dataset = alchemtest.amber.load_bace_example()
 
-    u_nk = alchemlyb.concat([amber.extract_u_nk(filename, T=300)
+    u_nk = alchemlyb.concat([amber.extract_u_nk(filename, T=298.0)
                       for filename in dataset['data']['complex']['vdw']])
     return u_nk
 
@@ -157,7 +157,7 @@ class TestMBAR(FEPestimatorMixin):
                             (gmx_water_particle_with_total_energy, -11.680, 0.083655),
                             (gmx_water_particle_with_potential_energy, -11.675, 0.083589),
                             (gmx_water_particle_without_energy, -11.654, 0.083415),
-                            (amber_bace_example_complex_vdw, 2.40200, 0.0618453),
+                            (amber_bace_example_complex_vdw, 2.41149, 0.0620658),
                             (gomc_benzene_u_nk, -0.79994, 0.091579),
                     ])
     def X_delta_f(self, request):
@@ -208,7 +208,7 @@ class TestBAR(FEPestimatorMixin):
                               (gmx_water_particle_with_total_energy, -11.675, 0.065055),
                               (gmx_water_particle_with_potential_energy, -11.724, 0.064964),
                               (gmx_water_particle_without_energy, -11.660, 0.064914),
-                              (amber_bace_example_complex_vdw, 2.37846, 0.050899),
+                              (amber_bace_example_complex_vdw, 2.39294, 0.051192),
                               (namd_tyr2ala, 11.0044, 0.10235),
                               (namd_idws, 0.221147, 0.041003),
                               (namd_idws_restarted, 7.081127, 0.0344211),
