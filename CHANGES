@@ -26,6 +26,7 @@ Changes
     equilibrium_detection and statistical_inefficiency (PR #218).
   - For ABFE workflow, dHdl will only be read when a TI estimator is chosen.
     Similarly, u_nk will only be read when FEP estimators are chosen. (PR #231)
+  - Remove the ignore_warnings flag in ABFE workflow. (PR #231)
 
 
 Enhancements
