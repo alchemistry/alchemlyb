@@ -40,6 +40,7 @@ Fixes
   - AMBER parsers now check if the T provided by the user is the same
     at which the simulations were run (issue #225, PR #232)
   - changed how int/float are read from AMBER files (issue #229, PR #235)
+  - substitute the any_none() function with a check "if None in" in the AMBER parser (issue #236, PR #237)
 
 07/22/2022 xiki-tempula, IAlibay, dotsdl, orbeckst, ptmerz
 
