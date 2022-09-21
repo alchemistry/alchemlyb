@@ -148,12 +148,17 @@ class ABFE(WorkflowBase):
         if read_u_nk:
             self.logger.info('Sort files according to the u_nk.')
             column_names = u_nk_list[0].columns.values.tolist()
+            index_list = sorted(range(len(self.file_list)),
+                                key=lambda x: column_names.index(
+                                    u_nk_list[x].reset_index(
+                                        'time').index.values[0]))
         elif read_dHdl:
             self.logger.info('Sort files according to the dHdl.')
             column_names = dHdl_list[0].columns.values.tolist()
-        index_list = sorted(range(len(self.file_list)),
-            key=lambda x:column_names.index(
-                u_nk_list[x].reset_index('time').index.values[0]))
+            index_list = sorted(range(len(self.file_list)),
+                                key=lambda x: column_names.index(
+                                    dHdl_list[x].reset_index(
+                                        'time').index.values[0]))
 
         self.file_list = [self.file_list[i] for i in index_list]
         self.logger.info("Sorted file list: \n%s", '\n'.join(self.file_list))

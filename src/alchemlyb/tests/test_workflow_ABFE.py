@@ -273,6 +273,22 @@ class Test_methods():
         workflow.run(uncorr=None, estimators=None, overlap=None, breakdown=None,
                      forwrev=None)
 
+    @pytest.mark.parametrize('read_u_nk', [True, False])
+    @pytest.mark.parametrize('read_dHdl', [True, False])
+    def test_read_TI_FEP(self, workflow, monkeypatch, read_u_nk, read_dHdl):
+        monkeypatch.setattr(workflow, 'u_nk_list', [])
+        monkeypatch.setattr(workflow, 'dHdl_list', [])
+        workflow.read(read_u_nk, read_dHdl)
+        if read_u_nk:
+            assert len(workflow.u_nk_list) == 5
+        else:
+            assert len(workflow.u_nk_list) == 0
+
+        if read_dHdl:
+            assert len(workflow.dHdl_list) == 5
+        else:
+            assert len(workflow.dHdl_list) == 0
+
     @pytest.mark.parametrize('ignore_warnings', [True, False])
     def test_read_invalid_u_nk(self, workflow, monkeypatch, ignore_warnings):
         def extract_u_nk(self, T):
