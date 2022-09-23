@@ -1,6 +1,6 @@
 """Parsers for extracting alchemical data from `Amber <http://ambermd.org>`_ output files.
 
-Most of the file parsing parts are inherited from
+Most of the file parsing parts are adapted from
 `alchemical-analysis`_.
 
 .. _alchemical-analysis: https://github.com/MobleyLab/alchemical-analysis
@@ -21,6 +21,8 @@ logger = logging.getLogger("alchemlyb.parsers.Amber")
 
 k_b = R_kJmol * kJ2kcal
 
+_FP_RE = r'[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
+
 
 def convert_to_pandas(file_datum):
     """Convert the data structure from numpy to pandas format"""
@@ -38,11 +40,6 @@ def convert_to_pandas(file_datum):
     df["lambdas"] = data_dic["lambdas"][0]
     df = df.reset_index().set_index(['time'] + ['lambdas'])
     return df
-
-
-DVDL_COMPS = ['BOND', 'ANGLE', 'DIHED', '1-4 NB', '1-4 EEL', 'VDWAALS',
-              'EELEC', 'RESTRAINT']
-_FP_RE = r'[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
 
 
 def _pre_gen(it, first):
@@ -148,7 +145,7 @@ class SectionParser(object):
         self.close()
 
 
-class FEData(object):
+class FEData():
     """A simple struct container to collect data from individual files."""
 
     __slots__ = ['clambda', 't0', 'dt', 'T', 'ntpr', 'gradients',
@@ -240,9 +237,9 @@ def file_validation(outfile):
     file_datum.have_mbar = have_mbar
     return file_datum
 
-@_init_attrs
-def extract_u_nk(outfile, T):
-    """Return reduced potentials `u_nk` from Amber outputfile.
+
+def extract(outfile:str, T:float):
+    """Return reduced potentials `u_nk` and gradients `dH/dl` from Amber outputfile.
 
     Parameters
     ----------
@@ -252,84 +249,15 @@ def extract_u_nk(outfile, T):
         Temperature in Kelvin at which the simulations were performed;
         needed to generated the reduced potential (in units of kT)
 
-    Returns
+    Returns a dictionary with elements:
     -------
-    u_nk : DataFrame
-        Reduced potential for each alchemical state (k) for each frame (n).
-
-
-    .. versionchanged:: 0.5.0
-        The :mod:`scipy.constants` is used for parsers instead of
-        the constants used by the corresponding MD engine.
+    'u_nk' : DataFrame
+            Reduced potential for each alchemical state (k) for each frame (n).
+    'dHdl' : Series
+            dH/dl as a function of time for this lambda window.
 
     """
-    beta = 1/(k_b * T)
 
-    file_datum = file_validation(outfile)
-    if not file_validation(outfile):   # pragma: no cover
-        return None
-
-    if not np.isclose(T, file_datum.T, atol=0.01):
-        msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
-        msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
-        logger.error(msg)
-        raise ValueError(msg)
-
-    if not file_datum.have_mbar:
-        raise Exception('ERROR: No MBAR energies found! Cannot parse file.')
-    with SectionParser(outfile) as secp:
-        line = secp.skip_lines(5)
-        high_E_cnt = 0
-        for line in secp:
-            if line.startswith('MBAR Energy analysis'):
-                mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
-                                            extra=line)
-
-                if None in mbar:
-                    continue
-
-                E_ref = mbar[file_datum.mbar_lambda_idx]
-
-                for lmbda, E in enumerate(mbar):
-                    if E > 0.0:
-                        high_E_cnt += 1
-
-                    file_datum.mbar_energies[lmbda].append(beta * (E - E_ref))
-
-        if high_E_cnt:
-            logger.warning('%i MBAR energ%s > 0.0 kcal/mol',
-                           high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is')
-
-        time = [file_datum.t0 + (frame_index + 1) * file_datum.dt * file_datum.ntpr 
-                for frame_index in range(len(file_datum.mbar_energies[0]))]
-
-    return pd.DataFrame(file_datum.mbar_energies,
-                        columns=pd.MultiIndex.from_arrays([time, np.repeat(file_datum.clambda, len(time))],
-                                                          names=['time', 'lambdas']),
-                        index=np.array(file_datum.mbar_lambdas, dtype=np.float64)).T
-
-@_init_attrs
-def extract_dHdl(outfile, T):
-    """Return gradients ``dH/dl`` from Amber TI outputfile.
-
-    Parameters
-    ----------
-    outfile : str
-        Path to Amber .out file to extract data from.
-    T : float
-        Temperature in Kelvin at which the simulations were performed
-
-    Returns
-    -------
-    dH/dl : Series
-        dH/dl as a function of time for this lambda window.
-
-
-    .. versionchanged:: 0.5.0
-        The :mod:`scipy.constants` is used for parsers instead of
-        the constants used by the corresponding MD engine.
-
-    """
     beta = 1/(k_b * T)
 
     file_datum = file_validation(outfile)
@@ -340,46 +268,73 @@ def extract_dHdl(outfile, T):
         msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
         msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
         logger.error(msg)
-        raise ValueError(msg)
+        raise ValueError(msg)       
 
     finished = False
-    comps = []
     with SectionParser(outfile) as secp:
         line = secp.skip_lines(5)
+        high_E_cnt = 0
         nensec = 0
         old_nstep = -1
-        into_average_section = False
         for line in secp:
-            if 'DV/DL, AVERAGES OVER' in line \
-                or "      A V E R A G E S   O V E R" in line:
-                into_average_section = True
-            if line.startswith(' NSTEP') and into_average_section:
-                _ = secp.skip_lines(1)
-                into_average_section = False
+            if "      A V E R A G E S   O V E R" in line:
+                _ = secp.skip_after('^|=========================================')
             elif line.startswith(' NSTEP'):
                 nstep, dvdl = secp.extract_section('^ NSTEP', '^ ---',
                                                    ['NSTEP', 'DV/DL'],
                                                    extra=line)
-                if nstep != old_nstep and dvdl is not None \
-                        and nstep is not None:
+                if nstep != old_nstep and dvdl is not None and nstep is not None:
                     file_datum.gradients.append(dvdl)
                     nensec += 1
                     old_nstep = nstep
-            if line == '   5.  TIMINGS\n':
+            elif line.startswith('MBAR Energy analysis') and file_datum.have_mbar:
+                mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
+                                            extra=line)
+                
+                if None in mbar:
+                    continue
+                
+                reference_energy = mbar[file_datum.mbar_lambda_idx]
+                for lmbda, energy in enumerate(mbar):
+                    if energy > 0.0:
+                        high_E_cnt += 1
+
+                    file_datum.mbar_energies[lmbda].append(beta * (energy - reference_energy))
+            elif line == '   5.  TIMINGS\n':
                 finished = True
                 break
-    if not finished:  # pragma: no cover
-        logger.warning('  WARNING: prematurely terminated run')
-    if not nensec:  # pragma: no cover
-        logger.warning('WARNING: File %s does not contain any DV/DL data',
-                        outfile)
-    logger.info(f'Read {nensec} DV/DL data points')
-    # at this step we get info stored in the FEData object for a given amber out file
-    file_datum.component_gradients.extend(comps)
-    # convert file_datum to the pandas format to make it identical to alchemlyb output format
-    df = convert_to_pandas(file_datum)
-    df['dHdl'] *= beta
-    return df
+
+        if high_E_cnt:
+            logger.warning('%i MBAR energ%s > 0.0 kcal/mol',
+                           high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is')
+
+    if not finished:
+        logger.warning('WARNING: file %s is a prematurely terminated run' % outfile)
+
+    if file_datum.have_mbar:
+        mbar_time = [
+            file_datum.t0 + (frame_index + 1) * file_datum.dt * file_datum.ntpr
+            for frame_index in range(len(file_datum.mbar_energies[0]))]
+
+        mbar_df = pd.DataFrame(
+            file_datum.mbar_energies,
+            index=np.array(file_datum.mbar_lambdas, dtype=np.float64),
+            columns=pd.MultiIndex.from_arrays(
+                [mbar_time, np.repeat(file_datum.clambda, len(mbar_time))], names=['time', 'lambdas'])
+                ).T
+    else:
+        logger.info('WARNING: No MBAR energies found! "u_nk" entry will be None')
+        mbar_df = None
+
+    if not nensec:
+        logger.warning('WARNING: File %s does not contain any dV/dl data' % outfile)
+        dHdl_df = None
+    else:
+        logger.info('Read %s DV/DL data points in file %s' % (nensec, outfile))
+        dHdl_df = convert_to_pandas(file_datum)
+        dHdl_df['dHdl'] *= beta
+
+    return {"u_nk": mbar_df, "dHdl": dHdl_df}
 
 
 def _process_mbar_lambdas(secp):
