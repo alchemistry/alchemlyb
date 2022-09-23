@@ -33,6 +33,29 @@ Will give a plot looks like this
    A convergence plot of showing that the forward and backward has converged
    fully.
 
+Fraction Convergence
+----------------
+
+Another way of assessing whether the simulation has converged is to check the
+energy files. In [Fan2021]_, R_c and A_c are two criteria of checking
+the convergence. R_c takes a decorrelated :class:`pandas.Series` as input and
+gives the metric R_c, which is 0 for fully-equilibrated simulation and 1 for
+fully-unequilibrated simulation. ::
+
+    >>> from alchemtest.gmx import load_ABFE
+    >>> from alchemlyb.parsing.gmx import extract_dHdl
+    >>> from alchemlyb.preprocessing import decorrelate_dhdl, dhdl2series
+    >>> from alchemlyb.convergence import R_c
+
+    >>> file = load_ABFE().data['ligand'][0]
+    >>> dhdl = extract_dHdl(file, T=300)
+    >>> decorrelated = decorrelate_dhdl(dhdl, remove_burnin=True)
+    >>> value = R_c(dhdl2series(decorrelated))
+    >>> print(value)
+    0.99
+    >>> df = forward_backward_convergence(data_list, 'mbar')
+    >>> ax = plot_convergence(df)
+    >>> ax.figure.savefig('dF_t.pdf')
 
 Convergence functions
 ---------------------
@@ -45,4 +68,13 @@ The currently available connvergence functions:
     :toctree: convergence
 
     convergence
+    R_c
+    A_c
 
+References
+----------
+
+.. [Fan2021] Fan, S., Nedev, H., Vijayan, R., Iorga, B.I., and Beckstein, O.
+    (2021). Precise force-field-based calculations of octanol-water partition
+    coefficients for the SAMPL7 molecules. Journal of Computer-Aided Molecular
+    Design 35, 853–87
