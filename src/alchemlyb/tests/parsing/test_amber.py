@@ -2,12 +2,12 @@
 
 """
 import pytest
-import logging
 from numpy.testing import assert_allclose
 
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemlyb.parsing.amber import extract_u_nk
 from alchemlyb.parsing.amber import file_validation
+from alchemlyb.parsing.amber import extract
 from alchemtest.amber import load_simplesolvated
 from alchemtest.amber import load_invalidfiles
 from alchemtest.amber import load_bace_example
@@ -28,7 +28,7 @@ def fixture_invalid_file(request):
 @pytest.fixture(name="single_u_nk", scope="module")
 def fixture_single_u_nk():
     """return a single file to check u_unk parsing"""
-    return load_bace_example().data['solvated']['vdw'][0]
+    return load_bace_example().data['complex']['vdw'][0]
 
 
 @pytest.fixture(name="single_dHdl", scope="module")
@@ -62,6 +62,31 @@ def test_u_nk_time_reading(single_u_nk, first_time=22.0, last_time=1020.0):
     u_nk = extract_u_nk(single_u_nk, T=298.0)
     assert_allclose(u_nk.index.values[0][0], first_time)
     assert_allclose(u_nk.index.values[-1][0], last_time)
+
+
+def test_extract_with_both_data(
+    single_u_nk,
+    mbar_names=('time', 'lambdas'),
+    dhdl_names=('time', 'lambdas'),
+    dhdl_shape=(500, 1)):
+    """Test that dHdl and u_nk have the correct form when 
+    extracted from files with the extract funcion."""
+    df_dict = extract(single_u_nk, T=298.0)
+    assert df_dict['dHdl'].index.names == dhdl_names
+    assert df_dict['dHdl'].shape == dhdl_shape
+    assert df_dict['u_nk'].index.names == mbar_names
+
+
+def test_extract_with_only_dhdl_data(
+    single_dHdl,
+    dhdl_names=('time', 'lambdas'),
+    dhdl_shape=(500, 1)):
+    """Test that parsing with the extract function a file
+     with just dHdl gives the correct results"""
+    df_dict = extract(single_dHdl, T=298.0)
+    assert df_dict['dHdl'].index.names == dhdl_names
+    assert df_dict['dHdl'].shape == dhdl_shape
+    assert df_dict['u_nk'] is None
 
 
 def test_wrong_T_should_raise_warning_in_extract_dHdl(single_dHdl, T=300.0):
