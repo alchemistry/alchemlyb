@@ -5,7 +5,7 @@
 import bz2
 import pytest
 
-from alchemlyb.parsing.gmx import extract_dHdl, extract_u_nk
+from alchemlyb.parsing.gmx import extract_dHdl, extract_u_nk, extract
 from alchemtest.gmx import load_benzene
 from alchemtest.gmx import load_expanded_ensemble_case_1, load_expanded_ensemble_case_2, load_expanded_ensemble_case_3
 from alchemtest.gmx import load_water_particle_with_total_energy
@@ -198,6 +198,15 @@ def test_extract_dHdl_unit():
     dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
     assert dhdl.attrs['temperature'] == 310
     assert dhdl.attrs['energy_unit'] == 'kT'
+
+def test_calling_extract():
+    '''Test if the extract function is working'''
+    dataset = load_benzene()
+    df_dict = extract(dataset['data']['Coulomb'][0], 310)
+    assert df_dict['dHdl'].attrs['temperature'] == 310
+    assert df_dict['dHdl'].attrs['energy_unit'] == 'kT'
+    assert df_dict['u_nk'].attrs['temperature'] == 310
+    assert df_dict['u_nk'].attrs['energy_unit'] == 'kT'
 
 class TestRobustGMX():
     '''Test dropping the row that is wrong in different way'''
