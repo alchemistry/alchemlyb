@@ -306,3 +306,37 @@ def extract_u_nk(fep_files, T):
     u_nk.set_index(['time','fep-lambda'], inplace=True)
 
     return u_nk
+
+def extract(fep_files, T):
+    """Return reduced potentials `u_nk` from NAMD fepout file(s).
+
+    Parameters
+    ----------
+    fep_file : str or list of str
+        Path to fepout file(s) to extract data from. These are sorted by filename,
+        not including the path, prior to processing, using natural-sort. This way,
+        filenames including numbers without leading zeros are handled intuitively.
+
+        Windows may be split across files, or more than one window may be present
+        in a given file. Windows without footer lines (which may be in a different
+        file than the respective header lines) will raise an error. This means that
+        while windows may have been interrupted and restarted, they must be
+        complete. Lambda values are expected to increase or decrease monotonically,
+        and match between header and footer of each window.
+
+    T : float
+        Temperature in Kelvin at which the simulation was sampled.
+
+    Returns a dictionary with elements:
+    -------
+    u_nk : DataFrame
+        Potential energy for each alchemical state (k) for each frame (n).
+
+    Note
+    ----
+    If the number of forward and backward samples in a given window are different,
+    the extra sample(s) will be discarded. This is typically zero or one sample.
+
+    """
+
+    return {"u_nk": extract_u_nk(fep_files, T)}  # NOTE: maybe we should also have 'dHdl': None
