@@ -6,7 +6,7 @@ from re import search
 import bz2
 import pytest
 
-from alchemlyb.parsing.namd import extract_u_nk
+from alchemlyb.parsing.namd import extract_u_nk, extract
 from alchemtest.namd import load_tyr2ala
 from alchemtest.namd import load_idws
 from alchemtest.namd import load_restarted
@@ -300,6 +300,15 @@ def test_u_nk_restarted_reversed():
     
     assert u_nk.index.names == ['time', 'fep-lambda']
     assert u_nk.shape == (30170, 11)
+
+
+def test_extract():
+    filenames = load_restarted_reversed()['data']['both']
+    df_dict = extract(filenames, T=300)
+
+    assert df_dict['u_nk'].index.names == ['time', 'fep-lambda']
+    assert df_dict['u_nk'].shape == (30170, 11)
+    # assert df_dict['dHdl'] is None
 
 
 def test_u_nk_restarted_reversed_missing_window_header(tmp_path):
