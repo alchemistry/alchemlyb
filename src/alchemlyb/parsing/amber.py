@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 
 from .util import anyopen
-from . import _init_attrs
+from . import _init_attrs_dict
 from ..postprocessors.units import R_kJmol, kJ2kcal
 
 logger = logging.getLogger("alchemlyb.parsers.Amber")
@@ -55,7 +55,7 @@ def _pre_gen(it, first):
             return
 
 
-class SectionParser(object):
+class SectionParser():
     """
     A simple parser to extract data values from sections.
     """
@@ -132,7 +132,8 @@ class SectionParser(object):
         return next(self.fileh)
 
     # make compatible with python 3.6
-    __next__ = next
+    __next__ = next 
+    # NOTE: could we just define __next__ instead of doing this?
 
     def close(self):
         """Close the filehandle."""
@@ -149,7 +150,7 @@ class FEData():
     """A simple struct container to collect data from individual files."""
 
     __slots__ = ['clambda', 't0', 'dt', 'T', 'ntpr', 'gradients',
-                 'component_gradients', 'mbar_energies',
+                 'mbar_energies',
                  'have_mbar', 'mbar_lambdas', 'mbar_lambda_idx']
 
     def __init__(self):
@@ -159,7 +160,6 @@ class FEData():
         self.T = -1.0
         self.ntpr = -1
         self.gradients = []
-        self.component_gradients = []
         self.mbar_energies = []
         self.have_mbar = False
         self.mbar_lambdas = []
@@ -203,13 +203,12 @@ def file_validation(outfile):
             mbar_ndata = int(nstlim / mbar_ndata)
             mbar_lambdas = _process_mbar_lambdas(secp)
             file_datum.mbar_lambdas = mbar_lambdas
-            clambda_str = '%6.4f' % clambda
+            clambda_str = f'{clambda:6.4f}'
 
             if clambda_str not in mbar_lambdas:
                 logger.warning('WARNING: lamba %s not contained in set of '
                                'MBAR lambas: %s\nNot using MBAR.',
                                clambda_str, ', '.join(mbar_lambdas))
-
                 have_mbar = False
             else:
                 mbar_nlambda = len(mbar_lambdas)
@@ -237,7 +236,7 @@ def file_validation(outfile):
     file_datum.have_mbar = have_mbar
     return file_datum
 
-
+@_init_attrs_dict
 def extract(outfile:str, T:float):
     """Return reduced potentials `u_nk` and gradients `dH/dl` from Amber outputfile.
 
@@ -262,13 +261,13 @@ def extract(outfile:str, T:float):
 
     file_datum = file_validation(outfile)
     if not file_validation(outfile):
-        return None
+        return {"u_nk": None, "dHdl": None}
 
     if not np.isclose(T, file_datum.T, atol=0.01):
         msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
         msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
         logger.error(msg)
-        raise ValueError(msg)       
+        raise ValueError(msg)
 
     finished = False
     with SectionParser(outfile) as secp:
@@ -335,6 +334,57 @@ def extract(outfile:str, T:float):
         dHdl_df['dHdl'] *= beta
 
     return {"u_nk": mbar_df, "dHdl": dHdl_df}
+
+
+def extract_dHdl(outfile, T):
+    """Return gradients ``dH/dl`` from Amber TI outputfile.
+
+    Parameters
+    ----------
+    outfile : str
+        Path to Amber .out file to extract data from.
+    T : float
+        Temperature in Kelvin at which the simulations were performed
+
+    Returns
+    -------
+    dH/dl : Series
+        dH/dl as a function of time for this lambda window.
+
+
+    .. versionchanged:: 0.5.0
+        The :mod:`scipy.constants` is used for parsers instead of
+        the constants used by the corresponding MD engine.
+
+    """
+    extracted = extract(outfile, T)
+    return extracted['dHdl']
+
+
+def extract_u_nk(outfile, T):
+    """Return reduced potentials `u_nk` from Amber outputfile.
+
+    Parameters
+    ----------
+    outfile : str
+        Path to Amber .out file to extract data from.
+    T : float
+        Temperature in Kelvin at which the simulations were performed;
+        needed to generated the reduced potential (in units of kT)
+
+    Returns
+    -------
+    u_nk : DataFrame
+        Reduced potential for each alchemical state (k) for each frame (n).
+
+
+    .. versionchanged:: 0.5.0
+        The :mod:`scipy.constants` is used for parsers instead of
+        the constants used by the corresponding MD engine.
+
+    """
+    extracted = extract(outfile, T)
+    return extracted['u_nk']
 
 
 def _process_mbar_lambdas(secp):
