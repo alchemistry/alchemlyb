@@ -89,26 +89,15 @@ def test_extract_with_only_dhdl_data(
     assert df_dict['u_nk'] is None
 
 
-def test_wrong_T_should_raise_warning_in_extract_dHdl(single_dHdl, T=300.0):
+def test_wrong_T_should_raise_warning(single_dHdl, T=300.0):
     """
-    Test if calling extract_dHdl with differnt T from what's
+    Test if calling extract with differnt T from what's
     read from the AMBER file gives a warning
     """
     with pytest.raises(
         ValueError,
         match="is different from the temperature passed as parameter"):
-        _ = extract_dHdl(single_dHdl, T=T)
-
-
-def test_wrong_T_should_raise_warning_in_extract_u_nk(single_u_nk, T=300.0):
-    """
-    Test if calling extract_u_nk with differnt T from what's
-    read from the AMBER file gives a warning
-    """
-    with pytest.raises(
-        ValueError,
-        match="is different from the temperature passed as parameter"):
-        _ = extract_u_nk(single_u_nk, T=T)
+        _ = extract(single_dHdl, T=T)
 
 
 @pytest.mark.parametrize("filename",
