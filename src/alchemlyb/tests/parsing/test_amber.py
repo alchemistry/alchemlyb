@@ -50,42 +50,35 @@ def test_dHdl_invalidfiles(invalid_file):
     assert extract_dHdl(invalid_file, T=298.0) is None
 
 
-def test_dHdl_time_reading(single_dHdl, first_time=22.0, last_time=1020.0):
+def test_dHdl_time_reading(single_dHdl):
     """Test if time information is read correctly when extracting dHdl"""
     dHdl = extract_dHdl(single_dHdl, T=298.0)
-    assert_allclose(dHdl.index.values[0][0], first_time)
-    assert_allclose(dHdl.index.values[-1][0], last_time)
+    assert_allclose(dHdl.index.values[0][0], 22.0)
+    assert_allclose(dHdl.index.values[-1][0], 1020.0)
 
 
-def test_u_nk_time_reading(single_u_nk, first_time=22.0, last_time=1020.0):
+def test_u_nk_time_reading(single_u_nk):
     """Test if time information is read correctly when extracting u_nk"""
     u_nk = extract_u_nk(single_u_nk, T=298.0)
-    assert_allclose(u_nk.index.values[0][0], first_time)
-    assert_allclose(u_nk.index.values[-1][0], last_time)
+    assert_allclose(u_nk.index.values[0][0], 22.0)
+    assert_allclose(u_nk.index.values[-1][0], 1020.0)
 
 
-def test_extract_with_both_data(
-    single_u_nk,
-    mbar_names=('time', 'lambdas'),
-    dhdl_names=('time', 'lambdas'),
-    dhdl_shape=(500, 1)):
+def test_extract_with_both_data(single_u_nk):
     """Test that dHdl and u_nk have the correct form when 
     extracted from files with the extract funcion."""
     df_dict = extract(single_u_nk, T=298.0)
-    assert df_dict['dHdl'].index.names == dhdl_names
-    assert df_dict['dHdl'].shape == dhdl_shape
-    assert df_dict['u_nk'].index.names == mbar_names
+    assert df_dict['dHdl'].index.names == ('time', 'lambdas')
+    assert df_dict['dHdl'].shape == (500, 1)
+    assert df_dict['u_nk'].index.names == ('time', 'lambdas')
 
 
-def test_extract_with_only_dhdl_data(
-    single_dHdl,
-    dhdl_names=('time', 'lambdas'),
-    dhdl_shape=(500, 1)):
+def test_extract_with_only_dhdl_data(single_dHdl):
     """Test that parsing with the extract function a file
      with just dHdl gives the correct results"""
     df_dict = extract(single_dHdl, T=298.0)
-    assert df_dict['dHdl'].index.names == dhdl_names
-    assert df_dict['dHdl'].shape == dhdl_shape
+    assert df_dict['dHdl'].index.names == ('time', 'lambdas')
+    assert df_dict['dHdl'].shape == (500, 1)
     assert df_dict['u_nk'] is None
 
 
