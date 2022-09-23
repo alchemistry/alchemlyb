@@ -149,6 +149,36 @@ def extract_dHdl(filename, T):
     return dHdl
 
 
+def extract(filename, T):
+    r"""Return reduced potentials `u_nk` and gradients `dH/dl`
+    from a Hamiltonian differences free energy file.
+
+    Parameters
+    ----------
+    xvg : str
+        Path to free energy file to extract data from.
+    T : float
+        Temperature in Kelvin the simulations sampled.
+    filter : bool
+        Filter out the lines that cannot be parsed.
+        Such as rows with incorrect number of Columns and incorrectly
+        formatted numbers (e.g. 123.45.67, nan or -).
+
+    Returns a dictionary with elements:
+    -------
+    'u_nk' : DataFrame
+            Potential energy for each alchemical state (k) for each frame (n).
+    'dHdl' : Series
+            dH/dl as a function of time for this lambda window.
+
+    dH/dl : Series
+        dH/dl as a function of time for this lambda window.
+
+    """
+
+    return {"u_nk": extract_u_nk(filename, T), "dHdl": extract_dHdl(filename, T)}
+
+
 def _extract_state(filename):
     """Extract information on state sampled, names of lambdas.
 
