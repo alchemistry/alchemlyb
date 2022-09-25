@@ -126,14 +126,10 @@ class SectionParser():
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         """Read next line of the filehandle and check for EOF."""
         self.lineno += 1
         return next(self.fileh)
-
-    # make compatible with python 3.6
-    __next__ = next 
-    # NOTE: could we just define __next__ instead of doing this?
 
     def close(self):
         """Close the filehandle."""
