@@ -36,10 +36,9 @@ def test_extract():
     """
     dataset = load_benzene()
 
-    for filename in dataset['data']:
-        df_dict = extract(filename, T=298)
+    df_dict = extract(dataset['data'][0], T=298)
 
-        assert df_dict['u_nk'].index.names == ['time', 'Coulomb-lambda', 'VDW-lambda']
-        assert df_dict['u_nk'].shape == (1000, 23)
-        assert df_dict['dHdl'].index.names == ['time', 'Coulomb-lambda', 'VDW-lambda']
-        assert df_dict['dHdl'].shape == (1000, 2)
+    assert df_dict['u_nk'].index.names == ['time', 'Coulomb-lambda', 'VDW-lambda']
+    assert df_dict['u_nk'].shape == (1000, 23)
+    assert df_dict['dHdl'].index.names == ['time', 'Coulomb-lambda', 'VDW-lambda']
+    assert df_dict['dHdl'].shape == (1000, 2)
