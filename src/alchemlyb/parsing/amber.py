@@ -285,7 +285,7 @@ def extract(outfile, T):
                 mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
                                             extra=line)
                 
-                if None in mbar:
+                if None in mbar: # pragma: no cover
                     continue
                 
                 reference_energy = mbar[file_datum.mbar_lambda_idx]
@@ -302,7 +302,7 @@ def extract(outfile, T):
             logger.warning('%i MBAR energ%s > 0.0 kcal/mol',
                            high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is')
 
-    if not finished:
+    if not finished: # pragma: no cover
         logger.warning('WARNING: file %s is a prematurely terminated run' % outfile)
 
     if file_datum.have_mbar:
@@ -320,7 +320,7 @@ def extract(outfile, T):
         logger.info('WARNING: No MBAR energies found! "u_nk" entry will be None')
         mbar_df = None
 
-    if not nensec:
+    if not nensec: # pragma: no cover
         logger.warning('WARNING: File %s does not contain any dV/dl data' % outfile)
         dHdl_df = None
     else:
@@ -410,7 +410,7 @@ def _process_mbar_lambdas(secp):
             if 'total' in line:
                 data = line.split()
                 mbar_lambdas.extend(data[2:])
-            else:
+            else: # pragma: no cover
                 mbar_lambdas.extend(line.split())
 
     return mbar_lambdas
