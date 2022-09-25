@@ -233,7 +233,7 @@ def file_validation(outfile):
     return file_datum
 
 @_init_attrs_dict
-def extract(outfile:str, T:float):
+def extract(outfile, T):
     """Return reduced potentials `u_nk` and gradients `dH/dl` from Amber outputfile.
 
     Parameters
