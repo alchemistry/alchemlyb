@@ -327,10 +327,11 @@ def extract(fep_files, T):
     T : float
         Temperature in Kelvin at which the simulation was sampled.
 
-    Returns a dictionary with elements:
+    Returns
     -------
-    u_nk : DataFrame
-        Potential energy for each alchemical state (k) for each frame (n).
+    Dict
+        A dictionary with keys of 'u_nk', which is a pandas DataFrame of
+        potential energy for each alchemical state (k) for each frame (n).
 
     Note
     ----

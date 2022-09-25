@@ -258,16 +258,13 @@ def extract(xvg, T, filter=True):
         Such as rows with incorrect number of Columns and incorrectly
         formatted numbers (e.g. 123.45.67, nan or -).
 
-    Returns a dictionary with elements:
+    Returns
     -------
-    'u_nk' : DataFrame
-            Potential energy for each alchemical state (k) for each frame (n).
-    'dHdl' : Series
-            dH/dl as a function of time for this lambda window.
-
-    dH/dl : Series
-        dH/dl as a function of time for this lambda window.
-
+    Dict
+        A dictionary with keys of 'u_nk', which is a pandas DataFrame of
+        potential energy for each alchemical state (k) for each frame (n),
+        and 'dHdl', which is a Series of dH/dl
+        as a function of time for this lambda window.
     """
 
     return {"u_nk": extract_u_nk(xvg, T, filter), "dHdl": extract_dHdl(xvg, T, filter)}
