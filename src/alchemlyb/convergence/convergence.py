@@ -221,8 +221,6 @@ def R_c(series, precision=0.01, diff=2):
     for i in range(out_length):
         if all(conv[i:]):
             return i / length
-    else:
-        return 1.0
 
 def A_c(series_list, precision=0.01, diff=2):
     '''Generate the ensemble convergence criteria A_c for a set of simulations.

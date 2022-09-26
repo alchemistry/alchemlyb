@@ -1,4 +1,5 @@
 import pandas as pd
+from functools import wraps
 
 from ._version import get_versions
 __version__ = get_versions()['version']
@@ -11,6 +12,7 @@ def pass_attrs(func):
  
     .. versionadded:: 0.5.0
  '''
+    @wraps(func)
     def wrapper(input_dataframe, *args,**kwargs):
         dataframe = func(input_dataframe, *args,**kwargs)
         dataframe.attrs = input_dataframe.attrs
