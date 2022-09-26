@@ -213,7 +213,7 @@ def R_c(series, precision=0.01, diff=2):
     array = series.to_numpy()
     out_length = int(1 / precision)
     g_forward = _cummean(array, out_length)
-    g_backward = _cummean(array[::-1], out_length)[::-1]
+    g_backward = _cummean(array[::-1], out_length)
     length = len(g_forward)
     # Final value
     g = g_forward[-1]

@@ -34,13 +34,15 @@ Will give a plot looks like this
    fully.
 
 Fraction Convergence
-----------------
+--------------------
 
 Another way of assessing whether the simulation has converged is to check the
-energy files. In [Fan2021]_, R_c and A_c are two criteria of checking
-the convergence. R_c takes a decorrelated :class:`pandas.Series` as input and
-gives the metric R_c, which is 0 for fully-equilibrated simulation and 1 for
-fully-unequilibrated simulation. ::
+energy files. In [Fan2021]_, :func:`~alchemlyb.convergence.R_c` and
+:func:`~alchemlyb.convergence.A_c` are two criteria of checking the
+convergence. :func:`~alchemlyb.convergence.R_c` takes a decorrelated
+:class:`pandas.Series` as input and gives the metric
+:func:`~alchemlyb.convergence.R_c`, which is 0 for fully-equilibrated
+simulation and 1 for fully-unequilibrated simulation. ::
 
     >>> from alchemtest.gmx import load_ABFE
     >>> from alchemlyb.parsing.gmx import extract_dHdl
@@ -52,10 +54,22 @@ fully-unequilibrated simulation. ::
     >>> decorrelated = decorrelate_dhdl(dhdl, remove_burnin=True)
     >>> value = R_c(dhdl2series(decorrelated))
     >>> print(value)
-    0.99
-    >>> df = forward_backward_convergence(data_list, 'mbar')
-    >>> ax = plot_convergence(df)
-    >>> ax.figure.savefig('dF_t.pdf')
+    0.02
+
+The :func:`~alchemlyb.convergence.A_c` on the other hand, takes in a list of
+decorrelated :class:`pandas.Series` and gives a metric of how converged the set
+is, where 0 fully-unequilibrated and 1.0 is fully-equilibrated. ::
+
+    >>> from alchemlyb.convergence import A_c
+    >>> dhdl_list = []
+    >>> for file in load_ABFE().data['ligand']:
+    >>>     dhdl = extract_dHdl(file, T=300)
+    >>>     decorrelated = decorrelate_dhdl(dhdl, remove_burnin=True)
+    >>>     decorrelated = dhdl2series(decorrelated)
+    >>>     dhdl_list.append(decorrelated)
+    >>> value = A_c(dhdl_list)
+    0.7085
+
 
 Convergence functions
 ---------------------
