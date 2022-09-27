@@ -13,3 +13,4 @@ This submodule includes these parsing functions:
 
 .. autofunction:: alchemlyb.parsing.gomc.extract_dHdl
 .. autofunction:: alchemlyb.parsing.gomc.extract_u_nk
+.. autofunction:: alchemlyb.parsing.gomc.extract
