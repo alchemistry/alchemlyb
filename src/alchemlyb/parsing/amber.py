@@ -251,6 +251,7 @@ def extract(outfile, T):
         alchemical state (k) for each frame (n), and 'dHdl', which is a Series of dH/dl
         as a function of time for this lambda window.
 
+
     .. versionadded:: 1.0.0
     """
 

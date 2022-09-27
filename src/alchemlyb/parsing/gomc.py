@@ -172,6 +172,7 @@ def extract(filename, T):
         and 'dHdl', which is a Series of dH/dl
         as a function of time for this lambda window.
 
+
     .. versionadded:: 1.0.0
     """
 

@@ -338,8 +338,8 @@ def extract(fep_files, T):
     If the number of forward and backward samples in a given window are different,
     the extra sample(s) will be discarded. This is typically zero or one sample.
 
-    .. versionadded:: 1.0.0
 
+    .. versionadded:: 1.0.0
     """
 
     return {"u_nk": extract_u_nk(fep_files, T)}  # NOTE: maybe we should also have 'dHdl': None
