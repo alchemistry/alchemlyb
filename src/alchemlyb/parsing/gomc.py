@@ -171,6 +171,8 @@ def extract(filename, T):
         potential energy for each alchemical state (k) for each frame (n),
         and 'dHdl', which is a Series of dH/dl
         as a function of time for this lambda window.
+
+    .. versionadded:: 1.0.0
     """
 
     return {"u_nk": extract_u_nk(filename, T), "dHdl": extract_dHdl(filename, T)}

@@ -250,6 +250,8 @@ def extract(outfile, T):
         A dictionary with keys of 'u_nk', which is a pandas DataFrame of reduced potentials for each
         alchemical state (k) for each frame (n), and 'dHdl', which is a Series of dH/dl
         as a function of time for this lambda window.
+
+    .. versionadded:: 1.0.0
     """
 
     beta = 1/(k_b * T)
