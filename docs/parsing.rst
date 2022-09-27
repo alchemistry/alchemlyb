@@ -14,6 +14,10 @@ Each submodule features at least two functions, namely:
   Extract reduced potentials, :math:`u_{nk}`, for each timestep of the sampled state and all neighboring states.
   Required input for :ref:`FEP-based estimators <estimators_fep>`.
 
+:func:`extract`
+  Extract both reduced potentials and the gradient of the Hamiltonian, :math:`u_{nk}` and :math:`\frac{dH}{d\lambda}`, in the form of a dictionary ``'dHdl': Series,  'u_nk': DataFrame``.
+  Required input for :ref:`FEP-based estimators <estimators_fep>` and :ref:`TI-based estimators <estimators_ti>`.
+
 These functions have a consistent interface across all submodules, often taking a single file as input and any additional parameters required for giving either ``dHdl`` or ``u_nk`` in standard form.
 
 Standard forms of raw data
