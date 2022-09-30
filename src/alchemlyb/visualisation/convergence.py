@@ -5,7 +5,7 @@ import numpy as np
 
 from ..postprocessors.units import get_unit_converter
 
-def plot_convergence(*data, units='kT', ax=None):
+def plot_convergence(*data, units='kT', final_error=None, ax=None):
     """Plot the forward and backward convergence.
 
     The input could be the result from
@@ -23,6 +23,8 @@ def plot_convergence(*data, units='kT', ax=None):
     shape and can be used as input for the
     :func:`matplotlib.pyplot.errorbar`.
 
+    final_error is a float decides the width of the bar around the final value.
+
     Parameters
     ----------
     data : Dataframe or 4 array_like objects
@@ -32,6 +34,8 @@ def plot_convergence(*data, units='kT', ax=None):
         `backward_error` see :ref:`plot_convergence <plot_convergence>`.
     units : str
         The label for the unit of the estimate. Default: "kT"
+    final_error : float
+        The error of the final value.
     ax : matplotlib.axes.Axes
         Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
         a new axes will be generated.
@@ -61,9 +65,15 @@ def plot_convergence(*data, units='kT', ax=None):
     if len(data) == 1 and isinstance(data[0], pd.DataFrame):
         dataframe = get_unit_converter(units)(data[0])
         forward = dataframe['Forward'].to_numpy()
-        forward_error = dataframe['Forward_Error'].to_numpy()
+        if 'Forward_Error' in dataframe:
+            forward_error = dataframe['Forward_Error'].to_numpy()
+        else:
+            forward_error = np.zeros(len(forward))
         backward = dataframe['Backward'].to_numpy()
-        backward_error = dataframe['Backward_Error'].to_numpy()
+        if 'Backward_Error' in dataframe:
+            backward_error = dataframe['Backward_Error'].to_numpy()
+        else:
+            backward_error = np.zeros(len(backward))
     else:
         try:
             forward, forward_error, backward, backward_error = data
@@ -86,8 +96,11 @@ def plot_convergence(*data, units='kT', ax=None):
     f_ts = np.linspace(0, 1, len(forward) + 1)[1:]
     r_ts = np.linspace(0, 1, len(backward) + 1)[1:]
 
-    line0 = ax.fill_between([0, 1], backward[-1] - backward_error[-1],
-                            backward[-1] + backward_error[-1], color='#D2B9D3',
+    if final_error is None:
+        backward_error[-1]
+
+    line0 = ax.fill_between([0, 1], backward[-1] - final_error,
+                            backward[-1] + final_error, color='#D2B9D3',
                              zorder=1)
     line1 = ax.errorbar(f_ts, forward, yerr=forward_error, color='#736AFF',
                         lw=3, zorder=2, marker='o',

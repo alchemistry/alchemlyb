@@ -48,13 +48,16 @@ simulation and 1 for fully-unequilibrated simulation. ::
     >>> from alchemlyb.parsing.gmx import extract_dHdl
     >>> from alchemlyb.preprocessing import decorrelate_dhdl, dhdl2series
     >>> from alchemlyb.convergence import R_c
+    >>> from alchemlyb.visualisation import plot_convergence
 
     >>> file = load_ABFE().data['ligand'][0]
     >>> dhdl = extract_dHdl(file, T=300)
     >>> decorrelated = decorrelate_dhdl(dhdl, remove_burnin=True)
-    >>> value = R_c(dhdl2series(decorrelated))
+    >>> value, running_average = R_c(dhdl2series(decorrelated), tol=2)
     >>> print(value)
     0.02
+    >>> plot_convergence(running_average, final_error=2, units='kcal/mol')
+
 
 The :func:`~alchemlyb.convergence.A_c` on the other hand, takes in a list of
 decorrelated :class:`pandas.Series` and gives a metric of how converged the set
