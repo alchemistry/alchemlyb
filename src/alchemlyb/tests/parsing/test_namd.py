@@ -308,7 +308,7 @@ def test_extract():
 
     assert df_dict['u_nk'].index.names == ['time', 'fep-lambda']
     assert df_dict['u_nk'].shape == (30170, 11)
-    # assert df_dict['dHdl'] is None
+    assert 'dHdl' not in df_dict
 
 
 def test_u_nk_restarted_reversed_missing_window_header(tmp_path):
