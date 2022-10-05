@@ -87,6 +87,13 @@ def test_R_c_converged():
     value, running_average = R_c(data)
     np.testing.assert_allclose(value, 0.0)
 
+def test_R_c_notconverged():
+    data = pd.Series(data=range(21))
+    data.attrs['temperature'] = 310
+    data.attrs['energy_unit'] = 'kcal/mol'
+    value, running_average = R_c(data, tol=0.1, precision=0.05)
+    np.testing.assert_allclose(value, 1.0)
+
 def test_R_c_real():
     data = pd.Series(data=np.hstack((range(10), [4.5,]*10)))
     data.attrs['temperature'] = 310
