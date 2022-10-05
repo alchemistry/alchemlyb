@@ -247,7 +247,8 @@ def R_c(series, precision=0.01, tol=2):
         # calculation up. For example if the dataset has 21 points and the
         # precision is 0.05. The last point of g_forward is computed using
         # data[0:20] while the last point of g_backward is computed using
-        # data[1:21].
+        # data[1:21]. Thus, the last point of g_forward and g_backward are not
+        # the same as this branch will be triggered.
         return 0.0, convergence
 
 def A_c(series_list, precision=0.01, diff=2):

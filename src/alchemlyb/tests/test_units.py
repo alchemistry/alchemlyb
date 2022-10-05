@@ -4,8 +4,12 @@ import pandas as pd
 import alchemlyb
 from alchemlyb import pass_attrs
 from alchemtest.gmx import load_benzene
-from alchemlyb.parsing.gmx import extract_dHdl
+from alchemlyb.parsing.gmx import extract_dHdl, extract_u_nk
 from alchemlyb.postprocessors.units import to_kT
+from alchemlyb.preprocessing import (dhdl2series, u_nk2series,
+                                     decorrelate_u_nk, decorrelate_dhdl,
+                                     slicing, statistical_inefficiency,
+                                     equilibrium_detection)
 
 def test_noT():
     '''Test no temperature error'''
@@ -120,3 +124,32 @@ def test_pd_slice():
     df = pd.DataFrame(data=d)
     df.attrs = {1: 1}
     assert df[::2].attrs == {1: 1}
+
+class TestRetainUnit():
+    '''This test tests if the functions that should retain the unit would actually
+     retain the units.'''
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def dhdl():
+        dataset = load_benzene()
+        dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 310)
+        return dhdl
+
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def u_nk():
+        dataset = load_benzene()
+        u_nk = extract_u_nk(dataset['data']['Coulomb'][0], 310)
+        return u_nk
+
+    @pytest.mark.parametrize('func,fixture_in',
+                             [(dhdl2series, 'dhdl'),
+                              (u_nk2series, 'u_nk'),
+                              (decorrelate_u_nk, 'u_nk'),
+                              (decorrelate_dhdl, 'dhdl'),
+                              (slicing, 'dhdl'),
+                              (statistical_inefficiency, 'dhdl'),
+                              (equilibrium_detection, 'dhdl')])
+    def test_function(self, func, fixture_in, request):
+        result = func(request.getfixturevalue(fixture_in))
+        assert result.attrs['energy_unit'] is not None
