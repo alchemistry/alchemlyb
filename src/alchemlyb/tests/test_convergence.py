@@ -2,13 +2,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from alchemtest.gmx import load_benzene, load_ABFE
+from alchemtest.gmx import load_benzene
 from alchemlyb.parsing import gmx
 from alchemlyb.convergence import forward_backward_convergence, R_c, A_c
 from alchemlyb.convergence.convergence import _cummean
 
-from alchemlyb.preprocessing import decorrelate_dhdl, dhdl2series
-from alchemlyb.parsing.gmx import extract_dHdl
 
 @pytest.fixture()
 def gmx_benzene():
