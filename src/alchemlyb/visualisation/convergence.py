@@ -35,7 +35,8 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
     units : str
         The unit of the estimate. See `Note` for a detailed explanation. Default: "kT"
     final_error : float
-        The error of the final value.
+        The error of the final value in ``units``. If not given, takes the last
+        error in `backward_error`.
     ax : matplotlib.axes.Axes
         Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
         a new axes will be generated.
@@ -56,6 +57,9 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
     variable. Otherwise, the units variable is for labelling only, 
     and changing it doesn't change the unit of the underlying variable.
 
+
+    .. versionchanged:: 1.0.0
+        Keyword arg final_error for plotting a horizontal error bar
 
     .. versionchanged:: 0.6.0
         data now takes in dataframe
@@ -97,7 +101,7 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
     r_ts = np.linspace(0, 1, len(backward) + 1)[1:]
 
     if final_error is None:
-        backward_error[-1]
+        final_error = backward_error[-1]
 
     line0 = ax.fill_between([0, 1], backward[-1] - final_error,
                             backward[-1] + final_error, color='#D2B9D3',
@@ -109,7 +113,9 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
                         lw=3, zorder=3, marker='o',
                         mfc='w', mew=2.5, mec='#C11B17', ms=12, )
 
-    plt.xticks(r_ts[::2], fontsize=10)
+    xticks_spacing = len(r_ts) // 10
+    xticks = r_ts[::xticks_spacing]
+    plt.xticks(xticks, fontsize=10)
     plt.yticks(fontsize=10)
 
     ax.legend((line1[0], line2[0]), ('Forward', 'Reverse'), loc=9,
@@ -117,7 +123,7 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
     ax.set_xlabel(r'Fraction of the simulation time', fontsize=16,
                   color='#151B54')
     ax.set_ylabel(r'$\Delta G$ ({})'.format(units), fontsize=16, color='#151B54')
-    plt.xticks(f_ts, ['%.2f' % i for i in f_ts])
+    plt.xticks(xticks, ['%.2f' % i for i in xticks])
     plt.tick_params(axis='x', color='#D2B9D3')
     plt.tick_params(axis='y', color='#D2B9D3')
     return ax

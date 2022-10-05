@@ -59,6 +59,11 @@ simulation and 1 for fully-unequilibrated simulation. ::
     >>> plot_convergence(running_average, final_error=2, units='kcal/mol')
 
 
+Will give a plot like this.
+
+.. figure:: images/R_c.png
+
+
 The :func:`~alchemlyb.convergence.A_c` on the other hand, takes in a list of
 decorrelated :class:`pandas.Series` and gives a metric of how converged the set
 is, where 0 fully-unequilibrated and 1.0 is fully-equilibrated. ::
