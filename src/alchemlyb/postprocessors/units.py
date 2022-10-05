@@ -1,5 +1,6 @@
-'''Unit conversion and constants
-================================'''
+"""
+Unit conversion and constants
+"""
 
 from scipy.constants import R, calorie
 

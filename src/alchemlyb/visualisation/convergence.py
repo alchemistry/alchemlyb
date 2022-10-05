@@ -33,7 +33,7 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
         Or given explicitly as `forward`, `forward_error`, `backward`,
         `backward_error` see :ref:`plot_convergence <plot_convergence>`.
     units : str
-        The label for the unit of the estimate. Default: "kT"
+        The unit of the estimate. See `Note` for a detailed explanation. Default: "kT"
     final_error : float
         The error of the final value.
     ax : matplotlib.axes.Axes
@@ -50,11 +50,11 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
     The code is taken and modified from
     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
-    If `data` is not an :class:pandas.Dataframe` produced by
+    If `data` is a :class:pandas.Dataframe` produced by
     :func:`~alchemlyb.convergence.forward_backward_convergence`,
     the unit will be adjusted according to the units
-    variable. Otherwise, the units variable is for labelling only.
-    Changing it doesn't change the unit of the underlying variable.
+    variable. Otherwise, the units variable is for labelling only, 
+    and changing it doesn't change the unit of the underlying variable.
 
 
     .. versionchanged:: 0.6.0

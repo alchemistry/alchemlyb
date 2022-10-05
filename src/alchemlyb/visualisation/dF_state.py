@@ -31,7 +31,7 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     colors : List
         list of colors for plotting different estimators.
     units : str
-        The unit of the estimate. Default: "kT"
+        The unit of the estimate. It will be used to change the underlying data to match the desired units. Default: "kT"
     orientation : string
         The orientation of the figure. Can be `portrait` or `landscape`
     nb : int
