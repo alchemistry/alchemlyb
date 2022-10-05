@@ -30,7 +30,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
         list of colors for plotting all the alchemical transformations.
         Default: ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
     units : str
-        The label for the unit of the estimate. Default: "kT"
+        The unit of the estimate. It will be used to change the underlying data to match the desired units. Default: "kT"
     ax : matplotlib.axes.Axes
         Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
         a new axes will be generated.
