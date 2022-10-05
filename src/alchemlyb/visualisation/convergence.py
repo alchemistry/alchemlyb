@@ -113,7 +113,7 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
                         lw=3, zorder=3, marker='o',
                         mfc='w', mew=2.5, mec='#C11B17', ms=12, )
 
-    xticks_spacing = len(r_ts) // 10
+    xticks_spacing = len(r_ts) // 10 or 1
     xticks = r_ts[::xticks_spacing]
     plt.xticks(xticks, fontsize=10)
     plt.yticks(fontsize=10)
