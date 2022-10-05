@@ -50,7 +50,7 @@ def plot_convergence(*data, units='kT', ax=None):
     :func:`~alchemlyb.convergence.forward_backward_convergence`,
     the unit will be adjusted according to the units
     variable. Otherwise, the units variable is for labelling only, 
-    and canging it doesn't change the unit of the underlying variable.
+    and changing it doesn't change the unit of the underlying variable.
 
 
     .. versionchanged:: 0.6.0
