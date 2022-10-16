@@ -82,7 +82,7 @@ def gmx_water_particle_without_energy_dHdl():
 def amber_simplesolvated_charge_dHdl():
     dataset = alchemtest.amber.load_simplesolvated()
 
-    dHdl = alchemlyb.concat([amber.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([amber.extract_dHdl(filename, T=298.0)
                       for filename in dataset['data']['charge']])
 
     return dHdl
@@ -90,7 +90,7 @@ def amber_simplesolvated_charge_dHdl():
 def amber_simplesolvated_vdw_dHdl():
     dataset = alchemtest.amber.load_simplesolvated()
 
-    dHdl = alchemlyb.concat([amber.extract_dHdl(filename, T=300)
+    dHdl = alchemlyb.concat([amber.extract_dHdl(filename, T=298.0)
                       for filename in dataset['data']['vdw']])
 
     return dHdl
@@ -121,7 +121,7 @@ class TestTI(TIestimatorMixin):
     """
     cls = TI
 
-    T = 300
+    T = 298.0
     kT_amber = amber.k_b * T
 
     @pytest.fixture(scope="class",

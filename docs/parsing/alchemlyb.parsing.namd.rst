@@ -31,3 +31,4 @@ API Reference
 This submodule includes these parsing functions:
 
 .. autofunction:: alchemlyb.parsing.namd.extract_u_nk
+.. autofunction:: alchemlyb.parsing.namd.extract

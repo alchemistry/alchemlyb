@@ -87,7 +87,6 @@ class Test_Conversion():
         with pytest.raises(ValueError):
             to_kT(dhdl)
 
-@pytest.mark.xfail
 def test_pd_concat():
     '''Test if concat will preserve the metadata.
     When this test is being made, the pd.concat will discard the attrs of

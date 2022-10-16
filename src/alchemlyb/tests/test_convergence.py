@@ -20,8 +20,7 @@ def test_convergence_ti(gmx_benzene):
     assert convergence.loc[9, 'Forward'] == pytest.approx(3.09, 0.01)
     assert convergence.loc[9, 'Backward'] == pytest.approx(3.09, 0.01)
 
-@pytest.mark.parametrize('estimator', ('MBAR', 'AutoMBAR', 'BAR'))
-def test_convergence_fep(gmx_benzene, estimator):
+def test_convergence_fep(gmx_benzene):
     dHdl, u_nk = gmx_benzene
     convergence = forward_backward_convergence(u_nk, estimator)
     assert convergence.shape == (10, 5)
@@ -32,5 +31,15 @@ def test_convergence_fep(gmx_benzene, estimator):
 
 def test_convergence_wrong_estimator(gmx_benzene):
     dHdl, u_nk = gmx_benzene
-    with pytest.raises(ValueError, match="{} is not a valid estimator".format("www")):
-        convergence = forward_backward_convergence(u_nk, 'www')
+    with pytest.raises(ValueError, match="is not available in"):
+        forward_backward_convergence(u_nk, 'WWW')
+
+def test_convergence_wrong_cases(gmx_benzene):
+    dHdl, u_nk = gmx_benzene
+    with pytest.warns(DeprecationWarning, match="Using lower-case strings for"):
+        forward_backward_convergence(u_nk, 'mbar')
+
+def test_convergence_method(gmx_benzene):
+    dHdl, u_nk = gmx_benzene
+    convergence = forward_backward_convergence(u_nk, 'MBAR', num=2, method='adaptive')
+    assert len(convergence) == 2

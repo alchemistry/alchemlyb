@@ -130,7 +130,7 @@ def test_plot_dF_state():
 def test_plot_convergence_dataframe():
     bz = load_benzene().data
     data_list = [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']]
-    df = forward_backward_convergence(data_list, 'mbar')
+    df = forward_backward_convergence(data_list, 'MBAR')
     ax = plot_convergence(df)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)

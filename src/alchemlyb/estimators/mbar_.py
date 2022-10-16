@@ -152,6 +152,17 @@ class AutoMBAR(MBAR):
     :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid 
     failures due non-converged MBAR estimates.
 
+    Parameters
+    ----------
+
+    method : str, optional, default=None
+        The optimization routine to use. This parameter defaults to ``None``.
+        When a specific method is set, AutoMBAR will behave in the same way
+        as MBAR.
+
+        .. versionadded:: 1.0.0
+        
+
     Note
     ----
     All arguments are described under :class:`MBAR` except that the solver method 
@@ -163,30 +174,35 @@ class AutoMBAR(MBAR):
     
 
     .. versionadded:: 0.6.0
+    .. versionchanged:: 1.0.0
+       AutoMBAR accepts the `method` argument.
     """
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
-                 initial_f_k=None, verbose=False):
+                 initial_f_k=None, verbose=False, method=None):
         super().__init__(maximum_iterations=maximum_iterations,
                          relative_tolerance=relative_tolerance,
                          initial_f_k=initial_f_k,
-                         verbose=verbose, method=None)
+                         verbose=verbose, method=method)
         self.logger = logging.getLogger('alchemlyb.estimators.AutoMBAR')
 
     def _do_MBAR(self, u_nk, N_k, solver_protocol):
-        self.logger.info('Initialise the automatic routine of the MBAR '
-                         'estimator.')
-        # Try the fastest method first
-        try:
-            self.logger.info('Trying the hybr method.')
-            solver_protocol["method"] = 'hybr'
-            mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
-        except pymbar.utils.ParameterError:
+        if solver_protocol["method"] is None:
+            self.logger.info('Initialise the automatic routine of the MBAR '
+                             'estimator.')
+            # Try the fastest method first
             try:
-                self.logger.info('Trying the adaptive method.')
-                solver_protocol["method"] = 'adaptive'
+                self.logger.info('Trying the hybr method.')
+                solver_protocol["method"] = 'hybr'
                 mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
             except pymbar.utils.ParameterError:
-                self.logger.info('Trying the BFGS method.')
-                solver_protocol["method"] = 'BFGS'
-                mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
-        return mbar, out
+                try:
+                    self.logger.info('Trying the adaptive method.')
+                    solver_protocol["method"] = 'adaptive'
+                    mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
+                except pymbar.utils.ParameterError:
+                    self.logger.info('Trying the BFGS method.')
+                    solver_protocol["method"] = 'BFGS'
+                    mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
+            return mbar, out
+        else:
+            return super()._do_MBAR(u_nk, N_k, solver_protocol)

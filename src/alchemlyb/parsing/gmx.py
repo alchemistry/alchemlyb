@@ -100,7 +100,7 @@ def extract_u_nk(xvg, T, filter=True):
         cols.append(u_col)
 
     u_k = pd.DataFrame(u_k, columns=cols,
-                       index=pd.Float64Index(times.values, name='time'))
+                       index=pd.Index(times.values, name='time', dtype='Float64'))
 
     # create columns for each lambda, indicating state each row sampled from
     # if state is None run as expanded ensemble data or REX
@@ -207,7 +207,7 @@ def extract_dHdl(xvg, T, filter=True):
     cols = [l.split('-')[0] for l in lambdas]
 
     dHdl = pd.DataFrame(dHdl.values, columns=cols,
-                        index=pd.Float64Index(times.values, name='time'))
+                        index=pd.Index(times.values, name='time', dtype='Float64'))
 
     # create columns for each lambda, indicating state each row sampled from
     # if state is None run as expanded ensemble data or REX
@@ -241,6 +241,36 @@ def extract_dHdl(xvg, T, filter=True):
     dHdl.name='dH/dl'
 
     return dHdl
+
+
+def extract(xvg, T, filter=True):
+    r"""Return reduced potentials `u_nk` and gradients `dH/dl`
+    from a Hamiltonian differences XVG file.
+
+    Parameters
+    ----------
+    xvg : str
+        Path to XVG file to extract data from.
+    T : float
+        Temperature in Kelvin the simulations sampled.
+    filter : bool
+        Filter out the lines that cannot be parsed.
+        Such as rows with incorrect number of Columns and incorrectly
+        formatted numbers (e.g. 123.45.67, nan or -).
+
+    Returns
+    -------
+    Dict
+        A dictionary with keys of 'u_nk', which is a pandas DataFrame of
+        potential energy for each alchemical state (k) for each frame (n),
+        and 'dHdl', which is a Series of dH/dl
+        as a function of time for this lambda window.
+
+
+    .. versionadded:: 1.0.0
+    """
+
+    return {"u_nk": extract_u_nk(xvg, T, filter), "dHdl": extract_dHdl(xvg, T, filter)}
 
 
 def _extract_state(xvg, headers=None):

@@ -1,12 +1,15 @@
-import pandas as pd
 import logging
+from warnings import warn
+
+import pandas as pd
 import numpy as np
 
-from ..estimators import MBAR, BAR, TI, AutoMBAR
+from ..estimators import BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
+from ..estimators import AutoMBAR as MBAR
 from .. import concat
 
 
-def forward_backward_convergence(df_list, estimator='mbar', num=10):
+def forward_backward_convergence(df_list, estimator='MBAR', num=10, **kwargs):
     '''Forward and backward convergence of the free energy estimate.
 
     Generate the free energy estimate as a function of time in both directions,
@@ -20,10 +23,16 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
     ----------
     df_list : list
         List of DataFrame of either dHdl or u_nk.
-    estimator : {'mbar', 'bar', 'ti', 'autombar'}
+    estimator : {'MBAR', 'BAR', 'TI'}
         Name of the estimators.
+        See the important note below on the use of "MBAR".
+
+        .. deprecated:: 1.0.0
+           Lower case input is also accepted until release 2.0.0.
     num : int
         The number of time points.
+    kwargs : dict
+        Keyword arguments to be passed to the estimator.
 
     Returns
     -------
@@ -43,29 +52,40 @@ def forward_backward_convergence(df_list, estimator='mbar', num=10):
             9  3.044149       0.016405  3.044385        0.016402            1.0
 
 
+    Note
+    -----
+    :class:`~alchemlyb.estimators.AutoMBAR` is used when ``estimator='MBAR'``,
+    supply ``method`` keyword to restore the behavior of
+    :class:`~alchemlyb.estimators.MBAR`.
+    (:code:`forward_backward_convergence(u_nk, 'MBAR', num=2, method='adaptive')`)
+
+
     .. versionadded:: 0.6.0
+    .. versionchanged:: 1.0.0
+       The ``estimator`` accepts uppercase input.
+       The default for using ``estimator='MBAR'`` was changed from 
+       :class:`~alchemlyb.estimators.MBAR` to :class:`~alchemlyb.estimators.AutoMBAR`.
 
     '''
     logger = logging.getLogger('alchemlyb.convergence.'
                                'forward_backward_convergence')
     logger.info('Start convergence analysis.')
     logger.info('Check data availability.')
+    if estimator.upper() != estimator:
+        warn("Using lower-case strings for the 'estimator' kwarg in "
+             "convergence.forward_backward_convergence() is deprecated in "
+             "1.0.0 and only upper case will be accepted in 2.0.0",
+            DeprecationWarning)
+        estimator = estimator.upper()
 
-    if estimator.lower() == 'mbar':
-        logger.info('Use MBAR estimator for convergence analysis.')
-        estimator_fit = MBAR().fit
-    elif estimator.lower() == 'autombar':
-        logger.info('Use AutoMBAR estimator for convergence analysis.')
-        estimator_fit = AutoMBAR().fit
-    elif estimator.lower() == 'bar':
-        logger.info('Use BAR estimator for convergence analysis.')
-        estimator_fit = BAR().fit
-    elif estimator.lower() == 'ti':
-        logger.info('Use TI estimator for convergence analysis.')
-        estimator_fit = TI().fit
+    if estimator not in (FEP_ESTIMATORS + TI_ESTIMATORS):
+        msg = f"Estimator {estimator} is not available in {FEP_ESTIMATORS + TI_ESTIMATORS}."
+        logger.error(msg)
+        raise ValueError(msg)
     else:
-        raise ValueError(
-            '{} is not a valid estimator.'.format(estimator))
+        # select estimator class by name
+        estimator_fit = globals()[estimator](**kwargs).fit
+        logger.info(f'Use {estimator} estimator for convergence analysis.')
 
     logger.info('Begin forward analysis')
     forward_list = []
