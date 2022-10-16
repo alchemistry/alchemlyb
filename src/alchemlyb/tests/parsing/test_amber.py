@@ -1,29 +1,105 @@
 """Amber parser tests.
 
 """
+import logging
 import pytest
 from numpy.testing import assert_allclose
 
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemlyb.parsing.amber import extract_u_nk
-from alchemlyb.parsing.amber import file_validation
 from alchemlyb.parsing.amber import extract
 from alchemtest.amber import load_simplesolvated
-from alchemtest.amber import load_invalidfiles
 from alchemtest.amber import load_bace_example
 from alchemtest.amber import load_bace_improper
+from alchemtest.amber import load_testfiles
 
 
-@pytest.fixture(
-    name="invalid_file", scope="module",
-    params=list(load_invalidfiles()['data'][0]))
-def fixture_invalid_file(request):
-    """
-    Set 'invalid_file' for the subsequent tests, 
-    returning each file in load_invalidfiles
-    """
-    return request.param
+##################################################################################
+################ Check the parser behaviour with problematic files from testfiles
+##################################################################################
 
+@pytest.fixture(name="testfiles", scope="module")
+def fixture_testfiles():
+    """ Returns the testfiles data dictionary """
+    bunch = load_testfiles()
+    return bunch['data']
+
+
+def test_no_dHdl_data_points(caplog, testfiles):
+    """Test if we deal with a file without dHdl data points"""
+    filename=testfiles["no_dHdl_data_points"][0]
+    with caplog.at_level(logging.INFO):
+        _ = extract(str(filename), T=298.0)
+    assert "does not contain any dV/dl data" in caplog.text
+
+
+def test_None_in_mbar(caplog, testfiles):
+    """Test if we deal with an incorrect MBAR section"""
+    filename=testfiles["none_in_mbar"][0]
+    with caplog.at_level(logging.WARNING):
+        _ = extract(str(filename), T=298.0)
+    assert "something strange parsing the following MBAR section" in caplog.text
+
+
+def test_unfinished_run(caplog, testfiles):
+    """Test if we give a warning if we are parsing an unfinished run"""
+    filename=testfiles["not_finished_run"][0]
+    with caplog.at_level(logging.WARNING):
+        _ = extract(str(filename), T=298.0)
+    assert "is a prematurely terminated run" in caplog.text
+
+
+def test_no_atomic_section(caplog, testfiles):
+    """Test if we give a warning if there is no ATOMIC section"""
+    filename=testfiles["no_atomic_section"][0]
+    with caplog.at_level(logging.WARNING):
+        _ = extract(str(filename), T=298.0)
+    assert "No ATOMIC section found" in caplog.text
+
+
+def test_no_control_data(caplog, testfiles):
+    """Test if we give a warning if there is no CONTROL section"""
+    filename=testfiles["no_control_data"][0]
+    with caplog.at_level(logging.WARNING):
+        _ = extract(str(filename), T=298.0)
+    assert "No CONTROL DATA found" in caplog.text
+
+
+def test_no_free_energy_info(caplog, testfiles):
+    """Test if we give a warning if there is no free energy section"""
+    filename=testfiles["no_free_energy_info"][0]
+    with caplog.at_level(logging.WARNING):
+        _ = extract(str(filename), T=298.0)
+    assert "No free energy section found" in caplog.text
+
+
+def test_no_useful_data(caplog, testfiles):
+    """Test if we give a warning if there is no useful data"""
+    filename=testfiles["no_useful_data"][0]
+    with caplog.at_level(logging.WARNING):
+        _ = extract(str(filename), T=298.0)
+    assert "File does not contain any useful data" in caplog.text
+
+
+def test_no_temp0_setted(caplog, testfiles):
+    """Test if we give a warning if there is no temp0 setted"""
+    filename=testfiles["no_temp0_setted"][0]
+    with caplog.at_level(logging.WARNING):
+        _ = extract(str(filename), T=298.0)
+    assert "WARNING: no valid \"temp0\" record found in file" in caplog.text
+
+
+def test_no_results_section(caplog, testfiles):
+    """Test if we give a warning if there is no RESULTS section"""
+    filename=testfiles["no_results_section"][0]
+    with caplog.at_level(logging.WARNING):
+        _ = extract(str(filename), T=298.0)
+    assert "No RESULTS section found, ignoring" in caplog.text
+
+
+##################################################################################
+################ Check the parser behaviour with standard single files
+##################################################################################
 
 @pytest.fixture(name="single_u_nk", scope="module")
 def fixture_single_u_nk():
@@ -33,21 +109,8 @@ def fixture_single_u_nk():
 
 @pytest.fixture(name="single_dHdl", scope="module")
 def fixture_single_dHdl():
-    """return a single file to check u_unk parsing"""
+    """return a single file to check dHdl parsing"""
     return load_simplesolvated().data['charge'][0]
-
-
-def test_invalidfiles(invalid_file):
-    """
-    Test the file validation function to ensure the 
-    function returning False if the file is invalid
-    """
-    assert file_validation(invalid_file) is False
-
-
-def test_dHdl_invalidfiles(invalid_file):
-    """Test if we catch possible parsing errors in invalid files"""
-    assert extract_dHdl(invalid_file, T=298.0) is None
 
 
 def test_dHdl_time_reading(single_dHdl):
@@ -65,8 +128,8 @@ def test_u_nk_time_reading(single_u_nk):
 
 
 def test_extract_with_both_data(single_u_nk):
-    """Test that dHdl and u_nk have the correct form when 
-    extracted from files with the extract funcion."""
+    """Test that dHdl and u_nk have the correct form when
+    extracted from files with the single "extract" funcion."""
     df_dict = extract(single_u_nk, T=298.0)
     assert df_dict['dHdl'].index.names == ('time', 'lambdas')
     assert df_dict['dHdl'].shape == (500, 1)
@@ -91,6 +154,11 @@ def test_wrong_T_should_raise_warning(single_dHdl, T=300.0):
         ValueError,
         match="is different from the temperature passed as parameter"):
         _ = extract(single_dHdl, T=T)
+
+
+###################################################################
+################ Check the behaviour on proper datasets
+###################################################################
 
 
 @pytest.mark.parametrize("filename",
