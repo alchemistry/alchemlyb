@@ -2,11 +2,11 @@ import numpy as np
 import pandas as pd
 
 from sklearn.base import BaseEstimator
-
 from pymbar import BAR as BAR_
 
+from . import EstimatorMixOut
 
-class BAR(BaseEstimator):
+class BAR(BaseEstimator, EstimatorMixOut):
     """Bennett acceptance ratio (BAR).
 
     Parameters
@@ -38,6 +38,10 @@ class BAR(BaseEstimator):
     states_ : list
         Lambda states for which free energy differences were obtained.
 
+
+    .. versionchanged:: 1.0.0
+       `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
+
     """
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7, method='false-position', verbose=False):
@@ -66,7 +70,7 @@ class BAR(BaseEstimator):
         u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
 
         # get a list of the lambda states
-        self.states_ = u_nk.columns.values.tolist()
+        self._states_ = u_nk.columns.values.tolist()
 
         # group u_nk by lambda states
         groups = u_nk.groupby(level=u_nk.index.names[1:])
@@ -77,12 +81,12 @@ class BAR(BaseEstimator):
         d_deltas = np.array([])
         for k in range(len(N_k) - 1):
             # get us from lambda step k
-            uk = groups.get_group(self.states_[k])
+            uk = groups.get_group(self._states_[k])
             # get w_F
             w_f = uk.iloc[:, k+1] - uk.iloc[:, k]
 
             # get us from lambda step k+1
-            uk1 = groups.get_group(self.states_[k+1])
+            uk1 = groups.get_group(self._states_[k+1])
             # get w_R
             w_r = uk1.iloc[:, k] - uk1.iloc[:, k+1]
 
@@ -120,15 +124,15 @@ class BAR(BaseEstimator):
             ad_delta += np.diagflat(np.array(dout), k=j + 1)
 
         # yield standard delta_f_ free energies between each state
-        self.delta_f_ = pd.DataFrame(adelta - adelta.T,
-                                     columns=self.states_,
-                                     index=self.states_)
+        self._delta_f_ = pd.DataFrame(adelta - adelta.T,
+                                     columns=self._states_,
+                                     index=self._states_)
 
         # yield standard deviation d_delta_f_ between each state
-        self.d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
-                                       columns=self.states_,
-                                       index=self.states_)
-        self.delta_f_.attrs = u_nk.attrs
-        self.d_delta_f_.attrs = u_nk.attrs
+        self._d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
+                                       columns=self._states_,
+                                       index=self._states_)
+        self._delta_f_.attrs = u_nk.attrs
+        self._d_delta_f_.attrs = u_nk.attrs
 
         return self

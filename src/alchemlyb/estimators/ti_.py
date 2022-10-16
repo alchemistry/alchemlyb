@@ -3,8 +3,9 @@ import pandas as pd
 
 from sklearn.base import BaseEstimator
 
+from . import EstimatorMixOut
 
-class TI(BaseEstimator):
+class TI(BaseEstimator, EstimatorMixOut):
     """Thermodynamic integration (TI).
 
     Parameters
@@ -28,6 +29,10 @@ class TI(BaseEstimator):
 
     dhdl : DataFrame
         The estimated dhdl of each state.
+
+
+    .. versionchanged:: 1.0.0
+       `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
 
     """
 
@@ -94,20 +99,20 @@ class TI(BaseEstimator):
             ad_delta += np.diagflat(np.array(dout), k=j+1)
 
         # yield standard delta_f_ free energies between each state
-        self.delta_f_ = pd.DataFrame(adelta - adelta.T,
+        self._delta_f_ = pd.DataFrame(adelta - adelta.T,
                                      columns=means.index.values,
                                      index=means.index.values)
         self.dhdl = means
 
         # yield standard deviation d_delta_f_ between each state
-        self.d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
+        self._d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
                                        columns=variances.index.values,
                                        index=variances.index.values)
 
-        self.states_ = means.index.values.tolist()
+        self._states_ = means.index.values.tolist()
 
-        self.delta_f_.attrs = dHdl.attrs
-        self.d_delta_f_.attrs = dHdl.attrs
+        self._delta_f_.attrs = dHdl.attrs
+        self._d_delta_f_.attrs = dHdl.attrs
         self.dhdl.attrs = dHdl.attrs
 
         return self
