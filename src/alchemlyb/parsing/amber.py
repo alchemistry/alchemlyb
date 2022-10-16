@@ -192,10 +192,10 @@ def file_validation(outfile):
             invalid = True
 
         mbar_ndata = 0
-        have_mbar, mbar_ndata = secp.extract_section('^FEP MBAR options:',
+        have_mbar, mbar_ndata, mbar_states = secp.extract_section('^FEP MBAR options:',
                                                       '^$',
                                                       ['ifmbar',
-                                                        'bar_intervall'],
+                                                        'bar_intervall', "mbar_states"],
                                                       '^---')
         if have_mbar:
             mbar_ndata = int(nstlim / mbar_ndata)
@@ -210,6 +210,11 @@ def file_validation(outfile):
                 have_mbar = False
             else:
                 mbar_nlambda = len(mbar_lambdas)
+                if mbar_nlambda != mbar_states:
+                    logger.warning(
+                        "The number of lambda windows read (%s)"
+                        " is differemt from what expected (%d)",
+                        ','.join(mbar_lambdas), mbar_states)
                 mbar_lambda_idx = mbar_lambdas.index(clambda_str)
                 file_datum.mbar_lambda_idx = mbar_lambda_idx
 
@@ -418,7 +423,7 @@ def _process_mbar_lambdas(secp):
             if 'total' in line:
                 data = line.split()
                 mbar_lambdas.extend(data[2:])
-            else: # pragma: no cover
+            else:
                 mbar_lambdas.extend(line.split())
 
     return mbar_lambdas

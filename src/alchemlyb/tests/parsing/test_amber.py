@@ -102,6 +102,18 @@ def test_no_results_section(caplog, testfiles):
     assert "No RESULTS section found, ignoring" in caplog.text
 
 
+def test_long_and_wrong_number_MBAR(caplog, testfiles):
+    """
+    Test if we have a high number of MBAR states, and also a different
+    number of MBAR states than expected
+    """
+    filename=testfiles["high_and_wrong_number_of_mbar_windows"][0]
+    with caplog.at_level(logging.WARNING):
+        _ = extract_u_nk(str(filename), T=300.0)
+    assert "The number of lambda windows read" in caplog.text
+
+
+
 ##################################################################################
 ################ Check the parser behaviour with standard single files
 ##################################################################################
@@ -159,6 +171,7 @@ def test_wrong_T_should_raise_warning(single_dHdl, T=300.0):
         ValueError,
         match="is different from the temperature passed as parameter"):
         _ = extract(single_dHdl, T=T)
+
 
 
 ###################################################################
