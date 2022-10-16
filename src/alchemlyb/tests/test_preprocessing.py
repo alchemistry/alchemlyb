@@ -135,10 +135,10 @@ class TestSlicing:
         """Test that a shuffled DataFrame yields a KeyError.
 
         """
-        indices = np.arange(len(data))
+        indices = data.index.values
         np.random.shuffle(indices)
 
-        df = data.iloc[indices]
+        df = data.loc[indices]
 
         with pytest.raises(KeyError):
             self.slicer(df, lower=200)

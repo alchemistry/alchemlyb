@@ -181,7 +181,7 @@ class TestMBAR_fail():
         # The hybr will fail on this while adaptive will work
         mbar = AutoMBAR().fit(alchemlyb.concat([n_uk[:2] for n_uk in
                                                 n_uk_list]))
-        assert np.isclose(mbar.d_delta_f_.iloc[0, -1], 1.76832, 0.1)
+        assert np.isclose(mbar.d_delta_f_[(0.0, 0.0, 0.0)][(1.0, 1.0, 1.0)], 1.76832, 0.1)
 
 def test_AutoMBAR_BGFS():
     # A case where only BFGS would work
