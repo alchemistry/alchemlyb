@@ -424,6 +424,8 @@ def _process_mbar_lambdas(secp):
                 data = line.split()
                 mbar_lambdas.extend(data[2:])
             else:
+                # AMBER splits the MBAR states in more than one line 
+                # if there are many of them
                 mbar_lambdas.extend(line.split())
 
     return mbar_lambdas
