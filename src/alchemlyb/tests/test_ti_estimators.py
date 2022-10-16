@@ -109,8 +109,8 @@ class TIestimatorMixin:
     def test_get_delta_f(self, X_delta_f):
         dHdl, E, dE = X_delta_f
         est = self.cls().fit(dHdl)
-        delta_f = est.delta_f_.loc[(0.0,1.0)]
-        d_delta_f = est.d_delta_f_.loc[(0.0,1.0)]
+        delta_f = est.delta_f_.iloc[0, -1]
+        d_delta_f = est.d_delta_f_.iloc[0, -1]
 
         assert E == pytest.approx(delta_f, rel=1e-3)
         assert dE == pytest.approx(d_delta_f, rel=1e-3)
