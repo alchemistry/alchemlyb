@@ -15,7 +15,7 @@ from alchemtest.amber import load_testfiles
 
 
 ##################################################################################
-################ Check the parser behaviour with problematic files from testfiles
+################ Check the parser behaviour with problematic files
 ##################################################################################
 
 @pytest.fixture(name="testfiles", scope="module")
@@ -23,6 +23,11 @@ def fixture_testfiles():
     """ Returns the testfiles data dictionary """
     bunch = load_testfiles()
     return bunch['data']
+
+
+def test_file_not_found():
+    with pytest.raises(FileNotFoundError):
+        _ = extract("not_a_valid_file_name", T=298.0)
 
 
 def test_no_dHdl_data_points(caplog, testfiles):
@@ -81,9 +86,9 @@ def test_no_useful_data(caplog, testfiles):
     assert "File does not contain any useful data" in caplog.text
 
 
-def test_no_temp0_setted(caplog, testfiles):
-    """Test if we give a warning if there is no temp0 setted"""
-    filename=testfiles["no_temp0_setted"][0]
+def test_no_temp0_set(caplog, testfiles):
+    """Test if we give a warning if there is no temp0 set"""
+    filename=testfiles["no_temp0_set"][0]
     with caplog.at_level(logging.WARNING):
         _ = extract(str(filename), T=298.0)
     assert "WARNING: no valid \"temp0\" record found in file" in caplog.text

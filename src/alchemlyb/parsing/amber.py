@@ -65,8 +65,10 @@ class SectionParser():
         self.filename = filename
         try:
             self.fileh = anyopen(self.filename, 'r')
-        except Exception as ex:  # pragma: no cover
-            logger.exception("Cannot open file %s", filename)
+        except Exception as ex:
+            msg = f"Cannot open file {filename}"
+            logger.exception(msg)
+            raise FileNotFoundError(msg) from ex
         self.lineno = 0
 
     def skip_lines(self, nlines):
@@ -288,7 +290,10 @@ def extract(outfile, T):
                 mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
                                             extra=line)
                 
-                if None in mbar: # pragma: no cover
+                if None in mbar:
+                    msg = "WARNING, something strange parsing the following MBAR section."
+                    msg += "\nMaybe the mbar_lambda values are incorrect?"
+                    logger.warning(f"{msg}\n{mbar}")
                     continue
                 
                 reference_energy = mbar[file_datum.mbar_lambda_idx]
@@ -305,7 +310,7 @@ def extract(outfile, T):
             logger.warning('%i MBAR energ%s > 0.0 kcal/mol',
                            high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is')
 
-    if not finished: # pragma: no cover
+    if not finished:
         logger.warning('WARNING: file %s is a prematurely terminated run' % outfile)
 
     if file_datum.have_mbar:
@@ -323,7 +328,7 @@ def extract(outfile, T):
         logger.info('WARNING: No MBAR energies found! "u_nk" entry will be None')
         mbar_df = None
 
-    if not nensec: # pragma: no cover
+    if not nensec:
         logger.warning('WARNING: File %s does not contain any dV/dl data' % outfile)
         dHdl_df = None
     else:
