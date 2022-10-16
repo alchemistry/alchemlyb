@@ -124,7 +124,7 @@ def test_u_nk_with_total_energy():
 
     # Check one specific value in the dataframe
     assert_almost_equal(
-        extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0],
+        extract_u_nk(dataset['data']['AllStates'][0], T=300).loc[0][(0.0,0.0)].values[0],
         -11211.577658852531,
         decimal=6
     )
@@ -142,7 +142,7 @@ def test_u_nk_with_potential_energy():
 
     # Check one specific value in the dataframe
     assert_almost_equal(
-        extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0],
+        extract_u_nk(dataset['data']['AllStates'][0], T=300).loc[0][(0.0,0.0)].values[0],
         -15656.557252200757,
         decimal=6
     )
@@ -161,7 +161,7 @@ def test_u_nk_without_energy():
 
     # Check one specific value in the dataframe
     assert_almost_equal(
-        extract_u_nk(dataset['data']['AllStates'][0], T=300).iloc[0][0],
+        extract_u_nk(dataset['data']['AllStates'][0], T=300).loc[0][(0.0,0.0)].values[0],
         0.0,
         decimal=6
     )
@@ -180,8 +180,9 @@ def _diag_sum(dataset):
             u_nk = extract_u_nk(filename, T=300)
 
             # Calculate the sum of diagonal elements:
-            for i in range(len(dataset['data'][leg])):
-                ds += u_nk.iloc[i][i]
+            for i, lambda_ in enumerate(u_nk.columns):
+                #18.6 is the time step
+                ds += u_nk.loc[i*186/10][lambda_].values[0]
 
     return ds
 

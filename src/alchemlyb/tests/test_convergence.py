@@ -22,7 +22,7 @@ def test_convergence_ti(gmx_benzene):
 
 def test_convergence_fep(gmx_benzene):
     dHdl, u_nk = gmx_benzene
-    convergence = forward_backward_convergence(u_nk, estimator)
+    convergence = forward_backward_convergence(u_nk, 'MBAR')
     assert convergence.shape == (10, 5)
     assert convergence.loc[0, 'Forward'] == pytest.approx(3.02, 0.01)
     assert convergence.loc[0, 'Backward'] == pytest.approx(3.06, 0.01)
