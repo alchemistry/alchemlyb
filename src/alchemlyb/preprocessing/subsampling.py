@@ -5,6 +5,7 @@ import pandas as pd
 from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
+from .. import pass_attrs
 
 def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
                      sort=True, remove_burnin=False, **kwargs):
@@ -106,6 +107,7 @@ def decorrelate_dhdl(df, drop_duplicates=True, sort=True,
     else:
         return statistical_inefficiency(df, series, **kwargs)
 
+@pass_attrs
 def u_nk2series(df, method='dhdl'):
     """Convert an u_nk DataFrame into a series based on the selected method
     for subsampling.
@@ -175,6 +177,7 @@ def u_nk2series(df, method='dhdl'):
     return series
 
 
+@pass_attrs
 def dhdl2series(df, method=''):
     """Convert a dhdl DataFrame to a series for subsampling.
 
