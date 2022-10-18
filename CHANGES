@@ -49,7 +49,8 @@ Fixes
     "dHdl" and "u_nk" data (or None). THe AMBER parser when using this function will read the 
     file just once, extracting all data at once. (issue #222, PR #240)
   - Fix dhdl2series and u_nk2series would not reattach the unit. (PR #248)
-  - Remove the 'dhdl' method in uncorrelate the u_nk (PR #250).
+  - Removed the 'dhdl' keyword for uncorrelating the u_nk (see `u_nk2series()`). Use 'dE'
+    as an alternative or use 'all' (instead of the deprecated 'dhdl_all')  (PR #250).
 
 
 07/22/2022 xiki-tempula, IAlibay, dotsdl, orbeckst, ptmerz

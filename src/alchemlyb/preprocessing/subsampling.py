@@ -138,10 +138,10 @@ def u_nk2series(df, method='dE'):
     """
     # Check if the input is u_nk
     if method == 'dhdl': # pragma: no cover
-        warnings.warn(DeprecationWarning("Method 'dhdl' has been deprecate, will use 'dE' instead"))
+        warnings.warn(DeprecationWarning("Method 'dhdl' has been deprecated, using 'dE' instead"))
         method = 'dE'
     elif method == 'dhdl_all': # pragma: no cover
-        warnings.warn(DeprecationWarning("Method 'dhdl_all' has been deprecate, will use 'all' instead"))
+        warnings.warn(DeprecationWarning("Method 'dhdl_all' has been deprecated, using 'all' instead"))
         method = 'all'
 
     try:
