@@ -1,17 +1,19 @@
 """Functions for subsampling datasets.
 
 """
+import warnings
+
 import pandas as pd
 from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
+from .. import pass_attrs
 
-def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
+def decorrelate_u_nk(df, method='dE', drop_duplicates=True,
                      sort=True, remove_burnin=False, **kwargs):
-    """Subsample a u_nk DataFrame based on the selected method.
-    The method can be either 'dhdl_all' (obtained as a sum over all energy
-    components) or 'dhdl' (obtained as the energy components that are
-    changing; default) or 'dE'. In the latter case the energy differences
+    """Subsample an u_nk DataFrame based on the selected method.
+    The method can be either 'all' (obtained as a sum over all energy
+    components) or 'dE'. In the latter case the energy differences
     dE_{i,i+1} (dE_{i,i-1} for the last lambda) are used.
     This is a wrapper function around the function
     :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency` or
@@ -21,7 +23,7 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     ----------
     df : DataFrame
         DataFrame to be subsampled according to the selected method.
-    method : {'dhdl', 'dhdl_all', 'dE'}
+    method : {'all', 'dE'}
         Method for decorrelating the data.
     drop_duplicates : bool
         Drop the duplicated lines based on time.
@@ -47,6 +49,7 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
        Add the remove_burnin keyword to allow unequilibrated frames to be removed.
+       Rename value 'dhdl_all' to 'all' and deprecate the 'dhdl'.
     """
     kwargs['drop_duplicates'] = drop_duplicates
     kwargs['sort'] = sort
@@ -106,20 +109,20 @@ def decorrelate_dhdl(df, drop_duplicates=True, sort=True,
     else:
         return statistical_inefficiency(df, series, **kwargs)
 
-def u_nk2series(df, method='dhdl'):
+@pass_attrs
+def u_nk2series(df, method='dE'):
     """Convert an u_nk DataFrame into a series based on the selected method
     for subsampling.
 
-    The method can be either 'dhdl_all' (obtained as a sum over all energy
-    components) or 'dhdl' (obtained as the energy components that are
-    changing; default) or 'dE'. In the latter case the energy differences
+    The method can be either 'all' (obtained as a sum over all energy
+    components) or 'dE'. In the latter case the energy differences
     dE_{i,i+1} (dE_{i,i-1} for the last lambda) are used.
 
     Parameters
     ----------
     df : DataFrame
         DataFrame to be converted according to the selected method.
-    method : {'dhdl', 'dhdl_all', 'dE'}
+    method : {'all', 'dE'}
         Method for converting the data.
 
     Returns
@@ -134,6 +137,13 @@ def u_nk2series(df, method='dhdl'):
     .. versionadded:: 1.0.0
     """
     # Check if the input is u_nk
+    if method == 'dhdl': # pragma: no cover
+        warnings.warn(DeprecationWarning("Method 'dhdl' has been deprecated, using 'dE' instead"))
+        method = 'dE'
+    elif method == 'dhdl_all': # pragma: no cover
+        warnings.warn(DeprecationWarning("Method 'dhdl_all' has been deprecated, using 'all' instead"))
+        method = 'all'
+
     try:
         key = df.index.values[0][1:]
         if len(key) == 1:
@@ -142,17 +152,7 @@ def u_nk2series(df, method='dhdl'):
     except KeyError:
         raise ValueError('The input should be u_nk')
 
-    if method == 'dhdl':
-        # Find the current column index
-        # Select the first row and remove the first column (Time)
-        key = df.index.values[0][1:]
-        if len(key) > 1:
-            # Multiple keys
-            series = df[key]
-        else:
-            # Single key
-            series = df[key[0]]
-    elif method == 'dhdl_all':
+    if method == 'all':
         series = df.sum(axis=1)
     elif method == 'dE':
         # Using the same logic as alchemical-analysis
@@ -175,6 +175,7 @@ def u_nk2series(df, method='dhdl'):
     return series
 
 
+@pass_attrs
 def dhdl2series(df, method=''):
     """Convert a dhdl DataFrame to a series for subsampling.
 

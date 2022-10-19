@@ -420,8 +420,7 @@ class Test_Units():
         assert new_dhdl.attrs['temperature'] == 310
         assert new_dhdl.attrs['energy_unit'] == 'kT'
 
-@pytest.mark.parametrize(('method', 'size'), [('dhdl', 2001),
-                                              ('dhdl_all', 2001),
+@pytest.mark.parametrize(('method', 'size'), [('all', 2001),
                                               ('dE', 2001)])
 def test_decorrelate_u_nk_single_l(gmx_benzene_u_nk_fixture, method, size):
     assert len(decorrelate_u_nk(gmx_benzene_u_nk_fixture, method=method,
@@ -429,17 +428,16 @@ def test_decorrelate_u_nk_single_l(gmx_benzene_u_nk_fixture, method, size):
                                 sort=True)) == size
 
 def test_decorrelate_u_nk_burnin(gmx_benzene_u_nk_fixture):
-    assert len(decorrelate_u_nk(gmx_benzene_u_nk_fixture, method='dhdl',
+    assert len(decorrelate_u_nk(gmx_benzene_u_nk_fixture, method='dE',
                                 drop_duplicates=True,
-                                sort=True, remove_burnin=True)) == 2743
+                                sort=True, remove_burnin=True)) == 2849
 
 def test_decorrelate_dhdl_burnin(gmx_benzene_dHdl_fixture):
     assert len(decorrelate_dhdl(gmx_benzene_dHdl_fixture,
                                 drop_duplicates=True,
                                 sort=True, remove_burnin=True)) == 2848
 
-@pytest.mark.parametrize(('method', 'size'), [('dhdl', 501),
-                                              ('dhdl_all', 1001),
+@pytest.mark.parametrize(('method', 'size'), [('all', 1001),
                                               ('dE', 334)])
 def test_decorrelate_u_nk_multiple_l(gmx_ABFE_u_nk, method, size):
     assert len(decorrelate_u_nk(gmx_ABFE_u_nk, method=method,)) == size
