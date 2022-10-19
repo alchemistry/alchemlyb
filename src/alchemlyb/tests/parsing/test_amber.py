@@ -40,14 +40,14 @@ def test_no_dHdl_data_points(caplog, testfiles):
 
 def test_None_in_mbar(testfiles):
     """Test if we deal with an incorrect MBAR section"""
-    filename=testfiles["none_in_mbar"][0]
+    filename = testfiles["none_in_mbar"][0]
     with pytest.raises(ValueError, match="strange parsing the following MBAR section"):
         _ = extract(str(filename), T=298.0)
 
 
 def test_unfinished_run(caplog, testfiles):
     """Test if we give a warning if we are parsing an unfinished run"""
-    filename=testfiles["not_finished_run"][0]
+    filename = testfiles["not_finished_run"][0]
     with caplog.at_level(logging.WARNING):
         _ = extract(str(filename), T=298.0)
     assert "is a prematurely terminated run" in caplog.text
@@ -55,7 +55,7 @@ def test_unfinished_run(caplog, testfiles):
 
 def test_no_atomic_section(caplog, testfiles):
     """Test if we give a warning if there is no ATOMIC section"""
-    filename=testfiles["no_atomic_section"][0]
+    filename = testfiles["no_atomic_section"][0]
     with caplog.at_level(logging.WARNING):
         _ = extract(str(filename), T=298.0)
     assert "No ATOMIC section found" in caplog.text
@@ -63,7 +63,7 @@ def test_no_atomic_section(caplog, testfiles):
 
 def test_no_control_data(caplog, testfiles):
     """Test if we give a warning if there is no CONTROL section"""
-    filename=testfiles["no_control_data"][0]
+    filename = testfiles["no_control_data"][0]
     with caplog.at_level(logging.WARNING):
         _ = extract(str(filename), T=298.0)
     assert "No CONTROL DATA found" in caplog.text
@@ -71,7 +71,7 @@ def test_no_control_data(caplog, testfiles):
 
 def test_no_free_energy_info(caplog, testfiles):
     """Test if we give a warning if there is no free energy section"""
-    filename=testfiles["no_free_energy_info"][0]
+    filename = testfiles["no_free_energy_info"][0]
     with caplog.at_level(logging.WARNING):
         _ = extract(str(filename), T=298.0)
     assert "No free energy section found" in caplog.text
@@ -79,7 +79,7 @@ def test_no_free_energy_info(caplog, testfiles):
 
 def test_no_useful_data(caplog, testfiles):
     """Test if we give a warning if there is no useful data"""
-    filename=testfiles["no_useful_data"][0]
+    filename = testfiles["no_useful_data"][0]
     with caplog.at_level(logging.WARNING):
         _ = extract(str(filename), T=298.0)
     assert "File does not contain any useful data" in caplog.text
@@ -87,7 +87,7 @@ def test_no_useful_data(caplog, testfiles):
 
 def test_no_temp0_set(caplog, testfiles):
     """Test if we give a warning if there is no temp0 set"""
-    filename=testfiles["no_temp0_set"][0]
+    filename = testfiles["no_temp0_set"][0]
     with caplog.at_level(logging.WARNING):
         _ = extract(str(filename), T=298.0)
     assert "WARNING: no valid \"temp0\" record found in file" in caplog.text
@@ -95,7 +95,7 @@ def test_no_temp0_set(caplog, testfiles):
 
 def test_no_results_section(caplog, testfiles):
     """Test if we give a warning if there is no RESULTS section"""
-    filename=testfiles["no_results_section"][0]
+    filename = testfiles["no_results_section"][0]
     with caplog.at_level(logging.WARNING):
         _ = extract(str(filename), T=298.0)
     assert "No RESULTS section found, ignoring" in caplog.text
@@ -106,7 +106,7 @@ def test_long_and_wrong_number_MBAR(testfiles):
     Test if we have a high number of MBAR states, and also a different
     number of MBAR states than expected
     """
-    filename=testfiles["high_and_wrong_number_of_mbar_windows"][0]
+    filename = testfiles["high_and_wrong_number_of_mbar_windows"][0]
     with pytest.raises(ValueError, match="The number of lambda windows read"):
         _ = extract_u_nk(str(filename), T=300.0)
 
