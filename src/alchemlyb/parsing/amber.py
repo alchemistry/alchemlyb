@@ -66,9 +66,8 @@ class SectionParser():
         try:
             self.fileh = anyopen(self.filename, 'r')
         except Exception as ex:
-            msg = f"Cannot open file {filename}"
-            logger.exception(msg)
-            raise FileNotFoundError(msg) from ex
+            logger.exception("Cannot open file %s", filename)
+            raise ex
         self.lineno = 0
 
     def skip_lines(self, nlines):
@@ -195,7 +194,8 @@ def file_validation(outfile):
         have_mbar, mbar_ndata, mbar_states = secp.extract_section('^FEP MBAR options:',
                                                       '^$',
                                                       ['ifmbar',
-                                                        'bar_intervall', "mbar_states"],
+                                                        'bar_intervall',
+                                                        'mbar_states'],
                                                       '^---')
         if have_mbar:
             mbar_ndata = int(nstlim / mbar_ndata)
