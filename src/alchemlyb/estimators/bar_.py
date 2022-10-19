@@ -4,9 +4,9 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 from pymbar import BAR as BAR_
 
-from . import EstimatorMixOut
+from .base import _EstimatorMixOut
 
-class BAR(BaseEstimator, EstimatorMixOut):
+class BAR(BaseEstimator, _EstimatorMixOut):
     """Bennett acceptance ratio (BAR).
 
     Parameters

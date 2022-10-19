@@ -5,9 +5,9 @@ import logging
 from sklearn.base import BaseEstimator
 import pymbar
 
-from . import EstimatorMixOut
+from .base import _EstimatorMixOut
 
-class MBAR(BaseEstimator, EstimatorMixOut):
+class MBAR(BaseEstimator, _EstimatorMixOut):
     """Multi-state Bennett acceptance ratio (MBAR).
 
     Parameters

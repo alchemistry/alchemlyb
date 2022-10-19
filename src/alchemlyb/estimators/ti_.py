@@ -3,9 +3,9 @@ import pandas as pd
 
 from sklearn.base import BaseEstimator
 
-from . import EstimatorMixOut
+from .base import _EstimatorMixOut
 
-class TI(BaseEstimator, EstimatorMixOut):
+class TI(BaseEstimator, _EstimatorMixOut):
     """Thermodynamic integration (TI).
 
     Parameters
