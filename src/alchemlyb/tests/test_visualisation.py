@@ -135,6 +135,16 @@ def test_plot_convergence_dataframe():
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 
+def test_plot_convergence_dataframe_noerr():
+    # Test the input from R_c
+    data = pd.DataFrame(data={'Forward': range(100),
+                              'Backward': range(100),
+                              'data_fraction': np.linspace(0,1,100)})
+    data.attrs = {'temperature': 300, 'energy_unit': 'kT'}
+    ax = plot_convergence(data, final_error=2)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
 def test_plot_convergence():
     bz = load_benzene().data
     data_list = [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']]
