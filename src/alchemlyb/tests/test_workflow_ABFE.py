@@ -17,7 +17,7 @@ class Test_automatic_ABFE():
         dir = os.path.dirname(load_ABFE()['data']['complex'][0])
         workflow = ABFE(units='kcal/mol', software='GROMACS', dir=dir,
                         prefix='dhdl', suffix='xvg', T=310, outdirectory=str(outdir))
-        workflow.run(skiptime=10, uncorr='dhdl', threshold=50,
+        workflow.run(skiptime=10, uncorr='dE', threshold=50,
                      estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
                      breakdown=True, forwrev=10)
         return workflow
@@ -94,7 +94,7 @@ class Test_manual_ABFE(Test_automatic_ABFE):
                         suffix='xvg', T=310, outdirectory=str(outdir))
         workflow.update_units('kcal/mol')
         workflow.read()
-        workflow.preprocess(skiptime=10, uncorr='dhdl', threshold=50)
+        workflow.preprocess(skiptime=10, uncorr='dE', threshold=50)
         workflow.estimate(estimators=('MBAR', 'BAR', 'TI'))
         workflow.plot_overlap_matrix(overlap='O_MBAR.pdf')
         workflow.plot_ti_dhdl(dhdl_TI='dhdl_TI.pdf')
@@ -161,7 +161,7 @@ class Test_automatic_benzene():
         workflow = ABFE(units='kcal/mol', software='GROMACS', dir=dir,
                         prefix='dhdl', suffix='bz2', T=310,
                         outdirectory=outdir)
-        workflow.run(skiptime=0, uncorr='dhdl', threshold=50,
+        workflow.run(skiptime=0, uncorr='dE', threshold=50,
                         estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
                         breakdown=True, forwrev=10)
         return workflow
