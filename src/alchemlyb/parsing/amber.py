@@ -65,7 +65,7 @@ class SectionParser():
         self.filename = filename
         try:
             self.fileh = anyopen(self.filename, 'r')
-        except Exception as ex:
+        except:
             logger.exception("Cannot open file %s", filename)
             raise
         self.lineno = 0
