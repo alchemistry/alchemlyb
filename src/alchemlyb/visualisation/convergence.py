@@ -23,7 +23,9 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
     shape and can be used as input for the
     :func:`matplotlib.pyplot.errorbar`.
 
-    final_error is a float decides the width of the bar around the final value.
+   `final_error` is the error of the final value and is shown as the error band around the 
+   final value. It can be provided in case an estimate is available that is more appropriate
+   than the default, which is the error of the last value in `backward`.
 
     Parameters
     ----------
@@ -105,7 +107,7 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
 
     line0 = ax.fill_between([0, 1], backward[-1] - final_error,
                             backward[-1] + final_error, color='#D2B9D3',
-                             zorder=1)
+                            zorder=1)
     line1 = ax.errorbar(f_ts, forward, yerr=forward_error, color='#736AFF',
                         lw=3, zorder=2, marker='o',
                         mfc='w', mew=2.5, mec='#736AFF', ms=12,)
@@ -115,7 +117,7 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
 
     xticks_spacing = len(r_ts) // 10 or 1
     xticks = r_ts[::xticks_spacing]
-    plt.xticks(xticks, fontsize=10)
+    plt.xticks(xticks, ['%.2f' % i for i in xticks], fontsize=10)
     plt.yticks(fontsize=10)
 
     ax.legend((line1[0], line2[0]), ('Forward', 'Reverse'), loc=9,
@@ -123,7 +125,6 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
     ax.set_xlabel(r'Fraction of the simulation time', fontsize=16,
                   color='#151B54')
     ax.set_ylabel(r'$\Delta G$ ({})'.format(units), fontsize=16, color='#151B54')
-    plt.xticks(xticks, ['%.2f' % i for i in xticks])
     plt.tick_params(axis='x', color='#D2B9D3')
     plt.tick_params(axis='y', color='#D2B9D3')
     return ax

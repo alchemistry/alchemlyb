@@ -34,6 +34,7 @@ Enhancements
   - Add a base class for workflows (PR #188).
   - Add the ABFE workflow (PR #114).
   - Add R_c and A_c for convergence analysis. (PR #239)
+  - Add the keyword arg final_error to plot_convergence (#249)
 
 
 Fixes
