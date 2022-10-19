@@ -32,7 +32,7 @@ def test_file_not_found():
 
 def test_no_dHdl_data_points(caplog, testfiles):
     """Test if we deal with a file without dHdl data points"""
-    filename=testfiles["no_dHdl_data_points"][0]
+    filename = testfiles["no_dHdl_data_points"][0]
     with caplog.at_level(logging.INFO):
         _ = extract(str(filename), T=298.0)
     assert "does not contain any dV/dl data" in caplog.text
