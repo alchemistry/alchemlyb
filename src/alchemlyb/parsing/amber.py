@@ -67,7 +67,7 @@ class SectionParser():
             self.fileh = anyopen(self.filename, 'r')
         except Exception as ex:
             logger.exception("Cannot open file %s", filename)
-            raise ex
+            raise
         self.lineno = 0
 
     def skip_lines(self, nlines):
