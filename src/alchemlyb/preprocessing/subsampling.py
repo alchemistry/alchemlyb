@@ -1,6 +1,8 @@
 """Functions for subsampling datasets.
 
 """
+import warnings
+
 import pandas as pd
 from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
@@ -135,6 +137,13 @@ def u_nk2series(df, method='dE'):
     .. versionadded:: 1.0.0
     """
     # Check if the input is u_nk
+    if method == 'dhdl': # pragma: no cover
+        warnings.warn(DeprecationWarning("Method 'dhdl' has been deprecated, using 'dE' instead"))
+        method = 'dE'
+    elif method == 'dhdl_all': # pragma: no cover
+        warnings.warn(DeprecationWarning("Method 'dhdl_all' has been deprecated, using 'all' instead"))
+        method = 'all'
+
     try:
         key = df.index.values[0][1:]
         if len(key) == 1:
@@ -164,6 +173,7 @@ def u_nk2series(df, method='dE'):
         raise ValueError(
             'Decorrelation method {} not found.'.format(method))
     return series
+
 
 @pass_attrs
 def dhdl2series(df, method=''):
