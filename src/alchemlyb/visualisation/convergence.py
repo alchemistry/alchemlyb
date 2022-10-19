@@ -115,7 +115,7 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
 
     xticks_spacing = len(r_ts) // 10 or 1
     xticks = r_ts[::xticks_spacing]
-    plt.xticks(xticks, fontsize=10)
+    plt.xticks(xticks, ['%.2f' % i for i in xticks], fontsize=10)
     plt.yticks(fontsize=10)
 
     ax.legend((line1[0], line2[0]), ('Forward', 'Reverse'), loc=9,
@@ -123,7 +123,6 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
     ax.set_xlabel(r'Fraction of the simulation time', fontsize=16,
                   color='#151B54')
     ax.set_ylabel(r'$\Delta G$ ({})'.format(units), fontsize=16, color='#151B54')
-    plt.xticks(xticks, ['%.2f' % i for i in xticks])
     plt.tick_params(axis='x', color='#D2B9D3')
     plt.tick_params(axis='y', color='#D2B9D3')
     return ax

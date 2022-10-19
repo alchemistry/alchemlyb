@@ -144,6 +144,7 @@ def test_plot_convergence_dataframe_noerr():
     ax = plot_convergence(data, final_error=2)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
+
 def test_plot_convergence():
     bz = load_benzene().data
     data_list = [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']]
