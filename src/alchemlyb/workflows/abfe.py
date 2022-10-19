@@ -167,7 +167,7 @@ class ABFE(WorkflowBase):
             self.dHdl_list = []
 
 
-    def run(self, skiptime=0, uncorr='dhdl', threshold=50,
+    def run(self, skiptime=0, uncorr='dE', threshold=50,
             estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
             breakdown=True, forwrev=None, *args, **kwargs):
         ''' The method for running the automatic analysis.
@@ -178,9 +178,7 @@ class ABFE(WorkflowBase):
             Discard data prior to this specified time as 'equilibration' data.
             Units are specified by the corresponding MD Engine. Default: 0.
         uncorr : str
-            The observable to be used for the autocorrelation analysis; 'dhdl'
-            (obtained as a sum over those energy components that are changing).
-            Specify as `None` will not uncorrelate the data. Default: 'dhdl'.
+            The observable to be used for the autocorrelation analysis; 'dE'.
         threshold : int
             Proceed with correlated samples if the number of uncorrelated samples is
             found to be less than this number. If 0 is given, the time series
@@ -273,7 +271,7 @@ class ABFE(WorkflowBase):
             self.logger.info(f'Set unit to {units}.')
             self.units = units or None
 
-    def preprocess(self, skiptime=0, uncorr='dhdl', threshold=50):
+    def preprocess(self, skiptime=0, uncorr='dE', threshold=50):
         '''Preprocess the data by removing the equilibration time and
         decorrelate the date.
 
@@ -283,9 +281,7 @@ class ABFE(WorkflowBase):
             Discard data prior to this specified time as 'equilibration' data.
             Units are specified by the corresponding MD Engine. Default: 0.
         uncorr : str
-            The observable to be used for the autocorrelation analysis; 'dhdl'
-            (obtained as a sum over those energy components that are changing).
-            Default: 'dhdl'
+            The observable to be used for the autocorrelation analysis; 'dE'.
         threshold : int
             Proceed with correlated samples if the number of uncorrelated
             samples is found to be less than this number. If 0 is given, the
