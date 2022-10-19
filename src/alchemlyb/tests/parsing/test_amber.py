@@ -38,12 +38,11 @@ def test_no_dHdl_data_points(caplog, testfiles):
     assert "does not contain any dV/dl data" in caplog.text
 
 
-def test_None_in_mbar(caplog, testfiles):
+def test_None_in_mbar(testfiles):
     """Test if we deal with an incorrect MBAR section"""
     filename=testfiles["none_in_mbar"][0]
-    with caplog.at_level(logging.WARNING):
+    with pytest.raises(ValueError, match="strange parsing the following MBAR section"):
         _ = extract(str(filename), T=298.0)
-    assert "something strange parsing the following MBAR section" in caplog.text
 
 
 def test_unfinished_run(caplog, testfiles):
@@ -102,16 +101,14 @@ def test_no_results_section(caplog, testfiles):
     assert "No RESULTS section found, ignoring" in caplog.text
 
 
-def test_long_and_wrong_number_MBAR(caplog, testfiles):
+def test_long_and_wrong_number_MBAR(testfiles):
     """
     Test if we have a high number of MBAR states, and also a different
     number of MBAR states than expected
     """
     filename=testfiles["high_and_wrong_number_of_mbar_windows"][0]
-    with caplog.at_level(logging.WARNING):
+    with pytest.raises(ValueError, match="The number of lambda windows read"):
         _ = extract_u_nk(str(filename), T=300.0)
-    assert "The number of lambda windows read" in caplog.text
-
 
 
 ##################################################################################

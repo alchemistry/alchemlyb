@@ -211,10 +211,13 @@ def file_validation(outfile):
             else:
                 mbar_nlambda = len(mbar_lambdas)
                 if mbar_nlambda != mbar_states:
-                    logger.warning(
-                        "The number of lambda windows read (%s)"
-                        " is differemt from what expected (%d)",
+                    logger.exception(
+                        'The number of lambda windows read (%s)'
+                        'is different from what expected (%d)',
                         ','.join(mbar_lambdas), mbar_states)
+                    raise ValueError(
+                        f'The number of lambda windows read ({mbar_nlambda})'
+                        f' is different from what expected ({mbar_states})')
                 mbar_lambda_idx = mbar_lambdas.index(clambda_str)
                 file_datum.mbar_lambda_idx = mbar_lambda_idx
 
@@ -271,7 +274,7 @@ def extract(outfile, T):
     if not np.isclose(T, file_datum.T, atol=0.01):
         msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
         msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
-        logger.error(msg)
+        logger.exception(msg)
         raise ValueError(msg)
 
     finished = False
@@ -298,8 +301,8 @@ def extract(outfile, T):
                 if None in mbar:
                     msg = "WARNING, something strange parsing the following MBAR section."
                     msg += "\nMaybe the mbar_lambda values are incorrect?"
-                    logger.warning(f"{msg}\n{mbar}")
-                    continue
+                    logger.exception("%s\n%s", msg, mbar)
+                    raise ValueError(msg)
                 
                 reference_energy = mbar[file_datum.mbar_lambda_idx]
                 for lmbda, energy in enumerate(mbar):
@@ -316,7 +319,7 @@ def extract(outfile, T):
                            high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is')
 
     if not finished:
-        logger.warning('WARNING: file %s is a prematurely terminated run' % outfile)
+        logger.warning('WARNING: file %s is a prematurely terminated run', outfile)
 
     if file_datum.have_mbar:
         mbar_time = [
