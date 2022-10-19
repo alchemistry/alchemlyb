@@ -23,7 +23,9 @@ def plot_convergence(*data, units='kT', final_error=None, ax=None):
     shape and can be used as input for the
     :func:`matplotlib.pyplot.errorbar`.
 
-    final_error is a float decides the width of the bar around the final value.
+   `final_error` is the error of the final value and is shown as the error band around the 
+   final value. It can be provided in case an estimate is available that is more appropriate
+   than the default, which is the error of the last value in `backward`.
 
     Parameters
     ----------
