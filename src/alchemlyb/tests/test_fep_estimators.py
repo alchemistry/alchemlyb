@@ -254,3 +254,24 @@ class Test_Units():
         assert mbar.delta_f_.attrs['energy_unit'] == 'kT'
         assert mbar.d_delta_f_.attrs['temperature'] == 300
         assert mbar.d_delta_f_.attrs['energy_unit'] == 'kT'
+
+class TestEstimatorMixOut():
+    '''Ensure that the attribute d_delta_f_, delta_f_, states_ cannot be
+    modified. '''
+    @pytest.mark.parametrize("estimator", [MBAR, BAR])
+    def test_d_delta_f_(self, estimator):
+        _estimator = estimator()
+        with pytest.raises(AttributeError):
+            _estimator.d_delta_f_ = 1
+
+    @pytest.mark.parametrize("estimator", [MBAR, BAR])
+    def test_delta_f_(self, estimator):
+        _estimator = estimator()
+        with pytest.raises(AttributeError):
+            _estimator.delta_f_ = 1
+
+    @pytest.mark.parametrize("estimator", [MBAR, BAR])
+    def test_states_(self, estimator):
+        _estimator = estimator()
+        with pytest.raises(AttributeError):
+            _estimator.states_ = 1
