@@ -65,8 +65,9 @@ class SectionParser():
         self.filename = filename
         try:
             self.fileh = anyopen(self.filename, 'r')
-        except Exception as ex:  # pragma: no cover
+        except:
             logger.exception("Cannot open file %s", filename)
+            raise
         self.lineno = 0
 
     def skip_lines(self, nlines):
@@ -190,10 +191,11 @@ def file_validation(outfile):
             invalid = True
 
         mbar_ndata = 0
-        have_mbar, mbar_ndata = secp.extract_section('^FEP MBAR options:',
+        have_mbar, mbar_ndata, mbar_states = secp.extract_section('^FEP MBAR options:',
                                                       '^$',
                                                       ['ifmbar',
-                                                        'bar_intervall'],
+                                                        'bar_intervall',
+                                                        'mbar_states'],
                                                       '^---')
         if have_mbar:
             mbar_ndata = int(nstlim / mbar_ndata)
@@ -208,6 +210,14 @@ def file_validation(outfile):
                 have_mbar = False
             else:
                 mbar_nlambda = len(mbar_lambdas)
+                if mbar_nlambda != mbar_states:
+                    logger.error(
+                        'The number of lambda windows read (%s)'
+                        'is different from what expected (%d)',
+                        ','.join(mbar_lambdas), mbar_states)
+                    raise ValueError(
+                        f'The number of lambda windows read ({mbar_nlambda})'
+                        f' is different from what expected ({mbar_states})')
                 mbar_lambda_idx = mbar_lambdas.index(clambda_str)
                 file_datum.mbar_lambda_idx = mbar_lambda_idx
 
@@ -253,6 +263,10 @@ def extract(outfile, T):
 
 
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 1.0.0
+        Now raises an exception when inconsistency in MBAR states/data is found
+
     """
 
     beta = 1/(k_b * T)
@@ -288,8 +302,11 @@ def extract(outfile, T):
                 mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
                                             extra=line)
                 
-                if None in mbar: # pragma: no cover
-                    continue
+                if None in mbar:
+                    msg = "WARNING, something strange parsing the following MBAR section."
+                    msg += "\nMaybe the mbar_lambda values are incorrect?"
+                    logger.error("%s\n%s", msg, mbar)
+                    raise ValueError(msg)
                 
                 reference_energy = mbar[file_datum.mbar_lambda_idx]
                 for lmbda, energy in enumerate(mbar):
@@ -305,8 +322,8 @@ def extract(outfile, T):
             logger.warning('%i MBAR energ%s > 0.0 kcal/mol',
                            high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is')
 
-    if not finished: # pragma: no cover
-        logger.warning('WARNING: file %s is a prematurely terminated run' % outfile)
+    if not finished:
+        logger.warning('WARNING: file %s is a prematurely terminated run', outfile)
 
     if file_datum.have_mbar:
         mbar_time = [
@@ -323,7 +340,7 @@ def extract(outfile, T):
         logger.info('WARNING: No MBAR energies found! "u_nk" entry will be None')
         mbar_df = None
 
-    if not nensec: # pragma: no cover
+    if not nensec:
         logger.warning('WARNING: File %s does not contain any dV/dl data' % outfile)
         dHdl_df = None
     else:
@@ -413,7 +430,9 @@ def _process_mbar_lambdas(secp):
             if 'total' in line:
                 data = line.split()
                 mbar_lambdas.extend(data[2:])
-            else: # pragma: no cover
+            else:
+                # AMBER splits the MBAR states in more than one line
+                # if there are many of them
                 mbar_lambdas.extend(line.split())
 
     return mbar_lambdas
