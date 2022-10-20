@@ -286,8 +286,10 @@ def A_c(series_list, precision=0.01, diff=2):
 
     .. versionadded:: 1.0.0
     '''
+    logger = logging.getLogger('alchemlyb.convergence.A_c')
     n_R_c = len(series_list)
     R_c_list = [R_c(series, precision, diff)[0] for series in series_list]
+    logger.info(f'R_c list: {R_c_list}')
     # Integrate the R_c_list <= R_c over the range of 0 to 1
     array_01 = np.hstack((R_c_list, [0, 1]))
     sorted_array = np.sort(np.unique(array_01))
