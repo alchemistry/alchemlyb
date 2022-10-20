@@ -263,6 +263,10 @@ def extract(outfile, T):
 
 
     .. versionadded:: 1.0.0
+
+    .. versionchanged:: 1.0.0
+        Now raises an exception when inconsistency in MBAR states/data is found
+
     """
 
     beta = 1/(k_b * T)
@@ -427,7 +431,7 @@ def _process_mbar_lambdas(secp):
                 data = line.split()
                 mbar_lambdas.extend(data[2:])
             else:
-                # AMBER splits the MBAR states in more than one line 
+                # AMBER splits the MBAR states in more than one line
                 # if there are many of them
                 mbar_lambdas.extend(line.split())
 
