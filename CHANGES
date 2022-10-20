@@ -27,6 +27,8 @@ Changes
   - Refactor the subsampling module to unify the behaviour of
     equilibrium_detection and statistical_inefficiency (PR #218).
   - Remove the ignore_warnings flag in ABFE workflow. (PR #231)
+  - delta_f_, d_delta_f_, states_ are view of the original object in estimator
+    (issue #246, PR #252).
 
 
 Enhancements

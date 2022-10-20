@@ -3,10 +3,11 @@ import pandas as pd
 import logging
 
 from sklearn.base import BaseEstimator
-
 import pymbar
 
-class MBAR(BaseEstimator):
+from .base import _EstimatorMixOut
+
+class MBAR(BaseEstimator, _EstimatorMixOut):
     """Multi-state Bennett acceptance ratio (MBAR).
 
     Parameters
@@ -49,6 +50,10 @@ class MBAR(BaseEstimator):
     See Also
     --------
     pymbar.MBAR
+
+
+    .. versionchanged:: 1.0.0
+       `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
     """
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
@@ -81,7 +86,7 @@ class MBAR(BaseEstimator):
         groups = u_nk.groupby(level=u_nk.index.names[1:])
         N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in
                u_nk.columns]
-        self.states_ = u_nk.columns.values.tolist()
+        self._states_ = u_nk.columns.values.tolist()
 
         # Prepare the solver_protocol as stated in https://github.com/choderalab/pymbar/issues/419#issuecomment-803714103
         solver_options = {"maximum_iterations": self.maximum_iterations,
@@ -92,14 +97,14 @@ class MBAR(BaseEstimator):
         self._mbar, out = self._do_MBAR(u_nk, N_k, solver_protocol)
 
         free_energy_differences = [pd.DataFrame(i,
-                                                columns=self.states_,
-                                                index=self.states_) for i in
+                                                columns=self._states_,
+                                                index=self._states_) for i in
                                    out]
 
-        (self.delta_f_, self.d_delta_f_, self.theta_) = free_energy_differences
+        (self._delta_f_, self._d_delta_f_, self.theta_) = free_energy_differences
 
-        self.delta_f_.attrs = u_nk.attrs
-        self.d_delta_f_.attrs = u_nk.attrs
+        self._delta_f_.attrs = u_nk.attrs
+        self._d_delta_f_.attrs = u_nk.attrs
 
         return self
 
