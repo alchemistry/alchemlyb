@@ -165,16 +165,12 @@ class FEData():
 def file_validation(outfile):
     """validate the energy output file """
     file_datum = FEData()
-    invalid = False
     with SectionParser(outfile) as secp:
         line = secp.skip_lines(5)
         if not line:
-            logger.warning('File does not contain any useful data, '
-                           'ignoring file.')
-            invalid = True
+            raise ValueError(f'File {outfile} does not contain any useful data')
         if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
-            logger.warning('No CONTROL DATA found, ignoring file.')
-            invalid = True
+            raise ValueError(f'No "CONTROL DATA" found in file {outfile}')
         ntpr, = secp.extract_section('^Nature and format of output:', '^$',
                                      ['ntpr'])
         nstlim, dt = secp.extract_section('Molecular dynamics:', '^$',
@@ -186,8 +182,7 @@ def file_validation(outfile):
         clambda, = secp.extract_section('^Free energy options:', '^$',
                                         ['clambda'], '^---')
         if clambda is None:
-            logger.warning('No free energy section found, ignoring file.')
-            invalid = True
+            raise ValueError(f'No free energy section found in file {outfile}')
 
         mbar_ndata = 0
         have_mbar, mbar_ndata, mbar_states = secp.extract_section('^FEP MBAR options:',
@@ -224,22 +219,22 @@ def file_validation(outfile):
                     file_datum.mbar_energies.append([])
 
         if not secp.skip_after('^   3.  ATOMIC '):
-            logger.warning('No ATOMIC section found, ignoring file.')
-            invalid = True
+            raise ValueError(f'No "ATOMIC" section found in file {outfile}')
 
         t0, = secp.extract_section('^ begin time', '^$', ['coords'])
         if not secp.skip_after('^   4.  RESULTS'):
-            logger.warning('No RESULTS section found, ignoring file.')
-            invalid = True
-    if invalid:
-        return False
+            raise ValueError(f'No "RESULTS" section found in file {outfile}')
+
+
     file_datum.clambda = clambda
     file_datum.t0 = t0
     file_datum.dt = dt
     file_datum.ntpr = ntpr
     file_datum.T = T
     file_datum.have_mbar = have_mbar
+
     return file_datum
+
 
 @_init_attrs_dict
 def extract(outfile, T):

@@ -53,36 +53,32 @@ def test_unfinished_run(caplog, testfiles):
     assert "is a prematurely terminated run" in caplog.text
 
 
-def test_no_atomic_section(caplog, testfiles):
+def test_no_atomic_section(testfiles):
     """Test if we give a warning if there is no ATOMIC section"""
     filename = testfiles["no_atomic_section"][0]
-    with caplog.at_level(logging.WARNING):
+    with pytest.raises(ValueError, match='No "ATOMIC" section found'):
         _ = extract(str(filename), T=298.0)
-    assert "No ATOMIC section found" in caplog.text
 
 
-def test_no_control_data(caplog, testfiles):
+def test_no_control_data(testfiles):
     """Test if we give a warning if there is no CONTROL section"""
     filename = testfiles["no_control_data"][0]
-    with caplog.at_level(logging.WARNING):
+    with pytest.raises(ValueError, match='No "CONTROL DATA" found'):
         _ = extract(str(filename), T=298.0)
-    assert "No CONTROL DATA found" in caplog.text
 
 
-def test_no_free_energy_info(caplog, testfiles):
+def test_no_free_energy_info(testfiles):
     """Test if we give a warning if there is no free energy section"""
     filename = testfiles["no_free_energy_info"][0]
-    with caplog.at_level(logging.WARNING):
+    with pytest.raises(ValueError, match='No free energy section found'):
         _ = extract(str(filename), T=298.0)
-    assert "No free energy section found" in caplog.text
 
 
-def test_no_useful_data(caplog, testfiles):
+def test_no_useful_data(testfiles):
     """Test if we give a warning if there is no useful data"""
     filename = testfiles["no_useful_data"][0]
-    with caplog.at_level(logging.WARNING):
-        _ = extract(str(filename), T=298.0)
-    assert "File does not contain any useful data" in caplog.text
+    with pytest.raises(ValueError, match="does not contain any useful data"):
+         _ = extract(str(filename), T=298.0)
 
 
 def test_no_temp0_set(caplog, testfiles):
@@ -93,12 +89,11 @@ def test_no_temp0_set(caplog, testfiles):
     assert "WARNING: no valid \"temp0\" record found in file" in caplog.text
 
 
-def test_no_results_section(caplog, testfiles):
+def test_no_results_section(testfiles):
     """Test if we give a warning if there is no RESULTS section"""
     filename = testfiles["no_results_section"][0]
-    with caplog.at_level(logging.WARNING):
+    with pytest.raises(ValueError, match='No "RESULTS" section found'):
         _ = extract(str(filename), T=298.0)
-    assert "No RESULTS section found, ignoring" in caplog.text
 
 
 def test_long_and_wrong_number_MBAR(testfiles):
