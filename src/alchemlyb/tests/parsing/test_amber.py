@@ -85,7 +85,8 @@ def test_no_temp0_set(caplog, testfiles):
     """Test if we give a warning if there is no temp0 set"""
     filename = testfiles["no_temp0_set"][0]
     with caplog.at_level(logging.WARNING):
-        _ = extract(str(filename), T=298.0)
+        with pytest.raises(ValueError):
+            _ = extract(str(filename), T=298.0)
     assert "WARNING: no valid \"temp0\" record found in file" in caplog.text
 
 

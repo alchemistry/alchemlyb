@@ -5,6 +5,10 @@ Some of the file parsing parts are adapted from
 
 .. _alchemical-analysis: https://github.com/MobleyLab/alchemical-analysis
 
+.. versionchanged:: 1.0.0
+    Now raises an exception when an invalid file is given to the parser
+    Now raises an exception when inconsistency in MBAR states/data is found
+
 """
 
 import re
@@ -258,16 +262,11 @@ def extract(outfile, T):
 
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: 1.0.0
-        Now raises an exception when inconsistency in MBAR states/data is found
-
     """
 
     beta = 1/(k_b * T)
 
     file_datum = file_validation(outfile)
-    if not file_validation(outfile):
-        return {"u_nk": None, "dHdl": None}
 
     if not np.isclose(T, file_datum.T, atol=0.01):
         msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
@@ -295,13 +294,13 @@ def extract(outfile, T):
             elif line.startswith('MBAR Energy analysis') and file_datum.have_mbar:
                 mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
                                             extra=line)
-                
+
                 if None in mbar:
                     msg = "WARNING, something strange parsing the following MBAR section."
                     msg += "\nMaybe the mbar_lambda values are incorrect?"
                     logger.error("%s\n%s", msg, mbar)
                     raise ValueError(msg)
-                
+
                 reference_energy = mbar[file_datum.mbar_lambda_idx]
                 for lmbda, energy in enumerate(mbar):
                     if energy > 0.0:
@@ -338,7 +337,7 @@ def extract(outfile, T):
         logger.warning('WARNING: File %s does not contain any dV/dl data', outfile)
         dHdl_df = None
     else:
-        logger.info('Read %s DV/DL data points in file %s', nensec, outfile)
+        logger.info('Read %s dV/dl data points in file %s', nensec, outfile)
         dHdl_df = convert_to_pandas(file_datum)
         dHdl_df['dHdl'] *= beta
 
