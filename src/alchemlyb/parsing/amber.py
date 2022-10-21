@@ -89,8 +89,7 @@ class SectionParser():
                 break
         return Found_pattern
 
-    def extract_section(self, start, end, fields, limit=None, extra='',
-                        debug=False):
+    def extract_section(self, start, end, fields, limit=None, extra=''):
         """
         Extract data values (int, float) in fields from a section
         marked with start and end regexes.  Do not read further than
@@ -341,10 +340,10 @@ def extract(outfile, T):
         mbar_df = None
 
     if not nensec:
-        logger.warning('WARNING: File %s does not contain any dV/dl data' % outfile)
+        logger.warning('WARNING: File %s does not contain any dV/dl data', outfile)
         dHdl_df = None
     else:
-        logger.info('Read %s DV/DL data points in file %s' % (nensec, outfile))
+        logger.info('Read %s DV/DL data points in file %s', nensec, outfile)
         dHdl_df = convert_to_pandas(file_datum)
         dHdl_df['dHdl'] *= beta
 
