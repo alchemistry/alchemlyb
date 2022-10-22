@@ -38,11 +38,13 @@ def test_no_dHdl_data_points(caplog, testfiles):
     assert "does not contain any dV/dl data" in caplog.text
 
 
-def test_None_in_mbar(testfiles):
+def test_None_in_mbar(caplog, testfiles):
     """Test if we deal with an incorrect MBAR section"""
     filename = testfiles["none_in_mbar"][0]
     with pytest.raises(ValueError, match="strange parsing the following MBAR section"):
-        _ = extract(str(filename), T=298.0)
+        with caplog.at_level(logging.ERROR):
+            _ = extract(str(filename), T=298.0)
+    assert "strange parsing the following MBAR section" in caplog.text
 
 
 def test_unfinished_run(caplog, testfiles):
@@ -53,58 +55,70 @@ def test_unfinished_run(caplog, testfiles):
     assert "is a prematurely terminated run" in caplog.text
 
 
-def test_no_atomic_section(testfiles):
-    """Test if we give a warning if there is no ATOMIC section"""
+def test_no_atomic_section(caplog, testfiles):
+    """Test if raise an exception if there is no ATOMIC section"""
     filename = testfiles["no_atomic_section"][0]
-    with pytest.raises(ValueError, match='No "ATOMIC" section found'):
-        _ = extract(str(filename), T=298.0)
+    with pytest.raises(ValueError, match='no "ATOMIC" section found'):
+        with caplog.at_level(logging.ERROR):
+            _ = extract(str(filename), T=298.0)
+    assert 'no "ATOMIC" section found' in caplog.text
 
 
-def test_no_control_data(testfiles):
-    """Test if we give a warning if there is no CONTROL section"""
+def test_no_control_data(caplog, testfiles):
+    """Test if we raise an exception if there is no CONTROL section"""
     filename = testfiles["no_control_data"][0]
-    with pytest.raises(ValueError, match='No "CONTROL DATA" found'):
-        _ = extract(str(filename), T=298.0)
+    with pytest.raises(ValueError, match='no "CONTROL DATA" section found'):
+        with caplog.at_level(logging.ERROR):
+            _ = extract(str(filename), T=298.0)
+    assert 'no "CONTROL DATA" section found' in caplog.text
 
 
-def test_no_free_energy_info(testfiles):
-    """Test if we give a warning if there is no free energy section"""
+def test_no_free_energy_info(caplog, testfiles):
+    """Test if we raise an exception if there is no free energy section"""
     filename = testfiles["no_free_energy_info"][0]
-    with pytest.raises(ValueError, match='No free energy section found'):
-        _ = extract(str(filename), T=298.0)
+    with pytest.raises(ValueError, match='no free energy section found'):
+        with caplog.at_level(logging.ERROR):
+            _ = extract(str(filename), T=298.0)
+    assert 'no free energy section found' in caplog.text
 
 
-def test_no_useful_data(testfiles):
-    """Test if we give a warning if there is no useful data"""
+def test_no_useful_data(caplog, testfiles):
+    """Test if we raise an exception if there is no data"""
     filename = testfiles["no_useful_data"][0]
-    with pytest.raises(ValueError, match="does not contain any useful data"):
-         _ = extract(str(filename), T=298.0)
+    with pytest.raises(ValueError, match="does not contain any data"):
+        with caplog.at_level(logging.ERROR):
+            _ = extract(str(filename), T=298.0)
+    assert 'the file does not contain any data' in caplog.text
 
 
 def test_no_temp0_set(caplog, testfiles):
-    """Test if we give a warning if there is no temp0 set"""
+    """Test if we raise an exception if there is no temp0 set"""
     filename = testfiles["no_temp0_set"][0]
-    with caplog.at_level(logging.WARNING):
-        with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match='no valid "temp0" record found'):
+        with caplog.at_level(logging.ERROR):
             _ = extract(str(filename), T=298.0)
-    assert "WARNING: no valid \"temp0\" record found in file" in caplog.text
+    assert 'no valid "temp0" record found' in caplog.text
 
 
-def test_no_results_section(testfiles):
-    """Test if we give a warning if there is no RESULTS section"""
+def test_no_results_section(caplog, testfiles):
+    """Test if we raise an exception if there is no RESULTS section"""
     filename = testfiles["no_results_section"][0]
-    with pytest.raises(ValueError, match='No "RESULTS" section found'):
-        _ = extract(str(filename), T=298.0)
+    with pytest.raises(ValueError, match='no "RESULTS" section found'):
+        with caplog.at_level(logging.ERROR):
+            _ = extract(str(filename), T=298.0)
+    assert 'no "RESULTS" section found' in caplog.text
 
 
-def test_long_and_wrong_number_MBAR(testfiles):
+def test_long_and_wrong_number_MBAR(caplog, testfiles):
     """
     Test if we have a high number of MBAR states, and also a different
     number of MBAR states than expected
     """
     filename = testfiles["high_and_wrong_number_of_mbar_windows"][0]
-    with pytest.raises(ValueError, match="The number of lambda windows read"):
-        _ = extract_u_nk(str(filename), T=300.0)
+    with pytest.raises(ValueError, match="the number of lambda windows read"):
+        with caplog.at_level(logging.ERROR):
+            _ = extract_u_nk(str(filename), T=300.0)
+    assert 'the number of lambda windows read' in caplog.text
 
 
 ##################################################################################

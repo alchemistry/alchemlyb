@@ -178,7 +178,7 @@ def file_validation(outfile):
 
     Returns
     -------
-    file_datum : `:obj:~FEData`
+    `:class:~FEData`
         FEData object populated with data from the parsed AMBER output file.
 
     """
@@ -233,11 +233,11 @@ def file_validation(outfile):
                 mbar_nlambda = len(mbar_lambdas)
                 if mbar_nlambda != mbar_states:
                     logger.error(
-                        'The number of lambda windows read (%s)'
+                        'the number of lambda windows read (%s)'
                         'is different from what expected (%d)',
                         ','.join(mbar_lambdas), mbar_states)
                     raise ValueError(
-                        f'The number of lambda windows read ({mbar_nlambda})'
+                        f'the number of lambda windows read ({mbar_nlambda})'
                         f' is different from what expected ({mbar_states})')
                 mbar_lambda_idx = mbar_lambdas.index(clambda_str)
                 file_datum.mbar_lambda_idx = mbar_lambda_idx
@@ -246,13 +246,13 @@ def file_validation(outfile):
                     file_datum.mbar_energies.append([])
 
         if not secp.skip_after('^   3.  ATOMIC '):
-            logger.error('No "ATOMIC" section found in the file.')
-            raise ValueError(f'No "ATOMIC" section found in file {outfile}')
+            logger.error('no "ATOMIC" section found in the file.')
+            raise ValueError(f'no "ATOMIC" section found in file {outfile}')
 
         t0, = secp.extract_section('^ begin time', '^$', ['coords'])
         if not secp.skip_after('^   4.  RESULTS'):
-            logger.error('No "RESULTS" section found in the file.')
-            raise ValueError(f'No "RESULTS" section found in file {outfile}')
+            logger.error('no "RESULTS" section found in the file.')
+            raise ValueError(f'no "RESULTS" section found in file {outfile}')
 
 
     file_datum.clambda = clambda
