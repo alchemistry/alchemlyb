@@ -1,4 +1,4 @@
-"""Parsers for extracting alchemical data from `Amber <http://ambermd.org>`_ output files.
+"""Parsers for extracting alchemical data from `AMBER <http://ambermd.org>`_ output files.
 
 Some of the file parsing parts are adapted from
 `alchemical-analysis`_.
@@ -167,7 +167,22 @@ class FEData():
 
 
 def file_validation(outfile):
-    """validate the energy output file """
+    """
+    Function that validate and parse an AMBER output file.
+    :exc:`ValueError` are risen if inconsinstencies in the input file are found.
+    
+    Parameters
+    ----------
+    outfile : str
+        Path to AMBER .out file to validate and extract data from.
+
+    Returns
+    -------
+    file_datum : `:obj:~FEData`
+        FEData object populated with data from the parsed AMBER output file.
+
+    """
+
     file_datum = FEData()
     with SectionParser(outfile) as secp:
         line = secp.skip_lines(5)
@@ -242,12 +257,12 @@ def file_validation(outfile):
 
 @_init_attrs_dict
 def extract(outfile, T):
-    """Return reduced potentials `u_nk` and gradients `dH/dl` from Amber outputfile.
+    """Return reduced potentials `u_nk` and gradients `dH/dl` from AMBER outputfile.
 
     Parameters
     ----------
     outfile : str
-        Path to Amber .out file to extract data from.
+        Path to AMBER .out file to extract data from.
     T : float
         Temperature in Kelvin at which the simulations were performed;
         needed to generated the reduced potential (in units of kT)
@@ -345,12 +360,12 @@ def extract(outfile, T):
 
 
 def extract_dHdl(outfile, T):
-    """Return gradients ``dH/dl`` from Amber TI outputfile.
+    """Return gradients `dH/dl` from AMBER TI outputfile.
 
     Parameters
     ----------
     outfile : str
-        Path to Amber .out file to extract data from.
+        Path to AMBER .out file to extract data from.
     T : float
         Temperature in Kelvin at which the simulations were performed
 
@@ -370,12 +385,12 @@ def extract_dHdl(outfile, T):
 
 
 def extract_u_nk(outfile, T):
-    """Return reduced potentials `u_nk` from Amber outputfile.
+    """Return reduced potentials `u_nk` from AMBER outputfile.
 
     Parameters
     ----------
     outfile : str
-        Path to Amber .out file to extract data from.
+        Path to AMBER .out file to extract data from.
     T : float
         Temperature in Kelvin at which the simulations were performed;
         needed to generated the reduced potential (in units of kT)
