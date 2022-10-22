@@ -6,8 +6,8 @@ Some of the file parsing parts are adapted from
 .. _alchemical-analysis: https://github.com/MobleyLab/alchemical-analysis
 
 .. versionchanged:: 1.0.0
-    Now raises an exception when an invalid file is given to the parser
-    Now raises an exception when inconsistency in MBAR states/data is found
+    Now raises :exc:`ValueError` when an invalid file is given to the parser.
+    Now raises :exc:`ValueError` when inconsistency in MBAR states/data is found.
 
 """
 
