@@ -186,22 +186,30 @@ def file_validation(outfile):
     file_datum = FEData()
     with SectionParser(outfile) as secp:
         line = secp.skip_lines(5)
+
         if not line:
-            raise ValueError(f'File {outfile} does not contain any useful data')
+            logger.error("the file does not contain any data, it's empty.")
+            raise ValueError(f'file {outfile} does not contain any data.')
+
         if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
-            raise ValueError(f'No "CONTROL DATA" found in file {outfile}')
+            logger.error('no "CONTROL DATA" section found in the file.')
+            raise ValueError(f'no "CONTROL DATA" section found in file {outfile}')
+
         ntpr, = secp.extract_section('^Nature and format of output:', '^$',
                                      ['ntpr'])
         nstlim, dt = secp.extract_section('Molecular dynamics:', '^$',
                                           ['nstlim', 'dt'])
         T, = secp.extract_section('temperature regulation:', '^$',
                                   ['temp0'])
-        if not T:  # NOTE maybe we could remove this check completely
-            logger.warning('WARNING: no valid "temp0" record found in file')
+        if not T:
+            logger.error('no valid "temp0" record found in file.')
+            raise ValueError(f'no valid "temp0" record found in file {outfile}')
+
         clambda, = secp.extract_section('^Free energy options:', '^$',
                                         ['clambda'], '^---')
         if clambda is None:
-            raise ValueError(f'No free energy section found in file {outfile}')
+            logger.error('no free energy section found in file, "clambda" was None.')
+            raise ValueError(f'no free energy section found in file {outfile}')
 
         mbar_ndata = 0
         have_mbar, mbar_ndata, mbar_states = secp.extract_section('^FEP MBAR options:',
@@ -238,10 +246,12 @@ def file_validation(outfile):
                     file_datum.mbar_energies.append([])
 
         if not secp.skip_after('^   3.  ATOMIC '):
+            logger.error('No "ATOMIC" section found in the file.')
             raise ValueError(f'No "ATOMIC" section found in file {outfile}')
 
         t0, = secp.extract_section('^ begin time', '^$', ['coords'])
         if not secp.skip_after('^   4.  RESULTS'):
+            logger.error('No "RESULTS" section found in the file.')
             raise ValueError(f'No "RESULTS" section found in file {outfile}')
 
 
