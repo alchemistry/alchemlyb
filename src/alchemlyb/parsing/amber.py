@@ -246,7 +246,7 @@ def file_validation(outfile):
                     file_datum.mbar_energies.append([])
 
         if not secp.skip_after('^   3.  ATOMIC '):
-            logger.error('no "ATOMIC" section found in the file.')
+            logger.error('No "ATOMIC" section found in the file %s.', outfile)
             raise ValueError(f'no "ATOMIC" section found in file {outfile}')
 
         t0, = secp.extract_section('^ begin time', '^$', ['coords'])
