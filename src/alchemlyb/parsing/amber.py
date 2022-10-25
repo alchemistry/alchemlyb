@@ -321,7 +321,7 @@ def extract(outfile, T):
                                             extra=line)
 
                 if None in mbar:
-                    msg = "WARNING, something strange parsing the following MBAR section."
+                    msg = "Something strange parsing the following MBAR section."
                     msg += "\nMaybe the mbar_lambda values are incorrect?"
                     logger.error("%s\n%s", msg, mbar)
                     raise ValueError(msg)

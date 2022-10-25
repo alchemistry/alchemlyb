@@ -70,7 +70,7 @@ def test_no_control_data(caplog, testfiles):
     with pytest.raises(ValueError, match='no "CONTROL DATA" section found'):
         with caplog.at_level(logging.ERROR):
             _ = extract(str(filename), T=298.0)
-    assert 'no "CONTROL DATA" section found' in caplog.text
+    assert 'No "CONTROL DATA" section found' in caplog.text
 
 
 def test_no_free_energy_info(caplog, testfiles):
@@ -79,7 +79,7 @@ def test_no_free_energy_info(caplog, testfiles):
     with pytest.raises(ValueError, match='no free energy section found'):
         with caplog.at_level(logging.ERROR):
             _ = extract(str(filename), T=298.0)
-    assert 'no free energy section found' in caplog.text
+    assert 'No free energy section found' in caplog.text
 
 
 def test_no_useful_data(caplog, testfiles):
@@ -88,7 +88,7 @@ def test_no_useful_data(caplog, testfiles):
     with pytest.raises(ValueError, match="does not contain any data"):
         with caplog.at_level(logging.ERROR):
             _ = extract(str(filename), T=298.0)
-    assert 'the file does not contain any data' in caplog.text
+    assert 'does not contain any data' in caplog.text
 
 
 def test_no_temp0_set(caplog, testfiles):
@@ -97,7 +97,7 @@ def test_no_temp0_set(caplog, testfiles):
     with pytest.raises(ValueError, match='no valid "temp0" record found'):
         with caplog.at_level(logging.ERROR):
             _ = extract(str(filename), T=298.0)
-    assert 'no valid "temp0" record found' in caplog.text
+    assert 'No valid "temp0" record found' in caplog.text
 
 
 def test_no_results_section(caplog, testfiles):
@@ -106,7 +106,7 @@ def test_no_results_section(caplog, testfiles):
     with pytest.raises(ValueError, match='no "RESULTS" section found'):
         with caplog.at_level(logging.ERROR):
             _ = extract(str(filename), T=298.0)
-    assert 'no "RESULTS" section found' in caplog.text
+    assert 'No "RESULTS" section found' in caplog.text
 
 
 def test_long_and_wrong_number_MBAR(caplog, testfiles):
