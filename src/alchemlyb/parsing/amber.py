@@ -1,9 +1,13 @@
-"""Parsers for extracting alchemical data from `Amber <http://ambermd.org>`_ output files.
+"""Parsers for extracting alchemical data from `AMBER <http://ambermd.org>`_ output files.
 
 Some of the file parsing parts are adapted from
 `alchemical-analysis`_.
 
 .. _alchemical-analysis: https://github.com/MobleyLab/alchemical-analysis
+
+.. versionchanged:: 1.0.0
+    Now raises :exc:`ValueError` when an invalid file is given to the parser.
+    Now raises :exc:`ValueError` when inconsistency in MBAR states/data is found.
 
 """
 
@@ -89,8 +93,7 @@ class SectionParser():
                 break
         return Found_pattern
 
-    def extract_section(self, start, end, fields, limit=None, extra='',
-                        debug=False):
+    def extract_section(self, start, end, fields, limit=None, extra=''):
         """
         Extract data values (int, float) in fields from a section
         marked with start and end regexes.  Do not read further than
@@ -164,31 +167,49 @@ class FEData():
 
 
 def file_validation(outfile):
-    """validate the energy output file """
+    """
+    Function that validate and parse an AMBER output file.
+    :exc:`ValueError` are risen if inconsinstencies in the input file are found.
+    
+    Parameters
+    ----------
+    outfile : str
+        Path to AMBER .out file to validate and extract data from.
+
+    Returns
+    -------
+    `:class:~FEData`
+        FEData object populated with data from the parsed AMBER output file.
+
+    """
+
     file_datum = FEData()
-    invalid = False
     with SectionParser(outfile) as secp:
         line = secp.skip_lines(5)
+
         if not line:
-            logger.warning('File does not contain any useful data, '
-                           'ignoring file.')
-            invalid = True
+            logger.error("The file %s does not contain any data, it's empty.", outfile)
+            raise ValueError(f'file {outfile} does not contain any data.')
+
         if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
-            logger.warning('No CONTROL DATA found, ignoring file.')
-            invalid = True
+            logger.error('No "CONTROL DATA" section found in file %s.', outfile)
+            raise ValueError(f'no "CONTROL DATA" section found in file {outfile}')
+
         ntpr, = secp.extract_section('^Nature and format of output:', '^$',
                                      ['ntpr'])
         nstlim, dt = secp.extract_section('Molecular dynamics:', '^$',
                                           ['nstlim', 'dt'])
         T, = secp.extract_section('temperature regulation:', '^$',
                                   ['temp0'])
-        if not T:  # NOTE maybe we could remove this check completely
-            logger.warning('WARNING: no valid "temp0" record found in file')
+        if not T:
+            logger.error('No valid "temp0" record found in file %s.', outfile)
+            raise ValueError(f'no valid "temp0" record found in file {outfile}')
+
         clambda, = secp.extract_section('^Free energy options:', '^$',
                                         ['clambda'], '^---')
         if clambda is None:
-            logger.warning('No free energy section found, ignoring file.')
-            invalid = True
+            logger.error('No free energy section found in file %s, "clambda" was None.', outfile)
+            raise ValueError(f'no free energy section found in file {outfile}')
 
         mbar_ndata = 0
         have_mbar, mbar_ndata, mbar_states = secp.extract_section('^FEP MBAR options:',
@@ -212,11 +233,11 @@ def file_validation(outfile):
                 mbar_nlambda = len(mbar_lambdas)
                 if mbar_nlambda != mbar_states:
                     logger.error(
-                        'The number of lambda windows read (%s)'
+                        'the number of lambda windows read (%s)'
                         'is different from what expected (%d)',
                         ','.join(mbar_lambdas), mbar_states)
                     raise ValueError(
-                        f'The number of lambda windows read ({mbar_nlambda})'
+                        f'the number of lambda windows read ({mbar_nlambda})'
                         f' is different from what expected ({mbar_states})')
                 mbar_lambda_idx = mbar_lambdas.index(clambda_str)
                 file_datum.mbar_lambda_idx = mbar_lambda_idx
@@ -225,31 +246,33 @@ def file_validation(outfile):
                     file_datum.mbar_energies.append([])
 
         if not secp.skip_after('^   3.  ATOMIC '):
-            logger.warning('No ATOMIC section found, ignoring file.')
-            invalid = True
+            logger.error('No "ATOMIC" section found in the file %s.', outfile)
+            raise ValueError(f'no "ATOMIC" section found in file {outfile}')
 
         t0, = secp.extract_section('^ begin time', '^$', ['coords'])
         if not secp.skip_after('^   4.  RESULTS'):
-            logger.warning('No RESULTS section found, ignoring file.')
-            invalid = True
-    if invalid:
-        return False
+            logger.error('No "RESULTS" section found in the file %s.', outfile)
+            raise ValueError(f'no "RESULTS" section found in file {outfile}')
+
+
     file_datum.clambda = clambda
     file_datum.t0 = t0
     file_datum.dt = dt
     file_datum.ntpr = ntpr
     file_datum.T = T
     file_datum.have_mbar = have_mbar
+
     return file_datum
+
 
 @_init_attrs_dict
 def extract(outfile, T):
-    """Return reduced potentials `u_nk` and gradients `dH/dl` from Amber outputfile.
+    """Return reduced potentials `u_nk` and gradients `dH/dl` from AMBER outputfile.
 
     Parameters
     ----------
     outfile : str
-        Path to Amber .out file to extract data from.
+        Path to AMBER .out file to extract data from.
     T : float
         Temperature in Kelvin at which the simulations were performed;
         needed to generated the reduced potential (in units of kT)
@@ -264,16 +287,11 @@ def extract(outfile, T):
 
     .. versionadded:: 1.0.0
 
-    .. versionchanged:: 1.0.0
-        Now raises an exception when inconsistency in MBAR states/data is found
-
     """
 
     beta = 1/(k_b * T)
 
     file_datum = file_validation(outfile)
-    if not file_validation(outfile):
-        return {"u_nk": None, "dHdl": None}
 
     if not np.isclose(T, file_datum.T, atol=0.01):
         msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
@@ -301,13 +319,13 @@ def extract(outfile, T):
             elif line.startswith('MBAR Energy analysis') and file_datum.have_mbar:
                 mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
                                             extra=line)
-                
+
                 if None in mbar:
-                    msg = "WARNING, something strange parsing the following MBAR section."
+                    msg = "Something strange parsing the following MBAR section."
                     msg += "\nMaybe the mbar_lambda values are incorrect?"
                     logger.error("%s\n%s", msg, mbar)
                     raise ValueError(msg)
-                
+
                 reference_energy = mbar[file_datum.mbar_lambda_idx]
                 for lmbda, energy in enumerate(mbar):
                     if energy > 0.0:
@@ -341,10 +359,10 @@ def extract(outfile, T):
         mbar_df = None
 
     if not nensec:
-        logger.warning('WARNING: File %s does not contain any dV/dl data' % outfile)
+        logger.warning('WARNING: File %s does not contain any dV/dl data', outfile)
         dHdl_df = None
     else:
-        logger.info('Read %s DV/DL data points in file %s' % (nensec, outfile))
+        logger.info('Read %s dV/dl data points in file %s', nensec, outfile)
         dHdl_df = convert_to_pandas(file_datum)
         dHdl_df['dHdl'] *= beta
 
@@ -352,12 +370,12 @@ def extract(outfile, T):
 
 
 def extract_dHdl(outfile, T):
-    """Return gradients ``dH/dl`` from Amber TI outputfile.
+    """Return gradients `dH/dl` from AMBER TI outputfile.
 
     Parameters
     ----------
     outfile : str
-        Path to Amber .out file to extract data from.
+        Path to AMBER .out file to extract data from.
     T : float
         Temperature in Kelvin at which the simulations were performed
 
@@ -377,12 +395,12 @@ def extract_dHdl(outfile, T):
 
 
 def extract_u_nk(outfile, T):
-    """Return reduced potentials `u_nk` from Amber outputfile.
+    """Return reduced potentials `u_nk` from AMBER outputfile.
 
     Parameters
     ----------
     outfile : str
-        Path to Amber .out file to extract data from.
+        Path to AMBER .out file to extract data from.
     T : float
         Temperature in Kelvin at which the simulations were performed;
         needed to generated the reduced potential (in units of kT)
