@@ -202,7 +202,7 @@ def file_validation(outfile):
         T, = secp.extract_section('temperature regulation:', '^$',
                                   ['temp0'])
         if not T:
-            logger.error('no valid "temp0" record found in file.')
+            logger.error('No valid "temp0" record found in file %s.', outfile)
             raise ValueError(f'no valid "temp0" record found in file {outfile}')
 
         clambda, = secp.extract_section('^Free energy options:', '^$',
