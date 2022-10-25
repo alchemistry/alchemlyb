@@ -188,7 +188,7 @@ def file_validation(outfile):
         line = secp.skip_lines(5)
 
         if not line:
-            logger.error("the file does not contain any data, it's empty.")
+            logger.error("The file %s does not contain any data, it's empty.", outfile)
             raise ValueError(f'file {outfile} does not contain any data.')
 
         if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
