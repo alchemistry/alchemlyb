@@ -192,7 +192,7 @@ def file_validation(outfile):
             raise ValueError(f'file {outfile} does not contain any data.')
 
         if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
-            logger.error('no "CONTROL DATA" section found in the file.')
+            logger.error('No "CONTROL DATA" section found in file %s.', outfile)
             raise ValueError(f'no "CONTROL DATA" section found in file {outfile}')
 
         ntpr, = secp.extract_section('^Nature and format of output:', '^$',
