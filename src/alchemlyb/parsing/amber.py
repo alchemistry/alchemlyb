@@ -251,7 +251,7 @@ def file_validation(outfile):
 
         t0, = secp.extract_section('^ begin time', '^$', ['coords'])
         if not secp.skip_after('^   4.  RESULTS'):
-            logger.error('no "RESULTS" section found in the file.')
+            logger.error('No "RESULTS" section found in the file %s.', outfile)
             raise ValueError(f'no "RESULTS" section found in file {outfile}')
 
 
