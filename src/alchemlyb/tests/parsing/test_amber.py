@@ -61,7 +61,7 @@ def test_no_atomic_section(caplog, testfiles):
     with pytest.raises(ValueError, match='no "ATOMIC" section found'):
         with caplog.at_level(logging.ERROR):
             _ = extract(str(filename), T=298.0)
-    assert 'no "ATOMIC" section found' in caplog.text
+    assert 'No "ATOMIC" section found' in caplog.text
 
 
 def test_no_control_data(caplog, testfiles):
