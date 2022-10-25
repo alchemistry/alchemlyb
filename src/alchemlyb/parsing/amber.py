@@ -208,7 +208,7 @@ def file_validation(outfile):
         clambda, = secp.extract_section('^Free energy options:', '^$',
                                         ['clambda'], '^---')
         if clambda is None:
-            logger.error('no free energy section found in file, "clambda" was None.')
+            logger.error('No free energy section found in file %s, "clambda" was None.', outfile)
             raise ValueError(f'no free energy section found in file {outfile}')
 
         mbar_ndata = 0
