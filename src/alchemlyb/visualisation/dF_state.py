@@ -15,7 +15,7 @@ import numpy as np
 from ..estimators import TI, BAR, MBAR
 from ..postprocessors.units import get_unit_converter
 
-def plot_dF_state(estimators, labels=None, colors=None, units='kT',
+def plot_dF_state(estimators, labels=None, colors=None, units=None,
                   orientation='portrait', nb=10):
     '''Plot the dhdl of TI.
 
@@ -31,7 +31,8 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     colors : List
         list of colors for plotting different estimators.
     units : str
-        The unit of the estimate. It will be used to change the underlying data to match the desired units. Default: "kT"
+        The unit of the estimate. The default is `None`, which is to use the
+        unit in the input. Setting this will change the output unit.
     orientation : string
         The orientation of the figure. Can be `portrait` or `landscape`
     nb : int
@@ -47,6 +48,9 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
     The code is taken and modified from
     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
+
+    .. versionchanged:: 1.0.0
+        If no units is given, the `units` in the input will be used.
 
     .. versionchanged:: 0.5.0
         The `units` will be used to change the underlying data instead of only
@@ -66,6 +70,10 @@ def plot_dF_state(estimators, labels=None, colors=None, units='kT',
             formatted_data.append(dhdl)
         except TypeError:
             formatted_data.append([dhdl, ])
+
+    if units is None:
+        units = formatted_data[0][0].delta_f_.attrs['energy_unit']
+
     estimators = formatted_data
 
     # Get the dF
