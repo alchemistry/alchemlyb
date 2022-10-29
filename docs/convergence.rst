@@ -33,30 +33,31 @@ Will give a plot looks like this
    A convergence plot of showing that the forward and backward has converged
    fully.
 
-Fraction Convergence
---------------------
+Fractional equilibration time
+-----------------------------
 
 Another way of assessing whether the simulation has converged is to check the
-energy files. In [Fan2021]_, :func:`~alchemlyb.convergence.R_c` and
-:func:`~alchemlyb.convergence.A_c` are two criteria of checking the
-convergence. :func:`~alchemlyb.convergence.R_c` takes a decorrelated
+energy files. In [Fan2021]_, :math:`R_c` and
+:math:`A_c` are two criteria of checking the
+convergence. :func:`~alchemlyb.convergence.fwdrev_cumavg_Rc` takes a decorrelated
 :class:`pandas.Series` as input and gives the metric
-:func:`~alchemlyb.convergence.R_c`, which is 0 for fully-equilibrated
+:math:`R_c`, which is 0 for fully-equilibrated
 simulation and 1 for fully-unequilibrated simulation. ::
 
     >>> from alchemtest.gmx import load_ABFE
     >>> from alchemlyb.parsing.gmx import extract_dHdl
     >>> from alchemlyb.preprocessing import decorrelate_dhdl, dhdl2series
-    >>> from alchemlyb.convergence import R_c
+    >>> from alchemlyb.convergence import fwdrev_cumavg_Rc
     >>> from alchemlyb.visualisation import plot_convergence
 
     >>> file = load_ABFE().data['ligand'][0]
     >>> dhdl = extract_dHdl(file, T=300)
     >>> decorrelated = decorrelate_dhdl(dhdl, remove_burnin=True)
-    >>> value, running_average = R_c(dhdl2series(decorrelated), tol=2)
+    >>> value, running_average = fwdrev_cumavg_Rc(dhdl2series(decorrelated), tol=2)
     >>> print(value)
-    0.02
-    >>> plot_convergence(running_average, final_error=2, units='kcal/mol')
+    0.04
+    >>> ax = plot_convergence(running_average, final_error=2, units='kcal/mol')
+    >>> ax.set_ylabel('energy/kT')
 
 
 Will give a plot like this.
@@ -90,7 +91,7 @@ The currently available connvergence functions:
     :toctree: convergence
 
     convergence
-    R_c
+    fwdrev_cumavg_Rc
     A_c
 
 References

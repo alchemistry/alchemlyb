@@ -4,7 +4,7 @@ import pytest
 
 from alchemtest.gmx import load_benzene
 from alchemlyb.parsing import gmx
-from alchemlyb.convergence import forward_backward_convergence, R_c, A_c
+from alchemlyb.convergence import forward_backward_convergence, fwdrev_cumavg_Rc, A_c
 from alchemlyb.convergence.convergence import _cummean
 
 
@@ -84,26 +84,26 @@ def test_R_c_converged():
     data = pd.Series(data=[0,]*100)
     data.attrs['temperature'] = 310
     data.attrs['energy_unit'] = 'kcal/mol'
-    value, running_average = R_c(data)
+    value, running_average = fwdrev_cumavg_Rc(data)
     np.testing.assert_allclose(value, 0.0)
 
 def test_R_c_notconverged():
     data = pd.Series(data=range(21))
     data.attrs['temperature'] = 310
     data.attrs['energy_unit'] = 'kcal/mol'
-    value, running_average = R_c(data, tol=0.1, precision=0.05)
+    value, running_average = fwdrev_cumavg_Rc(data, tol=0.1, precision=0.05)
     np.testing.assert_allclose(value, 1.0)
 
 def test_R_c_real():
     data = pd.Series(data=np.hstack((range(10), [4.5,]*10)))
     data.attrs['temperature'] = 310
     data.attrs['energy_unit'] = 'kcal/mol'
-    value, running_average = R_c(data)
-    np.testing.assert_allclose(value, 0.3)
+    value, running_average = fwdrev_cumavg_Rc(data)
+    np.testing.assert_allclose(value, 0.35)
 
 def test_A_c_real():
     data = pd.Series(data=np.hstack((range(10), [4.5,]*10)))
     data.attrs['temperature'] = 310
     data.attrs['energy_unit'] = 'kcal/mol'
     value = A_c([data, ] * 2)
-    np.testing.assert_allclose(value, 0.7)
+    np.testing.assert_allclose(value, 0.65)
