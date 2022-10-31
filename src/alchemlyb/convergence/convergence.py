@@ -221,7 +221,9 @@ def fwdrev_cumavg_Rc(series, precision=0.01, tol=2):
     This function computes :math:`R_c` from equation 16 from
     https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8397498/#FD16. The code is
     modified based on Shujie Fan's (@VOD555) work.
-
+   
+   Please cite [Fan2021]_ when using this function.
+   
 
     .. versionadded:: 1.0.0
     '''
