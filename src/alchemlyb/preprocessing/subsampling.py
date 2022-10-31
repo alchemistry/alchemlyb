@@ -494,9 +494,9 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
 
 
     .. versionchanged:: 1.0.0
-       Add the drop_duplicates and sort keyword to unify the behaviour between
-    :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency` or
-    :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
+        Add the drop_duplicates and sort keyword to unify the behaviour between
+        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency` or
+        :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
 
     """
     df, series = _prepare_input(df, series, drop_duplicates, sort)

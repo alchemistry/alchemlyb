@@ -33,6 +33,52 @@ Will give a plot looks like this
    A convergence plot of showing that the forward and backward has converged
    fully.
 
+Fractional equilibration time
+-----------------------------
+
+Another way of assessing whether the simulation has converged is to check the
+energy files. In [Fan2021]_, :math:`R_c` and
+:math:`A_c` are two criteria of checking the
+convergence. :func:`~alchemlyb.convergence.fwdrev_cumavg_Rc` takes a decorrelated
+:class:`pandas.Series` as input and gives the metric
+:math:`R_c`, which is 0 for fully-equilibrated
+simulation and 1 for fully-unequilibrated simulation. ::
+
+    >>> from alchemtest.gmx import load_ABFE
+    >>> from alchemlyb.parsing.gmx import extract_dHdl
+    >>> from alchemlyb.preprocessing import decorrelate_dhdl, dhdl2series
+    >>> from alchemlyb.convergence import fwdrev_cumavg_Rc
+    >>> from alchemlyb.visualisation import plot_convergence
+
+    >>> file = load_ABFE().data['ligand'][0]
+    >>> dhdl = extract_dHdl(file, T=300)
+    >>> decorrelated = decorrelate_dhdl(dhdl, remove_burnin=True)
+    >>> R_c, running_average = fwdrev_cumavg_Rc(dhdl2series(decorrelated), tol=2)
+    >>> print(R_c)
+    0.04
+    >>> ax = plot_convergence(running_average, final_error=2)
+    >>> ax.set_ylabel("$\partial H/\partial\lambda$ (in kT)")
+
+
+Will give a plot like this.
+
+.. figure:: images/R_c.png
+
+
+The :func:`~alchemlyb.convergence.A_c` on the other hand, takes in a list of
+decorrelated :class:`pandas.Series` and gives a metric of how converged the set
+is, where 0 fully-unequilibrated and 1.0 is fully-equilibrated. ::
+
+    >>> from alchemlyb.convergence import A_c
+    >>> dhdl_list = []
+    >>> for file in load_ABFE().data['ligand']:
+    >>>     dhdl = extract_dHdl(file, T=300)
+    >>>     decorrelated = decorrelate_dhdl(dhdl, remove_burnin=True)
+    >>>     decorrelated = dhdl2series(decorrelated)
+    >>>     dhdl_list.append(decorrelated)
+    >>> value = A_c(dhdl_list)
+    0.7085
+
 
 Convergence functions
 ---------------------
@@ -44,5 +90,14 @@ The currently available connvergence functions:
 .. autosummary::
     :toctree: convergence
 
-    convergence
+    forward_backward_convergence
+    fwdrev_cumavg_Rc
+    A_c
 
+References
+----------
+
+.. [Fan2021] Fan, S., Nedev, H., Vijayan, R., Iorga, B.I., and Beckstein, O.
+    (2021). Precise force-field-based calculations of octanol-water partition
+    coefficients for the SAMPL7 molecules. Journal of Computer-Aided Molecular
+    Design 35, 853–87
