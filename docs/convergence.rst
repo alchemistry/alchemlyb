@@ -57,7 +57,7 @@ simulation and 1 for fully-unequilibrated simulation. ::
     >>> print(R_c)
     0.04
     >>> ax = plot_convergence(running_average, final_error=2)
-    >>> ax.set_ylabel('energy/kT')
+    >>> ax.set_ylabel("$\partial H/\partial\lambda$ (in kT)")
 
 
 Will give a plot like this.
