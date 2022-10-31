@@ -290,6 +290,8 @@ def A_c(series_list, precision=0.01, diff=2):
     https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8397498/#FD18. See also
     :func:`~alchemlyb.convergence.fwdrev_cumavg_Rc`.
 
+    Please cite [Fan2021]_ when using this function.
+
 
     .. versionadded:: 1.0.0
     '''
