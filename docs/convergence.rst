@@ -90,7 +90,7 @@ The currently available connvergence functions:
 .. autosummary::
     :toctree: convergence
 
-    convergence
+    forward_backward_convergence
     fwdrev_cumavg_Rc
     A_c
 
