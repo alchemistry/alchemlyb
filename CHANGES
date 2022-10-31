@@ -18,6 +18,8 @@ The rules for this file:
   * 1.0.0
 
 Changes
+  - Default the units in plot_dF_state, plot_convergence and plot_ti_dhdl to
+    None. Remove the array input for plot_convergence (issue #247, PR #260).
   - Now AMBER parser raises an exception when an inconsinstency in the input
     file is found, instead of ignoring the file (issues #227 #238, PR #256)
   - Now AMBER parser raises an exception when an inconsinstency in 
