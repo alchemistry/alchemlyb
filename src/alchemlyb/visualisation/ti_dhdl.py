@@ -15,7 +15,7 @@ import numpy as np
 
 from ..postprocessors.units import get_unit_converter
 
-def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
+def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None,
                  ax=None):
     '''Plot the dhdl of TI.
 
@@ -30,7 +30,8 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
         list of colors for plotting all the alchemical transformations.
         Default: ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
     units : str
-        The unit of the estimate. It will be used to change the underlying data to match the desired units. Default: "kT"
+        The unit of the estimate. The default is `None`, which is to use the
+        unit in the input. Setting this will change the output unit.
     ax : matplotlib.axes.Axes
         Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
         a new axes will be generated.
@@ -45,6 +46,9 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
     The code is taken and modified from
     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
+
+    .. versionchanged:: 1.0.0
+        If no units is given, the `units` in the input will be used.
 
     .. versionchanged:: 0.5.0
         The `units` will be used to change the underlying data instead of only
@@ -64,6 +68,9 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units='kT',
             dhdl_list.extend(dhdl.separate_dhdl())
 
     # Convert unit
+    if units is None:
+        units = dhdl_list[0].attrs['energy_unit']
+
     new_unit = []
     convert = get_unit_converter(units)
     for dhdl in dhdl_list:

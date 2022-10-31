@@ -166,7 +166,12 @@ def test_plot_convergence():
         backward.append(estimate.delta_f_.iloc[0,-1])
         backward_error.append(estimate.d_delta_f_.iloc[0,-1])
 
-    ax = plot_convergence(forward, forward_error, backward, backward_error)
+    df = pd.DataFrame(data={'Forward': forward,
+                            'Forward_Error': forward_error,
+                            'Backward': backward,
+                            'Backward_Error': backward_error})
+    df.attrs = estimate.delta_f_.attrs
+    ax = plot_convergence(df)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 
@@ -185,18 +190,19 @@ class Test_Units():
 
         return ti, mbar
 
-    def test_plot_dF_state_kT(self, estimaters):
-        fig = plot_dF_state(estimaters, units='kT')
-        assert isinstance(fig, matplotlib.figure.Figure)
-        plt.close(fig)
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def convergence():
+        df = pd.DataFrame(data={'Forward': range(10),
+                                'Forward_Error': range(10),
+                                'Backward': range(10),
+                                'Backward_Error': range(10)})
+        df.attrs = {'temperature': 300, 'energy_unit': 'kT'}
+        return df
 
-    def test_plot_dF_state_kJ(self, estimaters):
-        fig = plot_dF_state(estimaters, units='kJ/mol')
-        assert isinstance(fig, matplotlib.figure.Figure)
-        plt.close(fig)
-
-    def test_plot_dF_state_kcal(self, estimaters):
-        fig = plot_dF_state(estimaters, units='kcal/mol')
+    @pytest.mark.parametrize('units', [None, 'kT', 'kJ/mol', 'kcal/mol'])
+    def test_plot_dF_state(self, estimaters, units):
+        fig = plot_dF_state(estimaters, units=units)
         assert isinstance(fig, matplotlib.figure.Figure)
         plt.close(fig)
 
@@ -204,21 +210,10 @@ class Test_Units():
         with pytest.raises(ValueError):
             fig = plot_dF_state(estimaters, units='ddd')
 
-    def test_plot_ti_dhdl_kT(self, estimaters):
+    @pytest.mark.parametrize('units', [None, 'kT', 'kJ/mol', 'kcal/mol'])
+    def test_plot_ti_dhdl(self, estimaters, units):
         ti, mbar = estimaters
-        ax = plot_ti_dhdl(ti, units='kT')
-        assert isinstance(ax, matplotlib.axes.Axes)
-        plt.close(ax.figure)
-
-    def test_plot_ti_dhdl_kJ(self, estimaters):
-        ti, mbar = estimaters
-        ax = plot_ti_dhdl(ti, units='kJ/mol')
-        assert isinstance(ax, matplotlib.axes.Axes)
-        plt.close(ax.figure)
-
-    def test_plot_ti_dhdl_kcal(self, estimaters):
-        ti, mbar = estimaters
-        ax = plot_ti_dhdl(ti, units='kcal/mol')
+        ax = plot_ti_dhdl(ti, units=units)
         assert isinstance(ax, matplotlib.axes.Axes)
         plt.close(ax.figure)
 
@@ -226,3 +221,9 @@ class Test_Units():
         ti, mbar = estimaters
         with pytest.raises(ValueError):
             fig = plot_ti_dhdl(ti, units='ddd')
+
+    @pytest.mark.parametrize('units', [None, 'kT', 'kJ/mol', 'kcal/mol'])
+    def test_plot_convergence(self, convergence, units):
+        ax = plot_convergence(convergence)
+        assert isinstance(ax, matplotlib.axes.Axes)
+        plt.close(ax.figure)
