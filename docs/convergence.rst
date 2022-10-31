@@ -53,8 +53,8 @@ simulation and 1 for fully-unequilibrated simulation. ::
     >>> file = load_ABFE().data['ligand'][0]
     >>> dhdl = extract_dHdl(file, T=300)
     >>> decorrelated = decorrelate_dhdl(dhdl, remove_burnin=True)
-    >>> value, running_average = fwdrev_cumavg_Rc(dhdl2series(decorrelated), tol=2)
-    >>> print(value)
+    >>> R_c, running_average = fwdrev_cumavg_Rc(dhdl2series(decorrelated), tol=2)
+    >>> print(R_c)
     0.04
     >>> ax = plot_convergence(running_average, final_error=2, units='kcal/mol')
     >>> ax.set_ylabel('energy/kT')
