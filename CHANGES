@@ -39,7 +39,8 @@ Enhancements
   - Add remove_burnin keyword to decorrelate_u_nk and decorrelate_dhdl (PR #218).
   - Add a base class for workflows (PR #188).
   - Add the ABFE workflow (PR #114).
-  - Add R_c and A_c for convergence analysis. (PR #239)
+  - Add R_c and A_c for "fractional equilibration time" convergence analysis 
+    (issue #104, PR #239)
   - Add the keyword arg final_error to plot_convergence (#249)
 
 
