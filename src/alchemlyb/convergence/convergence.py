@@ -286,7 +286,7 @@ def A_c(series_list, precision=0.01, diff=2):
 
     Note
     ----
-    This function tries to compute :math:`A_c` from equation 18 from
+    This function computes :math:`A_c` from equation 18 from
     https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8397498/#FD18. See also
     :func:`~alchemlyb.convergence.fwdrev_cumavg_Rc`.
 
