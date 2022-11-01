@@ -15,8 +15,8 @@ for doing automatic absolute binding free energy (ABFE) analysis.
 .. currentmodule:: alchemlyb.workflows
 
 .. autosummary::
-    :toctree: workflows
+   :toctree: workflows
 
-    base
-    ABFE
+   base
+   ABFE
 
