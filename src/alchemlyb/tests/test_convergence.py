@@ -98,12 +98,12 @@ def test_R_c_real():
     data = pd.Series(data=np.hstack((range(10), [4.5,]*10)))
     data.attrs['temperature'] = 310
     data.attrs['energy_unit'] = 'kcal/mol'
-    value, running_average = fwdrev_cumavg_Rc(data)
+    value, running_average = fwdrev_cumavg_Rc(data, tol=2.0)
     np.testing.assert_allclose(value, 0.35)
 
 def test_A_c_real():
     data = pd.Series(data=np.hstack((range(10), [4.5,]*10)))
     data.attrs['temperature'] = 310
     data.attrs['energy_unit'] = 'kcal/mol'
-    value = A_c([data, ] * 2)
+    value = A_c([data, ] * 2, tol=2.0)
     np.testing.assert_allclose(value, 0.65)

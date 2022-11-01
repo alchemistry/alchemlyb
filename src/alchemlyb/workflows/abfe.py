@@ -55,6 +55,9 @@ class ABFE(WorkflowBase):
         The logging object.
     file_list : list
         The list of filenames sorted by the lambda state.
+
+
+    .. versionadded:: 1.0.0
     '''
     def __init__(self, T, units='kT', software='GROMACS', dir=os.path.curdir,
                  prefix='dhdl', suffix='xvg',

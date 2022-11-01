@@ -1,3 +1,5 @@
+"""Basic building blocks for free energy workflows."""
+
 import pandas as pd
 
 class WorkflowBase():
@@ -13,7 +15,6 @@ class WorkflowBase():
 
     Parameters
     ----------
-
     units : string, optional
         The unit used for printing and plotting results. {'kcal/mol', 'kJ/mol',
         'kT'}. Default: 'kT'.
@@ -30,10 +31,11 @@ class WorkflowBase():
 
     Attributes
     ----------
-
     file_list : list
         A list of files to be read by the parser.
 
+
+    .. versionadded:: 0.7.0
     """
     def __init__(self, units='kT', software='Gromacs', T=298, out='./', *args,
                  **kwargs):

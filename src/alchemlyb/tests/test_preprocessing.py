@@ -4,12 +4,14 @@
 import pytest
 
 import numpy as np
+from numpy.testing import assert_allclose
 
 import alchemlyb
 from alchemlyb.parsing import gmx
 from alchemlyb.preprocessing import (slicing, statistical_inefficiency,
                                      equilibrium_detection,
-                                     decorrelate_u_nk, decorrelate_dhdl)
+                                     decorrelate_u_nk, decorrelate_dhdl,
+                                     u_nk2series, dhdl2series)
 from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
 from alchemtest.gmx import load_benzene, load_ABFE
 
@@ -19,8 +21,8 @@ def gmx_benzene_dHdl():
     dataset = alchemtest.gmx.load_benzene()
     return gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
 
-# When issue #206 is addressed make the gmx_benzene_dHdl() function the 
-# fixture, remove the wrapper below, and replace 
+# When issue #206 is addressed make the gmx_benzene_dHdl() function the
+# fixture, remove the wrapper below, and replace
 # gmx_benzene_dHdl_fixture --> gmx_benzene_dHdl
 @pytest.fixture()
 def gmx_benzene_dHdl_fixture():
@@ -452,3 +454,58 @@ def test_decorrelate_dhdl_multiple_l(gmx_ABFE_dhdl):
 def test_raise_non_uk(gmx_ABFE_dhdl):
     with pytest.raises(ValueError):
         decorrelate_u_nk(gmx_ABFE_dhdl, )
+
+class TestDhdl2series():
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def dhdl():
+        dataset = load_benzene()
+        dhdl = extract_dHdl(dataset['data']['Coulomb'][0], 300)
+        return dhdl
+
+    @pytest.mark.parametrize("methodargs", [{}, {'method': 'all'}])
+    def test_dhdl2series(self, dhdl, methodargs):
+        series = dhdl2series(dhdl, **methodargs)
+        assert len(series) == len(dhdl)
+        assert_allclose(series, dhdl.sum(axis=1))
+
+    def test_other_method_ValueError(self, dhdl):
+        with pytest.raises(ValueError,
+                           match="Only method='all' is supported for dhdl2series()."):
+            dhdl2series(dhdl, method="dE")
+
+class TestU_nk2series():
+    @staticmethod
+    @pytest.fixture(scope='class')
+    def u_nk():
+        dataset = load_benzene()
+        u_nk = extract_u_nk(dataset['data']['Coulomb'][0], 300)
+        return u_nk
+
+    @pytest.mark.parametrize("methodargs,reference",  # reference = sum
+                             [({}, 9207.80229000283),
+                              ({'method': 'all'}, 85982.34668751864),
+                              ({'method': 'dE'}, 9207.80229000283),
+                              ])
+    def test_u_nk2series(self, u_nk, methodargs, reference):
+        series = u_nk2series(u_nk, **methodargs)
+        assert len(series) == len(u_nk)
+        assert_allclose(series.sum(), reference)
+
+    @pytest.mark.parametrize("methodargs,reference",  # reference = sum
+                             [({'method': 'dhdl_all'}, 85982.34668751864),
+                              ({'method': 'dhdl'}, 9207.80229000283),
+                              ])
+    def test_u_nk2series_deprecated(self, u_nk, methodargs, reference):
+        with pytest.warns(DeprecationWarning,
+                          match=r"Method 'dhdl.*' has been deprecated, using '.*' instead\. "
+                          r"'dhdl.*' will be removed in alchemlyb 3\.0\.0\."):
+            series = u_nk2series(u_nk, **methodargs)
+        assert len(series) == len(u_nk)
+        assert_allclose(series.sum(), reference)
+
+
+    def test_other_method_ValueError(self, u_nk):
+        with pytest.raises(ValueError,
+                           match='Decorrelation method bogus not found.'):
+            u_nk2series(u_nk, method="bogus")
