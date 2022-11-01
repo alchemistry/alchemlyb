@@ -20,7 +20,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         Set to determine the relative tolerance convergence criteria.
 
     initial_f_k : np.ndarray, float, shape=(K), optional
-        Set to the initial dimensionless free energies to use as a 
+        Set to the initial dimensionless free energies to use as a
         guess (default None, which sets all f_k = 0).
 
     method : str, optional, default="hybr"
@@ -47,9 +47,15 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
     states_ : list
         Lambda states for which free energy differences were obtained.
 
+    Notes
+    -----
+    See [Shirts2008]_ for details of the derivation and cite the
+    paper when using MBAR in published work.
+
     See Also
     --------
-    pymbar.MBAR
+    pymbar.mbar.MBAR
+    AutoMBAR
 
 
     .. versionchanged:: 1.0.0
@@ -75,7 +81,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 
         Parameters
         ----------
-        u_nk : DataFrame 
+        u_nk : DataFrame
             u_nk[n,k] is the reduced potential energy of uncorrelated
             configuration n evaluated at state k.
 
@@ -117,7 +123,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
                      initial_f_k=self.initial_f_k,
                      solver_protocol=(solver_protocol,))
         self.logger.info("Solved MBAR equations with method %r and "
-                         "maximum_iterations=%d, relative_tolerance=%g", 
+                         "maximum_iterations=%d, relative_tolerance=%g",
                          solver_protocol['method'],
                          solver_protocol['options']['maximum_iterations'],
                          self.relative_tolerance)
@@ -145,16 +151,16 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 class AutoMBAR(MBAR):
     """A more robust version of Multi-state Bennett acceptance ratio (MBAR).
 
-    Given that there isn't a single *method* that would allow :class:`MBAR` 
-    to converge for every single use case, the :class:`AutoMBAR` estimator 
-    iteratively tries all the available methods to obtain the converged estimate. 
-    
+    Given that there isn't a single *method* that would allow :class:`MBAR`
+    to converge for every single use case, the :class:`AutoMBAR` estimator
+    iteratively tries all the available methods to obtain the converged estimate.
+
     The fastest method *hybr* will be tried first, followed by the most stable method
-    *adaptive*. If *adaptive* does not converge, *BFGS* will be used as last resort. 
-    Although *BFGS* is not as stable as *adaptive*, it has been shown to succeed in  
+    *adaptive*. If *adaptive* does not converge, *BFGS* will be used as last resort.
+    Although *BFGS* is not as stable as *adaptive*, it has been shown to succeed in
     some cases where *adaptive* cannot.
 
-    :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid 
+    :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid
     failures due non-converged MBAR estimates.
 
     Parameters
@@ -166,17 +172,17 @@ class AutoMBAR(MBAR):
         as MBAR.
 
         .. versionadded:: 1.0.0
-        
+
 
     Note
     ----
-    All arguments are described under :class:`MBAR` except that the solver method 
+    All arguments are described under :class:`MBAR` except that the solver method
     is determined by :class:`AutoMBAR` as described above.
 
     See Also
     --------
     MBAR
-    
+
 
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
