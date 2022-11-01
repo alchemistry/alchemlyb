@@ -10,7 +10,7 @@ Time Convergence
 One way of determining the simulation end point is to compute and plot the
 forward and backward convergence of the estimate using
 :func:`~alchemlyb.convergence.forward_backward_convergence` and
-:func:`~alchemlyb.visualisation.plot_convergence`. ::
+:func:`~alchemlyb.visualisation.plot_convergence` [Klimovich2015]_. ::
 
     >>> from alchemtest.gmx import load_benzene
     >>> from alchemlyb.parsing.gmx import extract_u_nk
@@ -88,15 +88,3 @@ Convergence functions are available from :mod:`alchemlyb.convergence`. Internall
 
     convergence
 	      
-
-References
-----------
-
-.. [Fan2021] Fan, S., Nedev, H., Vijayan, R., Iorga, B.I., and Beckstein, O.
-   (2021). Precise force-field-based calculations of octanol-water partition
-   coefficients for the SAMPL7 molecules. Journal of Computer-Aided Molecular
-   Design 35, 853–887
-.. [Fan2020] Fan, S., B. I. Iorga, and O. Beckstein. (2020). Prediction of
-   octanol-water partition coefficients for the SAMPL6-log P molecules using
-   molecular dynamics simulations with OPLS-AA, AMBER and CHARMM force fields.
-   Journal of Computer-Aided Molecular Design 34, 543–560.

@@ -92,6 +92,7 @@ We also welcome code contributions: have a look at our `Developer Guide`_. Open 
     postprocessing
     visualisation
     workflows
+    references
 
 .. toctree::
    :maxdepth: 1
