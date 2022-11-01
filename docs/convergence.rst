@@ -1,19 +1,16 @@
 .. module:: alchemlyb.convergence
 
-Using functions to estimate Convergence
-=======================================
+Assessing convergence
+=====================
 
-For a result to be valid, we need to ensure that longer simulation time
-would not result in different results. Various functions will be provided in
-this module to estimate the convergence of the estimate and help user determine
-the simulation end point.
+For a result to be valid, we need to ensure that longer simulation time would not result in different results, i.e., that our results are *converged*. The :mod:`alchemlyb.convergence`  module provides functions to assess the convergence of free energy estimates or other quantities. 
 
 Time Convergence
 ----------------
 One way of determining the simulation end point is to compute and plot the
 forward and backward convergence of the estimate using
 :func:`~alchemlyb.convergence.forward_backward_convergence` and
-:func:`~alchemlyb.visualisation.plot_convergence`. ::
+:func:`~alchemlyb.visualisation.plot_convergence` [Klimovich2015]_. ::
 
     >>> from alchemtest.gmx import load_benzene
     >>> from alchemlyb.parsing.gmx import extract_u_nk
@@ -35,9 +32,8 @@ Will give a plot looks like this
 
 Fractional equilibration time
 -----------------------------
-
 Another way of assessing whether the simulation has converged is to check the
-energy files. In [Fan2021]_, :math:`R_c` and
+energy files. In [Fan2021]_ (and [Fan2020]_), :math:`R_c` and
 :math:`A_c` are two criteria of checking the
 convergence. :func:`~alchemlyb.convergence.fwdrev_cumavg_Rc` takes a decorrelated
 :class:`pandas.Series` as input and gives the metric
@@ -76,28 +72,19 @@ is, where 0 fully-unequilibrated and 1.0 is fully-equilibrated. ::
     >>>     decorrelated = decorrelate_dhdl(dhdl, remove_burnin=True)
     >>>     decorrelated = dhdl2series(decorrelated)
     >>>     dhdl_list.append(decorrelated)
-    >>> value = A_c(dhdl_list)
+    >>> value = A_c(dhdl_list, tol=2)
     0.7085
 
 
 Convergence functions
 ---------------------
 
-The currently available connvergence functions:
+Convergence functions are available from :mod:`alchemlyb.convergence`. Internally, they are imported from submodules, as documented below.
 
 .. currentmodule:: alchemlyb.convergence
 
 .. autosummary::
     :toctree: convergence
 
-    forward_backward_convergence
-    fwdrev_cumavg_Rc
-    A_c
-
-References
-----------
-
-.. [Fan2021] Fan, S., Nedev, H., Vijayan, R., Iorga, B.I., and Beckstein, O.
-    (2021). Precise force-field-based calculations of octanol-water partition
-    coefficients for the SAMPL7 molecules. Journal of Computer-Aided Molecular
-    Design 35, 853–87
+    convergence
+	      
