@@ -38,6 +38,19 @@ class BAR(BaseEstimator, _EstimatorMixOut):
     states_ : list
         Lambda states for which free energy differences were obtained.
 
+    Notes
+    -----
+    See [Bennett1976]_ for details of the derivation and cite the paper
+    (together with [Shirts2008]_ for the Python implementation in
+    :mod:`pymbar`) when using BAR in published work.
+
+    When possible, use MBAR instead of BAR as it makes better use of the
+    available data.
+
+    See Also
+    --------
+    MBAR
+
 
     .. versionchanged:: 1.0.0
        `delta_f_`, `d_delta_f_`, `states_` are view of the original object.

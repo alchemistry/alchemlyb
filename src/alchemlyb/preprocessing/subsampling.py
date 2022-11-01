@@ -493,6 +493,9 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
                           drop_duplicates=False, sort=False):
     """Subsample a DataFrame using automated equilibrium detection on a timeseries.
 
+    This function uses the :mod:`pymbar` implementation of the *simple
+    automated equilibrium detection* algorithm in [Chodera2016]_.
+
     If `series` is ``None``, then this function will behave the same as
     :func:`slicing`.
 
@@ -518,6 +521,10 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
     -------
     DataFrame
         `df` subsampled according to subsampled `series`.
+
+    Notes
+    -----
+    Please cite [Chodera2016]_ when you use this function in published work.
 
     See Also
     --------
