@@ -43,6 +43,6 @@ setup(name='alchemlyb',
       long_description_content_type='text/x-rst',
       python_requires='>=3.8',
       tests_require = ['pytest', 'alchemtest'],
-      install_requires=['numpy', 'pandas>=1.4', 'pymbar>=3.0.5,<4',
+      install_requires=['numpy', 'pandas>=1.4', 'pymbar',
                         'scipy', 'scikit-learn', 'matplotlib']
       )

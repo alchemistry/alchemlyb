@@ -6,8 +6,7 @@ from warnings import warn
 import pandas as pd
 import numpy as np
 
-from ..estimators import BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
-from ..estimators import AutoMBAR as MBAR
+from ..estimators import BAR, TI, MBAR, FEP_ESTIMATORS, TI_ESTIMATORS
 from .. import concat
 from ..postprocessors.units import to_kT
 
@@ -55,19 +54,13 @@ def forward_backward_convergence(df_list, estimator='MBAR', num=10, **kwargs):
             9  3.044149       0.016405  3.044385        0.016402            1.0
 
 
-    Note
-    -----
-    :class:`~alchemlyb.estimators.AutoMBAR` is used when ``estimator='MBAR'``,
-    supply ``method`` keyword to restore the behavior of
-    :class:`~alchemlyb.estimators.MBAR`.
-    (:code:`forward_backward_convergence(u_nk, 'MBAR', num=2, method='adaptive')`)
-
-
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
        The ``estimator`` accepts uppercase input.
        The default for using ``estimator='MBAR'`` was changed from
        :class:`~alchemlyb.estimators.MBAR` to :class:`~alchemlyb.estimators.AutoMBAR`.
+    .. versionchanged:: 2.0.0
+        Use pymbar.MBAR robust method instead of the AutoMBAR option.
 
     '''
     logger = logging.getLogger('alchemlyb.convergence.'

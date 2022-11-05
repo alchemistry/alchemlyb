@@ -5,7 +5,7 @@ dependencies:
 - python
 - numpy
 - pandas
-- pymbar >=3.0.5,<4
+- pymbar
 - scipy
 - scikit-learn
 - matplotlib

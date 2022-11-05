@@ -4,9 +4,10 @@
 import warnings
 
 import pandas as pd
-from pymbar.timeseries import (statisticalInefficiency,
-                               detectEquilibration,
-                               subsampleCorrelatedData, )
+from pymbar.timeseries import statistical_inefficiency as _statistical_inefficiency
+from pymbar.timeseries import detect_equilibration as _detect_equilibration
+from pymbar.timeseries import subsample_correlated_data as _subsample_correlated_data
+
 from .. import pass_attrs
 
 def decorrelate_u_nk(df, method='dE', drop_duplicates=True,
@@ -423,7 +424,7 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None,
         ``True`` use ``ceil(statistical_inefficiency)`` to slice the data in uniform
         intervals (the default). ``False`` will sample at non-uniform intervals to
         closely match the (fractional) statistical_inefficieny, as implemented
-        in :func:`pymbar.timeseries.subsampleCorrelatedData`.
+        in :func:`pymbar.timeseries.subsample_correlated_data`.
     drop_duplicates : bool
         Drop the duplicated lines based on time.
     sort : bool
@@ -453,13 +454,13 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None,
 
     See Also
     --------
-    pymbar.timeseries.statisticalInefficiency : detailed background
-    pymbar.timeseries.subsampleCorrelatedData : used for subsampling
+    pymbar.timeseries.statistical_inefficiency : detailed background
+    pymbar.timeseries.subsample_correlated_data : used for subsampling
 
 
     .. versionchanged:: 0.2.0
        The ``conservative`` keyword was added and the method is now using
-       ``pymbar.timeseries.statisticalInefficiency()``; previously, the statistical
+       ``pymbar.timeseries.statistical_inefficiency()``; previously, the statistical
        inefficiency was _rounded_ (instead of ``ceil()``) and thus one could
        end up with correlated data.
 
@@ -477,10 +478,10 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None,
         df = slicing(df, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series (could use fft=True but needs test)
-        statinef = statisticalInefficiency(series, fast=False)
+        statinef = _statistical_inefficiency(series)
 
-        # use the subsampleCorrelatedData function to get the subsample index
-        indices = subsampleCorrelatedData(series, g=statinef,
+        # use the subsample_correlated_data function to get the subsample index
+        indices = _subsample_correlated_data(series, g=statinef,
                                           conservative=conservative)
         df = df.iloc[indices]
     else:
@@ -528,8 +529,8 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
 
     See Also
     --------
-    pymbar.timeseries.detectEquilibration : detailed background
-    pymbar.timeseries.subsampleCorrelatedData : used for subsampling
+    pymbar.timeseries.detect_equilibration : detailed background
+    pymbar.timeseries.subsample_correlated_data : used for subsampling
 
 
     .. versionchanged:: 1.0.0
@@ -545,12 +546,12 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
         df = slicing(df, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series, with equilibrium detection
-        t, statinef, Neff_max = detectEquilibration(series.values)
+        t, statinef, Neff_max = _detect_equilibration(series.values)
 
         series_equil = series[t:]
         df_equil = df[t:]
 
-        indices = subsampleCorrelatedData(series_equil, g=statinef)
+        indices = _subsample_correlated_data(series_equil, g=statinef)
         df = df_equil.iloc[indices]
     else:
         df = slicing(df, lower=lower, upper=upper, step=step)

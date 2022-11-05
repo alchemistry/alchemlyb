@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.base import BaseEstimator
-from pymbar import BAR as BAR_
+from pymbar.other_estimators import bar as BAR_
 
 from .base import _EstimatorMixOut
 
@@ -104,12 +104,12 @@ class BAR(BaseEstimator, _EstimatorMixOut):
             w_r = uk1.iloc[:, k] - uk1.iloc[:, k+1]
 
             # now determine df and ddf using pymbar.BAR
-            df, ddf = BAR_(w_f, w_r,
+            out = BAR_(w_f, w_r,
                              method=self.method,
                              maximum_iterations=self.maximum_iterations,
                              relative_tolerance=self.relative_tolerance,
                              verbose=self.verbose)
-
+            df, ddf = out['Delta_f'], out['dDelta_f']
             deltas = np.append(deltas, df)
             d_deltas = np.append(d_deltas, ddf**2)
 

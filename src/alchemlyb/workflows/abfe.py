@@ -9,8 +9,7 @@ import matplotlib.pyplot as plt
 from .base import WorkflowBase
 from ..parsing import gmx, amber
 from ..preprocessing.subsampling import decorrelate_dhdl, decorrelate_u_nk
-from ..estimators import BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
-from ..estimators import AutoMBAR as MBAR
+from ..estimators import MBAR, BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
 from ..visualisation import (plot_mbar_overlap_matrix, plot_ti_dhdl,
                              plot_dF_state, plot_convergence)
 from ..postprocessors.units import get_unit_converter
@@ -361,13 +360,6 @@ class ABFE(WorkflowBase):
             'MBAR']. Note that the estimators are in their original form where
             no unit conversion has been attempted.
 
-        Note
-        -----
-        :class:`~alchemlyb.estimators.AutoMBAR` is used when
-        ``estimators='MBAR'``, supply ``method`` keyword to restore the
-        behavior of :class:`~alchemlyb.estimators.MBAR`.
-        (:code:`estimate(estimators='MBAR', method='adaptive')`)
-
         '''
         # Make estimators into a tuple
         if isinstance(estimators, str):
@@ -693,13 +685,6 @@ class ABFE(WorkflowBase):
         -------
         matplotlib.axes.Axes
             An axes with the convergence drawn.
-
-        Note
-        -----
-        :class:`~alchemlyb.estimators.AutoMBAR` is used when
-        ``estimator='MBAR'``, supply ``method`` keyword to restore the behavior
-        of :class:`~alchemlyb.estimators.MBAR`.
-        (:code:`check_convergence(10, estimator='MBAR', method='adaptive')`)
 
         '''
         self.logger.info('Start convergence analysis.')

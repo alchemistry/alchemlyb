@@ -8,7 +8,7 @@ import pandas as pd
 
 import alchemlyb
 from alchemlyb.parsing import gmx, amber, namd, gomc
-from alchemlyb.estimators import MBAR, BAR, AutoMBAR
+from alchemlyb.estimators import MBAR, BAR
 import alchemtest.gmx
 import alchemtest.amber
 import alchemtest.gomc
@@ -167,31 +167,6 @@ class TestMBAR(FEPestimatorMixin):
     def test_mbar(self, X_delta_f):
         self.compare_delta_f(X_delta_f)
 
-class TestAutoMBAR(TestMBAR):
-    cls = AutoMBAR
-
-class TestMBAR_fail():
-    @pytest.fixture(scope="class")
-    def n_uk_list(self):
-        n_uk_list = [gmx.extract_u_nk(dhdl, T=300) for dhdl in
-                     load_ABFE()['data']['complex']]
-        return n_uk_list
-
-    def test_failback_adaptive(self, n_uk_list):
-        # The hybr will fail on this while adaptive will work
-        mbar = AutoMBAR().fit(alchemlyb.concat([n_uk[:2] for n_uk in
-                                                n_uk_list]))
-        assert np.isclose(mbar.d_delta_f_.iloc[0, -1], 1.76832, 0.1)
-
-def test_AutoMBAR_BGFS():
-    # A case where only BFGS would work
-    mbar = AutoMBAR()
-    u_nk = np.load(load_MBAR_BGFS()['data']['u_nk'])
-    N_k = np.load(load_MBAR_BGFS()['data']['N_k'])
-    solver_options = {"maximum_iterations": 10000,"verbose": False}
-    solver_protocol = {"method": None, "options": solver_options}
-    mbar, out = mbar._do_MBAR(u_nk.T, N_k, solver_protocol)
-    assert np.isclose(out[0][1][0], 12.552409, 0.1)
 
 class TestBAR(FEPestimatorMixin):
     """Tests for BAR.
