@@ -20,7 +20,7 @@ setup(name='alchemlyb',
       maintainer='Oliver Beckstein',
       maintainer_email='orbeckst@gmail.com',
       classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',
         'Operating System :: POSIX',

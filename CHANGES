@@ -46,6 +46,10 @@ Enhancements
   - Add R_c and A_c for "fractional equilibration time" convergence analysis
     (issue #104, PR #239)
   - Add the keyword arg final_error to plot_convergence (#249)
+  - All parsers now have a 'extract(file, T)' method that returns a dict with
+    both "dHdl" and "u_nk" data (or None). The AMBER parser when using this
+    function will read the file just once, extracting all data at once. (issue
+    #222, PR #240)
 
 
 Fixes
@@ -58,10 +62,6 @@ Fixes
   - changed how int/float are read from AMBER files (issue #229, PR #235)
   - substitute the any_none() function with a check "if None in" in the AMBER
     parser (issue #236, PR #237)
-  - All parsers now have a 'extract(file, T)' method that returns a dict with
-    both "dHdl" and "u_nk" data (or None). The AMBER parser when using this
-    function will read the file just once, extracting all data at once. (issue
-    #222, PR #240)
   - Fix dhdl2series and u_nk2series would not reattach the unit. (PR #248)
   - Removed the 'dhdl' keyword for uncorrelating the u_nk (see
     `u_nk2series()`). Use 'dE' as an alternative or use 'all' (instead of the

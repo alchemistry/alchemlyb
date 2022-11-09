@@ -17,7 +17,7 @@ References
    Computer-Aided Molecular Design 29, 397-411. doi: `10.1007/s10822-015-9840-9
    <https://doi.org/10.1007/s10822-015-9840-9>`_.
 
-.. [Chodera2016] J. D. Chodera. (20016). A simple method for automated
+.. [Chodera2016] J. D. Chodera. (2016). A simple method for automated
    equilibration detection in molecular simulations. Journal of Chemical Theory
    and Computation 12, 1799-1805. doi: `10.1021/acs.jctc.5b00784
    <https://doi.org/10.1021/acs.jctc.5b00784>`_.
