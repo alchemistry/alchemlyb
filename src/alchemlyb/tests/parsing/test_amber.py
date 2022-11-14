@@ -121,6 +121,24 @@ def test_long_and_wrong_number_MBAR(caplog, testfiles):
     assert 'the number of lambda windows read' in caplog.text
 
 
+def test_no_starting_time(caplog, testfiles):
+    """Test if raise an exception if the starting time is not read"""
+    filename = testfiles["no_starting_simulation_time"][0]
+    with pytest.raises(ValueError, match='No starting simulation time in file'):
+        with caplog.at_level(logging.ERROR):
+            _ = extract(str(filename), T=298.0)
+    assert 'No starting simulation time in file' in caplog.text
+
+
+def test_parse_without_spaces_around_equal(testfiles):
+    """
+    Test if the regex is able to extract values where the are no
+    spaces around the equal sign
+    """
+    filename = testfiles["no_spaces_around_equal"][0]
+    _ = extract(str(filename), T=298.0)
+
+
 ##################################################################################
 ################ Check the parser behaviour with standard single files
 ##################################################################################

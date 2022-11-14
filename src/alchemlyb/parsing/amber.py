@@ -250,6 +250,10 @@ def file_validation(outfile):
             raise ValueError(f'no "ATOMIC" section found in file {outfile}')
 
         t0, = secp.extract_section('^ begin time', '^$', ['coords'])
+        if t0 is None:
+            logger.error('No starting simulation time in file %s.', outfile)
+            raise ValueError(f'No starting simulation time in file {outfile}')
+
         if not secp.skip_after('^   4.  RESULTS'):
             logger.error('No "RESULTS" section found in the file %s.', outfile)
             raise ValueError(f'no "RESULTS" section found in file {outfile}')
