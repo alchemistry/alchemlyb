@@ -113,7 +113,7 @@ class SectionParser():
         line = ''.join(lines)
         result = []
         for field in fields:
-            match = re.search(fr' {field}\s+=\s+(\*+|{_FP_RE}|\d+)', line)
+            match = re.search(fr' {field}\s*=\s*(\*+|{_FP_RE}|\d+)', line)
             if match:
                 value = match.group(1)
                 if '*' in value:  # catch fortran format overflow
