@@ -13,6 +13,15 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+  * 1.0.1
+
+Fixes
+  - AMBER parser now raises ValueError when the initial simulation time
+    is not found (issue #272, PR #273).
+  - The regex in the AMBER parser now reads also 'field=value' pairs where
+    there are no spaces around the equal sign (issue #272, PR #273).
+
+
 10/31/2022 orbeckst, xiki-tempula, DrDomenicoMarson 
 
   * 1.0.0
