@@ -136,7 +136,8 @@ def test_parse_without_spaces_around_equal(testfiles):
     spaces around the equal sign
     """
     filename = testfiles["no_spaces_around_equal"][0]
-    _ = extract(str(filename), T=298.0)
+    df = extract(str(filename), T=298.0)
+    assert isinstance(df, pd.DataFrame)
 
 
 ##################################################################################
