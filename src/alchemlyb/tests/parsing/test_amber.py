@@ -4,6 +4,7 @@
 import logging
 import pytest
 from numpy.testing import assert_allclose
+import pandas as pd
 
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemlyb.parsing.amber import extract_u_nk
@@ -136,8 +137,8 @@ def test_parse_without_spaces_around_equal(testfiles):
     spaces around the equal sign
     """
     filename = testfiles["no_spaces_around_equal"][0]
-    df = extract(str(filename), T=298.0)
-    assert isinstance(df, pd.DataFrame)
+    df_dict = extract(str(filename), T=298.0)
+    assert isinstance(df_dict['dHdl'], pd.DataFrame)
 
 
 ##################################################################################
