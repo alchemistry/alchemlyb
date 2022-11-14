@@ -4,6 +4,7 @@
 import logging
 import pytest
 from numpy.testing import assert_allclose
+import pandas as pd
 
 from alchemlyb.parsing.amber import extract_dHdl
 from alchemlyb.parsing.amber import extract_u_nk
@@ -119,6 +120,25 @@ def test_long_and_wrong_number_MBAR(caplog, testfiles):
         with caplog.at_level(logging.ERROR):
             _ = extract_u_nk(str(filename), T=300.0)
     assert 'the number of lambda windows read' in caplog.text
+
+
+def test_no_starting_time(caplog, testfiles):
+    """Test if raise an exception if the starting time is not read"""
+    filename = testfiles["no_starting_simulation_time"][0]
+    with pytest.raises(ValueError, match='No starting simulation time in file'):
+        with caplog.at_level(logging.ERROR):
+            _ = extract(str(filename), T=298.0)
+    assert 'No starting simulation time in file' in caplog.text
+
+
+def test_parse_without_spaces_around_equal(testfiles):
+    """
+    Test if the regex is able to extract values where the are no
+    spaces around the equal sign
+    """
+    filename = testfiles["no_spaces_around_equal"][0]
+    df_dict = extract(str(filename), T=298.0)
+    assert isinstance(df_dict['dHdl'], pd.DataFrame)
 
 
 ##################################################################################
