@@ -7,13 +7,14 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 import alchemlyb
-from alchemlyb.parsing import gmx
+from alchemlyb.parsing import gmx, namd
 from alchemlyb.preprocessing import (slicing, statistical_inefficiency,
                                      equilibrium_detection,
                                      decorrelate_u_nk, decorrelate_dhdl,
                                      u_nk2series, dhdl2series)
 from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
 from alchemtest.gmx import load_benzene, load_ABFE
+from alchemtest.namd import load_idws
 
 import alchemtest.gmx
 
@@ -85,6 +86,20 @@ class TestSlicing:
                                                 (gmx_benzene_u_nk(), 661)])
     def test_basic_slicing(self, data, size):
         assert len(self.slicer(data, lower=1000, upper=34000, step=5)) == size
+
+    def test_unchanged(self):
+        # NAMD energy files only have dE for adjacent lambdas, this ensures
+        # that the slicer will not drop these rows as they have NaN values.
+        file = load_idws().data['forward'][0]
+        u_nk = namd.extract_u_nk(file, 298)
+
+        # Do the pre-processing as the u_nk are from all lambdas
+        groups = u_nk.groupby('fep-lambda')
+        for key, group in groups:
+            group = group[~group.index.duplicated(keep='first')]
+            df = self.slicer(group, None, None, None)
+            assert len(df) == len(group)
+            break
 
     @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
