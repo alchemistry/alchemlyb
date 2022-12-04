@@ -1,5 +1,5 @@
 import pytest
-from alchemtest.amber import load_bace_example
+from alchemtest.amber import load_bace_example, load_simplesolvated
 from alchemtest.gmx import (
     load_benzene,
     load_expanded_ensemble_case_1,
@@ -30,6 +30,11 @@ def gmx_benzene():
 @pytest.fixture
 def gmx_benzene_Coulomb_dHdl(gmx_benzene):
     return [gmx.extract_dHdl(file, T=300) for file in gmx_benzene["Coulomb"]]
+
+
+@pytest.fixture
+def gmx_benzene_VDW_dHdl(gmx_benzene):
+    return [gmx.extract_dHdl(file, T=300) for file in gmx_benzene["VDW"]]
 
 
 @pytest.fixture
@@ -69,11 +74,31 @@ def gmx_expanded_ensemble_case_1():
 
 
 @pytest.fixture
+def gmx_expanded_ensemble_case_1_dHdl():
+    dataset = load_expanded_ensemble_case_1()
+
+    return [
+        gmx.extract_dHdl(filename, T=300, filter=False)
+        for filename in dataset["data"]["AllStates"]
+    ]
+
+
+@pytest.fixture
 def gmx_expanded_ensemble_case_2():
     dataset = load_expanded_ensemble_case_2()
 
     return [
         gmx.extract_u_nk(filename, T=300, filter=False)
+        for filename in dataset["data"]["AllStates"]
+    ]
+
+
+@pytest.fixture
+def gmx_expanded_ensemble_case_2_dHdl():
+    dataset = load_expanded_ensemble_case_2()
+
+    return [
+        gmx.extract_dHdl(filename, T=300, filter=False)
         for filename in dataset["data"]["AllStates"]
     ]
 
@@ -89,11 +114,30 @@ def gmx_expanded_ensemble_case_3():
 
 
 @pytest.fixture
+def gmx_expanded_ensemble_case_3_dHdl():
+    dataset = load_expanded_ensemble_case_3()
+
+    return [
+        gmx.extract_dHdl(filename, T=300, filter=False)
+        for filename in dataset["data"]["AllStates"]
+    ]
+
+
+@pytest.fixture
 def gmx_water_particle_with_total_energy():
     dataset = load_water_particle_with_total_energy()
 
     return [
         gmx.extract_u_nk(filename, T=300) for filename in dataset["data"]["AllStates"]
+    ]
+
+
+@pytest.fixture
+def gmx_water_particle_with_total_energy_dHdl():
+    dataset = load_water_particle_with_total_energy()
+
+    return [
+        gmx.extract_dHdl(filename, T=300) for filename in dataset["data"]["AllStates"]
     ]
 
 
@@ -107,11 +151,52 @@ def gmx_water_particle_with_potential_energy():
 
 
 @pytest.fixture
+def gmx_water_particle_with_potential_energy_dHdl():
+    dataset = load_water_particle_with_potential_energy()
+
+    return [
+        gmx.extract_dHdl(filename, T=300) for filename in dataset["data"]["AllStates"]
+    ]
+
+
+@pytest.fixture
 def gmx_water_particle_without_energy():
     dataset = load_water_particle_without_energy()
 
     return [
         gmx.extract_u_nk(filename, T=300) for filename in dataset["data"]["AllStates"]
+    ]
+
+
+@pytest.fixture
+def gmx_water_particle_without_energy_dHdl():
+    dataset = load_water_particle_without_energy()
+
+    return [
+        gmx.extract_dHdl(filename, T=300) for filename in dataset["data"]["AllStates"]
+    ]
+
+
+@pytest.fixture
+def amber_simplesolvated():
+    dataset = load_simplesolvated()
+    return dataset["data"]
+
+
+@pytest.fixture
+def amber_simplesolvated_charge_dHdl(amber_simplesolvated):
+    return [
+        amber.extract_dHdl(filename, T=298.0)
+        for filename in amber_simplesolvated["charge"]
+    ]
+
+
+@pytest.fixture
+def amber_simplesolvated_vdw_dHdl(amber_simplesolvated):
+
+    return [
+        amber.extract_dHdl(filename, T=298.0)
+        for filename in amber_simplesolvated["vdw"]
     ]
 
 
@@ -126,10 +211,19 @@ def amber_bace_example_complex_vdw():
 
 
 @pytest.fixture
-def gomc_benzene_u_nk():
+def gomc_benzene():
     dataset = gomc_load_benzene()
+    return dataset["data"]
 
-    return [gomc.extract_u_nk(filename, T=298) for filename in dataset["data"]]
+
+@pytest.fixture
+def gomc_benzene_u_nk(gomc_benzene):
+    return [gomc.extract_u_nk(filename, T=298) for filename in gomc_benzene]
+
+
+@pytest.fixture
+def gomc_benzene_dHdl(gomc_benzene):
+    return [gomc.extract_dHdl(filename, T=298) for filename in gomc_benzene]
 
 
 @pytest.fixture

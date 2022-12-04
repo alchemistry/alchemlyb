@@ -3,11 +3,9 @@
 """
 import numpy as np
 import pytest
-from alchemtest.gmx import load_benzene
 from numpy.testing import assert_allclose
 
 import alchemlyb
-from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
 from alchemlyb.preprocessing import (
     slicing,
     statistical_inefficiency,
@@ -17,52 +15,6 @@ from alchemlyb.preprocessing import (
     u_nk2series,
     dhdl2series,
 )
-
-
-# def gmx_benzene_dHdl():
-#     dataset = alchemtest.gmx.load_benzene()
-#     return gmx.extract_dHdl(dataset['data']['Coulomb'][0], T=300)
-#
-# # When issue #206 is addressed make the gmx_benzene_dHdl() function the
-# # fixture, remove the wrapper below, and replace
-# # gmx_benzene_dHdl_fixture --> gmx_benzene_dHdl
-# @pytest.fixture()
-# def gmx_benzene_dHdl_fixture():
-#     return gmx_benzene_dHdl()
-#
-# @pytest.fixture()
-# def gmx_ABFE():
-#     dataset = alchemtest.gmx.load_ABFE()
-#     return gmx.extract_u_nk(dataset['data']['complex'][0], T=300)
-#
-# @pytest.fixture()
-# def gmx_ABFE_dhdl():
-#     dataset = alchemtest.gmx.load_ABFE()
-#     return gmx.extract_dHdl(dataset['data']['complex'][0], T=300)
-#
-# @pytest.fixture()
-# def gmx_ABFE_u_nk():
-#     dataset = alchemtest.gmx.load_ABFE()
-#     return gmx.extract_u_nk(dataset['data']['complex'][-1], T=300)
-#
-# @pytest.fixture()
-# def gmx_benzene_u_nk_fixture():
-#     dataset = alchemtest.gmx.load_benzene()
-#     return gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
-#
-# def gmx_benzene_u_nk():
-#     dataset = alchemtest.gmx.load_benzene()
-#     return gmx.extract_u_nk(dataset['data']['Coulomb'][0], T=300)
-#
-#
-# def gmx_benzene_dHdl_full():
-#     dataset = alchemtest.gmx.load_benzene()
-#     return alchemlyb.concat([gmx.extract_dHdl(i, T=300) for i in dataset['data']['Coulomb']])
-#
-#
-# def gmx_benzene_u_nk_full():
-#     dataset = alchemtest.gmx.load_benzene()
-#     return alchemlyb.concat([gmx.extract_u_nk(i, T=300) for i in dataset['data']['Coulomb']])
 
 
 def _check_data_is_outside_bounds(data, lower, upper):
@@ -91,6 +43,11 @@ def multi_index_u_nk(gmx_ABFE_complex_n_uk):
     return gmx_ABFE_complex_n_uk[0]
 
 
+@pytest.fixture()
+def multi_index_dHdl(gmx_ABFE_complex_dHdl):
+    return gmx_ABFE_complex_dHdl[0]
+
+
 class TestSlicing:
     """Test slicing functionality."""
 
@@ -102,7 +59,7 @@ class TestSlicing:
         assert (
             len(
                 self.slicer(
-                    request.getfixturevalue(data)[0], lower=1000, upper=34000, step=5
+                    request.getfixturevalue(data), lower=1000, upper=34000, step=5
                 )
             )
             == size
@@ -163,10 +120,12 @@ class TestSlicing:
         with pytest.raises(KeyError):
             self.slicer(df, lower=200)
 
-    @pytest.mark.parametrize("dataloader", ["dHdl", "u_nk"])
+    @pytest.mark.parametrize(
+        "dataloader", ["gmx_benzene_Coulomb_dHdl", "gmx_benzene_Coulomb_u_nk"]
+    )
     def test_duplicated_exception(self, dataloader, request):
         """Test that a DataFrame with duplicate times yields a KeyError."""
-        data = request.getfixturevalue(dataloader)
+        data = alchemlyb.concat(request.getfixturevalue(dataloader))
         with pytest.raises(KeyError):
             self.slicer(data.sort_index(axis=0), lower=200)
 
@@ -278,20 +237,21 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
     @pytest.mark.parametrize(
         "dataloader,end,step",
         [
-            gmx_benzene_dHdl()["fep"][:20],  # wrong length
-            gmx_benzene_dHdl()["fep"][::-1],  # wrong time stamps (reversed)
+            ("dHdl", 20, None),  # wrong length
+            ("dHdl", None, -1),  # wrong time stamps (reversed)
         ],
     )
-    def test_raise_ValueError_for_mismatched_data(self, series):
-        data = gmx_benzene_dHdl()
+    def test_raise_ValueError_for_mismatched_data(self, dataloader, end, step, request):
+
+        data = request.getfixturevalue(dataloader)
         with pytest.raises(ValueError):
-            self.slicer(data, series=series)
+            self.slicer(data, series=data[:end:step])
 
     @pytest.mark.parametrize(
         ("dataloader", "lower", "upper"),
         [
-            ("gmx_benzene_dHdl_fixture", 1000, 34000),
-            ("gmx_benzene_u_nk_fixture", 1000, 34000),
+            ("dHdl", 1000, 34000),
+            ("u_nk", 1000, 34000),
         ],
     )
     @pytest.mark.parametrize("use_series", [True, False])
@@ -330,8 +290,8 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
     @pytest.mark.parametrize(
         ("dataloader", "lower", "upper"),
         [
-            ("gmx_benzene_dHdl_fixture", 1000, 34000),
-            ("gmx_benzene_u_nk_fixture", 1000, 34000),
+            ("dHdl", 1000, 34000),
+            ("u_nk", 1000, 34000),
         ],
     )
     @pytest.mark.parametrize("use_series", [True, False])
@@ -371,8 +331,8 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
     @pytest.mark.parametrize(
         ("dataloader", "lower", "upper"),
         [
-            ("gmx_benzene_dHdl_fixture", 1000, 34000),
-            ("gmx_benzene_u_nk_fixture", 1000, 34000),
+            ("dHdl", 1000, 34000),
+            ("u_nk", 1000, 34000),
         ],
     )
     @pytest.mark.parametrize("conservative", [True, False])
@@ -415,55 +375,38 @@ class TestEquilibriumDetection(TestSlicing, CorrelatedPreprocessors):
 class Test_Units:
     """Test the preprocessing module."""
 
-    @staticmethod
-    @pytest.fixture(scope="class")
-    def dhdl():
-        dataset = load_benzene()
-        dhdl = extract_dHdl(dataset["data"]["Coulomb"][0], 310)
-        return dhdl
-
-    def test_slicing(self, dhdl):
+    def test_slicing(self, u_nk):
         """Test if extract_u_nk assign the attr correctly"""
-        dataset = load_benzene()
-        u_nk = extract_u_nk(dataset["data"]["Coulomb"][0], 310)
         new_u_nk = slicing(u_nk)
-        assert new_u_nk.attrs["temperature"] == 310
+        assert new_u_nk.attrs["temperature"] == 300
         assert new_u_nk.attrs["energy_unit"] == "kT"
 
-    def test_statistical_inefficiency(self, dhdl):
+    def test_statistical_inefficiency(self, dHdl):
         """Test if extract_u_nk assign the attr correctly"""
-        dataset = load_benzene()
-        dhdl = extract_dHdl(dataset["data"]["Coulomb"][0], 310)
-        new_dhdl = statistical_inefficiency(dhdl)
-        assert new_dhdl.attrs["temperature"] == 310
+        new_dhdl = statistical_inefficiency(dHdl)
+        assert new_dhdl.attrs["temperature"] == 300
         assert new_dhdl.attrs["energy_unit"] == "kT"
 
-    def test_equilibrium_detection(self, dhdl):
+    def test_equilibrium_detection(self, dHdl):
         """Test if extract_u_nk assign the attr correctly"""
-        dataset = load_benzene()
-        dhdl = extract_dHdl(dataset["data"]["Coulomb"][0], 310)
-        new_dhdl = equilibrium_detection(dhdl)
-        assert new_dhdl.attrs["temperature"] == 310
+        new_dhdl = equilibrium_detection(dHdl)
+        assert new_dhdl.attrs["temperature"] == 300
         assert new_dhdl.attrs["energy_unit"] == "kT"
 
 
 @pytest.mark.parametrize(("method", "size"), [("all", 2001), ("dE", 2001)])
-def test_decorrelate_u_nk_single_l(gmx_benzene_u_nk_fixture, method, size):
+def test_decorrelate_u_nk_single_l(u_nk, method, size):
     assert (
-        len(
-            decorrelate_u_nk(
-                gmx_benzene_u_nk_fixture, method=method, drop_duplicates=True, sort=True
-            )
-        )
+        len(decorrelate_u_nk(u_nk, method=method, drop_duplicates=True, sort=True))
         == size
     )
 
 
-def test_decorrelate_u_nk_burnin(gmx_benzene_u_nk_fixture):
+def test_decorrelate_u_nk_burnin(u_nk):
     assert (
         len(
             decorrelate_u_nk(
-                gmx_benzene_u_nk_fixture,
+                u_nk,
                 method="dE",
                 drop_duplicates=True,
                 sort=True,
@@ -474,11 +417,11 @@ def test_decorrelate_u_nk_burnin(gmx_benzene_u_nk_fixture):
     )
 
 
-def test_decorrelate_dhdl_burnin(gmx_benzene_dHdl_fixture):
+def test_decorrelate_dhdl_burnin(dHdl):
     assert (
         len(
             decorrelate_dhdl(
-                gmx_benzene_dHdl_fixture,
+                dHdl,
                 drop_duplicates=True,
                 sort=True,
                 remove_burnin=True,
@@ -488,12 +431,12 @@ def test_decorrelate_dhdl_burnin(gmx_benzene_dHdl_fixture):
     )
 
 
-@pytest.mark.parametrize(("method", "size"), [("all", 1001), ("dE", 334)])
-def test_decorrelate_u_nk_multiple_l(gmx_ABFE_u_nk, method, size):
+@pytest.mark.parametrize(("method", "size"), [("all", 501), ("dE", 501)])
+def test_decorrelate_u_nk_multiple_l(multi_index_u_nk, method, size):
     assert (
         len(
             decorrelate_u_nk(
-                gmx_ABFE_u_nk,
+                multi_index_u_nk,
                 method=method,
             )
         )
@@ -501,60 +444,43 @@ def test_decorrelate_u_nk_multiple_l(gmx_ABFE_u_nk, method, size):
     )
 
 
-def test_decorrelate_dhdl_single_l(gmx_benzene_u_nk_fixture):
-    assert (
-        len(decorrelate_dhdl(gmx_benzene_u_nk_fixture, drop_duplicates=True, sort=True))
-        == 2001
-    )
+def test_decorrelate_dhdl_single_l(u_nk):
+    assert len(decorrelate_dhdl(u_nk, drop_duplicates=True, sort=True)) == 2001
 
 
-def test_decorrelate_dhdl_multiple_l(gmx_ABFE_dhdl):
+def test_decorrelate_dhdl_multiple_l(multi_index_dHdl):
     assert (
         len(
             decorrelate_dhdl(
-                gmx_ABFE_dhdl,
+                multi_index_dHdl,
             )
         )
         == 501
     )
 
 
-def test_raise_non_uk(gmx_ABFE_dhdl):
+def test_raise_non_uk(multi_index_dHdl):
     with pytest.raises(ValueError):
         decorrelate_u_nk(
-            gmx_ABFE_dhdl,
+            multi_index_dHdl,
         )
 
 
 class TestDhdl2series:
-    @staticmethod
-    @pytest.fixture(scope="class")
-    def dhdl():
-        dataset = load_benzene()
-        dhdl = extract_dHdl(dataset["data"]["Coulomb"][0], 300)
-        return dhdl
-
     @pytest.mark.parametrize("methodargs", [{}, {"method": "all"}])
-    def test_dhdl2series(self, dhdl, methodargs):
-        series = dhdl2series(dhdl, **methodargs)
-        assert len(series) == len(dhdl)
-        assert_allclose(series, dhdl.sum(axis=1))
+    def test_dhdl2series(self, dHdl, methodargs):
+        series = dhdl2series(dHdl, **methodargs)
+        assert len(series) == len(dHdl)
+        assert_allclose(series, dHdl.sum(axis=1))
 
-    def test_other_method_ValueError(self, dhdl):
+    def test_other_method_ValueError(self, dHdl):
         with pytest.raises(
             ValueError, match="Only method='all' is supported for dhdl2series()."
         ):
-            dhdl2series(dhdl, method="dE")
+            dhdl2series(dHdl, method="dE")
 
 
 class TestU_nk2series:
-    @staticmethod
-    @pytest.fixture(scope="class")
-    def u_nk():
-        dataset = load_benzene()
-        u_nk = extract_u_nk(dataset["data"]["Coulomb"][0], 300)
-        return u_nk
-
     @pytest.mark.parametrize(
         "methodargs,reference",  # reference = sum
         [
