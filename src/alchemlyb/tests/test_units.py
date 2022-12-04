@@ -1,10 +1,8 @@
 import pandas as pd
 import pytest
-from alchemtest.gmx import load_benzene
 
 import alchemlyb
 from alchemlyb import pass_attrs
-from alchemlyb.parsing.gmx import extract_u_nk
 from alchemlyb.postprocessors.units import to_kT
 from alchemlyb.preprocessing import (
     dhdl2series,
@@ -22,20 +20,23 @@ def dHdl(gmx_benzene_Coulomb_dHdl):
     return gmx_benzene_Coulomb_dHdl[0]
 
 
+@pytest.fixture
+def u_nk(gmx_benzene_Coulomb_u_nk):
+    return gmx_benzene_Coulomb_u_nk[0]
+
+
 def test_noT(dHdl):
     """Test no temperature error"""
-    dhdl = dHdl.copy()
-    dhdl.attrs.pop("temperature", None)
+    dHdl.attrs.pop("temperature", None)
     with pytest.raises(TypeError):
-        to_kT(dhdl)
+        to_kT(dHdl)
 
 
 def test_nounit(dHdl):
     """Test no unit error"""
-    dhdl = dHdl.copy()
-    dhdl.attrs.pop("energy_unit", None)
+    dHdl.attrs.pop("energy_unit", None)
     with pytest.raises(TypeError):
-        to_kT(dhdl)
+        to_kT(dHdl)
 
 
 def test_concat():
@@ -66,43 +67,38 @@ def test_setT():
 class Test_Conversion:
     """Test the preprocessing module."""
 
-    def test_kt2kt_number(self, dhdl):
-        new_dhdl = to_kT(dhdl)
+    def test_kt2kt_number(self, dHdl):
+        new_dhdl = to_kT(dHdl)
         assert 12.9 == pytest.approx(new_dhdl.loc[(0.0, 0.0)], 0.1)
 
-    def test_kt2kt_unit(self, dhdl):
-        new_dhdl = to_kT(dhdl)
+    def test_kt2kt_unit(self, dHdl):
+        new_dhdl = to_kT(dHdl)
         assert new_dhdl.attrs["energy_unit"] == "kT"
 
-    def test_kj2kt_unit(self, dhdl):
-        dhdl = dHdl.copy()
-        dhdl.attrs["energy_unit"] = "kJ/mol"
-        new_dhdl = to_kT(dhdl)
+    def test_kj2kt_unit(self, dHdl):
+        dHdl.attrs["energy_unit"] = "kJ/mol"
+        new_dhdl = to_kT(dHdl)
         assert new_dhdl.attrs["energy_unit"] == "kT"
 
-    def test_kj2kt_number(self, dhdl):
-        dhdl = dHdl.copy()
-        dhdl.attrs["energy_unit"] = "kJ/mol"
-        new_dhdl = to_kT(dhdl)
+    def test_kj2kt_number(self, dHdl):
+        dHdl.attrs["energy_unit"] = "kJ/mol"
+        new_dhdl = to_kT(dHdl)
         assert 5.0 == pytest.approx(new_dhdl.loc[(0.0, 0.0)], 0.1)
 
-    def test_kcal2kt_unit(self, dhdl):
-        dhdl = dHdl.copy()
-        dhdl.attrs["energy_unit"] = "kcal/mol"
-        new_dhdl = to_kT(dhdl)
+    def test_kcal2kt_unit(self, dHdl):
+        dHdl.attrs["energy_unit"] = "kcal/mol"
+        new_dhdl = to_kT(dHdl)
         assert new_dhdl.attrs["energy_unit"] == "kT"
 
-    def test_kcal2kt_number(self, dhdl):
-        dhdl = dHdl.copy()
-        dhdl.attrs["energy_unit"] = "kcal/mol"
-        new_dhdl = to_kT(dhdl)
+    def test_kcal2kt_number(self, dHdl):
+        dHdl.attrs["energy_unit"] = "kcal/mol"
+        new_dhdl = to_kT(dHdl)
         assert 21.0 == pytest.approx(new_dhdl.loc[(0.0, 0.0)], 0.1)
 
-    def test_unknown2kt(self, dhdl):
-        dhdl = dHdl.copy()
-        dhdl.attrs["energy_unit"] = "ddd"
+    def test_unknown2kt(self, dHdl):
+        dHdl.attrs["energy_unit"] = "ddd"
         with pytest.raises(ValueError):
-            to_kT(dhdl)
+            to_kT(dHdl)
 
 
 def test_pd_concat():
@@ -147,23 +143,16 @@ class TestRetainUnit:
     """This test tests if the functions that should retain the unit would actually
     retain the units."""
 
-    @staticmethod
-    @pytest.fixture(scope="class")
-    def u_nk():
-        dataset = load_benzene()
-        u_nk = extract_u_nk(dataset["data"]["Coulomb"][0], 310)
-        return u_nk
-
     @pytest.mark.parametrize(
         "func,fixture_in",
         [
-            (dhdl2series, "dhdl"),
+            (dhdl2series, "dHdl"),
             (u_nk2series, "u_nk"),
             (decorrelate_u_nk, "u_nk"),
-            (decorrelate_dhdl, "dhdl"),
-            (slicing, "dhdl"),
-            (statistical_inefficiency, "dhdl"),
-            (equilibrium_detection, "dhdl"),
+            (decorrelate_dhdl, "dHdl"),
+            (slicing, "dHdl"),
+            (statistical_inefficiency, "dHdl"),
+            (equilibrium_detection, "dHdl"),
         ],
     )
     def test_function(self, func, fixture_in, request):
