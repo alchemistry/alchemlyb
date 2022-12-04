@@ -139,6 +139,8 @@ class FEPestimatorMixin:
         assert X_delta_f[2] == pytest.approx(d_delta_f, rel=1e-3)
 
     def get_delta_f(self, est):
+        # Use .iloc[0, -1] as we want to cater for both
+        # delta_f_.loc[0.0, 1.0] and delta_f_.loc[(0.0, 0.0), (0.0, 1.0)]
         return est.delta_f_.iloc[0, -1], est.d_delta_f_.iloc[0, -1]
 
 
@@ -227,6 +229,8 @@ class TestBAR(FEPestimatorMixin):
 
         for i in range(len(est.d_delta_f_) - 1):
             ee += est.d_delta_f_.values[i][i+1]**2
+        # Use .iloc[0, -1] as we want to cater for both
+        # delta_f_.loc[0.0, 1.0] and delta_f_.loc[(0.0, 0.0), (0.0, 1.0)]
         return est.delta_f_.iloc[0, -1], ee**0.5
 
 class Test_Units():
