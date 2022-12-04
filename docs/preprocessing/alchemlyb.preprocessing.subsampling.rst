@@ -43,7 +43,7 @@ the autocorrection analysis. The series could be generated with
     >>>     dhdl2series, statistical_inefficiency, equilibrium_detection)
     >>> bz = load_benzene().data
     >>> u_nk = extract_u_nk(bz['Coulomb'], T=300)
-    >>> u_nk_series = u_nk2series(u_nk, method='dhdl')
+    >>> u_nk_series = u_nk2series(u_nk, method='dE')
     >>> decorrelate_u_nk = statistical_inefficiency(u_nk, series=u_nk_series)
     >>> decorrelate_u_nk = equilibrium_detection(u_nk, series=u_nk_series)
     >>> dhdl = extract_dHdl(bz['Coulomb'], T=300)

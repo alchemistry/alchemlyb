@@ -3,10 +3,11 @@ import pandas as pd
 import logging
 
 from sklearn.base import BaseEstimator
-
 import pymbar
 
-class MBAR(BaseEstimator):
+from .base import _EstimatorMixOut
+
+class MBAR(BaseEstimator, _EstimatorMixOut):
     """Multi-state Bennett acceptance ratio (MBAR).
 
     Parameters
@@ -19,7 +20,7 @@ class MBAR(BaseEstimator):
         Set to determine the relative tolerance convergence criteria.
 
     initial_f_k : np.ndarray, float, shape=(K), optional
-        Set to the initial dimensionless free energies to use as a 
+        Set to the initial dimensionless free energies to use as a
         guess (default None, which sets all f_k = 0).
 
     method : str, optional, default="hybr"
@@ -46,9 +47,19 @@ class MBAR(BaseEstimator):
     states_ : list
         Lambda states for which free energy differences were obtained.
 
+    Notes
+    -----
+    See [Shirts2008]_ for details of the derivation and cite the
+    paper when using MBAR in published work.
+
     See Also
     --------
-    pymbar.MBAR
+    pymbar.mbar.MBAR
+    AutoMBAR
+
+
+    .. versionchanged:: 1.0.0
+       `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
     """
 
     def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
@@ -70,7 +81,7 @@ class MBAR(BaseEstimator):
 
         Parameters
         ----------
-        u_nk : DataFrame 
+        u_nk : DataFrame
             u_nk[n,k] is the reduced potential energy of uncorrelated
             configuration n evaluated at state k.
 
@@ -81,7 +92,7 @@ class MBAR(BaseEstimator):
         groups = u_nk.groupby(level=u_nk.index.names[1:])
         N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in
                u_nk.columns]
-        self.states_ = u_nk.columns.values.tolist()
+        self._states_ = u_nk.columns.values.tolist()
 
         # Prepare the solver_protocol as stated in https://github.com/choderalab/pymbar/issues/419#issuecomment-803714103
         solver_options = {"maximum_iterations": self.maximum_iterations,
@@ -92,14 +103,14 @@ class MBAR(BaseEstimator):
         self._mbar, out = self._do_MBAR(u_nk, N_k, solver_protocol)
 
         free_energy_differences = [pd.DataFrame(i,
-                                                columns=self.states_,
-                                                index=self.states_) for i in
+                                                columns=self._states_,
+                                                index=self._states_) for i in
                                    out]
 
-        (self.delta_f_, self.d_delta_f_, self.theta_) = free_energy_differences
+        (self._delta_f_, self._d_delta_f_, self.theta_) = free_energy_differences
 
-        self.delta_f_.attrs = u_nk.attrs
-        self.d_delta_f_.attrs = u_nk.attrs
+        self._delta_f_.attrs = u_nk.attrs
+        self._d_delta_f_.attrs = u_nk.attrs
 
         return self
 
@@ -112,7 +123,7 @@ class MBAR(BaseEstimator):
                      initial_f_k=self.initial_f_k,
                      solver_protocol=(solver_protocol,))
         self.logger.info("Solved MBAR equations with method %r and "
-                         "maximum_iterations=%d, relative_tolerance=%g", 
+                         "maximum_iterations=%d, relative_tolerance=%g",
                          solver_protocol['method'],
                          solver_protocol['options']['maximum_iterations'],
                          self.relative_tolerance)
@@ -140,16 +151,16 @@ class MBAR(BaseEstimator):
 class AutoMBAR(MBAR):
     """A more robust version of Multi-state Bennett acceptance ratio (MBAR).
 
-    Given that there isn't a single *method* that would allow :class:`MBAR` 
-    to converge for every single use case, the :class:`AutoMBAR` estimator 
-    iteratively tries all the available methods to obtain the converged estimate. 
-    
+    Given that there isn't a single *method* that would allow :class:`MBAR`
+    to converge for every single use case, the :class:`AutoMBAR` estimator
+    iteratively tries all the available methods to obtain the converged estimate.
+
     The fastest method *hybr* will be tried first, followed by the most stable method
-    *adaptive*. If *adaptive* does not converge, *BFGS* will be used as last resort. 
-    Although *BFGS* is not as stable as *adaptive*, it has been shown to succeed in  
+    *adaptive*. If *adaptive* does not converge, *BFGS* will be used as last resort.
+    Although *BFGS* is not as stable as *adaptive*, it has been shown to succeed in
     some cases where *adaptive* cannot.
 
-    :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid 
+    :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid
     failures due non-converged MBAR estimates.
 
     Parameters
@@ -161,17 +172,17 @@ class AutoMBAR(MBAR):
         as MBAR.
 
         .. versionadded:: 1.0.0
-        
+
 
     Note
     ----
-    All arguments are described under :class:`MBAR` except that the solver method 
+    All arguments are described under :class:`MBAR` except that the solver method
     is determined by :class:`AutoMBAR` as described above.
 
     See Also
     --------
     MBAR
-    
+
 
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0

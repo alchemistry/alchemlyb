@@ -1,19 +1,22 @@
 """Functions for subsampling datasets.
 
 """
+import warnings
+
 import pandas as pd
 from pymbar.timeseries import (statisticalInefficiency,
                                detectEquilibration,
                                subsampleCorrelatedData, )
+from .. import pass_attrs
 
-def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
+def decorrelate_u_nk(df, method='dE', drop_duplicates=True,
                      sort=True, remove_burnin=False, **kwargs):
-    """Subsample a u_nk DataFrame based on the selected method.
-    The method can be either 'dhdl_all' (obtained as a sum over all energy
-    components) or 'dhdl' (obtained as the energy components that are
-    changing; default) or 'dE'. In the latter case the energy differences
-    dE_{i,i+1} (dE_{i,i-1} for the last lambda) are used.
-    This is a wrapper function around the function
+    """Subsample an u_nk DataFrame based on the selected method.
+
+    The method can be either 'all' (obtained as a sum over all energy
+    components) or 'dE'. In the latter case the energy differences
+    :math:`dE_{i,i+1}` (:math:`dE_{i,i-1}` for the last lambda) are used.  This
+    is a wrapper function around the function
     :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency` or
     :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
 
@@ -21,7 +24,7 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     ----------
     df : DataFrame
         DataFrame to be subsampled according to the selected method.
-    method : {'dhdl', 'dhdl_all', 'dE'}
+    method : {'all', 'dE'}
         Method for decorrelating the data.
     drop_duplicates : bool
         Drop the duplicated lines based on time.
@@ -30,6 +33,9 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
     remove_burnin : bool
         Whether to perform equilibrium detection (``True``) or just do
         statistical inefficiency (``False``).
+
+        .. versionadded:: 1.0.0
+
     **kwargs :
         Additional keyword arguments for
         :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
@@ -46,7 +52,10 @@ def decorrelate_u_nk(df, method='dhdl', drop_duplicates=True,
 
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
-       Add the remove_burnin keyword to allow unequilibrated frames to be removed.
+       Add the `remove_burnin` keyword to allow unequilibrated frames
+       to be removed. Rename `method` value 'dhdl_all' to 'all' and
+       deprecate the 'dhdl'.
+
     """
     kwargs['drop_duplicates'] = drop_duplicates
     kwargs['sort'] = sort
@@ -76,6 +85,9 @@ def decorrelate_dhdl(df, drop_duplicates=True, sort=True,
     remove_burnin : bool
         Whether to perform equilibrium detection (``True``) or just do
         statistical inefficiency (``False``).
+
+        .. versionadded:: 1.0.0
+
     **kwargs :
         Additional keyword arguments for
         :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
@@ -85,15 +97,18 @@ def decorrelate_dhdl(df, drop_duplicates=True, sort=True,
     -------
     DataFrame
         `df` subsampled.
+
     Note
     ----
-    The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
-    but can loose data.
+    The default of ``True`` for `drop_duplicates` and `sort` should result in
+    robust decorrelation but can loose data.
 
 
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
-       Add the remove_burnin keyword to allow unequilibrated frames to be removed.
+       Add the `remove_burnin` keyword to allow unequilibrated frames to be
+       removed.
+
     """
 
     kwargs['drop_duplicates'] = drop_duplicates
@@ -106,20 +121,20 @@ def decorrelate_dhdl(df, drop_duplicates=True, sort=True,
     else:
         return statistical_inefficiency(df, series, **kwargs)
 
-def u_nk2series(df, method='dhdl'):
+@pass_attrs
+def u_nk2series(df, method='dE'):
     """Convert an u_nk DataFrame into a series based on the selected method
     for subsampling.
 
-    The method can be either 'dhdl_all' (obtained as a sum over all energy
-    components) or 'dhdl' (obtained as the energy components that are
-    changing; default) or 'dE'. In the latter case the energy differences
-    dE_{i,i+1} (dE_{i,i-1} for the last lambda) are used.
+    The method can be either 'all' (obtained as a sum over all energy
+    components) or 'dE'. In the latter case the energy differences
+    :math:`dE_{i,i+1}` (:math:`dE_{i,i-1}` for the last lambda) are used.
 
     Parameters
     ----------
     df : DataFrame
         DataFrame to be converted according to the selected method.
-    method : {'dhdl', 'dhdl_all', 'dE'}
+    method : {'all', 'dE'}
         Method for converting the data.
 
     Returns
@@ -132,7 +147,24 @@ def u_nk2series(df, method='dhdl'):
 
 
     .. versionadded:: 1.0.0
+
     """
+
+    # deprecation: remove in 3.0.0
+    # (the deprecations should show up in the calling functions)
+    if method == 'dhdl':
+        warnings.warn("Method 'dhdl' has been deprecated, using 'dE' instead. "
+                      "'dhdl' will be removed in alchemlyb 3.0.0.",
+                      category=DeprecationWarning,
+                      stacklevel=2)
+        method = 'dE'
+    elif method == 'dhdl_all':
+        warnings.warn("Method 'dhdl_all' has been deprecated, using 'all' instead. "
+                      "'dhdl_all' will be removed in alchemlyb 3.0.0.",
+                      category=DeprecationWarning,
+                      stacklevel=2)
+        method = 'all'
+
     # Check if the input is u_nk
     try:
         key = df.index.values[0][1:]
@@ -142,17 +174,7 @@ def u_nk2series(df, method='dhdl'):
     except KeyError:
         raise ValueError('The input should be u_nk')
 
-    if method == 'dhdl':
-        # Find the current column index
-        # Select the first row and remove the first column (Time)
-        key = df.index.values[0][1:]
-        if len(key) > 1:
-            # Multiple keys
-            series = df[key]
-        else:
-            # Single key
-            series = df[key[0]]
-    elif method == 'dhdl_all':
+    if method == 'all':
         series = df.sum(axis=1)
     elif method == 'dE':
         # Using the same logic as alchemical-analysis
@@ -169,21 +191,29 @@ def u_nk2series(df, method='dhdl'):
             # for the state that is the last state, take the state-1
         else:
             series = df.iloc[:, index - 1]
-    else:  # pragma: no cover
+    else:
         raise ValueError(
             'Decorrelation method {} not found.'.format(method))
     return series
 
 
-def dhdl2series(df, method=''):
+@pass_attrs
+def dhdl2series(df, method='all'):
     """Convert a dhdl DataFrame to a series for subsampling.
+
+    The series is generated by summing over all energy components (axis 1 of
+    `df`), as for ``method='all'`` in :func:`u_nk2series`. Commonly, `df` only
+    contains a single energy component but in some cases (such as using a split
+    protocol in GROMACS), it can contain multiple columns for different energy
+    terms.
 
     Parameters
     ----------
     df : DataFrame
         DataFrame to subsample according to the selected method.
-    method : string
-        An input mirrored based on u_nk2series, not being used.
+    method : 'all'
+        Only 'all' is available; the keyword is provided for compatibility with
+        :func:`u_nk2series`.
 
     Returns
     -------
@@ -195,7 +225,10 @@ def dhdl2series(df, method=''):
 
 
     .. versionadded:: 1.0.0
+
     """
+    if method != "all":
+        raise ValueError("Only method='all' is supported for dhdl2series().")
     series = df.sum(axis=1)
     return series
 
@@ -433,7 +466,7 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None,
     .. versionchanged:: 1.0.0
        Fixed a bug that would effectively ignore the ``lower`` and ``step``
        keywords when returning the subsampled DataFrame object. See
-       `issue #198 <https://github.com/alchemistry/alchemlyb/issues/198>`_ for 
+       `issue #198 <https://github.com/alchemistry/alchemlyb/issues/198>`_ for
        more details.
 
     """
@@ -459,6 +492,9 @@ def statistical_inefficiency(df, series=None, lower=None, upper=None,
 def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
                           drop_duplicates=False, sort=False):
     """Subsample a DataFrame using automated equilibrium detection on a timeseries.
+
+    This function uses the :mod:`pymbar` implementation of the *simple
+    automated equilibrium detection* algorithm in [Chodera2016]_.
 
     If `series` is ``None``, then this function will behave the same as
     :func:`slicing`.
@@ -486,6 +522,10 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
     DataFrame
         `df` subsampled according to subsampled `series`.
 
+    Notes
+    -----
+    Please cite [Chodera2016]_ when you use this function in published work.
+
     See Also
     --------
     pymbar.timeseries.detectEquilibration : detailed background
@@ -493,9 +533,9 @@ def equilibrium_detection(df, series=None, lower=None, upper=None, step=None,
 
 
     .. versionchanged:: 1.0.0
-       Add the drop_duplicates and sort keyword to unify the behaviour between
-    :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency` or
-    :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
+        Add the drop_duplicates and sort keyword to unify the behaviour between
+        :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency` or
+        :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
 
     """
     df, series = _prepare_input(df, series, drop_duplicates, sort)

@@ -13,41 +13,71 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2022 orbeckst, xiki-tempula
+??/??/2022 DrDomenicoMarson
+
+  * 1.0.1
+
+Fixes
+  - AMBER parser now raises ValueError when the initial simulation time
+    is not found (issue #272, PR #273).
+  - The regex in the AMBER parser now reads also 'field=value' pairs where
+    there are no spaces around the equal sign (issue #272, PR #273).
+
+
+10/31/2022 orbeckst, xiki-tempula, DrDomenicoMarson 
 
   * 1.0.0
 
 Changes
+  - The 1.x release only supports pymbar 3.x; alchemlyb 2.x will only support
+    pymbar >= 4.0. (#205)
+  - Default the units in plot_dF_state, plot_convergence and plot_ti_dhdl to
+    None. Remove the array input for plot_convergence (issue #247, PR #260).
+  - Now AMBER parser raises an exception when an inconsinstency in the input
+    file is found, instead of ignoring the file (issues #227 #238, PR #256)
+  - Now AMBER parser raises an exception when an inconsistency in MBAR data is
+    found (PR #253)
   - Drop support for py3.7 (Issue #179, PR #214)
   - forward_backward_convergence will use AutoMBAR as backend when `MBAR` is
     selected as the estimator (PR #114).
   - AutoMBAR accepts the `method` argument (PR #114).
   - Refactor the subsampling module to unify the behaviour of
     equilibrium_detection and statistical_inefficiency (PR #218).
-  - Remove the ignore_warnings flag in ABFE workflow. (PR #231)
+  - delta_f_, d_delta_f_, states_ are view of the original object in estimator
+    (issue #246, PR #252).
 
 
 Enhancements
   - Add u_nk2series and dhdl2series to convert u_nk and dHdl to series (PR
     #218).
-  - Add remove_burnin keyword to decorrelate_u_nk and decorrelate_dhdl (PR #218).
+  - Add remove_burnin keyword to decorrelate_u_nk and decorrelate_dhdl (PR
+    #218).
   - Add a base class for workflows (PR #188).
-  - Add the ABFE workflow (PR #114).
+  - Add the ABFE workflow (PR #114, PR #231).
+  - Add R_c and A_c for "fractional equilibration time" convergence analysis
+    (issue #104, PR #239)
+  - Add the keyword arg final_error to plot_convergence (#249)
+  - All parsers now have a 'extract(file, T)' method that returns a dict with
+    both "dHdl" and "u_nk" data (or None). The AMBER parser when using this
+    function will read the file just once, extracting all data at once. (issue
+    #222, PR #240)
 
 
 Fixes
   - documented conda installation (available since 0.6.0) (#192)
-  - AMBER parsers now use 'ntpr' information to read time properly (issue #221, PR #224)
+  - AMBER parsers now use 'ntpr' information to read time properly (issue #221,
+    PR #224)
   - AMBER parsers now skip the reading of averages (issue #226, PR #230)
-  - AMBER parsers now check if the T provided by the user is the same
-    at which the simulations were run (issue #225, PR #232)
+  - AMBER parsers now check if the T provided by the user is the same at which
+    the simulations were run (issue #225, PR #232)
   - changed how int/float are read from AMBER files (issue #229, PR #235)
-  - substitute the any_none() function with a check "if None in" in the AMBER parser (issue #236, PR #237)
-  - For ABFE workflow, dHdl will only be read when a TI estimator is chosen.
-    Similarly, u_nk will only be read when FEP estimators are chosen. (PR #231)
-  - All parsers now have a 'extract(file, T)' method that returns a dict with both
-    "dHdl" and "u_nk" data (or None). THe AMBER parser when using this function will read the 
-    file just once, extracting all data at once. (issue #222, PR #240)
+  - substitute the any_none() function with a check "if None in" in the AMBER
+    parser (issue #236, PR #237)
+  - Fix dhdl2series and u_nk2series would not reattach the unit. (PR #248)
+  - Removed the 'dhdl' keyword for uncorrelating the u_nk (see
+    `u_nk2series()`). Use 'dE' as an alternative or use 'all' (instead of the
+    deprecated 'dhdl_all') (PR #250).
+
 
 07/22/2022 xiki-tempula, IAlibay, dotsdl, orbeckst, ptmerz
 
