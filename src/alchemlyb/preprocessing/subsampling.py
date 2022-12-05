@@ -380,6 +380,9 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
     DataFrame
         `df` subsampled.
 
+
+    .. versionchanged:: 1.0.1
+       The rows with NaN values are not dropped by default.
     """
     try:
         df = df.loc[lower:upper:step]
@@ -390,9 +393,6 @@ def slicing(df, lower=None, upper=None, step=None, force=False):
         raise KeyError("Duplicate time values found; it's generally advised "
                        "to use slicing on DataFrames with unique time values "
                        "for each row. Use `force=True` to ignore this error.")
-
-    # drop any rows that have missing values
-    df = df.dropna()
 
     return df
 
