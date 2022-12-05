@@ -1,22 +1,21 @@
 """Tests for preprocessing functions.
 
 """
-import pytest
-
+import alchemtest.gmx
 import numpy as np
+import pytest
+from alchemtest.gmx import load_benzene
+from alchemtest.namd import load_idws
 from numpy.testing import assert_allclose
 
 import alchemlyb
 from alchemlyb.parsing import gmx, namd
+from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
 from alchemlyb.preprocessing import (slicing, statistical_inefficiency,
                                      equilibrium_detection,
                                      decorrelate_u_nk, decorrelate_dhdl,
                                      u_nk2series, dhdl2series)
-from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
-from alchemtest.gmx import load_benzene, load_ABFE
-from alchemtest.namd import load_idws
 
-import alchemtest.gmx
 
 def gmx_benzene_dHdl():
     dataset = alchemtest.gmx.load_benzene()
@@ -99,7 +98,6 @@ class TestSlicing:
             group = group[~group.index.duplicated(keep='first')]
             df = self.slicer(group, None, None, None)
             assert len(df) == len(group)
-            break
 
     @pytest.mark.parametrize(('dataloader', 'lower', 'upper'),
                              [
