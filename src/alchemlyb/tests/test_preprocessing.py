@@ -65,14 +65,11 @@ class TestSlicing:
             == size
         )
 
-    def test_unchanged(self):
+    def test_unchanged(self, namd_idws):
         # NAMD energy files only have dE for adjacent lambdas, this ensures
         # that the slicer will not drop these rows as they have NaN values.
-        file = load_idws().data['forward'][0]
-        u_nk = namd.extract_u_nk(file, 298)
-
         # Do the pre-processing as the u_nk are from all lambdas
-        groups = u_nk.groupby('fep-lambda')
+        groups = namd_idws.groupby('fep-lambda')
         for key, group in groups:
             group = group[~group.index.duplicated(keep='first')]
             df = self.slicer(group, None, None, None)
