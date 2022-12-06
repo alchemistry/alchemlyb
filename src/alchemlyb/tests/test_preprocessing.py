@@ -28,11 +28,9 @@ def _check_data_is_outside_bounds(data, lower, upper):
     assert any(data.reset_index()["time"] > upper)
 
 
-
 @pytest.fixture()
 def dHdl(gmx_benzene_Coulomb_dHdl):
     return gmx_benzene_Coulomb_dHdl[0]
-
 
 
 @pytest.fixture()
@@ -256,7 +254,7 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
     def test_raise_ValueError_for_mismatched_data(self, dataloader, end, step, request):
         data = request.getfixturevalue(dataloader)
         with pytest.raises(ValueError):
-            self.slicer(data, series=data[:end:step])
+            self.slicer(data, series=data["fep"][:end:step])
 
     @pytest.mark.parametrize(
         ("dataloader", "lower", "upper"),
