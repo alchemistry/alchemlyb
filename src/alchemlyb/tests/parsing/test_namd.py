@@ -1,16 +1,17 @@
 """NAMD parser tests.
 
 """
+import bz2
 from os.path import basename
 from re import search
-import bz2
-import pytest
 
-from alchemlyb.parsing.namd import extract_u_nk, extract
-from alchemtest.namd import load_tyr2ala
+import pytest
 from alchemtest.namd import load_idws
 from alchemtest.namd import load_restarted
 from alchemtest.namd import load_restarted_reversed
+from alchemtest.namd import load_tyr2ala
+
+from alchemlyb.parsing.namd import extract_u_nk, extract
 
 # Indices of lambda values in the following line in NAMD fepout files:
 # #NEW FEP WINDOW: LAMBDA SET TO 0.6 LAMBDA2 0.7 LAMBDA_IDWS 0.5
@@ -27,27 +28,30 @@ LAMBDA2_IDX_FREE = 8
 def dataset():
     return load_tyr2ala()
 
-@pytest.mark.parametrize("direction,shape",
-                         [('forward', (21021, 21)),
-                          ('backward', (21021, 21)),
-                          ])
+
+@pytest.mark.parametrize(
+    "direction,shape",
+    [
+        ("forward", (21021, 21)),
+        ("backward", (21021, 21)),
+    ],
+)
 def test_u_nk(dataset, direction, shape):
-    """Test that u_nk has the correct form when extracted from files.
-    """
-    for filename in dataset['data'][direction]:
+    """Test that u_nk has the correct form when extracted from files."""
+    for filename in dataset["data"][direction]:
         u_nk = extract_u_nk(filename, T=300)
 
-        assert u_nk.index.names == ['time', 'fep-lambda']
+        assert u_nk.index.names == ["time", "fep-lambda"]
         assert u_nk.shape == shape
 
-def test_u_nk_idws():
-    """Test that u_nk has the correct form when extracted from files.
-    """
 
-    filenames = load_idws()['data']['forward']
+def test_u_nk_idws():
+    """Test that u_nk has the correct form when extracted from files."""
+
+    filenames = load_idws()["data"]["forward"]
     u_nk = extract_u_nk(filenames, T=300)
 
-    assert u_nk.index.names == ['time', 'fep-lambda']
+    assert u_nk.index.names == ["time", "fep-lambda"]
     assert u_nk.shape == (29252, 11)
 
 
@@ -64,7 +68,7 @@ def _corrupt_fepout(fepout_in, params, tmp_path):
     ----------
     fepout_in: str
         Path to fepout file to be modified. This file will not be overwritten.
-    
+
     params: list of tuples
         For each tuple, the first element must be a str that will be passed to
         startswith() to identify the line(s) to modify (e.g. "#NEW"). The
@@ -82,13 +86,17 @@ def _corrupt_fepout(fepout_in, params, tmp_path):
     """
 
     fepout_out = tmp_path / basename(fepout_in)
-    with bz2.open(fepout_out, 'wt') as f_out:
-        with bz2.open(fepout_in, 'rt') as f_in:
+    with bz2.open(fepout_out, "wt") as f_out:
+        with bz2.open(fepout_in, "rt") as f_in:
             for line in f_in:
                 for prefix, func in params:
                     if line.startswith(prefix):
                         tokens_out = func(line.split())
-                        line = ' '.join(tokens_out) + '\n' if tokens_out is not None else None
+                        line = (
+                            " ".join(tokens_out) + "\n"
+                            if tokens_out is not None
+                            else None
+                        )
                 if line is not None:
                     f_out.write(line)
     return str(fepout_out)
@@ -99,9 +107,10 @@ def restarted_dataset_inconsistent(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset where lambda1 and lambda2 at start and end of
     a window are different."""
 
-    filenames = sorted(restarted_dataset['data']['both'])
+    filenames = sorted(restarted_dataset["data"]["both"])
 
     changed = False
+
     def func_free_line(l):
         nonlocal changed
         if float(l[7]) >= 0.7 and float(l[7]) < 0.9:
@@ -110,13 +119,15 @@ def restarted_dataset_inconsistent(restarted_dataset, tmp_path):
         return l
 
     for i in range(len(filenames)):
-        filenames[i] = _corrupt_fepout(filenames[i], [('#Free', func_free_line)], tmp_path)
+        filenames[i] = _corrupt_fepout(
+            filenames[i], [("#Free", func_free_line)], tmp_path
+        )
         # Only actually modify one window so we don't trigger the wrong exception
         if changed is True:
             break
 
     # Don't directly modify the glob object
-    restarted_dataset['data']['both'] = filenames
+    restarted_dataset["data"]["both"] = filenames
 
     return restarted_dataset
 
@@ -129,26 +140,32 @@ def restarted_dataset_idws_without_lambda_idws(restarted_dataset, tmp_path):
 
     # First window won't have any IDWS data so we just drop all its files and fudge the lambdas
     # in the next window to include 0.0 or 1.0 (as appropriate) so we still have a nominally complete calculation
-    
-    filenames = [x for x in sorted(restarted_dataset['data']['both']) if search('000[a-z]?.fepout', x) is None]
+
+    filenames = [
+        x
+        for x in sorted(restarted_dataset["data"]["both"])
+        if search("000[a-z]?.fepout", x) is None
+    ]
 
     def func_new_line(l):
-        if float(l[LAMBDA1_IDX_NEW]) > 0.5: # 1->0 (reversed) calculation
-            l[LAMBDA1_IDX_NEW] == '1.0'
-        else: # regular 0->1 calculation
-            l[LAMBDA1_IDX_NEW] = '0.0'
+        if float(l[LAMBDA1_IDX_NEW]) > 0.5:  # 1->0 (reversed) calculation
+            l[LAMBDA1_IDX_NEW] == "1.0"
+        else:  # regular 0->1 calculation
+            l[LAMBDA1_IDX_NEW] = "0.0"
         # Drop the lambda_idws
         return l[:9]
-    
+
     def func_free_line(l):
-        if float(l[LAMBDA1_IDX_FREE]) > 0.5: # 1->0 (reversed) calculation
-            l[LAMBDA1_IDX_FREE] == '1.0'
-        else: # regular 0->1 calculation
-            l[LAMBDA1_IDX_FREE] = '0.0'
+        if float(l[LAMBDA1_IDX_FREE]) > 0.5:  # 1->0 (reversed) calculation
+            l[LAMBDA1_IDX_FREE] == "1.0"
+        else:  # regular 0->1 calculation
+            l[LAMBDA1_IDX_FREE] = "0.0"
         return l
-        
-    filenames[0] = _corrupt_fepout(filenames[0], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
-    restarted_dataset['data']['both'] = filenames
+
+    filenames[0] = _corrupt_fepout(
+        filenames[0], [("#NEW", func_new_line), ("#Free", func_free_line)], tmp_path
+    )
+    restarted_dataset["data"]["both"] = filenames
     return restarted_dataset
 
 
@@ -157,7 +174,7 @@ def restarted_dataset_toomany_lambda2(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset, where there are too many lambda2 values for a
     given lambda1."""
 
-    filenames = sorted(restarted_dataset['data']['both'])
+    filenames = sorted(restarted_dataset["data"]["both"])
 
     # For the same l1 and lidws we retain old lambda2 values thus ensuring a collision
     # Also, don't make a window where lambda1 >= lambda2 because this will trigger the
@@ -165,22 +182,23 @@ def restarted_dataset_toomany_lambda2(restarted_dataset, tmp_path):
     def func_new_line(l):
         if float(l[LAMBDA2_IDX_NEW]) <= 0.2:
             return l
-        l[LAMBDA1_IDX_NEW] = '0.2'
-        if len(l) > 9 and l[9] == 'LAMBDA_IDWS':
-            l[LAMBDA_IDWS_IDX_NEW] = '0.1'
+        l[LAMBDA1_IDX_NEW] = "0.2"
+        if len(l) > 9 and l[9] == "LAMBDA_IDWS":
+            l[LAMBDA_IDWS_IDX_NEW] = "0.1"
         return l
 
     def func_free_line(l):
         if float(l[LAMBDA2_IDX_FREE]) <= 0.2:
             return l
-        l[LAMBDA1_IDX_FREE] = '0.2'
+        l[LAMBDA1_IDX_FREE] = "0.2"
         return l
 
     for i in range(len(filenames)):
-        filenames[i] = \
-            _corrupt_fepout(filenames[i], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
+        filenames[i] = _corrupt_fepout(
+            filenames[i], [("#NEW", func_new_line), ("#Free", func_free_line)], tmp_path
+        )
 
-    restarted_dataset['data']['both'] = filenames
+    restarted_dataset["data"]["both"] = filenames
     return restarted_dataset
 
 
@@ -189,7 +207,7 @@ def restarted_dataset_toomany_lambda_idws(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset, where there are too many lambda2 values for a
     given lambda1."""
 
-    filenames = sorted(restarted_dataset['data']['both'])
+    filenames = sorted(restarted_dataset["data"]["both"])
 
     # For the same lambda1 and lambda2 we retain the first set of lambda1/lambda2 values
     # and replicate them across all windows thus ensuring that there will be more than
@@ -198,7 +216,7 @@ def restarted_dataset_toomany_lambda_idws(restarted_dataset, tmp_path):
 
     def func_new_line(l):
         nonlocal this_lambda1, this_lambda2
-        
+
         if this_lambda1 is None:
             this_lambda1, this_lambda2 = l[LAMBDA1_IDX_NEW], l[LAMBDA2_IDX_NEW]
         # Ensure that changing these lambda values won't cause a reversal in direction and trigger
@@ -212,9 +230,11 @@ def restarted_dataset_toomany_lambda_idws(restarted_dataset, tmp_path):
         return l
 
     for i in range(len(filenames)):
-        filenames[i] = _corrupt_fepout(filenames[i], [('#NEW', func_new_line)], tmp_path)
+        filenames[i] = _corrupt_fepout(
+            filenames[i], [("#NEW", func_new_line)], tmp_path
+        )
 
-    restarted_dataset['data']['both'] = filenames
+    restarted_dataset["data"]["both"] = filenames
     return restarted_dataset
 
 
@@ -222,7 +242,7 @@ def restarted_dataset_toomany_lambda_idws(restarted_dataset, tmp_path):
 def restarted_dataset_direction_changed(restarted_dataset, tmp_path):
     """Returns intentionally messed up dataset, with one window where the lambda values are reversed."""
 
-    filenames = sorted(restarted_dataset['data']['both'])
+    filenames = sorted(restarted_dataset["data"]["both"])
 
     def func_new_line(l):
         l[6], l[8], l[10] = l[10], l[8], l[6]
@@ -231,12 +251,16 @@ def restarted_dataset_direction_changed(restarted_dataset, tmp_path):
     def func_free_line(l):
         l[7], l[8] = l[8], l[7]
         return l
-    
+
     # Reverse the direction of lambdas for this window
     idx_to_corrupt = filenames.index(sorted(filenames)[-3])
-    fname1 = _corrupt_fepout(filenames[idx_to_corrupt], [('#NEW', func_new_line), ('#Free', func_free_line)], tmp_path)
+    fname1 = _corrupt_fepout(
+        filenames[idx_to_corrupt],
+        [("#NEW", func_new_line), ("#Free", func_free_line)],
+        tmp_path,
+    )
     filenames[idx_to_corrupt] = fname1
-    restarted_dataset['data']['both'] = filenames
+    restarted_dataset["data"]["both"] = filenames
     return restarted_dataset
 
 
@@ -244,15 +268,17 @@ def restarted_dataset_direction_changed(restarted_dataset, tmp_path):
 def restarted_dataset_all_windows_truncated(restarted_dataset, tmp_path):
     """Returns dataset where all windows are truncated (no #Free... footer lines)."""
 
-    filenames = sorted(restarted_dataset['data']['both'])
+    filenames = sorted(restarted_dataset["data"]["both"])
 
     def func_free_line(l):
         return None
 
     for i in range(len(filenames)):
-        filenames[i] = _corrupt_fepout(filenames[i], [('#Free', func_free_line)], tmp_path)
-    
-    restarted_dataset['data']['both'] = filenames
+        filenames[i] = _corrupt_fepout(
+            filenames[i], [("#Free", func_free_line)], tmp_path
+        )
+
+    restarted_dataset["data"]["both"] = filenames
     return restarted_dataset
 
 
@@ -260,13 +286,15 @@ def restarted_dataset_all_windows_truncated(restarted_dataset, tmp_path):
 def restarted_dataset_last_window_truncated(restarted_dataset, tmp_path):
     """Returns dataset where the last window is truncated (no #Free... footer line)."""
 
-    filenames = sorted(restarted_dataset['data']['both'])
+    filenames = sorted(restarted_dataset["data"]["both"])
 
     def func_free_line(l):
         return None
 
-    filenames[-1] = _corrupt_fepout(filenames[-1], [('#Free', func_free_line)], tmp_path)
-    restarted_dataset['data']['both'] = filenames
+    filenames[-1] = _corrupt_fepout(
+        filenames[-1], [("#Free", func_free_line)], tmp_path
+    )
+    restarted_dataset["data"]["both"] = filenames
     return restarted_dataset
 
 
@@ -274,72 +302,91 @@ def test_u_nk_restarted():
     """Test that u_nk has the correct form when extracted from an IDWS
     FEP run that includes terminations and restarts.
     """
-    filenames = load_restarted()['data']['both']
+    filenames = load_restarted()["data"]["both"]
     u_nk = extract_u_nk(filenames, T=300)
-    
-    assert u_nk.index.names == ['time', 'fep-lambda']
+
+    assert u_nk.index.names == ["time", "fep-lambda"]
     assert u_nk.shape == (30061, 11)
 
 
 def test_u_nk_restarted_missing_window_header(tmp_path):
     """Test that u_nk has the correct form when a #NEW line is missing from the restarted dataset
     and the parser has to infer lambda_idws for that window."""
-    filenames = sorted(load_restarted()['data']['both'])
+    filenames = sorted(load_restarted()["data"]["both"])
     # Remove "#NEW" line
-    filenames[4] = _corrupt_fepout(filenames[4], [('#NEW', lambda l: None),], tmp_path)
+    filenames[4] = _corrupt_fepout(
+        filenames[4],
+        [
+            ("#NEW", lambda l: None),
+        ],
+        tmp_path,
+    )
 
     u_nk = extract_u_nk(filenames, T=300)
-    
-    assert u_nk.index.names == ['time', 'fep-lambda']
+
+    assert u_nk.index.names == ["time", "fep-lambda"]
     assert u_nk.shape == (30061, 11)
 
 
 def test_u_nk_restarted_reversed():
-    filenames = load_restarted_reversed()['data']['both']
+    filenames = load_restarted_reversed()["data"]["both"]
     u_nk = extract_u_nk(filenames, T=300)
-    
-    assert u_nk.index.names == ['time', 'fep-lambda']
+
+    assert u_nk.index.names == ["time", "fep-lambda"]
     assert u_nk.shape == (30170, 11)
 
 
 def test_extract():
-    filenames = load_restarted_reversed()['data']['both']
+    filenames = load_restarted_reversed()["data"]["both"]
     df_dict = extract(filenames, T=300)
 
-    assert df_dict['u_nk'].index.names == ['time', 'fep-lambda']
-    assert df_dict['u_nk'].shape == (30170, 11)
-    assert 'dHdl' not in df_dict
+    assert df_dict["u_nk"].index.names == ["time", "fep-lambda"]
+    assert df_dict["u_nk"].shape == (30170, 11)
+    assert "dHdl" not in df_dict
 
 
 def test_u_nk_restarted_reversed_missing_window_header(tmp_path):
     """Test that u_nk has the correct form when a #NEW line is missing from the restarted_reversed dataset
     and the parser has to infer lambda_idws for that window."""
-    filenames = sorted(load_restarted_reversed()['data']['both'])
+    filenames = sorted(load_restarted_reversed()["data"]["both"])
     # Remove "#NEW" line
-    filenames[4] = _corrupt_fepout(filenames[4], [('#NEW', lambda l: None),], tmp_path)
+    filenames[4] = _corrupt_fepout(
+        filenames[4],
+        [
+            ("#NEW", lambda l: None),
+        ],
+        tmp_path,
+    )
 
     u_nk = extract_u_nk(filenames, T=300)
-    
-    assert u_nk.index.names == ['time', 'fep-lambda']
+
+    assert u_nk.index.names == ["time", "fep-lambda"]
     assert u_nk.shape == (30170, 11)
 
 
 def test_u_nk_restarted_direction_changed(restarted_dataset_direction_changed):
     """Test that when lambda values change direction within a dataset, parsing throws an error."""
 
-    with pytest.raises(ValueError, match='Lambda values change direction'):
-        u_nk = extract_u_nk(restarted_dataset_direction_changed['data']['both'], T=300)
+    with pytest.raises(ValueError, match="Lambda values change direction"):
+        u_nk = extract_u_nk(restarted_dataset_direction_changed["data"]["both"], T=300)
 
 
-def test_u_nk_restarted_idws_without_lambda_idws(restarted_dataset_idws_without_lambda_idws):
+def test_u_nk_restarted_idws_without_lambda_idws(
+    restarted_dataset_idws_without_lambda_idws,
+):
     """Test that when the first window has IDWS data but no lambda_idws, parsing throws an error.
-    
+
     In this situation, the lambda_idws cannot be inferred, because there's no previous lambda
     value available.
     """
 
-    with pytest.raises(ValueError, match='IDWS data present in first window but lambda_idws not included'):
-        u_nk = extract_u_nk(restarted_dataset_idws_without_lambda_idws['data']['both'], T=300)
+    with pytest.raises(
+        ValueError,
+        match="IDWS data present in first window but lambda_idws not included",
+    ):
+        u_nk = extract_u_nk(
+            restarted_dataset_idws_without_lambda_idws["data"]["both"], T=300
+        )
 
 
 def test_u_nk_restarted_inconsistent(restarted_dataset_inconsistent):
@@ -347,33 +394,45 @@ def test_u_nk_restarted_inconsistent(restarted_dataset_inconsistent):
     parsing throws an error.
     """
 
-    with pytest.raises(ValueError, match='Inconsistent lambda values within the same window'):
-        u_nk = extract_u_nk(restarted_dataset_inconsistent['data']['both'], T=300)
+    with pytest.raises(
+        ValueError, match="Inconsistent lambda values within the same window"
+    ):
+        u_nk = extract_u_nk(restarted_dataset_inconsistent["data"]["both"], T=300)
 
 
 def test_u_nk_restarted_toomany_lambda_idws(restarted_dataset_toomany_lambda_idws):
     """Test that when there is more than one lambda_idws for a given lambda1, parsing throws an error."""
 
-    with pytest.raises(ValueError, match='More than one lambda_idws value for a particular lambda1'):
-        u_nk = extract_u_nk(restarted_dataset_toomany_lambda_idws['data']['both'], T=300)
+    with pytest.raises(
+        ValueError, match="More than one lambda_idws value for a particular lambda1"
+    ):
+        u_nk = extract_u_nk(
+            restarted_dataset_toomany_lambda_idws["data"]["both"], T=300
+        )
 
 
 def test_u_nk_restarted_toomany_lambda2(restarted_dataset_toomany_lambda2):
     """Test that when there is more than one lambda2 for a given lambda1, parsing throws an error."""
 
-    with pytest.raises(ValueError, match='More than one lambda2 value for a particular lambda1'):
-        u_nk = extract_u_nk(restarted_dataset_toomany_lambda2['data']['both'], T=300)
+    with pytest.raises(
+        ValueError, match="More than one lambda2 value for a particular lambda1"
+    ):
+        u_nk = extract_u_nk(restarted_dataset_toomany_lambda2["data"]["both"], T=300)
 
 
 def test_u_nk_restarted_all_windows_truncated(restarted_dataset_all_windows_truncated):
     """Test that when there is more than one lambda2 for a given lambda1, parsing throws an error."""
 
-    with pytest.raises(ValueError, match='New window begun after truncated window'):
-        u_nk = extract_u_nk(restarted_dataset_all_windows_truncated['data']['both'], T=300)
+    with pytest.raises(ValueError, match="New window begun after truncated window"):
+        u_nk = extract_u_nk(
+            restarted_dataset_all_windows_truncated["data"]["both"], T=300
+        )
 
 
 def test_u_nk_restarted_last_window_truncated(restarted_dataset_last_window_truncated):
     """Test that when there is more than one lambda2 for a given lambda1, parsing throws an error."""
 
-    with pytest.raises(ValueError, match='Last window is truncated'):
-        u_nk = extract_u_nk(restarted_dataset_last_window_truncated['data']['both'], T=300)
+    with pytest.raises(ValueError, match="Last window is truncated"):
+        u_nk = extract_u_nk(
+            restarted_dataset_last_window_truncated["data"]["both"], T=300
+        )

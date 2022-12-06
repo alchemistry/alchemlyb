@@ -2,28 +2,30 @@
 
 """
 import logging
-import pytest
-from numpy.testing import assert_allclose
-import pandas as pd
 
-from alchemlyb.parsing.amber import extract_dHdl
-from alchemlyb.parsing.amber import extract_u_nk
-from alchemlyb.parsing.amber import extract
-from alchemtest.amber import load_simplesolvated
+import pandas as pd
+import pytest
 from alchemtest.amber import load_bace_example
 from alchemtest.amber import load_bace_improper
+from alchemtest.amber import load_simplesolvated
 from alchemtest.amber import load_testfiles
+from numpy.testing import assert_allclose
+
+from alchemlyb.parsing.amber import extract
+from alchemlyb.parsing.amber import extract_dHdl
+from alchemlyb.parsing.amber import extract_u_nk
 
 
 ##################################################################################
 ################ Check the parser behaviour with problematic files
 ##################################################################################
 
+
 @pytest.fixture(name="testfiles", scope="module")
 def fixture_testfiles():
-    """ Returns the testfiles data dictionary """
+    """Returns the testfiles data dictionary"""
     bunch = load_testfiles()
-    return bunch['data']
+    return bunch["data"]
 
 
 def test_file_not_found():
@@ -77,10 +79,10 @@ def test_no_control_data(caplog, testfiles):
 def test_no_free_energy_info(caplog, testfiles):
     """Test if we raise an exception if there is no free energy section"""
     filename = testfiles["no_free_energy_info"][0]
-    with pytest.raises(ValueError, match='no free energy section found'):
+    with pytest.raises(ValueError, match="no free energy section found"):
         with caplog.at_level(logging.ERROR):
             _ = extract(str(filename), T=298.0)
-    assert 'No free energy section found' in caplog.text
+    assert "No free energy section found" in caplog.text
 
 
 def test_no_useful_data(caplog, testfiles):
@@ -89,7 +91,7 @@ def test_no_useful_data(caplog, testfiles):
     with pytest.raises(ValueError, match="does not contain any data"):
         with caplog.at_level(logging.ERROR):
             _ = extract(str(filename), T=298.0)
-    assert 'does not contain any data' in caplog.text
+    assert "does not contain any data" in caplog.text
 
 
 def test_no_temp0_set(caplog, testfiles):
@@ -119,16 +121,16 @@ def test_long_and_wrong_number_MBAR(caplog, testfiles):
     with pytest.raises(ValueError, match="the number of lambda windows read"):
         with caplog.at_level(logging.ERROR):
             _ = extract_u_nk(str(filename), T=300.0)
-    assert 'the number of lambda windows read' in caplog.text
+    assert "the number of lambda windows read" in caplog.text
 
 
 def test_no_starting_time(caplog, testfiles):
     """Test if raise an exception if the starting time is not read"""
     filename = testfiles["no_starting_simulation_time"][0]
-    with pytest.raises(ValueError, match='No starting simulation time in file'):
+    with pytest.raises(ValueError, match="No starting simulation time in file"):
         with caplog.at_level(logging.ERROR):
             _ = extract(str(filename), T=298.0)
-    assert 'No starting simulation time in file' in caplog.text
+    assert "No starting simulation time in file" in caplog.text
 
 
 def test_parse_without_spaces_around_equal(testfiles):
@@ -138,23 +140,24 @@ def test_parse_without_spaces_around_equal(testfiles):
     """
     filename = testfiles["no_spaces_around_equal"][0]
     df_dict = extract(str(filename), T=298.0)
-    assert isinstance(df_dict['dHdl'], pd.DataFrame)
+    assert isinstance(df_dict["dHdl"], pd.DataFrame)
 
 
 ##################################################################################
 ################ Check the parser behaviour with standard single files
 ##################################################################################
 
+
 @pytest.fixture(name="single_u_nk", scope="module")
 def fixture_single_u_nk():
     """return a single file to check u_unk parsing"""
-    return load_bace_example().data['complex']['vdw'][0]
+    return load_bace_example().data["complex"]["vdw"][0]
 
 
 @pytest.fixture(name="single_dHdl", scope="module")
 def fixture_single_dHdl():
     """return a single file to check dHdl parsing"""
-    return load_simplesolvated().data['charge'][0]
+    return load_simplesolvated().data["charge"][0]
 
 
 def test_dHdl_time_reading(single_dHdl):
@@ -175,18 +178,18 @@ def test_extract_with_both_data(single_u_nk):
     """Test that dHdl and u_nk have the correct form when
     extracted from files with the single "extract" funcion."""
     df_dict = extract(single_u_nk, T=298.0)
-    assert df_dict['dHdl'].index.names == ('time', 'lambdas')
-    assert df_dict['dHdl'].shape == (500, 1)
-    assert df_dict['u_nk'].index.names == ('time', 'lambdas')
+    assert df_dict["dHdl"].index.names == ("time", "lambdas")
+    assert df_dict["dHdl"].shape == (500, 1)
+    assert df_dict["u_nk"].index.names == ("time", "lambdas")
 
 
 def test_extract_with_only_dhdl_data(single_dHdl):
     """Test that parsing with the extract function a file
-     with just dHdl gives the correct results"""
+    with just dHdl gives the correct results"""
     df_dict = extract(single_dHdl, T=298.0)
-    assert df_dict['dHdl'].index.names == ('time', 'lambdas')
-    assert df_dict['dHdl'].shape == (500, 1)
-    assert df_dict['u_nk'] is None
+    assert df_dict["dHdl"].index.names == ("time", "lambdas")
+    assert df_dict["dHdl"].shape == (500, 1)
+    assert df_dict["u_nk"] is None
 
 
 def test_wrong_T_should_raise_warning(single_dHdl, T=300.0):
@@ -195,10 +198,9 @@ def test_wrong_T_should_raise_warning(single_dHdl, T=300.0):
     read from the AMBER file gives a warning
     """
     with pytest.raises(
-        ValueError,
-        match="is different from the temperature passed as parameter"):
+        ValueError, match="is different from the temperature passed as parameter"
+    ):
         _ = extract(single_dHdl, T=T)
-
 
 
 ###################################################################
@@ -206,13 +208,11 @@ def test_wrong_T_should_raise_warning(single_dHdl, T=300.0):
 ###################################################################
 
 
-@pytest.mark.parametrize("filename",
-                         [filename
-                          for leg in load_simplesolvated()['data'].values()
-                          for filename in leg])
-def test_dHdl(filename,
-              names=('time', 'lambdas'),
-              shape=(500, 1)):
+@pytest.mark.parametrize(
+    "filename",
+    [filename for leg in load_simplesolvated()["data"].values() for filename in leg],
+)
+def test_dHdl(filename, names=("time", "lambdas"), shape=(500, 1)):
     """Test that dHdl has the correct form when extracted from files."""
     dHdl = extract_dHdl(filename, T=298.0)
 
@@ -220,27 +220,33 @@ def test_dHdl(filename,
     assert dHdl.shape == shape
 
 
-@pytest.mark.parametrize("mbar_filename",
-                         [mbar_filename
-                          for leg in load_bace_example()['data']['complex'].values()
-                          for mbar_filename in leg])
-def test_u_nk(mbar_filename,
-              names=('time', 'lambdas')):
+@pytest.mark.parametrize(
+    "mbar_filename",
+    [
+        mbar_filename
+        for leg in load_bace_example()["data"]["complex"].values()
+        for mbar_filename in leg
+    ],
+)
+def test_u_nk(mbar_filename, names=("time", "lambdas")):
     """Test the u_nk has the correct form when extracted from files"""
     u_nk = extract_u_nk(mbar_filename, T=298.0)
 
     assert u_nk.index.names == names
 
 
-@pytest.mark.parametrize("improper_filename",
-                         [improper_filename
-                          for leg in load_bace_improper()['data'].values()
-                          for improper_filename in leg])
-def test_u_nk_improper(improper_filename,
-                       names=('time', 'lambdas')):
+@pytest.mark.parametrize(
+    "improper_filename",
+    [
+        improper_filename
+        for leg in load_bace_improper()["data"].values()
+        for improper_filename in leg
+    ],
+)
+def test_u_nk_improper(improper_filename, names=("time", "lambdas")):
     """Test the u_nk has the correct form when extracted from files"""
     try:
         u_nk = extract_u_nk(improper_filename, T=298.0)
         assert u_nk.index.names == names
     except Exception:
-        assert '0.5626' in improper_filename
+        assert "0.5626" in improper_filename

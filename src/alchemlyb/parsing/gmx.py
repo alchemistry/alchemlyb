@@ -1,14 +1,15 @@
 """Parsers for extracting alchemical data from `Gromacs <http://www.gromacs.org/>`_ output files.
 
 """
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-from .util import anyopen
 from . import _init_attrs
+from .util import anyopen
 from ..postprocessors.units import R_kJmol
 
 k_b = R_kJmol
+
 
 @_init_attrs
 def extract_u_nk(xvg, T, filter=True):
@@ -60,9 +61,9 @@ def extract_u_nk(xvg, T, filter=True):
     """
 
     h_col_match = r"\xD\f{}H \xl\f{}"
-    pv_col_match = 'pV'
-    u_col_match = ['Total Energy', 'Potential Energy']
-    beta = 1/(k_b * T)
+    pv_col_match = "pV"
+    u_col_match = ["Total Energy", "Potential Energy"]
+    beta = 1 / (k_b * T)
 
     state, lambdas, statevec = _extract_state(xvg)
 
@@ -82,7 +83,11 @@ def extract_u_nk(xvg, T, filter=True):
         pv = df[pv_cols[0]]
 
     # gromacs also gives us total/potential energy U directly; need this for reduced potential
-    u_cols = [col for col in df.columns if any(single_u_col_match in col for single_u_col_match in u_col_match)]
+    u_cols = [
+        col
+        for col in df.columns
+        if any(single_u_col_match in col for single_u_col_match in u_col_match)
+    ]
     u = None
     if u_cols:
         u = df[u_cols[0]]
@@ -90,7 +95,7 @@ def extract_u_nk(xvg, T, filter=True):
     u_k = dict()
     cols = list()
     for col in dH:
-        u_col = eval(col.split('to')[1])
+        u_col = eval(col.split("to")[1])
         # calculate reduced potential u_k = dH + pV + U
         u_k[u_col] = beta * dH[col].values
         if pv_cols:
@@ -99,8 +104,9 @@ def extract_u_nk(xvg, T, filter=True):
             u_k[u_col] += beta * u.values
         cols.append(u_col)
 
-    u_k = pd.DataFrame(u_k, columns=cols,
-                       index=pd.Index(times.values, name='time', dtype='Float64'))
+    u_k = pd.DataFrame(
+        u_k, columns=cols, index=pd.Index(times.values, name="time", dtype="Float64")
+    )
 
     # create columns for each lambda, indicating state each row sampled from
     # if state is None run as expanded ensemble data or REX
@@ -108,8 +114,8 @@ def extract_u_nk(xvg, T, filter=True):
         # if thermodynamic state is specified map thermodynamic
         # state data to lambda values, else (for REX)
         # define state based on the legend
-        if 'Thermodynamic state' in df:
-            ts_index = df.columns.get_loc('Thermodynamic state')
+        if "Thermodynamic state" in df:
+            ts_index = df.columns.get_loc("Thermodynamic state")
             thermo_state = df[df.columns[ts_index]]
             for i, l in enumerate(lambdas):
                 v = []
@@ -128,12 +134,13 @@ def extract_u_nk(xvg, T, filter=True):
                 u_k[l] = statevec
 
     # set up new multi-index
-    newind = ['time'] + lambdas
+    newind = ["time"] + lambdas
     u_k = u_k.reset_index().set_index(newind)
 
-    u_k.name = 'u_nk'
+    u_k.name = "u_nk"
 
     return u_k
+
 
 @_init_attrs
 def extract_dHdl(xvg, T, filter=True):
@@ -182,7 +189,7 @@ def extract_dHdl(xvg, T, filter=True):
         parsed and is turned on by default.
 
     """
-    beta = 1/(k_b * T)
+    beta = 1 / (k_b * T)
 
     headers = _get_headers(xvg)
     state, lambdas, statevec = _extract_state(xvg, headers)
@@ -204,10 +211,13 @@ def extract_dHdl(xvg, T, filter=True):
 
     # rename columns to not include the word 'lambda', since we use this for
     # index below
-    cols = [l.split('-')[0] for l in lambdas]
+    cols = [l.split("-")[0] for l in lambdas]
 
-    dHdl = pd.DataFrame(dHdl.values, columns=cols,
-                        index=pd.Index(times.values, name='time', dtype='Float64'))
+    dHdl = pd.DataFrame(
+        dHdl.values,
+        columns=cols,
+        index=pd.Index(times.values, name="time", dtype="Float64"),
+    )
 
     # create columns for each lambda, indicating state each row sampled from
     # if state is None run as expanded ensemble data or REX
@@ -215,8 +225,8 @@ def extract_dHdl(xvg, T, filter=True):
         # if thermodynamic state is specified map thermodynamic
         # state data to lambda values, else (for REX)
         # define state based on the legend
-        if 'Thermodynamic state' in df:
-            ts_index = df.columns.get_loc('Thermodynamic state')
+        if "Thermodynamic state" in df:
+            ts_index = df.columns.get_loc("Thermodynamic state")
             thermo_state = df[df.columns[ts_index]]
             for i, l in enumerate(lambdas):
                 v = []
@@ -235,10 +245,10 @@ def extract_dHdl(xvg, T, filter=True):
                 dHdl[l] = statevec
 
     # set up new multi-index
-    newind = ['time'] + lambdas
-    dHdl= dHdl.reset_index().set_index(newind)
+    newind = ["time"] + lambdas
+    dHdl = dHdl.reset_index().set_index(newind)
 
-    dHdl.name='dH/dl'
+    dHdl.name = "dH/dl"
 
     return dHdl
 
@@ -289,34 +299,44 @@ def _extract_state(xvg, headers=None):
     state = None
     if headers is None:
         headers = _get_headers(xvg)
-    subtitle = _get_value_by_key(headers, 'subtitle')
-    if subtitle and 'state' in subtitle:
-        state = int(subtitle.split('state')[1].split(':')[0])
-        lambdas = [word.strip(')(,') for word in subtitle.split() if 'lambda' in word]
-        statevec = eval(subtitle.strip().split(' = ')[-1].strip('"'))
+    subtitle = _get_value_by_key(headers, "subtitle")
+    if subtitle and "state" in subtitle:
+        state = int(subtitle.split("state")[1].split(":")[0])
+        lambdas = [word.strip(")(,") for word in subtitle.split() if "lambda" in word]
+        statevec = eval(subtitle.strip().split(" = ")[-1].strip('"'))
 
     # if expanded ensemble data is used the state variable will never be assigned
     # parsing expanded ensemble data
     if state is None:
         lambdas = []
         statevec = []
-        for line in headers['_raw_lines']:
-            if ('legend' in line) and ('lambda' in line):
-                lambdas.append([word.strip(')(,') for word in line.split() if 'lambda' in word][0])
-            if ('legend' in line) and (' to ' in line):
-                statevec.append(([float(i) for i in line.strip().split(' to ')[-1].strip('"()').split(',')]))
+        for line in headers["_raw_lines"]:
+            if ("legend" in line) and ("lambda" in line):
+                lambdas.append(
+                    [word.strip(")(,") for word in line.split() if "lambda" in word][0]
+                )
+            if ("legend" in line) and (" to " in line):
+                statevec.append(
+                    (
+                        [
+                            float(i)
+                            for i in line.strip()
+                            .split(" to ")[-1]
+                            .strip('"()')
+                            .split(",")
+                        ]
+                    )
+                )
 
     return state, lambdas, statevec
 
 
 def _extract_legend(xvg):
-    """Extract information on state sampled for REX simulations.
-
-    """
+    """Extract information on state sampled for REX simulations."""
     state_legend = {}
-    with anyopen(xvg, 'r') as f:
+    with anyopen(xvg, "r") as f:
         for line in f:
-            if ('legend' in line) and ('lambda' in line):
+            if ("legend" in line) and ("lambda" in line):
                 state_legend[line.split()[4]] = float(line.split()[6].strip('"'))
 
     return state_legend
@@ -344,31 +364,49 @@ def _extract_dataframe(xvg, headers=None, filter=filter):
     if headers is None:
         headers = _get_headers(xvg)
 
-    xaxis = _get_value_by_key(headers, 'xaxis', 'label')
-    names = [_get_value_by_key(headers, 's{}'.format(x), 'legend') for x in
-            range(len(headers)) if 's{}'.format(x) in headers]
+    xaxis = _get_value_by_key(headers, "xaxis", "label")
+    names = [
+        _get_value_by_key(headers, "s{}".format(x), "legend")
+        for x in range(len(headers))
+        if "s{}".format(x) in headers
+    ]
     cols = [xaxis] + names
 
     # march through column names, mark duplicates when found
-    cols = [col + "{}[duplicated]".format(i) if col in cols[:i] else col
-            for i, col, in enumerate(cols)]
+    cols = [
+        col + "{}[duplicated]".format(i) if col in cols[:i] else col
+        for i, col, in enumerate(cols)
+    ]
 
-    header_cnt = len(headers['_raw_lines'])
+    header_cnt = len(headers["_raw_lines"])
     if not filter:
         # assumes clean files
-        df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
-                         na_filter=True, memory_map=True, names=cols,
-                         dtype=np.float64,
-                         float_precision='high')
+        df = pd.read_csv(
+            xvg,
+            sep=r"\s+",
+            header=None,
+            skiprows=header_cnt,
+            na_filter=True,
+            memory_map=True,
+            names=cols,
+            dtype=np.float64,
+            float_precision="high",
+        )
     else:
-        df = pd.read_csv(xvg, sep=r"\s+", header=None, skiprows=header_cnt,
-                memory_map=True, on_bad_lines='skip')
+        df = pd.read_csv(
+            xvg,
+            sep=r"\s+",
+            header=None,
+            skiprows=header_cnt,
+            memory_map=True,
+            on_bad_lines="skip",
+        )
         # If names=cols is passed to read_csv, rows with more than the
         # designated columns will be truncated and used instead of discarded.
         df.rename(columns={i: name for i, name in enumerate(cols)}, inplace=True)
         # If dtype=np.float64 and float_precision='high' are passed to read_csv,
         # 12.345.56 and - cannot be read.
-        df = df.apply(pd.to_numeric, errors='coerce')
+        df = df.apply(pd.to_numeric, errors="coerce")
         # drop duplicate
         df.dropna(inplace=True)
 
@@ -423,7 +461,7 @@ def _parse_header(line, headers={}, depth=2):
         else:
             break
 
-    next_t["_val"] = ''.join(s[1:]).rstrip().strip('"')
+    next_t["_val"] = "".join(s[1:]).rstrip().strip('"')
 
 
 def _get_headers(xvg):
@@ -484,17 +522,17 @@ def _get_headers(xvg):
     headers: dict
 
     """
-    with anyopen(xvg, 'r') as f:
-        headers = { '_raw_lines': [] }
+    with anyopen(xvg, "r") as f:
+        headers = {"_raw_lines": []}
         for line in f:
             line = line.strip()
             if len(line) == 0:
                 continue
-            if line.startswith('@'):
+            if line.startswith("@"):
                 _parse_header(line, headers)
-                headers['_raw_lines'].append(line)
-            elif line.startswith('#'):
-                headers['_raw_lines'].append(line)
+                headers["_raw_lines"].append(line)
+            elif line.startswith("#"):
+                headers["_raw_lines"].append(line)
                 continue
             # assuming to start a body section
             else:
@@ -522,8 +560,8 @@ def _get_value_by_key(headers, key1, key2=None):
     val = None
     if key1 in headers:
         if key2 is not None and key2 in headers[key1]:
-            val = headers[key1][key2]['_val']
+            val = headers[key1][key2]["_val"]
         else:
-            val = headers[key1]['_val']
+            val = headers[key1]["_val"]
 
     return val

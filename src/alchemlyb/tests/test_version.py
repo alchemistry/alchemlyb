@@ -1,5 +1,6 @@
 import alchemlyb
 
+
 def test_version():
     try:
         version = alchemlyb.__version__
@@ -8,9 +9,10 @@ def test_version():
 
     assert len(version) > 0
 
+
 def test_version_get_versions():
     import alchemlyb._version
+
     version = alchemlyb._version.get_versions()
 
     assert alchemlyb.__version__ == version["version"]
-
