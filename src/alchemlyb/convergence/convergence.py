@@ -7,8 +7,11 @@ import numpy as np
 import pandas as pd
 
 from .. import concat
-from ..estimators import FEP_ESTIMATORS, TI_ESTIMATORS
+from ..estimators import AutoMBAR as MBAR
+from ..estimators import BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
 from ..postprocessors.units import to_kT
+
+estimators_dispatch = {"BAR": BAR, "TI": TI, "MBAR": MBAR}
 
 
 def forward_backward_convergence(df_list, estimator="MBAR", num=10, **kwargs):
@@ -87,7 +90,7 @@ def forward_backward_convergence(df_list, estimator="MBAR", num=10, **kwargs):
         raise ValueError(msg)
     else:
         # select estimator class by name
-        estimator_fit = globals()[estimator](**kwargs).fit
+        estimator_fit = estimators_dispatch[estimator](**kwargs).fit
         logger.info(f"Use {estimator} estimator for convergence analysis.")
 
     logger.info("Begin forward analysis")

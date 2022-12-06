@@ -3,6 +3,7 @@
 """
 import pandas as pd
 import pytest
+from alchemtest.gmx import load_benzene, load_ABFE
 
 import alchemlyb
 from alchemlyb.estimators import TI

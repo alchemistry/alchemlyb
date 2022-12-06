@@ -13,9 +13,12 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2022 DrDomenicoMarson
+??/??/2022 DrDomenicoMarson, xiki-tempula
 
   * 1.0.1
+
+Enhancements
+  - Blackfy the codebase (PR #280).
 
 Fixes
   - Remove most of the iloc in the tests (issue #202, PR #254).

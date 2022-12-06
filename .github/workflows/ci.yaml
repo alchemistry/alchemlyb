@@ -63,7 +63,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest -v -n 2 --cov=alchemlyb --cov-report=xml --color=yes src/alchemlyb/tests
+        pytest -v -n 2 --black --cov=alchemlyb --cov-report=xml --color=yes src/alchemlyb/tests
       env:
         MPLBACKEND: agg
 

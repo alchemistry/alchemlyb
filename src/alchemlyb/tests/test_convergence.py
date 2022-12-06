@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
 import pytest
+from alchemtest.gmx import load_benzene
 
 from alchemlyb.convergence import forward_backward_convergence, fwdrev_cumavg_Rc, A_c
 from alchemlyb.convergence.convergence import _cummean
+from alchemlyb.parsing import gmx
 
 
 def test_convergence_ti(gmx_benzene_Coulomb_dHdl):

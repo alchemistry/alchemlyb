@@ -28,9 +28,11 @@ def _check_data_is_outside_bounds(data, lower, upper):
     assert any(data.reset_index()["time"] > upper)
 
 
+
 @pytest.fixture()
 def dHdl(gmx_benzene_Coulomb_dHdl):
     return gmx_benzene_Coulomb_dHdl[0]
+
 
 
 @pytest.fixture()
