@@ -1,3 +1,7 @@
+"""Storing the fixture to be used for the tests. Note that this file will only contain
+fixture that are made directly from parsing the files. Any additional operations like
+concat should be done at local level."""
+
 import pytest
 from alchemtest.amber import load_bace_example, load_simplesolvated
 from alchemtest.gmx import (
