@@ -2,7 +2,8 @@
 
 import pandas as pd
 
-class WorkflowBase():
+
+class WorkflowBase:
     """The base class for the Workflow.
 
     This is the base class for the creation of new Workflow. The
@@ -37,9 +38,10 @@ class WorkflowBase():
 
     .. versionadded:: 0.7.0
     """
-    def __init__(self, units='kT', software='Gromacs', T=298, out='./', *args,
-                 **kwargs):
 
+    def __init__(
+        self, units="kT", software="Gromacs", T=298, out="./", *args, **kwargs
+    ):
         self.T = T
         self.software = software
         self.unit = units
@@ -47,7 +49,7 @@ class WorkflowBase():
         self.out = out
 
     def run(self, *args, **kwargs):
-        """ Run the workflow in an automatic fashion.
+        """Run the workflow in an automatic fashion.
 
         This method would execute the
         :func:`~alchemlyb.workflows.WorkflowBase.read`,
@@ -88,7 +90,7 @@ class WorkflowBase():
         self.plot(*args, **kwargs)
 
     def read(self, *args, **kwargs):
-        """ The function that reads the files in `file_list` and parse them
+        """The function that reads the files in `file_list` and parse them
         into u_nk and dHdl files.
 
         Attributes
@@ -104,7 +106,7 @@ class WorkflowBase():
         self.dHdl_list = []
 
     def preprocess(self, *args, **kwargs):
-        """ The function that subsample the u_nk and dHdl in `u_nk_list` and
+        """The function that subsample the u_nk and dHdl in `u_nk_list` and
         `dHdl_list`.
 
         Attributes
@@ -120,7 +122,7 @@ class WorkflowBase():
         self.u_nk_sample_list = []
 
     def estimate(self, *args, **kwargs):
-        """ The function that runs the estimator based on `u_nk_sample_list`
+        """The function that runs the estimator based on `u_nk_sample_list`
         and `dHdl_sample_list`.
 
         Attributes
@@ -133,7 +135,7 @@ class WorkflowBase():
         self.result = pd.DataFrame()
 
     def check_convergence(self, *args, **kwargs):
-        """ The function for doing convergence analysis.
+        """The function for doing convergence analysis.
 
         Attributes
         ----------
@@ -145,7 +147,5 @@ class WorkflowBase():
         self.convergence = pd.DataFrame()
 
     def plot(self, *args, **kwargs):
-        """ The function for producing any plots.
-
-        """
+        """The function for producing any plots."""
         pass

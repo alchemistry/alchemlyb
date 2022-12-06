@@ -69,9 +69,9 @@ class TestSlicing:
         # NAMD energy files only have dE for adjacent lambdas, this ensures
         # that the slicer will not drop these rows as they have NaN values.
         # Do the pre-processing as the u_nk are from all lambdas
-        groups = namd_idws.groupby('fep-lambda')
+        groups = namd_idws.groupby("fep-lambda")
         for key, group in groups:
-            group = group[~group.index.duplicated(keep='first')]
+            group = group[~group.index.duplicated(keep="first")]
             df = self.slicer(group, None, None, None)
             assert len(df) == len(group)
 
@@ -252,7 +252,6 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
         ],
     )
     def test_raise_ValueError_for_mismatched_data(self, dataloader, end, step, request):
-
         data = request.getfixturevalue(dataloader)
         with pytest.raises(ValueError):
             self.slicer(data, series=data[:end:step])

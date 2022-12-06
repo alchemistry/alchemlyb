@@ -3,11 +3,12 @@
 """
 import pandas as pd
 
-from .util import anyopen
 from . import _init_attrs
+from .util import anyopen
 from ..postprocessors.units import R_kJmol
 
 k_b = R_kJmol
+
 
 @_init_attrs
 def extract_u_nk(filename, T):
@@ -34,9 +35,9 @@ def extract_u_nk(filename, T):
 
     dh_col_match = "dU/dL"
     h_col_match = "DelE"
-    pv_col_match = 'PV'
-    u_col_match = ['Total_En']
-    beta = 1/(k_b * T)
+    pv_col_match = "PV"
+    u_col_match = ["Total_En"]
+    beta = 1 / (k_b * T)
 
     state, lambdas, statevec = _extract_state(filename)
 
@@ -56,7 +57,11 @@ def extract_u_nk(filename, T):
         pv = df[pv_cols[0]]
 
     # GOMC also gives us total energy U directly; need this for reduced potential
-    u_cols = [col for col in df.columns if any(single_u_col_match in col for single_u_col_match in u_col_match)]
+    u_cols = [
+        col
+        for col in df.columns
+        if any(single_u_col_match in col for single_u_col_match in u_col_match)
+    ]
     u = None
     if u_cols:
         u = df[u_cols[0]]
@@ -64,7 +69,7 @@ def extract_u_nk(filename, T):
     u_k = dict()
     cols = list()
     for col in dH:
-        u_col = eval(col.split('->')[1][:-1])
+        u_col = eval(col.split("->")[1][:-1])
         # calculate reduced potential u_k = dH + pV + U
         u_k[u_col] = beta * dH[col].values
         if pv_cols:
@@ -73,8 +78,9 @@ def extract_u_nk(filename, T):
             u_k[u_col] += beta * u.values
         cols.append(u_col)
 
-    u_k = pd.DataFrame(u_k, columns=cols,
-                       index=pd.Index(times.values, name='time', dtype='Float64'))
+    u_k = pd.DataFrame(
+        u_k, columns=cols, index=pd.Index(times.values, name="time", dtype="Float64")
+    )
 
     # Need to modify the lambda name
     cols = [l + "-lambda" for l in lambdas]
@@ -83,12 +89,13 @@ def extract_u_nk(filename, T):
         u_k[l] = statevec[i]
 
     # set up new multi-index
-    newind = ['time'] + cols
+    newind = ["time"] + cols
     u_k = u_k.reset_index().set_index(newind)
 
-    u_k.name = 'u_nk'
+    u_k.name = "u_nk"
 
     return u_k
+
 
 @_init_attrs
 def extract_dHdl(filename, T):
@@ -112,7 +119,7 @@ def extract_dHdl(filename, T):
         the constants used by the corresponding MD engine.
 
     """
-    beta = 1/(k_b * T)
+    beta = 1 / (k_b * T)
 
     state, lambdas, statevec = _extract_state(filename)
 
@@ -131,8 +138,11 @@ def extract_dHdl(filename, T):
     # make dimensionless
     dHdl *= beta
 
-    dHdl = pd.DataFrame(dHdl.values, columns=lambdas,
-                        index=pd.Index(times.values, name='time', dtype='Float64'))
+    dHdl = pd.DataFrame(
+        dHdl.values,
+        columns=lambdas,
+        index=pd.Index(times.values, name="time", dtype="Float64"),
+    )
 
     # Need to modify the lambda name
     cols = [l + "-lambda" for l in lambdas]
@@ -141,10 +151,10 @@ def extract_dHdl(filename, T):
         dHdl[l] = statevec[i]
 
     # set up new multi-index
-    newind = ['time'] + cols
-    dHdl= dHdl.reset_index().set_index(newind)
+    newind = ["time"] + cols
+    dHdl = dHdl.reset_index().set_index(newind)
 
-    dHdl.name='dH/dl'
+    dHdl.name = "dH/dl"
 
     return dHdl
 
@@ -180,33 +190,29 @@ def extract(filename, T):
 
 
 def _extract_state(filename):
-    """Extract information on state sampled, names of lambdas.
-
-    """
+    """Extract information on state sampled, names of lambdas."""
     state = None
-    with anyopen(filename, 'r') as f:
+    with anyopen(filename, "r") as f:
         for line in f:
-            if ('#' in line) and ('State' in line):
-                state = int(line.split('State')[1].split(':')[0])
+            if ("#" in line) and ("State" in line):
+                state = int(line.split("State")[1].split(":")[0])
                 # GOMC always print these two fields
-                lambdas = ['Coulomb', 'VDW']
-                statevec = eval(line.strip().split(' = ')[-1])
+                lambdas = ["Coulomb", "VDW"]
+                statevec = eval(line.strip().split(" = ")[-1])
                 break
 
     return state, lambdas, statevec
 
 
 def _extract_dataframe(filename):
-    """Extract a DataFrame from free energy data.
-
-    """
+    """Extract a DataFrame from free energy data."""
     dh_col_match = "dU/dL"
     h_col_match = "DelE"
-    pv_col_match = 'PV'
-    u_col_match = 'Total_En'
+    pv_col_match = "PV"
+    u_col_match = "Total_En"
 
     xaxis = "time"
-    with anyopen(filename, 'r') as f:
+    with anyopen(filename, "r") as f:
         names = []
         rows = []
         for line in f:
@@ -214,7 +220,7 @@ def _extract_dataframe(filename):
             if len(line) == 0:
                 # avoid parsing empty line
                 continue
-            elif line.startswith('#T'):
+            elif line.startswith("#T"):
                 # this line has state information. No need to be parsed
                 continue
             elif line.startswith("#Steps"):

@@ -198,7 +198,6 @@ def amber_simplesolvated_charge_dHdl(amber_simplesolvated):
 
 @pytest.fixture
 def amber_simplesolvated_vdw_dHdl(amber_simplesolvated):
-
     return [
         amber.extract_dHdl(filename, T=298.0)
         for filename in amber_simplesolvated["vdw"]

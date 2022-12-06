@@ -13,7 +13,6 @@ class FEPestimatorMixin:
     """Mixin for all FEP Estimator test classes."""
 
     def compare_delta_f(self, X_delta_f):
-
         est = self.cls().fit(X_delta_f[0])
         delta_f, d_delta_f = self.get_delta_f(est)
 

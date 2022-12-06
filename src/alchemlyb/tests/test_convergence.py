@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from alchemlyb.convergence import forward_backward_convergence, \
-    fwdrev_cumavg_Rc, A_c
+from alchemlyb.convergence import forward_backward_convergence, fwdrev_cumavg_Rc, A_c
 from alchemlyb.convergence.convergence import _cummean
 
 
