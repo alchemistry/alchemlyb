@@ -8,17 +8,15 @@ from alchemtest.gmx import load_benzene
 import alchemlyb
 from alchemlyb.convergence import forward_backward_convergence
 from alchemlyb.estimators import MBAR, TI, BAR
-from alchemlyb.parsing.gmx import extract_u_nk, extract_dHdl
 from alchemlyb.visualisation import plot_convergence
 from alchemlyb.visualisation.dF_state import plot_dF_state
 from alchemlyb.visualisation.mbar_matrix import plot_mbar_overlap_matrix
 from alchemlyb.visualisation.ti_dhdl import plot_ti_dhdl
 
 
-def test_plot_mbar_omatrix():
+def test_plot_mbar_omatrix(gmx_benzene_Coulomb_u_nk):
     """Just test if the plot runs"""
-    bz = load_benzene().data
-    u_nk_coul = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz["Coulomb"]])
+    u_nk_coul = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
     mbar_coul = MBAR()
     mbar_coul.fit(u_nk_coul)
 
@@ -42,10 +40,9 @@ def test_plot_mbar_omatrix():
     assert isinstance(plot_mbar_overlap_matrix(overlap_maxtrix), matplotlib.axes.Axes)
 
 
-def test_plot_ti_dhdl():
+def test_plot_ti_dhdl(gmx_benzene_Coulomb_dHdl, gmx_benzene_VDW_dHdl):
     """Just test if the plot runs"""
-    bz = load_benzene().data
-    dHdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz["Coulomb"]])
+    dHdl_coul = alchemlyb.concat(gmx_benzene_Coulomb_dHdl)
     ti_coul = TI()
     ti_coul.fit(dHdl_coul)
 
@@ -61,7 +58,7 @@ def test_plot_ti_dhdl():
     )
     plt.close(fig)
 
-    dHdl_vdw = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz["VDW"]])
+    dHdl_vdw = alchemlyb.concat(gmx_benzene_VDW_dHdl)
     ti_vdw = TI().fit(dHdl_vdw)
     ax = plot_ti_dhdl([ti_coul, ti_vdw])
     assert isinstance(ax, matplotlib.axes.Axes)
@@ -76,13 +73,18 @@ def test_plot_ti_dhdl():
     plt.close(ax.figure)
 
 
-def test_plot_dF_state():
+def test_plot_dF_state(
+    gmx_benzene_Coulomb_dHdl,
+    gmx_benzene_Coulomb_u_nk,
+    gmx_benzene_VDW_u_nk,
+    gmx_benzene_VDW_dHdl,
+):
     """Just test if the plot runs"""
     bz = load_benzene().data
-    u_nk_coul = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz["Coulomb"]])
-    dHdl_coul = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz["Coulomb"]])
-    u_nk_vdw = alchemlyb.concat([extract_u_nk(xvg, T=300) for xvg in bz["VDW"]])
-    dHdl_vdw = alchemlyb.concat([extract_dHdl(xvg, T=300) for xvg in bz["VDW"]])
+    u_nk_coul = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
+    dHdl_coul = alchemlyb.concat(gmx_benzene_Coulomb_dHdl)
+    u_nk_vdw = alchemlyb.concat(gmx_benzene_VDW_u_nk)
+    dHdl_vdw = alchemlyb.concat(gmx_benzene_VDW_dHdl)
 
     ti_coul = TI().fit(dHdl_coul)
     ti_vdw = TI().fit(dHdl_vdw)
@@ -144,10 +146,8 @@ def test_plot_dF_state():
     plt.close(fig)
 
 
-def test_plot_convergence_dataframe():
-    bz = load_benzene().data
-    data_list = [extract_u_nk(xvg, T=300) for xvg in bz["Coulomb"]]
-    df = forward_backward_convergence(data_list, "MBAR")
+def test_plot_convergence_dataframe(gmx_benzene_Coulomb_u_nk):
+    df = forward_backward_convergence(gmx_benzene_Coulomb_u_nk, "MBAR")
     ax = plot_convergence(df)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
@@ -168,9 +168,8 @@ def test_plot_convergence_dataframe_noerr():
     plt.close(ax.figure)
 
 
-def test_plot_convergence():
-    bz = load_benzene().data
-    data_list = [extract_u_nk(xvg, T=300) for xvg in bz["Coulomb"]]
+def test_plot_convergence(gmx_benzene_Coulomb_u_nk):
+    data_list = gmx_benzene_Coulomb_u_nk
     forward = []
     forward_error = []
     backward = []
@@ -205,17 +204,11 @@ def test_plot_convergence():
 
 class Test_Units:
     @staticmethod
-    @pytest.fixture(scope="class")
-    def estimaters():
-        bz = load_benzene().data
-        dHdl_coul = alchemlyb.concat(
-            [extract_dHdl(xvg, T=300) for xvg in bz["Coulomb"]]
-        )
+    @pytest.fixture()
+    def estimaters(gmx_benzene_Coulomb_dHdl, gmx_benzene_Coulomb_u_nk):
+        dHdl_coul = alchemlyb.concat(gmx_benzene_Coulomb_dHdl)
         ti = TI().fit(dHdl_coul)
-
-        u_nk_coul = alchemlyb.concat(
-            [extract_u_nk(xvg, T=300) for xvg in bz["Coulomb"]]
-        )
+        u_nk_coul = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
         mbar = MBAR().fit(u_nk_coul)
 
         return ti, mbar

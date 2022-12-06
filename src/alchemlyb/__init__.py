@@ -54,6 +54,8 @@ def concat(objs, *args, **kwargs):
 
 
     .. versionadded:: 0.5.0"""
+    if isinstance(objs, pd.DataFrame):
+        return objs
     # Sanity check
     try:
         attrs = objs[0].attrs

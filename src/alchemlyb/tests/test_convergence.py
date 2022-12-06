@@ -8,17 +8,8 @@ from alchemlyb.convergence.convergence import _cummean
 from alchemlyb.parsing import gmx
 
 
-@pytest.fixture()
-def gmx_benzene():
-    dataset = load_benzene()
-    return [gmx.extract_dHdl(dhdl, T=300) for dhdl in dataset["data"]["Coulomb"]], [
-        gmx.extract_u_nk(dhdl, T=300) for dhdl in dataset["data"]["Coulomb"]
-    ]
-
-
-def test_convergence_ti(gmx_benzene):
-    dHdl, u_nk = gmx_benzene
-    convergence = forward_backward_convergence(dHdl, "TI")
+def test_convergence_ti(gmx_benzene_Coulomb_dHdl):
+    convergence = forward_backward_convergence(gmx_benzene_Coulomb_dHdl, "TI")
     assert convergence.shape == (10, 5)
 
     assert convergence.loc[0, "Forward"] == pytest.approx(3.07, 0.01)
@@ -28,9 +19,8 @@ def test_convergence_ti(gmx_benzene):
 
 
 @pytest.mark.parametrize("estimator", ["MBAR", "BAR"])
-def test_convergence_fep(gmx_benzene, estimator):
-    dHdl, u_nk = gmx_benzene
-    convergence = forward_backward_convergence(u_nk, estimator)
+def test_convergence_fep(gmx_benzene_Coulomb_u_nk, estimator):
+    convergence = forward_backward_convergence(gmx_benzene_Coulomb_u_nk, estimator)
     assert convergence.shape == (10, 5)
     assert convergence.loc[0, "Forward"] == pytest.approx(3.02, 0.01)
     assert convergence.loc[0, "Backward"] == pytest.approx(3.06, 0.01)
@@ -38,21 +28,20 @@ def test_convergence_fep(gmx_benzene, estimator):
     assert convergence.loc[9, "Backward"] == pytest.approx(3.04, 0.01)
 
 
-def test_convergence_wrong_estimator(gmx_benzene):
-    dHdl, u_nk = gmx_benzene
+def test_convergence_wrong_estimator(gmx_benzene_Coulomb_dHdl):
     with pytest.raises(ValueError, match="is not available in"):
-        forward_backward_convergence(u_nk, "WWW")
+        forward_backward_convergence(gmx_benzene_Coulomb_dHdl, "WWW")
 
 
-def test_convergence_wrong_cases(gmx_benzene):
-    dHdl, u_nk = gmx_benzene
+def test_convergence_wrong_cases(gmx_benzene_Coulomb_u_nk):
     with pytest.warns(DeprecationWarning, match="Using lower-case strings for"):
-        forward_backward_convergence(u_nk, "mbar")
+        forward_backward_convergence(gmx_benzene_Coulomb_u_nk, "mbar")
 
 
-def test_convergence_method(gmx_benzene):
-    dHdl, u_nk = gmx_benzene
-    convergence = forward_backward_convergence(u_nk, "MBAR", num=2, method="adaptive")
+def test_convergence_method(gmx_benzene_Coulomb_u_nk):
+    convergence = forward_backward_convergence(
+        gmx_benzene_Coulomb_u_nk, "MBAR", num=2, method="adaptive"
+    )
     assert len(convergence) == 2
 
 
@@ -75,12 +64,7 @@ def test_cummean_long_none_integter():
 
 
 def test_R_c_converged():
-    data = pd.Series(
-        data=[
-            0,
-        ]
-        * 100
-    )
+    data = pd.Series(data=[0] * 100)
     data.attrs["temperature"] = 310
     data.attrs["energy_unit"] = "kcal/mol"
     value, running_average = fwdrev_cumavg_Rc(data)
@@ -96,17 +80,7 @@ def test_R_c_notconverged():
 
 
 def test_R_c_real():
-    data = pd.Series(
-        data=np.hstack(
-            (
-                range(10),
-                [
-                    4.5,
-                ]
-                * 10,
-            )
-        )
-    )
+    data = pd.Series(data=np.hstack((range(10), [4.5] * 10)))
     data.attrs["temperature"] = 310
     data.attrs["energy_unit"] = "kcal/mol"
     value, running_average = fwdrev_cumavg_Rc(data, tol=2.0)
@@ -114,24 +88,8 @@ def test_R_c_real():
 
 
 def test_A_c_real():
-    data = pd.Series(
-        data=np.hstack(
-            (
-                range(10),
-                [
-                    4.5,
-                ]
-                * 10,
-            )
-        )
-    )
+    data = pd.Series(data=np.hstack((range(10), [4.5] * 10)))
     data.attrs["temperature"] = 310
     data.attrs["energy_unit"] = "kcal/mol"
-    value = A_c(
-        [
-            data,
-        ]
-        * 2,
-        tol=2.0,
-    )
+    value = A_c([data] * 2, tol=2.0)
     np.testing.assert_allclose(value, 0.65)
