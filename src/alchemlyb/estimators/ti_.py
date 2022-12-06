@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
-
 from sklearn.base import BaseEstimator
 
 from .base import _EstimatorMixOut
+
 
 class TI(BaseEstimator, _EstimatorMixOut):
     """Thermodynamic integration (TI).
@@ -71,43 +71,49 @@ class TI(BaseEstimator, _EstimatorMixOut):
         dl = means.reset_index()[means.index.names[:]].diff().iloc[1:].values
 
         # apply trapezoid rule to obtain DF between each adjacent state
-        deltas = (dl * (means.iloc[:-1].values + means.iloc[1:].values)/2).sum(axis=1)
+        deltas = (dl * (means.iloc[:-1].values + means.iloc[1:].values) / 2).sum(axis=1)
 
         # build matrix of deltas between each state
-        adelta = np.zeros((len(deltas)+1, len(deltas)+1))
+        adelta = np.zeros((len(deltas) + 1, len(deltas) + 1))
         ad_delta = np.zeros_like(adelta)
 
         for j in range(len(deltas)):
             out = []
             dout = []
             for i in range(len(deltas) - j):
-                out.append(deltas[i] + deltas[i+1:i+j+1].sum())
+                out.append(deltas[i] + deltas[i + 1 : i + j + 1].sum())
 
                 # Define additional zero lambda
                 a = [0.0] * len(l_types)
 
                 # Define dl series' with additional zero lambda on the left and right
-                dll = np.insert(dl[i:i + j + 1], 0, [a], axis=0)
-                dlr = np.append(dl[i:i + j + 1], [a], axis=0)
+                dll = np.insert(dl[i : i + j + 1], 0, [a], axis=0)
+                dlr = np.append(dl[i : i + j + 1], [a], axis=0)
 
                 # Get a series of the form: x1, x1 + x2, ..., x(n-1) + x(n), x(n)
                 dllr = dll + dlr
 
                 # Append deviation of free energy difference between state i and i+j+1
-                dout.append((dllr ** 2 * variances.iloc[i:i + j + 2].values / 4).sum(axis=1).sum())
-            adelta += np.diagflat(np.array(out), k=j+1)
-            ad_delta += np.diagflat(np.array(dout), k=j+1)
+                dout.append(
+                    (dllr**2 * variances.iloc[i : i + j + 2].values / 4)
+                    .sum(axis=1)
+                    .sum()
+                )
+            adelta += np.diagflat(np.array(out), k=j + 1)
+            ad_delta += np.diagflat(np.array(dout), k=j + 1)
 
         # yield standard delta_f_ free energies between each state
-        self._delta_f_ = pd.DataFrame(adelta - adelta.T,
-                                     columns=means.index.values,
-                                     index=means.index.values)
+        self._delta_f_ = pd.DataFrame(
+            adelta - adelta.T, columns=means.index.values, index=means.index.values
+        )
         self.dhdl = means
 
         # yield standard deviation d_delta_f_ between each state
-        self._d_delta_f_ = pd.DataFrame(np.sqrt(ad_delta + ad_delta.T),
-                                       columns=variances.index.values,
-                                       index=variances.index.values)
+        self._d_delta_f_ = pd.DataFrame(
+            np.sqrt(ad_delta + ad_delta.T),
+            columns=variances.index.values,
+            index=variances.index.values,
+        )
 
         self._states_ = means.index.values.tolist()
 
@@ -135,7 +141,9 @@ class TI(BaseEstimator, _EstimatorMixOut):
         """
         if len(self.dhdl.index.names) == 1:
             name = self.dhdl.columns[0]
-            return [self.dhdl[name], ]
+            return [
+                self.dhdl[name],
+            ]
         dhdl_list = []
         # get the lambda names
         l_types = self.dhdl.index.names
@@ -143,14 +151,14 @@ class TI(BaseEstimator, _EstimatorMixOut):
         # Fix issue #148, where for pandas == 1.3.0
         # lambdas = self.dhdl.reset_index()[list(l_types)]
         lambdas = self.dhdl.reset_index()[l_types]
-        diff = lambdas.diff().to_numpy(dtype='bool')
+        diff = lambdas.diff().to_numpy(dtype="bool")
         # diff will give the first row as NaN so need to fix that
         diff[0, :] = diff[1, :]
         # Make sure that the start point is set to true as well
         diff[:-1, :] = diff[:-1, :] | diff[1:, :]
         for i in range(len(l_types)):
-            if any(diff[:,i]):
-                new = self.dhdl.iloc[diff[:,i], i]
+            if any(diff[:, i]):
+                new = self.dhdl.iloc[diff[:, i], i]
                 # drop all other index
                 for l in l_types:
                     if l != l_types[i]:
@@ -158,4 +166,3 @@ class TI(BaseEstimator, _EstimatorMixOut):
                 new.attrs = self.dhdl.attrs
                 dhdl_list.append(new)
         return dhdl_list
-

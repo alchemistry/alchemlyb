@@ -10,14 +10,14 @@ The code for producing the dhdl plot is modified based on
 """
 
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties as FP
 import numpy as np
+from matplotlib.font_manager import FontProperties as FP
 
 from ..postprocessors.units import get_unit_converter
 
-def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None,
-                 ax=None):
-    '''Plot the dhdl of TI.
+
+def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
+    """Plot the dhdl of TI.
 
     Parameters
     ----------
@@ -55,7 +55,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None,
         changing the figure legend.
 
     .. versionadded:: 0.4.0
-    '''
+    """
     # Make it into a list
     # separate_dhdl method is used so that the input for the actual plotting
     # Function are a uniformed list of series object which only contains one
@@ -69,7 +69,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None,
 
     # Convert unit
     if units is None:
-        units = dhdl_list[0].attrs['energy_unit']
+        units = dhdl_list[0].attrs["energy_unit"]
 
     new_unit = []
     convert = get_unit_converter(units)
@@ -80,11 +80,11 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None,
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))
 
-    ax.spines['bottom'].set_position('zero')
-    ax.spines['top'].set_color('none')
-    ax.spines['right'].set_color('none')
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
+    ax.spines["bottom"].set_position("zero")
+    ax.spines["top"].set_color("none")
+    ax.spines["right"].set_color("none")
+    ax.xaxis.set_ticks_position("bottom")
+    ax.yaxis.set_ticks_position("left")
 
     for k, spine in ax.spines.items():
         spine.set_zorder(12.2)
@@ -98,20 +98,24 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None,
     else:
         if len(labels) == len(dhdl_list):
             lv_names2 = labels
-        else: # pragma: no cover
+        else:  # pragma: no cover
             raise ValueError(
-                'Length of labels ({}) should be the same as the number of data ({})'.format(
-                    len(labels), len(dhdl_list)))
+                "Length of labels ({}) should be the same as the number of data ({})".format(
+                    len(labels), len(dhdl_list)
+                )
+            )
 
     if colors is None:
-        colors = ['r', 'g', '#7F38EC', '#9F000F', 'b', 'y']
+        colors = ["r", "g", "#7F38EC", "#9F000F", "b", "y"]
     else:
         if len(colors) >= len(dhdl_list):
             pass
-        else: # pragma: no cover
+        else:  # pragma: no cover
             raise ValueError(
-                'Number of colors ({}) should be larger than the number of data ({})'.format(
-                    len(labels), len(dhdl_list)))
+                "Number of colors ({}) should be larger than the number of data ({})".format(
+                    len(labels), len(dhdl_list)
+                )
+            )
 
     # Get the real data out
     xs, ndx, dx = [0], 0, 0.001
@@ -125,16 +129,22 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None,
 
         for i in range(len(x) - 1):
             if i % 2 == 0:
-                ax.fill_between(x[i:i + 2] + ndx, 0, y[i:i + 2],
-                                color=colors[ndx], alpha=1.0)
+                ax.fill_between(
+                    x[i : i + 2] + ndx, 0, y[i : i + 2], color=colors[ndx], alpha=1.0
+                )
             else:
-                ax.fill_between(x[i:i + 2] + ndx, 0, y[i:i + 2],
-                                color=colors[ndx], alpha=0.5)
+                ax.fill_between(
+                    x[i : i + 2] + ndx, 0, y[i : i + 2], color=colors[ndx], alpha=0.5
+                )
 
         xlegend = [-100 * wnum for wnum in range(len(lv_names2))]
-        ax.plot(xlegend, [0 * wnum for wnum in xlegend], ls='-',
-                color=colors[ndx],
-                label=lv_names2[ndx])
+        ax.plot(
+            xlegend,
+            [0 * wnum for wnum in xlegend],
+            ls="-",
+            color=colors[ndx],
+            label=lv_names2[ndx],
+        )
         xs += (x + ndx).tolist()[1:]
         ndx += 1
 
@@ -159,7 +169,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None,
         if i in getInd():
             xt.append(i)
         else:
-            xt.append('')
+            xt.append("")
 
     plt.xticks(xs[1:], xt[1:], fontsize=10)
     ax.yaxis.label.set_size(10)
@@ -172,31 +182,46 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None,
     max_y *= 1.01
 
     # Modified so that the x label won't conflict with the lambda label
-    min_y -= (max_y-min_y)*0.1
+    min_y -= (max_y - min_y) * 0.1
 
     ax.set_ylim(min_y, max_y)
 
     for i, j in zip(xs[1:], xt[1:]):
         ax.annotate(
-            ('%.2f' % (i - 1.0 if i > 1.0 else i) if not j == '' else ''),
-            xy=(i, 0), size=10, rotation=90, va='bottom', ha='center',
-            color='#151B54')
+            ("%.2f" % (i - 1.0 if i > 1.0 else i) if not j == "" else ""),
+            xy=(i, 0),
+            size=10,
+            rotation=90,
+            va="bottom",
+            ha="center",
+            color="#151B54",
+        )
     if ndx > 1:
         lenticks = len(ax.get_ymajorticklabels()) - 1
-        if min_y < 0: lenticks -= 1
+        if min_y < 0:
+            lenticks -= 1
         if lenticks < 5:  # pragma: no cover
             from matplotlib.ticker import AutoMinorLocator as AML
+
             ax.yaxis.set_minor_locator(AML())
-    ax.grid(which='both', color='w', lw=0.25, axis='y', zorder=12)
+    ax.grid(which="both", color="w", lw=0.25, axis="y", zorder=12)
     ax.set_ylabel(
-        r'$\langle{\frac{\partial U}{\partial\lambda}}\rangle_{\lambda}$' +
-        '({})'.format(units),
-        fontsize=20, color='#151B54')
-    ax.annotate(r'$\mathit{\lambda}$', xy=(0, 0), xytext=(0.5, -0.05), size=18,
-                textcoords='axes fraction', va='top', ha='center',
-                color='#151B54')
+        r"$\langle{\frac{\partial U}{\partial\lambda}}\rangle_{\lambda}$"
+        + "({})".format(units),
+        fontsize=20,
+        color="#151B54",
+    )
+    ax.annotate(
+        r"$\mathit{\lambda}$",
+        xy=(0, 0),
+        xytext=(0.5, -0.05),
+        size=18,
+        textcoords="axes fraction",
+        va="top",
+        ha="center",
+        color="#151B54",
+    )
     lege = ax.legend(prop=FP(size=14), frameon=False, loc=1)
     for l in lege.legendHandles:
         l.set_linewidth(10)
     return ax
-
