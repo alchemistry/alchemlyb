@@ -53,7 +53,13 @@ def concat(objs, *args, **kwargs):
     pandas.concat
 
 
-    .. versionadded:: 0.5.0"""
+    .. versionadded:: 0.5.0
+    .. versionchanged:: 1.0.1
+        When input is single dataframe, it will be sent out directly.
+
+    """
+    if isinstance(objs, (pd.DataFrame, pd.Series)):
+        return objs
     # Sanity check
     try:
         attrs = objs[0].attrs
