@@ -60,7 +60,7 @@ class Test_Conversion():
 
     def test_kt2kt_number(self, dhdl):
         new_dhdl = to_kT(dhdl)
-        assert 12.9 == pytest.approx(new_dhdl.iloc[0, 0], 0.1)
+        assert 12.9 == pytest.approx(new_dhdl.loc[(0.0,0.0)], 0.1)
 
     def test_kt2kt_unit(self, dhdl):
         new_dhdl = to_kT(dhdl)
@@ -74,7 +74,7 @@ class Test_Conversion():
     def test_kj2kt_number(self, dhdl):
         dhdl.attrs['energy_unit'] = 'kJ/mol'
         new_dhdl = to_kT(dhdl)
-        assert 5.0 == pytest.approx(new_dhdl.iloc[0, 0], 0.1)
+        assert 5.0 == pytest.approx(new_dhdl.loc[(0.0,0.0)], 0.1)
 
     def test_kcal2kt_unit(self, dhdl):
         dhdl.attrs['energy_unit'] = 'kcal/mol'
@@ -84,7 +84,7 @@ class Test_Conversion():
     def test_kcal2kt_number(self, dhdl):
         dhdl.attrs['energy_unit'] = 'kcal/mol'
         new_dhdl = to_kT(dhdl)
-        assert 21.0 == pytest.approx(new_dhdl.iloc[0, 0], 0.1)
+        assert 21.0 == pytest.approx(new_dhdl.loc[(0.0,0.0)], 0.1)
 
     def test_unknown2kt(self, dhdl):
         dhdl.attrs['energy_unit'] = 'ddd'

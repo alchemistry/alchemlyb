@@ -150,10 +150,10 @@ class TestSlicing:
         """Test that a shuffled DataFrame yields a KeyError.
 
         """
-        indices = np.arange(len(data))
+        indices = data.index.values
         np.random.shuffle(indices)
 
-        df = data.iloc[indices]
+        df = data.loc[indices]
 
         with pytest.raises(KeyError):
             self.slicer(df, lower=200)
@@ -246,7 +246,7 @@ class CorrelatedPreprocessors:
         """Basic test for execution; resulting size of dataset sensitive to
         machine and depends on algorithm.
         """
-        assert len(self.slicer(data, series=data.iloc[:, 0])) <= size
+        assert len(self.slicer(data, series=data.loc[:, data.columns[0]])) <= size
 
     @pytest.mark.parametrize('data', [gmx_benzene_dHdl(),
                                       gmx_benzene_u_nk()])
@@ -273,7 +273,7 @@ class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
                                  (False, gmx_benzene_u_nk(), 3571),
                              ])
     def test_conservative(self, data, size, conservative):
-        sliced = self.slicer(data, series=data.iloc[:, 0], conservative=conservative)
+        sliced = self.slicer(data, series=data.loc[:, data.columns[0]], conservative=conservative)
         # results can vary slightly with different machines
         # so possibly do
         # delta = 10

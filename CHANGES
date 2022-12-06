@@ -18,6 +18,7 @@ The rules for this file:
   * 1.0.1
 
 Fixes
+  - Remove most of the iloc in the tests (issue #202, PR #254).
   - AMBER parser now raises ValueError when the initial simulation time
     is not found (issue #272, PR #273).
   - The regex in the AMBER parser now reads also 'field=value' pairs where

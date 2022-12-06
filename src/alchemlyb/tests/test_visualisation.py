@@ -158,13 +158,13 @@ def test_plot_convergence():
         slice = int(len(data_list[0])/num_points*i)
         u_nk_coul = alchemlyb.concat([data[:slice] for data in data_list])
         estimate = MBAR().fit(u_nk_coul)
-        forward.append(estimate.delta_f_.iloc[0,-1])
-        forward_error.append(estimate.d_delta_f_.iloc[0,-1])
+        forward.append(estimate.delta_f_.loc[0.0,1.0])
+        forward_error.append(estimate.d_delta_f_.loc[0.0,1.0])
         # Do the backward
         u_nk_coul = alchemlyb.concat([data[-slice:] for data in data_list])
         estimate = MBAR().fit(u_nk_coul)
-        backward.append(estimate.delta_f_.iloc[0,-1])
-        backward_error.append(estimate.d_delta_f_.iloc[0,-1])
+        backward.append(estimate.delta_f_.loc[0.0,1.0])
+        backward_error.append(estimate.d_delta_f_.loc[0.0,1.0])
 
     df = pd.DataFrame(data={'Forward': forward,
                             'Forward_Error': forward_error,
