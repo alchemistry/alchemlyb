@@ -33,6 +33,35 @@ def workflow(tmp_path_factory):
     return workflow
 
 
+class TestRun:
+    def test_none(self, workflow):
+        """Don't run anything"""
+        workflow.run(
+            uncorr=None, estimators=None, overlap=None, breakdown=None, forwrev=None
+        )
+
+    def test_invalid_estimator(self, workflow):
+        with pytest.raises(ValueError, match=r"Estimator aaa is not supported."):
+            workflow.run(
+                uncorr=None,
+                estimators="aaa",
+                overlap=None,
+                breakdown=None,
+                forwrev=None,
+            )
+
+    def test_single_estimator(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, "u_nk_list", [])
+        monkeypatch.setattr(workflow, "dHdl_list", [])
+        monkeypatch.setattr(workflow, "u_nk_sample_list", [])
+        monkeypatch.setattr(workflow, "dHdl_sample_list", [])
+        monkeypatch.setattr(workflow, "estimator", dict())
+        workflow.run(
+            uncorr=None, estimators="MBAR", overlap=None, breakdown=True, forwrev=None
+        )
+        assert "MBAR" in workflow.estimator
+
+
 class TestRead:
     def test_default(self, workflow):
         """test if the files has been loaded correctly."""
@@ -158,15 +187,6 @@ class TestEstimator:
         with pytest.raises(ValueError):
             workflow.estimate("aaa")
 
-    def test_run_single_estimator(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, "u_nk_list", [])
-        monkeypatch.setattr(workflow, "dHdl_list", [])
-        monkeypatch.setattr(workflow, "estimator", dict())
-        workflow.run(
-            uncorr=None, estimators="MBAR", overlap=None, breakdown=True, forwrev=None
-        )
-        assert "MBAR" in workflow.estimator
-
     def test_single_estimator_mbar(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "estimator", dict())
         workflow.estimate(estimators="MBAR")
@@ -182,22 +202,41 @@ class TestEstimator:
         summary = workflow.generate_result()
         assert np.isclose(summary["TI"]["Stages"]["TOTAL"], 21.51472826028906, 0.1)
 
-    def test_run_invalid_estimator(self, workflow):
-        with pytest.raises(ValueError, match=r"Estimator aaa is not supported."):
-            workflow.run(
-                uncorr=None,
-                estimators="aaa",
-                overlap=None,
-                breakdown=None,
-                forwrev=None,
-            )
-
     def test_unprocessed_n_uk(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "u_nk_sample_list", None)
         monkeypatch.setattr(workflow, "estimator", dict())
         workflow.estimate()
         assert len(workflow.estimator) == 3
         assert "MBAR" in workflow.estimator
+
+    def test_unpertubed_lambda(self, workflow, monkeypatch, gmx_benzene_Coulomb_dHdl):
+        """Test the if two lamdas present and one of them is not pertubed.
+
+                                               fep  bound
+        time    fep-lambda bound-lambda
+        0.0     0.5        0             12.958159      0
+        10.0    0.5        0             -1.062968      0
+        20.0    0.5        0              1.019020      0
+        30.0    0.5        0              5.029051      0
+        40.0    0.5        0              7.768072      0
+
+        Where only fep-lambda changes but the bonded-lambda is always 0.
+        """
+        monkeypatch.setattr(workflow, "u_nk_list", [])
+        monkeypatch.setattr(workflow, "u_nk_sample_list", None)
+        monkeypatch.setattr(workflow, "dHdl_list", gmx_benzene_Coulomb_dHdl)
+        monkeypatch.setattr(workflow, "dHdl_sample_list", gmx_benzene_Coulomb_dHdl)
+        monkeypatch.setattr(workflow, "estimator", dict())
+        monkeypatch.setattr(workflow, "summary", None)
+        # Add another lambda column
+        for dHdl in workflow.dHdl_sample_list:
+            dHdl.insert(1, "bound-lambda", [1.0] * len(dHdl))
+            dHdl.insert(1, "bound", [1.0] * len(dHdl))
+            dHdl.set_index("bound-lambda", append=True, inplace=True)
+
+        workflow.estimate(estimators="TI")
+        summary = workflow.generate_result()
+        assert np.isclose(summary["TI"]["Stages"]["bound"], 0)
 
 
 class TestVisualisation:
@@ -366,82 +405,82 @@ class Test_automatic_amber:
     #         assert os.path.isfile(os.path.join(workflow.out, "dF_state.pdf"))
     #
 
+    # class Test_automatic_benzene:
+    #     """Test the full automatic workflow for load_benzene from alchemtest.gmx for
+    #     single stage transformation."""
+    #
+    #     @staticmethod
+    #     @pytest.fixture(scope="session")
+    #     def workflow(tmp_path_factory):
+    #         outdir = tmp_path_factory.mktemp("out")
+    #         dir = os.path.dirname(os.path.dirname(load_benzene()["data"]["Coulomb"][0]))
+    #         dir = os.path.join(dir, "*")
+    #         workflow = ABFE(
+    #             units="kcal/mol",
+    #             software="GROMACS",
+    #             dir=dir,
+    #             prefix="dhdl",
+    #             suffix="bz2",
+    #             T=310,
+    #             outdirectory=outdir,
+    #         )
+    #         workflow.run(
+    #             skiptime=0,
+    #             uncorr="dE",
+    #             threshold=50,
+    #             estimators=("MBAR", "BAR", "TI"),
+    #             overlap="O_MBAR.pdf",
+    #             breakdown=True,
+    #             forwrev=10,
+    #         )
+    #         return workflow
+    #
+    #     def test_read(self, workflow):
+    #         """test if the files has been loaded correctly."""
+    #         assert len(workflow.u_nk_list) == 5
+    #         assert len(workflow.dHdl_list) == 5
+    #         assert all([len(u_nk) == 4001 for u_nk in workflow.u_nk_list])
+    #         assert all([len(dHdl) == 4001 for dHdl in workflow.dHdl_list])
+    #
+    #     def test_estimator(self, workflow):
+    #         """Test if all three estimators have been used."""
+    #         assert len(workflow.estimator) == 3
+    #         assert "MBAR" in workflow.estimator
+    #         assert "TI" in workflow.estimator
+    #         assert "BAR" in workflow.estimator
+    #
+    #     def test_O_MBAR(self, workflow):
+    #         """test if the O_MBAR.pdf has been plotted."""
+    #         assert os.path.isfile(os.path.join(workflow.out, "O_MBAR.pdf"))
+    #
+    #     def test_dhdl_TI(self, workflow):
+    #         """test if the dhdl_TI.pdf has been plotted."""
+    #         assert os.path.isfile(os.path.join(workflow.out, "dhdl_TI.pdf"))
+    #
+    #     def test_dF_state(self, workflow):
+    #         """test if the dF_state.pdf has been plotted."""
+    #         assert os.path.isfile(os.path.join(workflow.out, "dF_state.pdf"))
+    #
+    #     def test_convergence(self, workflow):
+    #         """test if the dF_state.pdf has been plotted."""
+    #         assert os.path.isfile(os.path.join(workflow.out, "dF_t.pdf"))
+    #         assert len(workflow.convergence) == 10
 
-# class Test_automatic_benzene:
-#     """Test the full automatic workflow for load_benzene from alchemtest.gmx for
-#     single stage transformation."""
-#
-#     @staticmethod
-#     @pytest.fixture(scope="session")
-#     def workflow(tmp_path_factory):
-#         outdir = tmp_path_factory.mktemp("out")
-#         dir = os.path.dirname(os.path.dirname(load_benzene()["data"]["Coulomb"][0]))
-#         dir = os.path.join(dir, "*")
-#         workflow = ABFE(
-#             units="kcal/mol",
-#             software="GROMACS",
-#             dir=dir,
-#             prefix="dhdl",
-#             suffix="bz2",
-#             T=310,
-#             outdirectory=outdir,
-#         )
-#         workflow.run(
-#             skiptime=0,
-#             uncorr="dE",
-#             threshold=50,
-#             estimators=("MBAR", "BAR", "TI"),
-#             overlap="O_MBAR.pdf",
-#             breakdown=True,
-#             forwrev=10,
-#         )
-#         return workflow
-#
-#     def test_read(self, workflow):
-#         """test if the files has been loaded correctly."""
-#         assert len(workflow.u_nk_list) == 5
-#         assert len(workflow.dHdl_list) == 5
-#         assert all([len(u_nk) == 4001 for u_nk in workflow.u_nk_list])
-#         assert all([len(dHdl) == 4001 for dHdl in workflow.dHdl_list])
-#
-#     def test_estimator(self, workflow):
-#         """Test if all three estimators have been used."""
-#         assert len(workflow.estimator) == 3
-#         assert "MBAR" in workflow.estimator
-#         assert "TI" in workflow.estimator
-#         assert "BAR" in workflow.estimator
-#
-#     def test_O_MBAR(self, workflow):
-#         """test if the O_MBAR.pdf has been plotted."""
-#         assert os.path.isfile(os.path.join(workflow.out, "O_MBAR.pdf"))
-#
-#     def test_dhdl_TI(self, workflow):
-#         """test if the dhdl_TI.pdf has been plotted."""
-#         assert os.path.isfile(os.path.join(workflow.out, "dhdl_TI.pdf"))
-#
-#     def test_dF_state(self, workflow):
-#         """test if the dF_state.pdf has been plotted."""
-#         assert os.path.isfile(os.path.join(workflow.out, "dF_state.pdf"))
-#
-#     def test_convergence(self, workflow):
-#         """test if the dF_state.pdf has been plotted."""
-#         assert os.path.isfile(os.path.join(workflow.out, "dF_t.pdf"))
-#         assert len(workflow.convergence) == 10
+    # class Test_unpertubed_lambda:
+    """Test the if two lamdas present and one of them is not pertubed.
+
+                                           fep  bound
+    time    fep-lambda bound-lambda
+    0.0     0.5        0             12.958159      0
+    10.0    0.5        0             -1.062968      0
+    20.0    0.5        0              1.019020      0
+    30.0    0.5        0              5.029051      0
+    40.0    0.5        0              7.768072      0
+
+    Where only fep-lambda changes but the bonded-lambda is always 0.
+    """
 
 
-# class Test_unpertubed_lambda:
-#     """Test the if two lamdas present and one of them is not pertubed.
-#
-#                                            fep  bound
-#     time    fep-lambda bound-lambda
-#     0.0     0.5        0             12.958159      0
-#     10.0    0.5        0             -1.062968      0
-#     20.0    0.5        0              1.019020      0
-#     30.0    0.5        0              5.029051      0
-#     40.0    0.5        0              7.768072      0
-#
-#     Where only fep-lambda changes but the bonded-lambda is always 0.
-#     """
 #
 #     @staticmethod
 #     @pytest.fixture(scope="session")
@@ -520,8 +559,3 @@ class Test_automatic_amber:
 #         workflow.read()
 #         return workflow
 #
-#     def test_run_none(self, workflow):
-#         """Don't run anything"""
-#         workflow.run(
-#             uncorr=None, estimators=None, overlap=None, breakdown=None, forwrev=None
-#         )
