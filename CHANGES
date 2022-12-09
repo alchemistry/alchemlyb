@@ -13,23 +13,25 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2022 DrDomenicoMarson, xiki-tempula
+12/09/2022 DrDomenicoMarson, xiki-tempula, orbeckst
 
   * 1.0.1
 
-Enhancements
-  - Blackfy the codebase (PR #280).
-  - Refactor the test to make all the parsing done at conftest level
-    (issue #206, PR #278).
-
 Fixes
-  - make workflow.ABFE handle 0 as input to forwrev instead of crashing (issue #276, PR #282).
+  - make workflow.ABFE handle 0 as input to forwrev instead of crashing
+    (issue #276, PR #282).
   - Remove most of the iloc in the tests (issue #202, PR #254).
   - AMBER parser now raises ValueError when the initial simulation time
     is not found (issue #272, PR #273).
   - The regex in the AMBER parser now reads also 'field=value' pairs where
-    there are no spaces around the equal sign (issue #272, PR #273).
-  - Pre-processing function slicing will not drop NaN rows (issue #274, PR #275).
+    there are no spaces around the equal sign (issue #272, PR #273).    
+  - Pre-processing function slicing will not drop NaN rows (issue
+    #274, PR #275).
+
+Internal Enhancements (do not affect API)
+  - Blackfy the codebase (PR #280).
+  - Refactor the test to make all the parsing done at conftest level
+    (issue #206, PR #278).
 
 
 10/31/2022 orbeckst, xiki-tempula, DrDomenicoMarson 
