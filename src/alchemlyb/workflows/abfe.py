@@ -280,7 +280,7 @@ class ABFE(WorkflowBase):
             )
             plt.close(fig)
 
-        if forwrev is not None:
+        if forwrev:
             ax = self.check_convergence(forwrev, estimator="MBAR", dF_t="dF_t.pdf")
             plt.close(ax.figure)
 

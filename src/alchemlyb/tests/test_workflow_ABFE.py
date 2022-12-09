@@ -61,6 +61,14 @@ class TestRun:
         )
         assert "MBAR" in workflow.estimator
 
+    @pytest.mark.parametrize("forwrev", [None, False, 0])
+    def test_no_forwrev(self, workflow, monkeypatch, forwrev):
+        monkeypatch.setattr(workflow, "convergence", None)
+        workflow.run(
+            uncorr=None, estimators=None, overlap=None, breakdown=None, forwrev=forwrev
+        )
+        assert workflow.convergence is None
+
 
 class TestRead:
     def test_default(self, workflow):
