@@ -202,7 +202,8 @@ class AutoMBAR(MBAR):
     .. versionchanged:: 1.0.0
        AutoMBAR accepts the `method` argument.
     .. deprecated:: 1.0.1
-       Deprecate AutoMBAR in favour of MBAR for pymbar4.
+       Deprecate AutoMBAR in favour of MBAR for pymbar4. It will be removed
+       in alchemlyb 2.0.0.
     """
 
     def __init__(
