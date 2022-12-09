@@ -10,8 +10,8 @@ import pandas as pd
 from .base import WorkflowBase
 from .. import __version__
 from .. import concat
-from ..estimators import AutoMBAR as MBAR
-from ..estimators import BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
+from ..convergence import forward_backward_convergence
+from ..estimators import MBAR, BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
 from ..parsing import gmx, amber
 from ..postprocessors.units import get_unit_converter
 from ..preprocessing.subsampling import decorrelate_dhdl, decorrelate_u_nk
@@ -19,6 +19,7 @@ from ..visualisation import (
     plot_mbar_overlap_matrix,
     plot_ti_dhdl,
     plot_dF_state,
+    plot_convergence,
 )
 
 

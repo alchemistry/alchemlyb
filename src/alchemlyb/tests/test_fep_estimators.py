@@ -1,12 +1,10 @@
 """Tests for all FEP-based estimators in ``alchemlyb``.
 
 """
-import numpy as np
 import pytest
-from alchemtest.generic import load_MBAR_BGFS
 
 import alchemlyb
-from alchemlyb.estimators import MBAR, BAR, AutoMBAR
+from alchemlyb.estimators import MBAR, BAR
 
 
 class FEPestimatorMixin:
