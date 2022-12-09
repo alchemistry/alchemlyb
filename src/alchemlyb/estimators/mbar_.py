@@ -1,4 +1,5 @@
 import logging
+from warnings import warn
 
 import pandas as pd
 import pymbar
@@ -210,6 +211,10 @@ class AutoMBAR(MBAR):
         verbose=False,
         method=None,
     ):
+        warn(
+            "From version 2.0.0, this will be replaced by the default alchemlyb.estimators.MBAR.",
+            DeprecationWarning,
+        )
         super().__init__(
             maximum_iterations=maximum_iterations,
             relative_tolerance=relative_tolerance,

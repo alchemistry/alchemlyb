@@ -18,6 +18,7 @@ The rules for this file:
   * 1.0.1
 
 Enhancements
+  - Add DeprecationWarning to AutoMBAR (issue #284, PR #285).
   - Blackfy the codebase (PR #280).
   - Refactor the test to make all the parsing done at conftest level
     (issue #206, PR #278).
