@@ -56,11 +56,7 @@ class TestAutoMBAR(TestMBAR):
     cls = AutoMBAR
 
     def test_autombar(self, X_delta_f):
-        with pytest.warn(
-            DeprecationWarning(
-                "From version 2.0.0, this will be replaced by the default alchemlyb.estimators.MBAR."
-            )
-        ):
+        with pytest.deprecated_call():
             self.compare_delta_f(X_delta_f)
 
 
