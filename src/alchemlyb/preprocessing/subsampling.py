@@ -4,8 +4,8 @@
 import warnings
 
 import pandas as pd
-from pymbar.timeseries import statistical_inefficiency as _statistical_inefficiency
 from pymbar.timeseries import detect_equilibration as _detect_equilibration
+from pymbar.timeseries import statistical_inefficiency as _statistical_inefficiency
 from pymbar.timeseries import subsample_correlated_data as _subsample_correlated_data
 
 from .. import pass_attrs
@@ -513,8 +513,9 @@ def statistical_inefficiency(
         statinef = _statistical_inefficiency(series)
 
         # use the subsample_correlated_data function to get the subsample index
-        indices = _subsample_correlated_data(series, g=statinef,
-                                          conservative=conservative)
+        indices = _subsample_correlated_data(
+            series, g=statinef, conservative=conservative
+        )
         df = df.iloc[indices]
     else:
         df = slicing(df, lower=lower, upper=upper, step=step)
