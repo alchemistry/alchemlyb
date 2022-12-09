@@ -1,27 +1,32 @@
-import pandas as pd
 from functools import wraps
 
+import pandas as pd
+
 from ._version import get_versions
-__version__ = get_versions()['version']
+
+__version__ = get_versions()["version"]
 del get_versions
 
+
 def pass_attrs(func):
-    '''Pass the attrs from the first positional argument to the output
+    """Pass the attrs from the first positional argument to the output
     dataframe.
- 
- 
+
+
     .. versionadded:: 0.5.0
- '''
+    """
 
     @wraps(func)
-    def wrapper(input_dataframe, *args,**kwargs):
-        dataframe = func(input_dataframe, *args,**kwargs)
+    def wrapper(input_dataframe, *args, **kwargs):
+        dataframe = func(input_dataframe, *args, **kwargs)
         dataframe.attrs = input_dataframe.attrs
         return dataframe
+
     return wrapper
 
+
 def concat(objs, *args, **kwargs):
-    '''Concatenate pandas objects while persevering the attrs.
+    """Concatenate pandas objects while persevering the attrs.
 
     Concatenate pandas objects along a particular axis with optional set
     logic along the other axes. If all pandas objects have the same  attrs
@@ -46,16 +51,22 @@ def concat(objs, *args, **kwargs):
     See Also
     --------
     pandas.concat
- 
- 
-    .. versionadded:: 0.5.0'''
+
+
+    .. versionadded:: 0.5.0
+    .. versionchanged:: 1.0.1
+        When input is single dataframe, it will be sent out directly.
+
+    """
+    if isinstance(objs, (pd.DataFrame, pd.Series)):
+        return objs
     # Sanity check
     try:
         attrs = objs[0].attrs
-    except IndexError: # except empty list as input
-        raise ValueError('No objects to concatenate')
+    except IndexError:  # except empty list as input
+        raise ValueError("No objects to concatenate")
 
     for obj in objs:
         if attrs != obj.attrs:
-            raise ValueError('All pandas objects should have the same attrs.')
+            raise ValueError("All pandas objects should have the same attrs.")
     return pd.concat(objs, *args, **kwargs)

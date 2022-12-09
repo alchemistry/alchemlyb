@@ -13,6 +13,25 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+??/??/2022 DrDomenicoMarson, xiki-tempula
+
+  * 1.0.1
+
+Enhancements
+  - Blackfy the codebase (PR #280).
+  - Refactor the test to make all the parsing done at conftest level
+    (issue #206, PR #278).
+
+Fixes
+  - make workflow.ABFE handle 0 as input to forwrev instead of crashing (issue #276, PR #282).
+  - Remove most of the iloc in the tests (issue #202, PR #254).
+  - AMBER parser now raises ValueError when the initial simulation time
+    is not found (issue #272, PR #273).
+  - The regex in the AMBER parser now reads also 'field=value' pairs where
+    there are no spaces around the equal sign (issue #272, PR #273).
+  - Pre-processing function slicing will not drop NaN rows (issue #274, PR #275).
+
+
 10/31/2022 orbeckst, xiki-tempula, DrDomenicoMarson 
 
   * 1.0.0
@@ -46,6 +65,10 @@ Enhancements
   - Add R_c and A_c for "fractional equilibration time" convergence analysis
     (issue #104, PR #239)
   - Add the keyword arg final_error to plot_convergence (#249)
+  - All parsers now have a 'extract(file, T)' method that returns a dict with
+    both "dHdl" and "u_nk" data (or None). The AMBER parser when using this
+    function will read the file just once, extracting all data at once. (issue
+    #222, PR #240)
 
 
 Fixes
@@ -58,10 +81,6 @@ Fixes
   - changed how int/float are read from AMBER files (issue #229, PR #235)
   - substitute the any_none() function with a check "if None in" in the AMBER
     parser (issue #236, PR #237)
-  - All parsers now have a 'extract(file, T)' method that returns a dict with
-    both "dHdl" and "u_nk" data (or None). The AMBER parser when using this
-    function will read the file just once, extracting all data at once. (issue
-    #222, PR #240)
   - Fix dhdl2series and u_nk2series would not reattach the unit. (PR #248)
   - Removed the 'dhdl' keyword for uncorrelating the u_nk (see
     `u_nk2series()`). Use 'dE' as an alternative or use 'all' (instead of the

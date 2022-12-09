@@ -1,11 +1,11 @@
-import numpy as np
-import pandas as pd
 import logging
 
-from sklearn.base import BaseEstimator
+import pandas as pd
 import pymbar
+from sklearn.base import BaseEstimator
 
 from .base import _EstimatorMixOut
+
 
 class MBAR(BaseEstimator, _EstimatorMixOut):
     """Multi-state Bennett acceptance ratio (MBAR).
@@ -61,14 +61,20 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
        `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
     """
 
-    def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
-                 initial_f_k=None, method='robust', verbose=False):
+    def __init__(
+        self,
+        maximum_iterations=10000,
+        relative_tolerance=1.0e-7,
+        initial_f_k=None,
+        method="robust",
+        verbose=False,
+    ):
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
         self.initial_f_k = initial_f_k
         self.method = method
         self.verbose = verbose
-        self.logger = logging.getLogger('alchemlyb.estimators.MBAR')
+        self.logger = logging.getLogger("alchemlyb.estimators.MBAR")
 
         # handle for pymbar.MBAR object
         self._mbar = None
@@ -89,8 +95,10 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
 
         groups = u_nk.groupby(level=u_nk.index.names[1:])
-        N_k = [(len(groups.get_group(i)) if i in groups.groups else 0) for i in
-               u_nk.columns]
+        N_k = [
+            (len(groups.get_group(i)) if i in groups.groups else 0)
+            for i in u_nk.columns
+        ]
         self._states_ = u_nk.columns.values.tolist()
 
         self._mbar = pymbar.MBAR(u_nk.T, N_k,
@@ -130,3 +138,74 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         pymbar.mbar.MBAR.computeOverlap
         """
         return self._mbar.compute_overlap()['matrix']
+
+
+class AutoMBAR(MBAR):
+    """A more robust version of Multi-state Bennett acceptance ratio (MBAR).
+
+    Given that there isn't a single *method* that would allow :class:`MBAR`
+    to converge for every single use case, the :class:`AutoMBAR` estimator
+    iteratively tries all the available methods to obtain the converged estimate.
+
+    The fastest method *hybr* will be tried first, followed by the most stable method
+    *adaptive*. If *adaptive* does not converge, *BFGS* will be used as last resort.
+    Although *BFGS* is not as stable as *adaptive*, it has been shown to succeed in
+    some cases where *adaptive* cannot.
+
+    :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid
+    failures due non-converged MBAR estimates.
+
+    Parameters
+    ----------
+
+    method : str, optional, default=None
+        The optimization routine to use. This parameter defaults to ``None``.
+        When a specific method is set, AutoMBAR will behave in the same way
+        as MBAR.
+
+        .. versionadded:: 1.0.0
+
+
+    Note
+    ----
+    All arguments are described under :class:`MBAR` except that the solver method
+    is determined by :class:`AutoMBAR` as described above.
+
+    See Also
+    --------
+    MBAR
+
+
+    .. versionadded:: 0.6.0
+    .. versionchanged:: 1.0.0
+       AutoMBAR accepts the `method` argument.
+    """
+    def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
+                 initial_f_k=None, verbose=False, method=None):
+        super().__init__(maximum_iterations=maximum_iterations,
+                         relative_tolerance=relative_tolerance,
+                         initial_f_k=initial_f_k,
+                         verbose=verbose, method=method)
+        self.logger = logging.getLogger('alchemlyb.estimators.AutoMBAR')
+
+    def _do_MBAR(self, u_nk, N_k, solver_protocol):
+        if solver_protocol["method"] is None:
+            self.logger.info('Initialise the automatic routine of the MBAR '
+                             'estimator.')
+            # Try the fastest method first
+            try:
+                self.logger.info('Trying the hybr method.')
+                solver_protocol["method"] = 'hybr'
+                mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
+            except pymbar.utils.ParameterError:
+                try:
+                    self.logger.info('Trying the adaptive method.')
+                    solver_protocol["method"] = 'adaptive'
+                    mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
+                except pymbar.utils.ParameterError:
+                    self.logger.info('Trying the BFGS method.')
+                    solver_protocol["method"] = 'BFGS'
+                    mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
+            return mbar, out
+        else:
+            return super()._do_MBAR(u_nk, N_k, solver_protocol)

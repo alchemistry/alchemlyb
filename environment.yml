@@ -2,7 +2,7 @@ name: alchemlyb
 channels:
 - conda-forge
 dependencies:
-- python
+- python=3.8
 - numpy
 - pandas
 - pymbar>4

@@ -1,23 +1,24 @@
 """Collection of utilities used by many parsers.
 
 """
-import os
-from os import PathLike
-from typing import IO, Optional, Union
 import bz2
 import gzip
+import os
+from os import PathLike
+from typing import IO, Union
+
 
 def bz2_open(filename, mode):
-    mode += 't' if mode in ['r','w','a','x'] else ''
+    mode += "t" if mode in ["r", "w", "a", "x"] else ""
     return bz2.open(filename, mode)
 
 
 def gzip_open(filename, mode):
-    mode += 't' if mode in ['r','w','a','x'] else ''
+    mode += "t" if mode in ["r", "w", "a", "x"] else ""
     return gzip.open(filename, mode)
 
 
-def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
+def anyopen(datafile: Union[PathLike, IO], mode="r", compression=None):
     """Return a file stream for file or stream, even if compressed.
 
     Supports files compressed with bzip2 (.bz2) and gzip (.gz) compression
@@ -59,16 +60,15 @@ def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
 
     """
     # opener for each type of file
-    extensions = {'.bz2': bz2_open,
-                  '.gz': gzip_open}
+    extensions = {".bz2": bz2_open, ".gz": gzip_open}
 
     # compression selections available
-    compressions = {'bzip2': bz2_open,
-                    'gzip': gzip_open}
+    compressions = {"bzip2": bz2_open, "gzip": gzip_open}
 
     # if `datafile` is a stream
-    if ((hasattr(datafile, 'read') and any((i in mode for i in ('r',)))) or 
-       (hasattr(datafile, 'write') and any((i in mode for i in ('w', 'a', 'x'))))):
+    if (hasattr(datafile, "read") and any((i in mode for i in ("r",)))) or (
+        hasattr(datafile, "write") and any((i in mode for i in ("w", "a", "x")))
+    ):
         # if no compression specified, just pass the stream through
         if compression is None:
             return datafile
@@ -76,7 +76,9 @@ def anyopen(datafile: Union[PathLike, IO], mode='r', compression=None):
             compressor = compressions[compression]
             return compressor(datafile, mode=mode)
         else:
-            raise ValueError("`datafile` is a stream, but specified `compression` '{compression}' is not supported")
+            raise ValueError(
+                "`datafile` is a stream, but specified `compression` '{compression}' is not supported"
+            )
 
     # otherwise, treat as a file
     # allow compression to override any extension on the file

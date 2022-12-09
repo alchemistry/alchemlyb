@@ -11,21 +11,21 @@ Some of the file parsing parts are adapted from
 
 """
 
-import re
 import logging
+import re
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-from .util import anyopen
 from . import _init_attrs_dict
+from .util import anyopen
 from ..postprocessors.units import R_kJmol, kJ2kcal
 
 logger = logging.getLogger("alchemlyb.parsers.Amber")
 
 k_b = R_kJmol * kJ2kcal
 
-_FP_RE = r'[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
+_FP_RE = r"[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?"
 
 
 def convert_to_pandas(file_datum):
@@ -39,10 +39,13 @@ def convert_to_pandas(file_datum):
         data_dic["lambdas"].append(file_datum.clambda)
         frame_time = file_datum.t0 + (frame_index + 1) * file_datum.dt * file_datum.ntpr
         data_dic["time"].append(frame_time)
-    df = pd.DataFrame(data_dic["dHdl"], columns=["dHdl"],
-                      index=pd.Index(data_dic["time"], name='time', dtype='Float64'))
+    df = pd.DataFrame(
+        data_dic["dHdl"],
+        columns=["dHdl"],
+        index=pd.Index(data_dic["time"], name="time", dtype="Float64"),
+    )
     df["lambdas"] = data_dic["lambdas"][0]
-    df = df.reset_index().set_index(['time'] + ['lambdas'])
+    df = df.reset_index().set_index(["time"] + ["lambdas"])
     return df
 
 
@@ -59,7 +62,7 @@ def _pre_gen(it, first):
             return
 
 
-class SectionParser():
+class SectionParser:
     """
     A simple parser to extract data values from sections.
     """
@@ -68,7 +71,7 @@ class SectionParser():
         """Opens a file according to its file type."""
         self.filename = filename
         try:
-            self.fileh = anyopen(self.filename, 'r')
+            self.fileh = anyopen(self.filename, "r")
         except:
             logger.exception("Cannot open file %s", filename)
             raise
@@ -93,7 +96,7 @@ class SectionParser():
                 break
         return Found_pattern
 
-    def extract_section(self, start, end, fields, limit=None, extra=''):
+    def extract_section(self, start, end, fields, limit=None, extra=""):
         """
         Extract data values (int, float) in fields from a section
         marked with start and end regexes.  Do not read further than
@@ -109,15 +112,15 @@ class SectionParser():
             if inside:
                 if re.search(end, line):
                     break
-                lines.append(line.rstrip('\n'))
-        line = ''.join(lines)
+                lines.append(line.rstrip("\n"))
+        line = "".join(lines)
         result = []
         for field in fields:
-            match = re.search(fr' {field}\s+=\s+(\*+|{_FP_RE}|\d+)', line)
+            match = re.search(rf" {field}\s*=\s*(\*+|{_FP_RE}|\d+)", line)
             if match:
                 value = match.group(1)
-                if '*' in value:  # catch fortran format overflow
-                    result.append(float('Inf'))
+                if "*" in value:  # catch fortran format overflow
+                    result.append(float("Inf"))
                 else:
                     try:
                         result.append(int(value))
@@ -146,12 +149,21 @@ class SectionParser():
         self.close()
 
 
-class FEData():
+class FEData:
     """A simple struct container to collect data from individual files."""
 
-    __slots__ = ['clambda', 't0', 'dt', 'T', 'ntpr', 'gradients',
-                 'mbar_energies',
-                 'have_mbar', 'mbar_lambdas', 'mbar_lambda_idx']
+    __slots__ = [
+        "clambda",
+        "t0",
+        "dt",
+        "T",
+        "ntpr",
+        "gradients",
+        "mbar_energies",
+        "have_mbar",
+        "mbar_lambdas",
+        "mbar_lambda_idx",
+    ]
 
     def __init__(self):
         self.clambda = -1.0
@@ -170,7 +182,7 @@ def file_validation(outfile):
     """
     Function that validate and parse an AMBER output file.
     :exc:`ValueError` are risen if inconsinstencies in the input file are found.
-    
+
     Parameters
     ----------
     outfile : str
@@ -189,71 +201,80 @@ def file_validation(outfile):
 
         if not line:
             logger.error("The file %s does not contain any data, it's empty.", outfile)
-            raise ValueError(f'file {outfile} does not contain any data.')
+            raise ValueError(f"file {outfile} does not contain any data.")
 
-        if not secp.skip_after('^   2.  CONTROL  DATA  FOR  THE  RUN'):
+        if not secp.skip_after("^   2.  CONTROL  DATA  FOR  THE  RUN"):
             logger.error('No "CONTROL DATA" section found in file %s.', outfile)
             raise ValueError(f'no "CONTROL DATA" section found in file {outfile}')
 
-        ntpr, = secp.extract_section('^Nature and format of output:', '^$',
-                                     ['ntpr'])
-        nstlim, dt = secp.extract_section('Molecular dynamics:', '^$',
-                                          ['nstlim', 'dt'])
-        T, = secp.extract_section('temperature regulation:', '^$',
-                                  ['temp0'])
+        (ntpr,) = secp.extract_section("^Nature and format of output:", "^$", ["ntpr"])
+        nstlim, dt = secp.extract_section("Molecular dynamics:", "^$", ["nstlim", "dt"])
+        (T,) = secp.extract_section("temperature regulation:", "^$", ["temp0"])
         if not T:
             logger.error('No valid "temp0" record found in file %s.', outfile)
             raise ValueError(f'no valid "temp0" record found in file {outfile}')
 
-        clambda, = secp.extract_section('^Free energy options:', '^$',
-                                        ['clambda'], '^---')
+        (clambda,) = secp.extract_section(
+            "^Free energy options:", "^$", ["clambda"], "^---"
+        )
         if clambda is None:
-            logger.error('No free energy section found in file %s, "clambda" was None.', outfile)
-            raise ValueError(f'no free energy section found in file {outfile}')
+            logger.error(
+                'No free energy section found in file %s, "clambda" was None.', outfile
+            )
+            raise ValueError(f"no free energy section found in file {outfile}")
 
         mbar_ndata = 0
-        have_mbar, mbar_ndata, mbar_states = secp.extract_section('^FEP MBAR options:',
-                                                      '^$',
-                                                      ['ifmbar',
-                                                        'bar_intervall',
-                                                        'mbar_states'],
-                                                      '^---')
+        have_mbar, mbar_ndata, mbar_states = secp.extract_section(
+            "^FEP MBAR options:",
+            "^$",
+            ["ifmbar", "bar_intervall", "mbar_states"],
+            "^---",
+        )
         if have_mbar:
             mbar_ndata = int(nstlim / mbar_ndata)
             mbar_lambdas = _process_mbar_lambdas(secp)
             file_datum.mbar_lambdas = mbar_lambdas
-            clambda_str = f'{clambda:6.4f}'
+            clambda_str = f"{clambda:6.4f}"
 
             if clambda_str not in mbar_lambdas:
-                logger.warning('WARNING: lamba %s not contained in set of '
-                               'MBAR lambas: %s\nNot using MBAR.',
-                               clambda_str, ', '.join(mbar_lambdas))
+                logger.warning(
+                    "WARNING: lamba %s not contained in set of "
+                    "MBAR lambas: %s\nNot using MBAR.",
+                    clambda_str,
+                    ", ".join(mbar_lambdas),
+                )
                 have_mbar = False
             else:
                 mbar_nlambda = len(mbar_lambdas)
                 if mbar_nlambda != mbar_states:
                     logger.error(
-                        'the number of lambda windows read (%s)'
-                        'is different from what expected (%d)',
-                        ','.join(mbar_lambdas), mbar_states)
+                        "the number of lambda windows read (%s)"
+                        "is different from what expected (%d)",
+                        ",".join(mbar_lambdas),
+                        mbar_states,
+                    )
                     raise ValueError(
-                        f'the number of lambda windows read ({mbar_nlambda})'
-                        f' is different from what expected ({mbar_states})')
+                        f"the number of lambda windows read ({mbar_nlambda})"
+                        f" is different from what expected ({mbar_states})"
+                    )
                 mbar_lambda_idx = mbar_lambdas.index(clambda_str)
                 file_datum.mbar_lambda_idx = mbar_lambda_idx
 
                 for _ in range(mbar_nlambda):
                     file_datum.mbar_energies.append([])
 
-        if not secp.skip_after('^   3.  ATOMIC '):
+        if not secp.skip_after("^   3.  ATOMIC "):
             logger.error('No "ATOMIC" section found in the file %s.', outfile)
             raise ValueError(f'no "ATOMIC" section found in file {outfile}')
 
-        t0, = secp.extract_section('^ begin time', '^$', ['coords'])
-        if not secp.skip_after('^   4.  RESULTS'):
+        (t0,) = secp.extract_section("^ begin time", "^$", ["coords"])
+        if t0 is None:
+            logger.error("No starting simulation time in file %s.", outfile)
+            raise ValueError(f"No starting simulation time in file {outfile}")
+
+        if not secp.skip_after("^   4.  RESULTS"):
             logger.error('No "RESULTS" section found in the file %s.', outfile)
             raise ValueError(f'no "RESULTS" section found in file {outfile}')
-
 
     file_datum.clambda = clambda
     file_datum.t0 = t0
@@ -289,13 +310,13 @@ def extract(outfile, T):
 
     """
 
-    beta = 1/(k_b * T)
+    beta = 1 / (k_b * T)
 
     file_datum = file_validation(outfile)
 
     if not np.isclose(T, file_datum.T, atol=0.01):
-        msg = f'The temperature read from the input file ({file_datum.T:.2f} K)'
-        msg += f' is different from the temperature passed as parameter ({T:.2f} K)'
+        msg = f"The temperature read from the input file ({file_datum.T:.2f} K)"
+        msg += f" is different from the temperature passed as parameter ({T:.2f} K)"
         logger.error(msg)
         raise ValueError(msg)
 
@@ -307,18 +328,19 @@ def extract(outfile, T):
         old_nstep = -1
         for line in secp:
             if "      A V E R A G E S   O V E R" in line:
-                _ = secp.skip_after('^|=========================================')
-            elif line.startswith(' NSTEP'):
-                nstep, dvdl = secp.extract_section('^ NSTEP', '^ ---',
-                                                   ['NSTEP', 'DV/DL'],
-                                                   extra=line)
+                _ = secp.skip_after("^|=========================================")
+            elif line.startswith(" NSTEP"):
+                nstep, dvdl = secp.extract_section(
+                    "^ NSTEP", "^ ---", ["NSTEP", "DV/DL"], extra=line
+                )
                 if nstep != old_nstep and dvdl is not None and nstep is not None:
                     file_datum.gradients.append(dvdl)
                     nensec += 1
                     old_nstep = nstep
-            elif line.startswith('MBAR Energy analysis') and file_datum.have_mbar:
-                mbar = secp.extract_section('^MBAR', '^ ---', file_datum.mbar_lambdas,
-                                            extra=line)
+            elif line.startswith("MBAR Energy analysis") and file_datum.have_mbar:
+                mbar = secp.extract_section(
+                    "^MBAR", "^ ---", file_datum.mbar_lambdas, extra=line
+                )
 
                 if None in mbar:
                     msg = "Something strange parsing the following MBAR section."
@@ -331,40 +353,48 @@ def extract(outfile, T):
                     if energy > 0.0:
                         high_E_cnt += 1
 
-                    file_datum.mbar_energies[lmbda].append(beta * (energy - reference_energy))
-            elif line == '   5.  TIMINGS\n':
+                    file_datum.mbar_energies[lmbda].append(
+                        beta * (energy - reference_energy)
+                    )
+            elif line == "   5.  TIMINGS\n":
                 finished = True
                 break
 
         if high_E_cnt:
-            logger.warning('%i MBAR energ%s > 0.0 kcal/mol',
-                           high_E_cnt, 'ies are' if high_E_cnt > 1 else 'y is')
+            logger.warning(
+                "%i MBAR energ%s > 0.0 kcal/mol",
+                high_E_cnt,
+                "ies are" if high_E_cnt > 1 else "y is",
+            )
 
     if not finished:
-        logger.warning('WARNING: file %s is a prematurely terminated run', outfile)
+        logger.warning("WARNING: file %s is a prematurely terminated run", outfile)
 
     if file_datum.have_mbar:
         mbar_time = [
             file_datum.t0 + (frame_index + 1) * file_datum.dt * file_datum.ntpr
-            for frame_index in range(len(file_datum.mbar_energies[0]))]
+            for frame_index in range(len(file_datum.mbar_energies[0]))
+        ]
 
         mbar_df = pd.DataFrame(
             file_datum.mbar_energies,
             index=np.array(file_datum.mbar_lambdas, dtype=np.float64),
             columns=pd.MultiIndex.from_arrays(
-                [mbar_time, np.repeat(file_datum.clambda, len(mbar_time))], names=['time', 'lambdas'])
-                ).T
+                [mbar_time, np.repeat(file_datum.clambda, len(mbar_time))],
+                names=["time", "lambdas"],
+            ),
+        ).T
     else:
         logger.info('WARNING: No MBAR energies found! "u_nk" entry will be None')
         mbar_df = None
 
     if not nensec:
-        logger.warning('WARNING: File %s does not contain any dV/dl data', outfile)
+        logger.warning("WARNING: File %s does not contain any dV/dl data", outfile)
         dHdl_df = None
     else:
-        logger.info('Read %s dV/dl data points in file %s', nensec, outfile)
+        logger.info("Read %s dV/dl data points in file %s", nensec, outfile)
         dHdl_df = convert_to_pandas(file_datum)
-        dHdl_df['dHdl'] *= beta
+        dHdl_df["dHdl"] *= beta
 
     return {"u_nk": mbar_df, "dHdl": dHdl_df}
 
@@ -391,7 +421,7 @@ def extract_dHdl(outfile, T):
 
     """
     extracted = extract(outfile, T)
-    return extracted['dHdl']
+    return extracted["dHdl"]
 
 
 def extract_u_nk(outfile, T):
@@ -417,7 +447,7 @@ def extract_u_nk(outfile, T):
 
     """
     extracted = extract(outfile, T)
-    return extracted['u_nk']
+    return extracted["u_nk"]
 
 
 def _process_mbar_lambdas(secp):
@@ -437,15 +467,15 @@ def _process_mbar_lambdas(secp):
     mbar_lambdas = []
 
     for line in secp:
-        if line.startswith('    MBAR - lambda values considered:'):
+        if line.startswith("    MBAR - lambda values considered:"):
             in_mbar = True
             continue
 
         if in_mbar:
-            if line.startswith('    Extra'):
+            if line.startswith("    Extra"):
                 break
 
-            if 'total' in line:
+            if "total" in line:
                 data = line.split()
                 mbar_lambdas.extend(data[2:])
             else:
