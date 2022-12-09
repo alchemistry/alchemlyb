@@ -23,7 +23,7 @@ Enhancements
     (issue #206, PR #278).
 
 Fixes
-  - make workflow.ABFE handel 0 as input to forwrev (issue #276, PR #282).
+  - make workflow.ABFE handle 0 as input to forwrev instead of crashing (issue #276, PR #282).
   - Remove most of the iloc in the tests (issue #202, PR #254).
   - AMBER parser now raises ValueError when the initial simulation time
     is not found (issue #272, PR #273).
