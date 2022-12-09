@@ -1,0 +1,7 @@
+import warnings
+
+warnings.filterwarnings(
+    "ignore",
+    "From version 2.0.0, this will be replaced by the default alchemlyb.estimators.MBAR.",
+    category=DeprecationWarning,
+)
