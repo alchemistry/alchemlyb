@@ -201,6 +201,8 @@ class AutoMBAR(MBAR):
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
        AutoMBAR accepts the `method` argument.
+    .. deprecated:: 1.0.1
+       Deprecate AutoMBAR in favour of MBAR for pymbar4.
     """
 
     def __init__(
