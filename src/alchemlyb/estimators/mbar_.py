@@ -1,4 +1,5 @@
 import logging
+from warnings import warn
 
 import pandas as pd
 import pymbar
@@ -23,7 +24,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         Set to the initial dimensionless free energies to use as a
         guess (default None, which sets all f_k = 0).
 
-    method : str, optional, default="hybr"
+    method : str, optional, default="robust"
         The optimization routine to use.  This can be any of the methods
         available via scipy.optimize.minimize() or scipy.optimize.root().
 
@@ -101,22 +102,25 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         ]
         self._states_ = u_nk.columns.values.tolist()
 
-        self._mbar = pymbar.MBAR(u_nk.T, N_k,
-                                 maximum_iterations=self.maximum_iterations,
-                                 relative_tolerance=self.relative_tolerance,
-                                 verbose=self.verbose,
-                                 initial_f_k=self.initial_f_k,
-                                 solver_protocol=self.method)
+        self._mbar = pymbar.MBAR(
+            u_nk.T,
+            N_k,
+            maximum_iterations=self.maximum_iterations,
+            relative_tolerance=self.relative_tolerance,
+            verbose=self.verbose,
+            initial_f_k=self.initial_f_k,
+            solver_protocol=self.method,
+        )
         out = self._mbar.compute_free_energy_differences(return_theta=True)
-        self._delta_f_ = pd.DataFrame(out['Delta_f'],
-                                      columns=self._states_,
-                                      index=self._states_)
-        self._d_delta_f_ = pd.DataFrame(out['dDelta_f'],
-                                        columns=self._states_,
-                                        index=self._states_)
-        self.theta_ = pd.DataFrame(out['Theta'],
-                                   columns=self._states_,
-                                   index=self._states_)
+        self._delta_f_ = pd.DataFrame(
+            out["Delta_f"], columns=self._states_, index=self._states_
+        )
+        self._d_delta_f_ = pd.DataFrame(
+            out["dDelta_f"], columns=self._states_, index=self._states_
+        )
+        self.theta_ = pd.DataFrame(
+            out["Theta"], columns=self._states_, index=self._states_
+        )
 
         self._delta_f_.attrs = u_nk.attrs
         self._d_delta_f_.attrs = u_nk.attrs
@@ -137,7 +141,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         ---------
         pymbar.mbar.MBAR.computeOverlap
         """
-        return self._mbar.compute_overlap()['matrix']
+        return self._mbar.compute_overlap()["matrix"]
 
 
 class AutoMBAR(MBAR):
@@ -147,10 +151,9 @@ class AutoMBAR(MBAR):
     to converge for every single use case, the :class:`AutoMBAR` estimator
     iteratively tries all the available methods to obtain the converged estimate.
 
-    The fastest method *hybr* will be tried first, followed by the most stable method
-    *adaptive*. If *adaptive* does not converge, *BFGS* will be used as last resort.
-    Although *BFGS* is not as stable as *adaptive*, it has been shown to succeed in
-    some cases where *adaptive* cannot.
+    The most stable method *adaptive*. If *adaptive* does not converge, *BFGS* will be
+    used as last resort. Although *BFGS* is not as stable as *adaptive*, it has been
+    shown to succeed in some cases where *adaptive* cannot.
 
     :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid
     failures due non-converged MBAR estimates.
@@ -179,33 +182,28 @@ class AutoMBAR(MBAR):
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
        AutoMBAR accepts the `method` argument.
+    .. versionchanged:: 2.0.0
+        Use pymbar.MBAR robust method instead of the AutoMBAR option. Will deprecate in
+        3.0.0.
     """
-    def __init__(self, maximum_iterations=10000, relative_tolerance=1.0e-7,
-                 initial_f_k=None, verbose=False, method=None):
-        super().__init__(maximum_iterations=maximum_iterations,
-                         relative_tolerance=relative_tolerance,
-                         initial_f_k=initial_f_k,
-                         verbose=verbose, method=method)
-        self.logger = logging.getLogger('alchemlyb.estimators.AutoMBAR')
 
-    def _do_MBAR(self, u_nk, N_k, solver_protocol):
-        if solver_protocol["method"] is None:
-            self.logger.info('Initialise the automatic routine of the MBAR '
-                             'estimator.')
-            # Try the fastest method first
-            try:
-                self.logger.info('Trying the hybr method.')
-                solver_protocol["method"] = 'hybr'
-                mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
-            except pymbar.utils.ParameterError:
-                try:
-                    self.logger.info('Trying the adaptive method.')
-                    solver_protocol["method"] = 'adaptive'
-                    mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
-                except pymbar.utils.ParameterError:
-                    self.logger.info('Trying the BFGS method.')
-                    solver_protocol["method"] = 'BFGS'
-                    mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
-            return mbar, out
-        else:
-            return super()._do_MBAR(u_nk, N_k, solver_protocol)
+    def __init__(
+        self,
+        maximum_iterations=10000,
+        relative_tolerance=1.0e-7,
+        initial_f_k=None,
+        verbose=False,
+        method="robust",
+    ):
+        warn(
+            "From version 2.0.0, this is the same as alchemlyb.estimators.MBAR, will"
+            "be deprecated in 3.0.0.",
+            DeprecationWarning,
+        )
+        super().__init__(
+            maximum_iterations=maximum_iterations,
+            relative_tolerance=relative_tolerance,
+            initial_f_k=initial_f_k,
+            verbose=verbose,
+            method=method,
+        )
