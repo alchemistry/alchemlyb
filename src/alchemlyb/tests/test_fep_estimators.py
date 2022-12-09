@@ -52,32 +52,6 @@ class TestMBAR(FEPestimatorMixin):
         self.compare_delta_f(X_delta_f)
 
 
-class TestAutoMBAR(TestMBAR):
-    cls = AutoMBAR
-
-
-class TestMBAR_fail:
-    def test_failback_adaptive(self, gmx_ABFE_complex_n_uk):
-        # The hybr will fail on this while adaptive will work
-        mbar = AutoMBAR().fit(
-            alchemlyb.concat([n_uk[:2] for n_uk in gmx_ABFE_complex_n_uk])
-        )
-        assert np.isclose(
-            mbar.d_delta_f_[(0.0, 0.0, 0.0)][(1.0, 1.0, 1.0)], 1.76832, 0.1
-        )
-
-
-def test_AutoMBAR_BGFS():
-    # A case where only BFGS would work
-    mbar = AutoMBAR()
-    u_nk = np.load(load_MBAR_BGFS()["data"]["u_nk"])
-    N_k = np.load(load_MBAR_BGFS()["data"]["N_k"])
-    solver_options = {"maximum_iterations": 10000, "verbose": False}
-    solver_protocol = {"method": None, "options": solver_options}
-    mbar, out = mbar._do_MBAR(u_nk.T, N_k, solver_protocol)
-    assert np.isclose(out[0][1][0], 12.552409, 0.1)
-
-
 class TestBAR(FEPestimatorMixin):
     """Tests for BAR."""
 
