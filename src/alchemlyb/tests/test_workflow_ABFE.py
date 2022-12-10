@@ -33,6 +33,17 @@ def workflow(tmp_path_factory):
     return workflow
 
 
+class TestInit:
+    def test_nofilematch(self):
+        with pytest.raises(ValueError, match="No file has been matched to"):
+            ABFE(
+                dir="./",
+                prefix="dhdl",
+                suffix="xvg",
+                T=310,
+            )
+
+
 class TestRun:
     def test_none(self, workflow):
         """Don't run anything"""
