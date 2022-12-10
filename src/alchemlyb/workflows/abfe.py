@@ -91,9 +91,9 @@ class ABFE(WorkflowBase):
             f"{software}"
         )
         reg_exp = dir + "/**/" + prefix + "*" + suffix
-        self.file_list = glob(reg_exp, recursive=True)
+        self.file_list = list(glob(reg_exp, recursive=True))
 
-        if len(list(self.file_list)) == 0:
+        if len(self.file_list) == 0:
             raise ValueError(f"No file has been matched to {reg_exp}.")
 
         self.logger.info(f"Found {len(self.file_list)} xvg files.")
