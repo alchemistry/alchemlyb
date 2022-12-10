@@ -1,4 +1,5 @@
 import logging
+from warnings import warn
 
 import pandas as pd
 import pymbar
@@ -200,6 +201,9 @@ class AutoMBAR(MBAR):
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
        AutoMBAR accepts the `method` argument.
+    .. deprecated:: 1.0.1
+       Deprecate AutoMBAR in favour of MBAR for pymbar4. It will be removed
+       in alchemlyb 2.0.0.
     """
 
     def __init__(
@@ -210,6 +214,10 @@ class AutoMBAR(MBAR):
         verbose=False,
         method=None,
     ):
+        warn(
+            "From version 2.0.0, this will be replaced by the default alchemlyb.estimators.MBAR.",
+            DeprecationWarning,
+        )
         super().__init__(
             maximum_iterations=maximum_iterations,
             relative_tolerance=relative_tolerance,

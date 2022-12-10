@@ -55,6 +55,10 @@ class TestMBAR(FEPestimatorMixin):
 class TestAutoMBAR(TestMBAR):
     cls = AutoMBAR
 
+    def test_autombar(self, X_delta_f):
+        with pytest.deprecated_call():
+            self.compare_delta_f(X_delta_f)
+
 
 class TestMBAR_fail:
     def test_failback_adaptive(self, gmx_ABFE_complex_n_uk):
