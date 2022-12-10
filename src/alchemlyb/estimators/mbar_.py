@@ -1,5 +1,4 @@
 import logging
-from warnings import warn
 
 import pandas as pd
 import pymbar
@@ -142,67 +141,3 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         pymbar.mbar.MBAR.computeOverlap
         """
         return self._mbar.compute_overlap()["matrix"]
-
-
-class AutoMBAR(MBAR):
-    """A more robust version of Multi-state Bennett acceptance ratio (MBAR).
-
-    Given that there isn't a single *method* that would allow :class:`MBAR`
-    to converge for every single use case, the :class:`AutoMBAR` estimator
-    iteratively tries all the available methods to obtain the converged estimate.
-
-    The most stable method *adaptive*. If *adaptive* does not converge, *BFGS* will be
-    used as last resort. Although *BFGS* is not as stable as *adaptive*, it has been
-    shown to succeed in some cases where *adaptive* cannot.
-
-    :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid
-    failures due non-converged MBAR estimates.
-
-    Parameters
-    ----------
-
-    method : str, optional, default=None
-        The optimization routine to use. This parameter defaults to ``None``.
-        When a specific method is set, AutoMBAR will behave in the same way
-        as MBAR.
-
-        .. versionadded:: 1.0.0
-
-
-    Note
-    ----
-    All arguments are described under :class:`MBAR` except that the solver method
-    is determined by :class:`AutoMBAR` as described above.
-
-    See Also
-    --------
-    MBAR
-
-
-    .. versionadded:: 0.6.0
-    .. versionchanged:: 1.0.0
-       AutoMBAR accepts the `method` argument.
-    .. deprecated:: 1.0.1
-       Deprecate AutoMBAR in favour of MBAR for pymbar4. It will be removed
-       in alchemlyb 2.0.0.
-    """
-
-    def __init__(
-        self,
-        maximum_iterations=10000,
-        relative_tolerance=1.0e-7,
-        initial_f_k=None,
-        verbose=False,
-        method="robust",
-    ):
-        warn(
-            "From version 2.0.0, this will be replaced by the default alchemlyb.estimators.MBAR.",
-            DeprecationWarning,
-        )
-        super().__init__(
-            maximum_iterations=maximum_iterations,
-            relative_tolerance=relative_tolerance,
-            initial_f_k=initial_f_k,
-            verbose=verbose,
-            method=method,
-        )
