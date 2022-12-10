@@ -48,7 +48,7 @@ setup(
     install_requires=[
         "numpy",
         "pandas>=1.4",
-        "pymbar==4",
+        "pymbar>=4",
         "scipy",
         "scikit-learn",
         "matplotlib",
