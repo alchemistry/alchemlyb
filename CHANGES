@@ -13,6 +13,14 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+*/*/* xiki-tempula, orbeckst
+
+  * 2.0.0
+
+Changes
+  - Upgrade to use pymbar 4 as backend (issue #207, PR #268).
+
+
 12/09/2022 DrDomenicoMarson, xiki-tempula, orbeckst
 
   * 1.0.1
