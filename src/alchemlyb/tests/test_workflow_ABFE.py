@@ -90,9 +90,15 @@ class TestRead:
         assert all([len(dHdl) == 1001 for dHdl in workflow.dHdl_list])
 
     def test_no_parser(self):
+        dir = os.path.dirname(load_ABFE()["data"]["complex"][0])
         with pytest.raises(NotImplementedError):
             workflow = ABFE(
-                units="kcal/mol", software="aaa", prefix="ti", suffix="bz2", T=298.0
+                units="kcal/mol",
+                software="aaa",
+                dir=dir,
+                prefix="dhdl",
+                suffix="xvg",
+                T=310,
             )
 
     @pytest.mark.parametrize("read_u_nk", [True, False])
