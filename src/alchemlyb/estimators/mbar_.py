@@ -182,9 +182,9 @@ class AutoMBAR(MBAR):
     .. versionadded:: 0.6.0
     .. versionchanged:: 1.0.0
        AutoMBAR accepts the `method` argument.
-    .. versionchanged:: 2.0.0
-        Use pymbar.MBAR robust method instead of the AutoMBAR option. Will deprecate in
-        3.0.0.
+    .. deprecated:: 1.0.1
+       Deprecate AutoMBAR in favour of MBAR for pymbar4. It will be removed
+       in alchemlyb 2.0.0.
     """
 
     def __init__(
@@ -196,8 +196,7 @@ class AutoMBAR(MBAR):
         method="robust",
     ):
         warn(
-            "From version 2.0.0, this is the same as alchemlyb.estimators.MBAR, will"
-            "be deprecated in 3.0.0.",
+            "From version 2.0.0, this will be replaced by the default alchemlyb.estimators.MBAR.",
             DeprecationWarning,
         )
         super().__init__(

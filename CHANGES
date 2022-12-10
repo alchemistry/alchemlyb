@@ -27,6 +27,10 @@ Fixes
     there are no spaces around the equal sign (issue #272, PR #273).    
   - Pre-processing function slicing will not drop NaN rows (issue
     #274, PR #275).
+    
+Deprecations
+  - deprecate AutoMBAR for removal in 2.0 because pymbar 4 already contains
+    equivalent functionality (issue #284, PR #285).
 
 Internal Enhancements (do not affect API)
   - Blackfy the codebase (PR #280).
