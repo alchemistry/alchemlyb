@@ -13,6 +13,13 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+*/*/* xiki-tempula, orbeckst
+
+  * 2.0.0
+
+Enhancements
+  - Add a new Error when no file has been matched in workflow.ABFE (PR #289).
+
 12/09/2022 DrDomenicoMarson, xiki-tempula, orbeckst
 
   * 1.0.1
