@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 from .base import WorkflowBase
-from .. import __version__
 from .. import concat
 from ..convergence import forward_backward_convergence
 from ..estimators import AutoMBAR as MBAR
@@ -75,16 +74,9 @@ class ABFE(WorkflowBase):
         suffix="xvg",
         outdirectory=os.path.curdir,
     ):
-
         super().__init__(units, software, T, outdirectory)
-        self.logger = logging.getLogger("alchemlyb.workflows.ABFE")
         self.logger.info("Initialise Alchemlyb ABFE Workflow")
-        self.logger.info(f"Alchemlyb Version: f{__version__}")
-        self.logger.info(f"Set Temperature to {T} K.")
-        self.logger.info(f"Set Software to {software}.")
-
         self.update_units(units)
-
         self.logger.info(
             f"Finding files with prefix: {prefix}, suffix: "
             f"{suffix} under directory {dir} produced by "
@@ -104,6 +96,9 @@ class ABFE(WorkflowBase):
             self._extract_dHdl = amber.extract_dHdl
         else:
             raise NotImplementedError(f"{software} parser not found.")
+
+    def _logger_setup(self):
+        self.logger = logging.getLogger("alchemlyb.workflows.ABFE")
 
     def read(self, read_u_nk=True, read_dHdl=True):
         """Read the u_nk and dHdL data from the
