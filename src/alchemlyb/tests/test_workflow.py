@@ -11,7 +11,7 @@ class Test_automatic_base:
     @staticmethod
     @pytest.fixture(scope="session")
     def workflow(tmp_path_factory):
-        outdir = tmp_path_factory.mktemp("out") / "out"
+        outdir = tmp_path_factory.mktemp("out") / "abc" / "def"
         workflow = base.WorkflowBase(out=str(outdir))
         workflow.run()
         return workflow

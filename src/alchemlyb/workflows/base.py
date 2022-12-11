@@ -1,7 +1,6 @@
 """Basic building blocks for free energy workflows."""
 
 import logging
-import os
 from pathlib import Path
 
 import pandas as pd
@@ -59,7 +58,7 @@ class WorkflowBase:
         self.out = out
         if not Path(out).is_dir():
             self.logger.info(f"Make output folder {out}.")
-            os.makedirs(out)
+            Path(out).mkdir(parents=True)
 
     def _logger_setup(self):
         self.logger = logging.getLogger("alchemlyb.workflows.WorkflowBase")
