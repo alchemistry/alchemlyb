@@ -19,7 +19,10 @@ The rules for this file:
   * 2.0.0
 
 Enhancements
-  - The output folder will be created if not existed in workflows (PR #290).
+  - Add a new Error when no file has been matched in workflow.ABFE (PR #289).
+  - In workflows, the output folder will be created if it did not exist before
+    (PR #290).
+
 
 12/09/2022 DrDomenicoMarson, xiki-tempula, orbeckst
 

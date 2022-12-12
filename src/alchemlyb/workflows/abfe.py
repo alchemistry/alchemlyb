@@ -82,7 +82,11 @@ class ABFE(WorkflowBase):
             f"{suffix} under directory {dir} produced by "
             f"{software}"
         )
-        self.file_list = glob(dir + "/**/" + prefix + "*" + suffix, recursive=True)
+        reg_exp = dir + "/**/" + prefix + "*" + suffix
+        self.file_list = list(glob(reg_exp, recursive=True))
+
+        if len(self.file_list) == 0:
+            raise ValueError(f"No file has been matched to {reg_exp}.")
 
         self.logger.info(f"Found {len(self.file_list)} xvg files.")
         self.logger.info("Unsorted file list: \n %s", "\n".join(self.file_list))
