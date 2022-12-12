@@ -23,6 +23,10 @@ Changes
 
 Enhancements
   - The output folder will be created if not existed in workflows (PR #290).
+  
+Removals
+  - The AutoMBAR estimator was removed because pymbar 4's MBAR contains
+    equivalent functionality. (issue #284)
 
 
 12/09/2022 DrDomenicoMarson, xiki-tempula, orbeckst
