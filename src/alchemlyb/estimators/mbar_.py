@@ -1,5 +1,4 @@
 import logging
-from warnings import warn
 
 import pandas as pd
 import pymbar
@@ -9,7 +8,7 @@ from .base import _EstimatorMixOut
 
 
 class MBAR(BaseEstimator, _EstimatorMixOut):
-    """Multi-state Bennett acceptance ratio (MBAR).
+    r"""Multi-state Bennett acceptance ratio (MBAR).
 
     Parameters
     ----------
@@ -22,11 +21,12 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 
     initial_f_k : np.ndarray, float, shape=(K), optional
         Set to the initial dimensionless free energies to use as a
-        guess (default None, which sets all f_k = 0).
+        guess (default None, which sets all :math:`f_k = 0`).
 
-    method : str, optional, default="hybr"
+    method : str, optional, default="robust"
         The optimization routine to use.  This can be any of the methods
-        available via scipy.optimize.minimize() or scipy.optimize.root().
+        available via :func:`scipy.optimize.minimize` or 
+        :func:`scipy.optimize.root`.
 
     verbose : bool, optional
         Set to ``True`` if verbose debug output from :mod:`pymbar` is desired.
@@ -56,11 +56,12 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
     See Also
     --------
     pymbar.mbar.MBAR
-    AutoMBAR
 
 
     .. versionchanged:: 1.0.0
        `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
+    .. versionchanged:: 2.0.0
+        default value for `method` was changed from "hybr" to "robust"
     """
 
     def __init__(
@@ -68,7 +69,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         maximum_iterations=10000,
         relative_tolerance=1.0e-7,
         initial_f_k=None,
-        method="hybr",
+        method="robust",
         verbose=False,
     ):
         self.maximum_iterations = maximum_iterations
@@ -89,8 +90,8 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         Parameters
         ----------
         u_nk : DataFrame
-            u_nk[n,k] is the reduced potential energy of uncorrelated
-            configuration n evaluated at state k.
+            ``u_nk[n, k]`` is the reduced potential energy of uncorrelated
+            configuration ``n`` evaluated at state ``k``.
 
         """
         # sort by state so that rows from same state are in contiguous blocks
@@ -103,47 +104,30 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         ]
         self._states_ = u_nk.columns.values.tolist()
 
-        # Prepare the solver_protocol as stated in https://github.com/choderalab/pymbar/issues/419#issuecomment-803714103
-        solver_options = {
-            "maximum_iterations": self.maximum_iterations,
-            "verbose": self.verbose,
-        }
-        solver_protocol = {"method": self.method, "options": solver_options}
-
-        self._mbar, out = self._do_MBAR(u_nk, N_k, solver_protocol)
-
-        free_energy_differences = [
-            pd.DataFrame(i, columns=self._states_, index=self._states_) for i in out
-        ]
-
-        (self._delta_f_, self._d_delta_f_, self.theta_) = free_energy_differences
+        self._mbar = pymbar.MBAR(
+            u_nk.T,
+            N_k,
+            maximum_iterations=self.maximum_iterations,
+            relative_tolerance=self.relative_tolerance,
+            verbose=self.verbose,
+            initial_f_k=self.initial_f_k,
+            solver_protocol=self.method,
+        )
+        out = self._mbar.compute_free_energy_differences(return_theta=True)
+        self._delta_f_ = pd.DataFrame(
+            out["Delta_f"], columns=self._states_, index=self._states_
+        )
+        self._d_delta_f_ = pd.DataFrame(
+            out["dDelta_f"], columns=self._states_, index=self._states_
+        )
+        self.theta_ = pd.DataFrame(
+            out["Theta"], columns=self._states_, index=self._states_
+        )
 
         self._delta_f_.attrs = u_nk.attrs
         self._d_delta_f_.attrs = u_nk.attrs
 
         return self
-
-    def predict(self, u_ln):
-        pass
-
-    def _do_MBAR(self, u_nk, N_k, solver_protocol):
-        mbar = pymbar.MBAR(
-            u_nk.T,
-            N_k,
-            relative_tolerance=self.relative_tolerance,
-            initial_f_k=self.initial_f_k,
-            solver_protocol=(solver_protocol,),
-        )
-        self.logger.info(
-            "Solved MBAR equations with method %r and "
-            "maximum_iterations=%d, relative_tolerance=%g",
-            solver_protocol["method"],
-            solver_protocol["options"]["maximum_iterations"],
-            self.relative_tolerance,
-        )
-        # set attributes
-        out = mbar.getFreeEnergyDifferences(return_theta=True)
-        return mbar, out
 
     @property
     def overlap_matrix(self):
@@ -159,93 +143,4 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         ---------
         pymbar.mbar.MBAR.computeOverlap
         """
-        return self._mbar.computeOverlap()["matrix"]
-
-
-class AutoMBAR(MBAR):
-    """A more robust version of Multi-state Bennett acceptance ratio (MBAR).
-
-    Given that there isn't a single *method* that would allow :class:`MBAR`
-    to converge for every single use case, the :class:`AutoMBAR` estimator
-    iteratively tries all the available methods to obtain the converged estimate.
-
-    The fastest method *hybr* will be tried first, followed by the most stable method
-    *adaptive*. If *adaptive* does not converge, *BFGS* will be used as last resort.
-    Although *BFGS* is not as stable as *adaptive*, it has been shown to succeed in
-    some cases where *adaptive* cannot.
-
-    :class:`AutoMBAR` may be useful in high-throughput calculations where it can avoid
-    failures due non-converged MBAR estimates.
-
-    Parameters
-    ----------
-
-    method : str, optional, default=None
-        The optimization routine to use. This parameter defaults to ``None``.
-        When a specific method is set, AutoMBAR will behave in the same way
-        as MBAR.
-
-        .. versionadded:: 1.0.0
-
-
-    Note
-    ----
-    All arguments are described under :class:`MBAR` except that the solver method
-    is determined by :class:`AutoMBAR` as described above.
-
-    See Also
-    --------
-    MBAR
-
-
-    .. versionadded:: 0.6.0
-    .. versionchanged:: 1.0.0
-       AutoMBAR accepts the `method` argument.
-    .. deprecated:: 1.0.1
-       Deprecate AutoMBAR in favour of MBAR for pymbar4. It will be removed
-       in alchemlyb 2.0.0.
-    """
-
-    def __init__(
-        self,
-        maximum_iterations=10000,
-        relative_tolerance=1.0e-7,
-        initial_f_k=None,
-        verbose=False,
-        method=None,
-    ):
-        warn(
-            "From version 2.0.0, this will be replaced by the default alchemlyb.estimators.MBAR.",
-            DeprecationWarning,
-        )
-        super().__init__(
-            maximum_iterations=maximum_iterations,
-            relative_tolerance=relative_tolerance,
-            initial_f_k=initial_f_k,
-            verbose=verbose,
-            method=method,
-        )
-        self.logger = logging.getLogger("alchemlyb.estimators.AutoMBAR")
-
-    def _do_MBAR(self, u_nk, N_k, solver_protocol):
-        if solver_protocol["method"] is None:
-            self.logger.info(
-                "Initialise the automatic routine of the MBAR " "estimator."
-            )
-            # Try the fastest method first
-            try:
-                self.logger.info("Trying the hybr method.")
-                solver_protocol["method"] = "hybr"
-                mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
-            except pymbar.utils.ParameterError:
-                try:
-                    self.logger.info("Trying the adaptive method.")
-                    solver_protocol["method"] = "adaptive"
-                    mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
-                except pymbar.utils.ParameterError:
-                    self.logger.info("Trying the BFGS method.")
-                    solver_protocol["method"] = "BFGS"
-                    mbar, out = super()._do_MBAR(u_nk, N_k, solver_protocol)
-            return mbar, out
-        else:
-            return super()._do_MBAR(u_nk, N_k, solver_protocol)
+        return self._mbar.compute_overlap()["matrix"]
