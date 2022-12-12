@@ -14,11 +14,11 @@ These functions are simple in usage and pure in scope, and can be chained togeth
 
 **alchemlyb** seeks to be as boring and simple as possible to enable more complex work. Its components allow work at all scales, from use on small systems using a single workstation to larger datasets that require distributed computing using libraries such as `dask`_.
 
-The library is *under active development*. However, it is used by multiple groups in a production environment. We use `semantic versioning`_ to indicate clearly what kind of changes you may expect between releases. With release 1.0.0, the API has stabilized and is guaranteed to remain backwards-compatible until a 2.0.0 release.
+The library is *under active development*. However, it is used by multiple groups in a production environment. We use `semantic versioning`_ to indicate clearly what kind of changes you may expect between releases. Within any major release (1.x, 2.x, ...), the API is stable and is guaranteed to remain backwards-compatible.
 
 .. Note::   
-   The current 1.x release of alchemlyb *only* supports `pymbar`_ releases **>= 3.0.5, <4.0**.
-   A future 2.x release of alchemlyb will *only* support pymbar **>= 4.0** (see `discussion #205`_ and `issue #207`_)
+   The **current 2.x release** of alchemlyb *only* supports `pymbar`_ releases **>= 4.0**.
+   (Previous 1.x releases only support pymbar >= 3.0.5, <4.) See `discussion #205`_ and `issue #207`_.
 
 See :ref:`contact` for how to get in touch if you have questions or find problems.
 
