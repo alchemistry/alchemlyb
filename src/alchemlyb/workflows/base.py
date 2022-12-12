@@ -1,6 +1,11 @@
 """Basic building blocks for free energy workflows."""
 
+import logging
+from pathlib import Path
+
 import pandas as pd
+
+from .. import __version__
 
 
 class WorkflowBase:
@@ -42,11 +47,21 @@ class WorkflowBase:
     def __init__(
         self, units="kT", software="Gromacs", T=298, out="./", *args, **kwargs
     ):
+        self._logger_setup()
+        self.logger.info(f"Alchemlyb Version: f{__version__}")
+        self.logger.info(f"Set Temperature to {T} K.")
         self.T = T
+        self.logger.info(f"Set Software to {software}.")
         self.software = software
         self.unit = units
         self.file_list = []
         self.out = out
+        if not Path(out).is_dir():
+            self.logger.info(f"Make output folder {out}.")
+            Path(out).mkdir(parents=True)
+
+    def _logger_setup(self):
+        self.logger = logging.getLogger("alchemlyb.workflows.WorkflowBase")
 
     def run(self, *args, **kwargs):
         """Run the workflow in an automatic fashion.
