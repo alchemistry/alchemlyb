@@ -19,10 +19,14 @@ The rules for this file:
 
 Changes
   - use pymbar 4 as backend; this release is incompatible with
-    pymbar 3.x (issue #207, PR #268).
+    pymbar 3.x (issue #207, PR #268, discussion #205).
+  - The default for keyword argument `method` in estimators.MBAR was changed
+    from "hybr" to "robust" (issue #207, PR #268).
 
 Enhancements
-  - The output folder will be created if not existed in workflows (PR #290).
+  - Raise ValueError when no file has been matched in workflow.ABFE (PR #289).
+  - In workflows, the output folder will be created if it did not exist before
+    (PR #290).
   
 Removals
   - The AutoMBAR estimator was removed because pymbar 4's MBAR contains
