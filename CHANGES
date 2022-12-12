@@ -18,7 +18,11 @@ The rules for this file:
   * 2.0.0
 
 Changes
-  - Upgrade to use pymbar 4 as backend (issue #207, PR #268).
+  - use pymbar 4 as backend; this release is incompatible with
+    pymbar 3.x (issue #207, PR #268).
+
+Enhancements
+  - The output folder will be created if not existed in workflows (PR #290).
 
 
 12/09/2022 DrDomenicoMarson, xiki-tempula, orbeckst

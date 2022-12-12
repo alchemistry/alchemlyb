@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -10,10 +11,13 @@ class Test_automatic_base:
     @staticmethod
     @pytest.fixture(scope="session")
     def workflow(tmp_path_factory):
-        outdir = tmp_path_factory.mktemp("out")
+        outdir = tmp_path_factory.mktemp("out") / "abc" / "def"
         workflow = base.WorkflowBase(out=str(outdir))
         workflow.run()
         return workflow
+
+    def test_outdir(self, workflow):
+        assert Path(workflow.out).is_dir()
 
     def test_write(self, workflow):
         """Patch the output directory to tmpdir"""
