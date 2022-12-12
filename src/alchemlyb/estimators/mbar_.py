@@ -8,7 +8,7 @@ from .base import _EstimatorMixOut
 
 
 class MBAR(BaseEstimator, _EstimatorMixOut):
-    """Multi-state Bennett acceptance ratio (MBAR).
+    r"""Multi-state Bennett acceptance ratio (MBAR).
 
     Parameters
     ----------
@@ -21,11 +21,12 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 
     initial_f_k : np.ndarray, float, shape=(K), optional
         Set to the initial dimensionless free energies to use as a
-        guess (default None, which sets all f_k = 0).
+        guess (default None, which sets all :math:`f_k = 0`).
 
     method : str, optional, default="robust"
         The optimization routine to use.  This can be any of the methods
-        available via scipy.optimize.minimize() or scipy.optimize.root().
+        available via :func:`scipy.optimize.minimize` or 
+        :func:`scipy.optimize.root`.
 
     verbose : bool, optional
         Set to ``True`` if verbose debug output from :mod:`pymbar` is desired.
@@ -59,6 +60,8 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 
     .. versionchanged:: 1.0.0
        `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
+    .. versionchanged:: 2.0.0
+        default value for `method` was changed from "hybr" to "robust"
     """
 
     def __init__(
@@ -87,8 +90,8 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         Parameters
         ----------
         u_nk : DataFrame
-            u_nk[n,k] is the reduced potential energy of uncorrelated
-            configuration n evaluated at state k.
+            ``u_nk[n, k]`` is the reduced potential energy of uncorrelated
+            configuration ``n`` evaluated at state ``k``.
 
         """
         # sort by state so that rows from same state are in contiguous blocks
