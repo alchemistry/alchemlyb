@@ -19,7 +19,7 @@ The rules for this file:
 
 Changes
   - Change the dE method in u_nk2series to use the difference between two
-    lambdas (issue #299, PR #268).
+    lambda columns (issue #299, PR #300).
 
 
 12/12/2022 xiki-tempula, orbeckst
