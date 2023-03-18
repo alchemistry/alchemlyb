@@ -196,11 +196,13 @@ def u_nk2series(df, method="dE"):
             # For the case of more than 1 lambda
             index = df.columns.values.tolist().index(key)
             # for the state that is not the last state, take the state+1
+        current_lambda = df.iloc[:, index]
         if index + 1 < len(df.columns):
-            series = df.iloc[:, index + 1]
+            new_lambda = df.iloc[:, index + 1]
             # for the state that is the last state, take the state-1
         else:
-            series = df.iloc[:, index - 1]
+            new_lambda = df.iloc[:, index - 1]
+        series = new_lambda - current_lambda
     else:
         raise ValueError("Decorrelation method {} not found.".format(method))
     return series

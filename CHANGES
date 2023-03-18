@@ -13,6 +13,15 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+*/*/* xiki-tempula,
+
+  * unreleased
+
+Changes
+  - Change the dE method in u_nk2series to use the difference between two
+    lambdas (issue #299, PR #268).
+
+
 12/12/2022 xiki-tempula, orbeckst
 
   * 2.0.0
