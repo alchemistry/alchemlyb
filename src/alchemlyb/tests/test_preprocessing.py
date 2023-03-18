@@ -422,7 +422,7 @@ def test_decorrelate_u_nk_burnin(u_nk):
                 remove_burnin=True,
             )
         )
-        == 2849
+        == 2848
     )
 
 
