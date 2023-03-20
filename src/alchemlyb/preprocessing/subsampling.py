@@ -154,7 +154,7 @@ def u_nk2series(df, method="dE"):
 
     .. versionadded:: 1.0.0
     .. versionchanged:: 2.0.1
-       The `dE` method now computed the difference between the current lambda
+       The `dE` method computes the difference between the current lambda
        and the next lambda (previous lambda for the last window).
 
     """
