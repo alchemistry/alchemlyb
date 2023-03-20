@@ -17,7 +17,7 @@ The rules for this file:
 
   * unreleased
 
-Changes
+Fixes
   - Change the dE method in u_nk2series to use the difference between two
     lambda columns (issue #299, PR #300).
 
