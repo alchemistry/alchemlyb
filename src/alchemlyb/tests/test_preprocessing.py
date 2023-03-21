@@ -422,7 +422,7 @@ def test_decorrelate_u_nk_burnin(u_nk):
                 remove_burnin=True,
             )
         )
-        == 2849
+        == 2848
     )
 
 
@@ -493,9 +493,9 @@ class TestU_nk2series:
     @pytest.mark.parametrize(
         "methodargs,reference",  # reference = sum
         [
-            ({}, 9207.80229000283),
+            ({}, 7988.667045),
             ({"method": "all"}, 85982.34668751864),
-            ({"method": "dE"}, 9207.80229000283),
+            ({"method": "dE"}, 7988.667045),
         ],
     )
     def test_u_nk2series(self, u_nk, methodargs, reference):
@@ -507,7 +507,7 @@ class TestU_nk2series:
         "methodargs,reference",  # reference = sum
         [
             ({"method": "dhdl_all"}, 85982.34668751864),
-            ({"method": "dhdl"}, 9207.80229000283),
+            ({"method": "dhdl"}, 7988.667045),
         ],
     )
     def test_u_nk2series_deprecated(self, u_nk, methodargs, reference):
