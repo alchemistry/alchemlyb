@@ -11,17 +11,15 @@ Some of the file parsing parts are adapted from
 
 """
 
-import logging
 import re
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 
 from . import _init_attrs_dict
 from .util import anyopen
 from ..postprocessors.units import R_kJmol, kJ2kcal
-
-logger = logging.getLogger("alchemlyb.parsers.Amber")
 
 k_b = R_kJmol * kJ2kcal
 

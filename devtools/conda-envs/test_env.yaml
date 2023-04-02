@@ -9,6 +9,7 @@ dependencies:
 - scipy
 - scikit-learn
 - matplotlib
+- loguru
 
   # Testing
 - pytest
