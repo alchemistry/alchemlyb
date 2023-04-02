@@ -88,7 +88,7 @@ class ABFE(WorkflowBase):
             raise ValueError(f"No file has been matched to {reg_exp}.")
 
         logger.info(f"Found {len(self.file_list)} xvg files.")
-        logger.info("Unsorted file list: \n %s", "\n".join(self.file_list))
+        logger.info("Unsorted file list: \n {}", "\n".join(self.file_list))
 
         if software == "GROMACS":
             logger.info(f"Using {software} parser to read the data.")
@@ -166,7 +166,7 @@ class ABFE(WorkflowBase):
             return
 
         self.file_list = [self.file_list[i] for i in index_list]
-        logger.info("Sorted file list: \n%s", "\n".join(self.file_list))
+        logger.info("Sorted file list: \n{}", "\n".join(self.file_list))
         if read_u_nk:
             self.u_nk_list = [u_nk_list[i] for i in index_list]
         else:
