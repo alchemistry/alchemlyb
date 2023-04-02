@@ -3,7 +3,6 @@ fixture that are made directly from parsing the files. Any additional operations
 concat should be done at local level."""
 
 import pytest
-from loguru import logger
 from _pytest.logging import LogCaptureFixture
 from alchemtest.amber import load_bace_example, load_simplesolvated
 from alchemtest.gmx import (
@@ -23,6 +22,7 @@ from alchemtest.namd import (
     load_restarted,
     load_restarted_reversed,
 )
+from loguru import logger
 
 from alchemlyb.parsing import gmx, amber, gomc, namd
 

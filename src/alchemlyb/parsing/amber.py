@@ -343,7 +343,7 @@ def extract(outfile, T):
                 if None in mbar:
                     msg = "Something strange parsing the following MBAR section."
                     msg += "\nMaybe the mbar_lambda values are incorrect?"
-                    logger.error("%s\n%s", msg, mbar)
+                    logger.error("{}\n{}", msg, mbar)
                     raise ValueError(msg)
 
                 reference_energy = mbar[file_datum.mbar_lambda_idx]
