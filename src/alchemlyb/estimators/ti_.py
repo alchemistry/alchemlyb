@@ -30,14 +30,22 @@ class TI(BaseEstimator, _EstimatorMixOut):
     dhdl : DataFrame
         The estimated dhdl of each state.
 
+    _gq_delta_f_ : DataFrame, optional
+        The estimated dimensionless cumulative sum of free energy up to each state 
+        with gaussian quadrature.
+
+    _gq_d_delta_f_ : DataFrame, optional
+        The estimated statistical uncertainty (one standard deviation) in 
+        the cumulative sum of free energy up to each state with gaussian quadrature
 
     .. versionchanged:: 1.0.0
        `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
 
     """
 
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, gauss_qua=False):
         self.verbose = verbose
+        self.gauss_qua = gauss_qua
 
     def fit(self, dHdl):
         """
@@ -121,6 +129,9 @@ class TI(BaseEstimator, _EstimatorMixOut):
         self._d_delta_f_.attrs = dHdl.attrs
         self.dhdl.attrs = dHdl.attrs
 
+        if self.gauss_qua:
+            self.gaussian_quadrature(dHdl, means=means, variances=variances)
+
         return self
 
     def separate_dhdl(self):
@@ -166,3 +177,129 @@ class TI(BaseEstimator, _EstimatorMixOut):
                 new.attrs = self.dhdl.attrs
                 dhdl_list.append(new)
         return dhdl_list
+
+    def gaussian_quadrature(self, dHdl, means, variances):
+        """
+        numerically estimate the free energy using gaussian quadrature with 
+        lambda values suggested in Amber manual
+
+        Parameters
+        ----------
+        dHdl : DataFrame
+        means : DataFrame
+        variances: DataFrame
+        """
+        # extract the lambda values used in the simulations
+        lambdas = means.reset_index()[means.index.names[:]].iloc[:].values.sum(axis=1)
+        num_lambdas = len(lambdas)
+        # check if the lambda values used match the common ones suggested in Amber manual and assign cooresponding weights
+        if num_lambdas==1:
+            try:
+                reference_lambdas = np.round([0.5], 4)
+                assert (lambdas == reference_lambdas).all()
+                weights = np.array([1.0])
+            except:
+                print("Error: the lambda values for gaussian quadrature are not supported yet, please use trapezoidal rule instead")
+                weights = None
+
+        elif num_lambdas==2:
+            try:
+                reference_lambdas = np.round([0.21132, 0.78867], 4)
+                assert (lambdas == reference_lambdas).all()
+                weights = np.array([0.5, 0.5])
+            except:
+                print("Error: the lambda values for gaussian quadrature are not supported yet, please use trapezoidal rule instead")
+                weights = None
+
+        elif num_lambdas==3:
+            try:
+                reference_lambdas = np.round([0.1127, 0.5, 0.88729], 4)
+                assert (lambdas == reference_lambdas).all()
+                weights = np.array([0.27777, 0.44444, 0.27777])
+            except:
+                print("Error: the lambda values for gaussian quadrature are not supported yet, please use trapezoidal rule instead")
+                weights = None
+
+        elif num_lambdas==5:
+            try:
+                reference_lambdas = np.round([0.04691, 0.23076, 0.5, 0.76923, 0.95308], 4)
+                assert (lambdas == reference_lambdas).all()
+                weights = np.array([0.11846, 0.23931, 0.28444, 0.23931, 0.11846])
+            except:
+                print("Error: the lambda values for gaussian quadrature are not supported yet, please use trapezoid rule instead")
+                weights = None
+
+        elif num_lambdas==7:
+            try:
+                reference_lambdas = np.round([0.02544, 0.12923, 0.29707, 0.5, 0.70292, 0.87076, 0.97455], 4)
+                assert (lambdas == reference_lambdas).all()
+                weights = np.array([0.06474, 0.13985, 0.19091, 0.20897, 0.19091, 0.13985, 0.06474])
+            except:
+                print("Error: the lambda values for gaussian quadrature are not supported yet, please use trapezoid rule instead")
+                weights = None
+
+        elif num_lambdas==9:
+            try:
+                reference_lambdas = np.round([0.01592, 0.08198, 0.19331, 0.33787, 0.5,
+                                               0.66213, 0.80669, 0.91802, 0.98408], 4)
+                assert (lambdas == reference_lambdas).all()
+                weights = np.array([0.04064, 0.09032, 0.13031, 0.15617, 0.16512, 0.15617, 0.13031, 0.09032, 0.04064])
+            except:
+                print("Error: the lambda values for gaussian quadrature are not supported yet, please use trapezoid rule instead")
+                weights = None
+
+        elif num_lambdas==12:
+            try:
+                reference_lambdas = np.round([0.00922, 0.04794, 0.11505, 0.20634, 0.31608, 0.43738, 
+                                              0.56262, 0.68392, 0.79366, 0.88495, 0.95206, 0.99078], 4)
+                assert (lambdas == reference_lambdas).all()
+                weights = np.array([0.02359, 0.05347, 0.08004, 0.10158, 0.11675, 0.12457,
+                                     0.12457, 0.11675, 0.10158, 0.08004, 0.05347, 0.02359])
+            except:
+                print("Error: the lambda values for gaussian quadrature are not supported yet, please use trapezoid rule instead")
+                weights = None
+
+        else:
+            print("Error: the lambda values for gaussian quadrature are not supported yet, please use trapezoid rule instead")
+            weights = None
+        # perform gassian quadrature to esstimate the thermaldynamic integration
+        if weights is not None:
+            mean_values = means.values.sum(axis=1)
+            variance_values = variances.values.sum(axis=1)
+            gq_deltas = weights * mean_values
+            gq_d_deltas_squared = np.square(weights) * variance_values
+            gq_adelta = np.zeros((len(gq_deltas), len(gq_deltas)))
+            gq_ad_delta = np.zeros_like(gq_adelta)
+            for j in range(len(gq_deltas)):
+                out = []
+                dout = []
+                for i in range(len(gq_deltas) - j):
+                    # Append cumulative free energy value from state i to i+j+1
+                    out.append(gq_deltas[i] + gq_deltas[i + 1 : i + j + 1].sum())
+                    # Append cumulative deviation of free energy from state i to i+j+1
+                    dout.append(gq_d_deltas_squared[i] + gq_d_deltas_squared[i + 1 : i + j + 1].sum())
+            
+                gq_adelta += np.diagflat(np.array(out), k=j)
+                gq_ad_delta += np.diagflat(np.array(dout), k=j)
+
+            self._gq_delta_f_ = pd.DataFrame(
+                gq_adelta, columns=means.index.values, index=means.index.values
+            )
+            self._gq_d_delta_f_ = pd.DataFrame(
+                np.sqrt(gq_ad_delta),
+                columns=variances.index.values,
+                index=variances.index.values,
+            )
+            self._gq_delta_f_.attrs = dHdl.attrs
+            self._gq_d_delta_f_.attrs = dHdl.attrs
+
+        else:
+            self._gq_delta_f_, self._gq_d_delta_f_ = None, None
+
+        return self
+
+
+
+
+
+    
