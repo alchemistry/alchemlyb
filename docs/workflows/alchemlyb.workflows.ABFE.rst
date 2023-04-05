@@ -33,7 +33,7 @@ to the following code (The log is configured by logger). ::
     >>> workflow = ABFE(units='kcal/mol', software='GROMACS', dir=dir,
     >>>                 prefix='dhdl', suffix='xvg', T=298, outdirectory='./')
     >>> workflow.run(skiptime=10, uncorr='dhdl', threshold=50,
-    >>>              methods=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
+    >>>              estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
     >>>              breakdown=True, forwrev=10)
 
 
@@ -142,7 +142,7 @@ to the data generated at each stage of the analysis. ::
     >>> # Decorrelate the data.
     >>> workflow.preprocess(skiptime=10, uncorr='dhdl', threshold=50)
     >>> # Run the estimator
-    >>> workflow.estimate(methods=('mbar', 'bar', 'ti'))
+    >>> workflow.estimate(estimators=('mbar', 'bar', 'ti'))
     >>> # Retrieve the result
     >>> summary = workflow.generate_result()
     >>> # Plot the overlap matrix
