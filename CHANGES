@@ -13,9 +13,9 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-*/*/* xiki-tempula,
+06/04/2023 xiki-tempula
 
-  * unreleased
+  * 2.0.1
 
 Fixes
   - Fix the dE method in u_nk2series to use the difference between two
