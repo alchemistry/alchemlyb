@@ -82,7 +82,7 @@ class ABFE(WorkflowBase):
             f"{software}"
         )
         reg_exp = "**/" + prefix + "*" + suffix
-        self.file_list = list(Path(dir).glob(reg_exp))
+        self.file_list = list(map(str, Path(dir).glob(reg_exp)))
 
         if len(self.file_list) == 0:
             raise ValueError(f"No file has been matched to {reg_exp}.")
