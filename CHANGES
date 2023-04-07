@@ -21,6 +21,8 @@ Fixes
   - Fix the dE method in u_nk2series to use the difference between two
     lambda columns instead of using the next lambda column or the previous
     column for the last window (issue #299, PR #300).
+  - work around hanging tests on Mac M1 by using Path.glob instead of glob.glob
+    in ABFE workflow (issue #309, PR #310).
 
 
 12/12/2022 xiki-tempula, orbeckst
