@@ -13,6 +13,15 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+06/04/2023 hl2500
+
+  * 2.0.1
+
+Changes
+  - Add a TI estimator using gaussian quadrature to calculate the free energy.
+    (issue #302, PR #304)
+
+
 06/04/2023 xiki-tempula
 
   * 2.0.1
