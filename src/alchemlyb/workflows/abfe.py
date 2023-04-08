@@ -1,6 +1,6 @@
 import os
-from glob import glob
 from os.path import join
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -81,8 +81,8 @@ class ABFE(WorkflowBase):
             f"{suffix} under directory {dir} produced by "
             f"{software}"
         )
-        reg_exp = dir + "/**/" + prefix + "*" + suffix
-        self.file_list = list(glob(reg_exp, recursive=True))
+        reg_exp = "**/" + prefix + "*" + suffix
+        self.file_list = list(map(str, Path(dir).glob(reg_exp)))
 
         if len(self.file_list) == 0:
             raise ValueError(f"No file has been matched to {reg_exp}.")
