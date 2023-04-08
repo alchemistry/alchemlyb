@@ -17,7 +17,7 @@ The rules for this file:
 
   * 2.0.1
 
-Changes
+Enhancements
   - Add a TI estimator using gaussian quadrature to calculate the free energy.
     (issue #302, PR #304)
 
