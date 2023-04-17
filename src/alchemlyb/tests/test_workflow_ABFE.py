@@ -43,6 +43,23 @@ class TestInit:
                 T=310,
             )
 
+    def test_notdir(self):
+        with pytest.raises(ValueError, match="The input directory `dir`="):
+            ABFE(
+                dir="abfasfsd",
+                prefix="dhdl",
+                suffix="xvg",
+                T=310,
+            )
+    def test_wildcard_in_dir(self):
+        with pytest.warns(match="A real directory is expected in `dir`="):
+            ABFE(
+                dir="/*/",
+                prefix="dhdl",
+                suffix="xvg",
+                T=310,
+            )
+
 
 class TestRun:
     def test_none(self, workflow):

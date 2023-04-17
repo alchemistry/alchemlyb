@@ -1,5 +1,6 @@
 import logging
 import os
+import warnings
 from os.path import join
 from pathlib import Path
 
@@ -42,10 +43,10 @@ class ABFE(WorkflowBase):
         This option chooses the appropriate parser for the input file.
     dir : str
         Directory in which data files are stored. Default: os.path.curdir.
-        The input files are searched using the pattern of
-        ``dir + '/**/' + prefix + '*' + suffix``.
     prefix : str
-        Prefix for datafile sets. Default: 'dhdl'.
+        Prefix for datafile sets. This argument accepts regular expressions and
+        the input files are searched using
+        ``Path(dir).glob("**/" + prefix + "*" + suffix)``. Default: 'dhdl'.
     suffix : str
         Suffix for datafile sets. Default: 'xvg'.
     outdirectory : str
@@ -61,6 +62,8 @@ class ABFE(WorkflowBase):
 
 
     .. versionadded:: 1.0.0
+    .. versionchanged:: 2.0.1
+        The `dir` argument expect a real directory and wildcard are no longer accepted.
     """
 
     def __init__(
@@ -82,6 +85,10 @@ class ABFE(WorkflowBase):
             f"{software}"
         )
         reg_exp = "**/" + prefix + "*" + suffix
+        if '*' in dir:
+            warnings.warn(f"A real directory is expected in `dir`={dir}, wildcard expressions should be supplied to `prefex`.")
+        if not Path(dir).is_dir():
+            raise ValueError(f"The input directory `dir`={dir} is not a directory.")
         self.file_list = list(map(str, Path(dir).glob(reg_exp)))
 
         if len(self.file_list) == 0:
