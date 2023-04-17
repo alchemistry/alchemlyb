@@ -13,9 +13,9 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-06/04/2023 hl2500
+*/*/* hl2500
 
-  * 2.0.1
+  * Unreleased
 
 Enhancements
   - Add a TI estimator using gaussian quadrature to calculate the free energy.
