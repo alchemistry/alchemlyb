@@ -52,13 +52,14 @@ class TestInit:
                 T=310,
             )
     def test_wildcard_in_dir(self):
-        with pytest.warns(match="A real directory is expected in `dir`="):
-            ABFE(
-                dir="/*/",
-                prefix="dhdl",
-                suffix="xvg",
-                T=310,
-            )
+        with pytest.raises(ValueError):
+            with pytest.warns(match="A real directory is expected in `dir`="):
+                ABFE(
+                    dir="/*/",
+                    prefix="dhdl",
+                    suffix="xvg",
+                    T=310,
+                )
 
 
 class TestRun:
