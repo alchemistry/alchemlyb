@@ -63,7 +63,8 @@ class ABFE(WorkflowBase):
 
     .. versionadded:: 1.0.0
     .. versionchanged:: 2.0.1
-        The `dir` argument expect a real directory and wildcard are no longer accepted.
+        The `dir` argument expects a real directory without wildcards and wildcards will no longer
+        work as expected. Use `prefix` to specify wildcard-based patterns to search under `dir`.  
     """
 
     def __init__(
@@ -86,7 +87,7 @@ class ABFE(WorkflowBase):
         )
         reg_exp = "**/" + prefix + "*" + suffix
         if '*' in dir:
-            warnings.warn(f"A real directory is expected in `dir`={dir}, wildcard expressions should be supplied to `prefex`.")
+            warnings.warn(f"A real directory is expected in `dir`={dir}, wildcard expressions should be supplied to `prefix`.")
         if not Path(dir).is_dir():
             raise ValueError(f"The input directory `dir`={dir} is not a directory.")
         self.file_list = list(map(str, Path(dir).glob(reg_exp)))
