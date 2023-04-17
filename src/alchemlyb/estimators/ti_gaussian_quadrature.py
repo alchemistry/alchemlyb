@@ -1,12 +1,15 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
-
+from .. import concat
 from .base import _EstimatorMixOut
 
 
-class TI_gq(BaseEstimator, _EstimatorMixOut):
+class TI_GQ(BaseEstimator, _EstimatorMixOut):
     """Thermodynamic integration (TI) with gaussian quadrature estimation.
+       When the simulations are performed at certain gaussian quadrature
+       points (lambdas), the free energy can be estimated using gaussian 
+       quadrature as an alternative to the trapezoidal rule.
 
     Parameters
     ----------
@@ -31,7 +34,7 @@ class TI_gq(BaseEstimator, _EstimatorMixOut):
         The estimated dhdl of each state.
 
 
-    .. versionchanged:: 2.0.0
+    .. versionadded:: 2.0.0
        `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
 
     """
@@ -59,12 +62,8 @@ class TI_gq(BaseEstimator, _EstimatorMixOut):
         # obtain the mean and variance of the mean for each state
         # variance calculation assumes no correlation between points
         # used to calculate mean
-        means = dHdl.groupby(level=dHdl.index.names[1:]).mean()
-        variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
-
-        # extract the lambda values used in the simulations
-        lambdas = means.reset_index()[means.index.names[:]].iloc[:].values.sum(axis=1)
-        num_lambdas = len(lambdas)
+        self.means = dHdl.groupby(level=dHdl.index.names[1:]).mean()
+        self.variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
         # suggested lambda values corresponding weights 
         special_points = {1: [[0.5], [1.0]], 2: [[0.21132, 0.78867], [0.5, 0.5]],
                           3: [[0.1127, 0.5, 0.88729], [0.27777, 0.44444, 0.27777]],
@@ -76,12 +75,19 @@ class TI_gq(BaseEstimator, _EstimatorMixOut):
                          12: [[0.00922, 0.04794, 0.11505, 0.20634, 0.31608, 0.43738, 0.56262, 0.68392, 0.79366, 0.88495, 0.95206, 0.99078],
                               [0.02359, 0.05347, 0.08004, 0.10158, 0.11675, 0.12457, 0.12457, 0.11675, 0.10158, 0.08004, 0.05347, 0.02359]]
                          }
-        if (num_lambdas not in special_points) or (not np.allclose(lambdas, special_points[num_lambdas][0], rtol=0.1)):
-            raise ValueError('The lambda values for gaussian quadrature are not supported, please use trapezoid rule instead.') 
-        
-        weights = special_points[num_lambdas][1]
-        mean_values = means.values.sum(axis=1)
-        variance_values = variances.values.sum(axis=1)
+        weights = []
+        # check if the lambdas in the simulations match the suggested values
+        lambda_list, means_list, variances_list = self.separate_dhdl()
+        for lambdas in lambda_list:
+            num_lambdas = len(lambdas)
+            if (num_lambdas not in special_points) or (not np.allclose(lambdas, special_points[num_lambdas][0], rtol=0.1)):
+                raise ValueError('The lambda values for gaussian quadrature are not supported, please use trapezoid rule instead.')
+            weights.extend(special_points[num_lambdas][1])
+        # means_new and variances_new are similar to means and variances, but with only values relevant to each lambda type (for multilambda situation)
+        means_new = concat(means_list)
+        mean_values = means_new.to_numpy()
+        variances_new = concat(variances_list)
+        variance_values = variances_new.to_numpy()
 
         # apply gaussian quadrature multiplication at each lambda state 
         deltas = weights * mean_values
@@ -104,19 +110,20 @@ class TI_gq(BaseEstimator, _EstimatorMixOut):
 
         # yield standard delta_f_ cumulative free energies from one state to another
         self._delta_f_ = pd.DataFrame(
-            adelta, columns=means.index.values, index=means.index.values
+            adelta, columns=means_new.index.values, index=means_new.index.values
         )
-        self.dhdl = means
+        
         # yield standard deviation d_delta_f_ between each state
         self._d_delta_f_ = pd.DataFrame(
             np.sqrt(ad_delta),
-            columns=variances.index.values,
-            index=variances.index.values,
+            columns=variances_new.index.values,
+            index=variances_new.index.values,
         )
-        self._states_ = means.index.values.tolist()
+        self.dhdl = self.means
+        self.dhdl.attrs = dHdl.attrs
+        self._states_ = means_new.index.values.tolist()
         self._delta_f_.attrs = dHdl.attrs
         self._d_delta_f_.attrs = dHdl.attrs
-        self.dhdl.attrs = dHdl.attrs
 
         return self
 
@@ -125,41 +132,58 @@ class TI_gq(BaseEstimator, _EstimatorMixOut):
         For transitions with multiple lambda, the attr:`dhdl` would return
         a :class:`~pandas.DataFrame` which gives the dHdl for all the lambda
         states, regardless of whether it is perturbed or not. This function
-        creates a list of :class:`pandas.Series` for each lambda, where each
-        :class:`pandas.Series` describes the potential energy gradient for the
-        lambdas state that is perturbed.
+        creates 3 lists of :class:`numpy.array`, :class:`numpy.array` and :class:`pandas.Series` 
+        for each lambda, where the lists describe the lambda values, masks of potential gaussian 
+        quadrature points, and potential energy gradient for the lambdas state that is perturbed.
 
         Returns
         ----------
+        lambda_list : list
+            A list of :class:`numpy.array` such that ``lambda_list[k]`` is the
+            lambda values with respect to each type of lambda.
+        mask_list : list
+            A list of :class:`numpy.array` such that ``lambda_list[k]`` is the
+            lambda mask with respect to each type of lambda. The lambdas values
+            between 0.0 and 1.0 are marked as True as potential gaussian quadrature
+            points. 
         dHdl_list : list
             A list of :class:`pandas.Series` such that ``dHdl_list[k]`` is the
             potential energy gradient with respect to lambda for each
             configuration that lambda k is perturbed.
         """
-        if len(self.dhdl.index.names) == 1:
-            name = self.dhdl.columns[0]
-            return [
-                self.dhdl[name],
-            ]
+        lambda_list = []
         dhdl_list = []
+        variance_list = []
         # get the lambda names
-        l_types = self.dhdl.index.names
-        # obtain bool of changed lambdas between each state
-        # Fix issue #148, where for pandas == 1.3.0
-        # lambdas = self.dhdl.reset_index()[list(l_types)]
-        lambdas = self.dhdl.reset_index()[l_types]
-        diff = lambdas.diff().to_numpy(dtype="bool")
-        # diff will give the first row as NaN so need to fix that
-        diff[0, :] = diff[1, :]
-        # Make sure that the start point is set to true as well
-        diff[:-1, :] = diff[:-1, :] | diff[1:, :]
-        for i in range(len(l_types)):
-            if any(diff[:, i]):
-                new = self.dhdl.iloc[diff[:, i], i]
-                # drop all other index
+        l_types = self.means.index.names
+        # get the lambda vaules
+        lambdas = self.means.reset_index()[self.means.index.names].values
+
+        if len(self.means.index.names) == 1:
+            name = self.means.columns[0]
+            lambda_list.append(self.means.index)
+            dhdl_list.append(self.means[name])
+            variance_list.append(self.variances[name])
+
+        else:
+            # simultanouesly scaling of multiple lambda types are not supported
+            if (((0.0 < lambdas) & (lambdas < 1.0)).sum(axis=1) > 1.0).any():
+                raise ValueError('The lambda values for gaussian quadrature are not supported, please use trapezoid rule instead.')
+            for i in range(len(l_types)):
+                # obtain the lambda points between 0.0 and 1.0
+                l_masks = (0.0 < lambdas[:, i]) & (lambdas[:, i] < 1.0)
+                if not l_masks.any():
+                    continue
+                new_means = self.means.iloc[l_masks, i]
+                new_variances = self.variances.iloc[l_masks, i]
                 for l in l_types:
                     if l != l_types[i]:
-                        new = new.reset_index(l, drop=True)
-                new.attrs = self.dhdl.attrs
-                dhdl_list.append(new)
-        return dhdl_list
+                        new_means = new_means.reset_index(l, drop=True)
+                        new_variances = new_variances.reset_index(l, drop=True)
+                new_means.attrs = self.means.attrs
+                new_variances.attrs = self.variances.attrs
+                lambda_list.append(new_means.index)
+                dhdl_list.append(new_means)
+                variance_list.append(new_variances)
+
+        return lambda_list, dhdl_list, variance_list
