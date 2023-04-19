@@ -55,7 +55,7 @@ jobs:
 
     - name: Install alchemtest
       run: |
-        python -m pip install https://github.com/alchemistry/alchemtest/archive/master.zip
+        python -m pip install git+https://github.com/hl2500/alchemtest.git@Add_gaussian_quadrature_test
 
     - name: Install package (with no dependencies)
       run: |
