@@ -40,10 +40,12 @@ def gmx_benzene_Coulomb_dHdl(gmx_benzene):
 def gmx_benzene_VDW_dHdl(gmx_benzene):
     return [gmx.extract_dHdl(file, T=300) for file in gmx_benzene["VDW"]]
 
+
 @pytest.fixture
 def gmx_ethanol():
     dataset = load_ethanol()
     return dataset["data"]
+
 
 @pytest.fixture
 def gmx_ethanol_Coulomb_dHdl(gmx_ethanol):
