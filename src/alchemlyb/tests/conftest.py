@@ -3,9 +3,9 @@ fixture that are made directly from parsing the files. Any additional operations
 concat should be done at local level."""
 
 import pytest
-from alchemtest.amber import load_bace_example, load_simplesolvated
+from alchemtest.amber import load_bace_example, load_simplesolvated, load_tyk2_example
 from alchemtest.gmx import (
-    load_benzene,
+    load_benzene, load_ethanol,
     load_expanded_ensemble_case_1,
     load_expanded_ensemble_case_2,
     load_expanded_ensemble_case_3,
@@ -39,6 +39,20 @@ def gmx_benzene_Coulomb_dHdl(gmx_benzene):
 @pytest.fixture
 def gmx_benzene_VDW_dHdl(gmx_benzene):
     return [gmx.extract_dHdl(file, T=300) for file in gmx_benzene["VDW"]]
+
+@pytest.fixture
+def gmx_ethanol():
+    dataset = load_ethanol()
+    return dataset["data"]
+
+@pytest.fixture
+def gmx_ethanol_Coulomb_dHdl(gmx_ethanol):
+    return [gmx.extract_dHdl(file, T=300) for file in gmx_ethanol["Coulomb"]]
+
+
+@pytest.fixture
+def gmx_ethanol_VDW_dHdl(gmx_ethanol):
+    return [gmx.extract_dHdl(file, T=300) for file in gmx_ethanol["VDW"]]
 
 
 @pytest.fixture
@@ -215,6 +229,16 @@ def amber_bace_example_complex_vdw():
     return [
         amber.extract_u_nk(filename, T=298.0)
         for filename in dataset["data"]["complex"]["vdw"]
+    ]
+
+
+@pytest.fixture
+def amber_tyk2_example_complex():
+    dataset = load_tyk2_example()
+
+    return [
+        amber.extract_dHdl(filename, T=300.0)
+        for filename in dataset["data"]["complex"]
     ]
 
 
