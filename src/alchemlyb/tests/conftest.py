@@ -5,7 +5,8 @@ concat should be done at local level."""
 import pytest
 from alchemtest.amber import load_bace_example, load_simplesolvated, load_tyk2_example
 from alchemtest.gmx import (
-    load_benzene, load_ethanol,
+    load_benzene,
+    load_ethanol,
     load_expanded_ensemble_case_1,
     load_expanded_ensemble_case_2,
     load_expanded_ensemble_case_3,
@@ -239,8 +240,7 @@ def amber_tyk2_example_complex():
     dataset = load_tyk2_example()
 
     return [
-        amber.extract_dHdl(filename, T=300.0)
-        for filename in dataset["data"]["complex"]
+        amber.extract_dHdl(filename, T=300.0) for filename in dataset["data"]["complex"]
     ]
 
 
