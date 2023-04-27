@@ -110,6 +110,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             columns=variances_new.index.values,
             index=variances_new.index.values,
         )
+        
         self.dhdl = self.means
         self.dhdl.attrs = dHdl.attrs
         self._states_ = means_new.index.values.tolist()
