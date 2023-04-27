@@ -2,6 +2,7 @@
 
 """
 import pandas as pd
+import numpy as np
 import pytest
 
 import alchemlyb
@@ -20,7 +21,6 @@ def ethanol_VDW(gmx_ethanol_VDW_dHdl):
     dHdl = alchemlyb.concat(gmx_ethanol_VDW_dHdl)
     return dHdl
 
-
 @pytest.fixture
 def ethanol(ethanol_Coulomb, ethanol_VDW):
     dHdl = alchemlyb.concat([ethanol_Coulomb, ethanol_VDW])
@@ -30,6 +30,12 @@ def ethanol(ethanol_Coulomb, ethanol_VDW):
 @pytest.fixture
 def tyk2_complex(amber_tyk2_example_complex):
     dHdl = alchemlyb.concat(amber_tyk2_example_complex)
+    return dHdl
+
+
+@pytest.fixture
+def benzene_VDW(gmx_benzene_VDW_dHdl):
+    dHdl = alchemlyb.concat(gmx_benzene_VDW_dHdl)
     return dHdl
 
 
@@ -67,31 +73,27 @@ class TestTIGQ(TIestimatorMixin):
         return request.getfixturevalue(get_dHdl), E, dE
 
 
-def test_TI_separate_dhdl_multiple_column(ethanol):
+def test_TI_GQ_separate_dhdl_multiple_column(ethanol):
     dHdl = ethanol
     estimator = TI_GQ().fit(dHdl)
     assert isinstance(estimator.separate_dhdl()[0], list)
     assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()[1]])
-    assert all(
-        [isinstance(variances, pd.Series) for variances in estimator.separate_dhdl()[2]]
-    )
+    assert all([isinstance(variances, pd.Series) for variances in estimator.separate_dhdl()[2]])
     assert sorted([len(dhdl) for dhdl in estimator.separate_dhdl()[1]]) == [5, 7]
     assert isinstance(estimator.get_quadrature_points(), dict)
 
 
-def test_TI_separate_dhdl_single_column(tyk2_complex):
+def test_TI_GQ_separate_dhdl_single_column(tyk2_complex):
     dHdl = tyk2_complex
     estimator = TI_GQ().fit(dHdl)
     assert isinstance(estimator.separate_dhdl()[0], list)
     assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()[1]])
-    assert all(
-        [isinstance(variances, pd.Series) for variances in estimator.separate_dhdl()[2]]
-    )
+    assert all([isinstance(variances, pd.Series) for variances in estimator.separate_dhdl()[2]])
     assert [len(dhdl) for dhdl in estimator.separate_dhdl()[1]] == [12]
     assert isinstance(estimator.get_quadrature_points(), dict)
 
 
-def test_TI_separate_dhdl_no_pertubed(tyk2_complex):
+def test_TI_GQ_separate_dhdl_no_pertubed(tyk2_complex):
     """The test for the case where two lambda are there and one is not pertubed"""
     dHdl = tyk2_complex
     dHdl.insert(1, "bound-lambda", [1.0] * len(dHdl))
@@ -100,6 +102,28 @@ def test_TI_separate_dhdl_no_pertubed(tyk2_complex):
     estimator = TI_GQ().fit(dHdl)
     assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()[1]])
     assert [len(dhdl) for dhdl in estimator.separate_dhdl()[1]] == [12]
+
+
+def test_TI_GQ_not_quadrature_points(benzene_VDW):
+    """The test for the case where the simulation lambdas are not quadrature points"""
+    dHdl = benzene_VDW
+    try:
+        TI_GQ().fit(dHdl)
+    except:
+        pass
+
+
+def test_TI_GQ_multi_lambda_scaling(ethanol_Coulomb):
+    """The test for the case where multiple lambdas are scaled simultaneously (not supported)"""
+    dHdl = ethanol_Coulomb
+    # change the second lambda from all zeros to the same as the first lambda
+    dHdl.reset_index(inplace=True)
+    dHdl["vdw-lambda"] = dHdl["coul-lambda"]
+    dHdl.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
+    try:
+        TI_GQ().fit(dHdl)
+    except:
+        pass
 
 
 class Test_Units:
