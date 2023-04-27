@@ -78,7 +78,9 @@ def test_TI_GQ_separate_dhdl_multiple_column(ethanol):
     estimator = TI_GQ().fit(dHdl)
     assert isinstance(estimator.separate_dhdl()[0], list)
     assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()[1]])
-    assert all([isinstance(variances, pd.Series) for variances in estimator.separate_dhdl()[2]])
+    assert all(
+        [isinstance(variances, pd.Series) for variances in estimator.separate_dhdl()[2]]
+    )
     assert sorted([len(dhdl) for dhdl in estimator.separate_dhdl()[1]]) == [5, 7]
     assert isinstance(estimator.get_quadrature_points(), dict)
 
@@ -88,7 +90,9 @@ def test_TI_GQ_separate_dhdl_single_column(tyk2_complex):
     estimator = TI_GQ().fit(dHdl)
     assert isinstance(estimator.separate_dhdl()[0], list)
     assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()[1]])
-    assert all([isinstance(variances, pd.Series) for variances in estimator.separate_dhdl()[2]])
+    assert all(
+        [isinstance(variances, pd.Series) for variances in estimator.separate_dhdl()[2]]
+    )
     assert [len(dhdl) for dhdl in estimator.separate_dhdl()[1]] == [12]
     assert isinstance(estimator.get_quadrature_points(), dict)
 
