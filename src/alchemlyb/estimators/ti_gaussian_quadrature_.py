@@ -21,11 +21,11 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
     ----------
 
     delta_f_ : DataFrame
-        The estimated dimensionless free energy difference between each state.
+        The estimated cumulative free energy from one state to another.
 
     d_delta_f_ : DataFrame
         The estimated statistical uncertainty (one standard deviation) in
-        dimensionless free energy differences.
+        dimensionless cumulative free energies.
 
     states_ : list
         Lambda states for which free energy estimation were obtained.
@@ -44,7 +44,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
 
     def fit(self, dHdl):
         """
-        Compute free energy differences between each state by integrating
+        Compute cumulative free energy from one state to another by integrating
         dHdl across lambda values.
 
         Parameters
@@ -72,7 +72,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         for lambdas in lambda_list:
             num_lambdas = len(lambdas)
             if (num_lambdas not in special_points) or (not np.allclose(lambdas, special_points[num_lambdas][0], rtol=0.1)):
-                raise ValueError('The lambda values for gaussian quadrature are not supported, please use trapezoid rule instead.')
+                raise ValueError('The lambda values for gaussian quadrature are not supported, please use trapezoidal rule instead.')
             weights.extend(special_points[num_lambdas][1])
         # means_new and variances_new are similar to means and variances, but with only values relevant to each lambda type (for multi-lambda situation)
         means_new = concat(means_list)
@@ -123,23 +123,23 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         For transitions with multiple lambda, the attr:`dhdl` would return
         a :class:`~pandas.DataFrame` which gives the dHdl for all the lambda
         states, regardless of whether it is perturbed or not. This function
-        creates 3 lists of :class:`numpy.array`, :class:`numpy.array` and :class:`pandas.Series` 
-        for each lambda, where the lists describe the lambda values, masks of potential gaussian 
-        quadrature points, and potential energy gradient for the lambdas state that is perturbed.
+        creates 3 lists of :class:`numpy.array`, :class:`pandas.Series` and 
+        :class:`pandas.Series` for each lambda, where the lists describe 
+        the lambda values, potential energy gradient and variance values for
+        the lambdas state that is perturbed.
 
         Returns
         ----------
         lambda_list : list
             A list of :class:`numpy.array` such that ``lambda_list[k]`` is the
             lambda values with respect to each type of lambda.
-        mask_list : list
-            A list of :class:`numpy.array` such that ``lambda_list[k]`` is the
-            lambda mask with respect to each type of lambda. The lambdas values
-            between 0.0 and 1.0 are marked as True as potential gaussian quadrature
-            points. 
-        dHdl_list : list
+        dhdl_list : list
             A list of :class:`pandas.Series` such that ``dHdl_list[k]`` is the
             potential energy gradient with respect to lambda for each
+            configuration that lambda k is perturbed.
+        variance_list : list
+            A list of :class:`pandas.Series` such that ``variance_list[k]`` is the
+            variance of the potential energy gradient with respect to lambda for each
             configuration that lambda k is perturbed.
         """
         lambda_list = []
@@ -159,7 +159,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         else:
             # simultanouesly scaling of multiple lambda types are not supported
             if (((0.0 < lambdas) & (lambdas < 1.0)).sum(axis=1) > 1.0).any():
-                raise ValueError('The lambda values for gaussian quadrature are not supported, please use trapezoid rule instead.')
+                raise ValueError('The lambda values for gaussian quadrature are not supported, please use trapezoidal rule instead.')
             for i in range(len(l_types)):
                 # obtain the lambda points between 0.0 and 1.0
                 l_masks = (0.0 < lambdas[:, i]) & (lambdas[:, i] < 1.0)
@@ -188,7 +188,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         ----------
         quadrature_points: dict
             A dictionary of :class:`list` such that the keys are the number of
-            lambda points and the values are the lists of lambdas and weights
+            lambda points and the values are the lists of lambdas and weights.
         """
         quadrature_points = {1: [[0.5], 
                                  [1.0]], 
