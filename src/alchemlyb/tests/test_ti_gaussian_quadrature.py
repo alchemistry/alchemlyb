@@ -21,6 +21,7 @@ def ethanol_VDW(gmx_ethanol_VDW_dHdl):
     dHdl = alchemlyb.concat(gmx_ethanol_VDW_dHdl)
     return dHdl
 
+
 @pytest.fixture
 def ethanol(ethanol_Coulomb, ethanol_VDW):
     dHdl = alchemlyb.concat([ethanol_Coulomb, ethanol_VDW])
