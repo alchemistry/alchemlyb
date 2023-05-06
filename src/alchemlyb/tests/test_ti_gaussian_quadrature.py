@@ -93,36 +93,55 @@ class TestTIGQ(TIestimatorMixin):
 
 
 class Test_TI_GQ_separate_mean_and_variance_multi_column:
-    """Tests for TI_GQ separate_mean_and_variance function with multiple-column data"""    
+    """Tests for TI_GQ separate_mean_and_variance function with multiple-column data"""
 
     def test_lambda_list(self, ethanol_lambdas_means_variances):
         assert isinstance(ethanol_lambdas_means_variances[0], list)
 
     def test_mean_list(self, ethanol_lambdas_means_variances):
-        assert all([isinstance(means, pd.Series) for means in ethanol_lambdas_means_variances[1]])
+        assert all(
+            [
+                isinstance(means, pd.Series)
+                for means in ethanol_lambdas_means_variances[1]
+            ]
+        )
 
     def test_variance_list(self, ethanol_lambdas_means_variances):
         assert all(
-        [isinstance(variances, pd.Series) for variances in ethanol_lambdas_means_variances[2]]
-    )
+            [
+                isinstance(variances, pd.Series) 
+                for variances in ethanol_lambdas_means_variances[2]
+            ]
+        )
         
     def test_data_length(self, ethanol_lambdas_means_variances):
-        assert sorted([len(means) for means in ethanol_lambdas_means_variances[1]]) == [5, 7]
+        assert sorted([len(means) for means in ethanol_lambdas_means_variances[1]]) == [
+            5,
+            7,
+        ]
 
 
-class Test_TI_GQ_separate_mean_and_variance_single_column():
+class Test_TI_GQ_separate_mean_and_variance_single_column:
     """Tests for TI_GQ separate_mean_and_variance function with single-column data"""
 
     def test_lambda_list(self, tyk2_complex_lambdas_means_variances):
         assert isinstance(tyk2_complex_lambdas_means_variances[0], list)
 
     def test_mean_list(self, tyk2_complex_lambdas_means_variances):
-        assert all([isinstance(means, pd.Series) for means in tyk2_complex_lambdas_means_variances[1]])
+        assert all(
+            [
+                isinstance(means, pd.Series)
+                for means in tyk2_complex_lambdas_means_variances[1]
+            ]
+        )
 
     def test_variance_list(self, tyk2_complex_lambdas_means_variances):
         assert all(
-        [isinstance(variances, pd.Series) for variances in tyk2_complex_lambdas_means_variances[2]]
-    )
+            [
+                isinstance(variances, pd.Series) 
+                for variances in tyk2_complex_lambdas_means_variances[2]
+            ]
+        )
 
     def test_data_length(self, tyk2_complex_lambdas_means_variances):
         assert [len(means) for means in tyk2_complex_lambdas_means_variances[1]] == [12]
@@ -196,7 +215,7 @@ class Test_MultipleColumnUnits:
 
 def test_TI_TIGQ_comparision(tyk2_complex):
     """Test for comparing TI and TI_GQ results"""
-    
+
     ti = TI().fit(tyk2_complex)
     ti_gq = TI_GQ().fit(tyk2_complex)
     ti_energy_results = ti.delta_f_.iloc[0, -1]
