@@ -198,11 +198,11 @@ def test_TI_TIGQ_comparision(tyk2_complex):
     """Test for comparing TI and TI_GQ results"""
     
     ti = TI().fit(tyk2_complex)
-    ti_gq = TI().fit(tyk2_complex)
-    ti_results = ti.delta_f_.iloc[0, -1]
-    ti_gq_results = ti_gq.delta_f_.iloc[0, -1]
+    ti_gq = TI_GQ().fit(tyk2_complex)
+    ti_energy_results = ti.delta_f_.iloc[0, -1]
+    ti_gq_energy_results = ti_gq.delta_f_.iloc[0, -1]
+    ti_variance_results = ti.d_delta_f_.iloc[0, -1]
+    ti_gq_variance_results = ti_gq.d_delta_f_.iloc[0, -1]
 
-    assert ti_results == pytest.approx(ti_gq_results, rel=1e-2)
-
-
-
+    assert ti_energy_results == pytest.approx(ti_gq_energy_results, rel=1e-1)
+    assert ti_variance_results == pytest.approx(ti_gq_variance_results, rel=1e-1)
