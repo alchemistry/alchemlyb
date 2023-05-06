@@ -109,11 +109,11 @@ class Test_TI_GQ_separate_mean_and_variance_multi_column:
     def test_variance_list(self, ethanol_lambdas_means_variances):
         assert all(
             [
-                isinstance(variances, pd.Series) 
+                isinstance(variances, pd.Series)
                 for variances in ethanol_lambdas_means_variances[2]
             ]
         )
-        
+
     def test_data_length(self, ethanol_lambdas_means_variances):
         assert sorted([len(means) for means in ethanol_lambdas_means_variances[1]]) == [
             5,
@@ -138,7 +138,7 @@ class Test_TI_GQ_separate_mean_and_variance_single_column:
     def test_variance_list(self, tyk2_complex_lambdas_means_variances):
         assert all(
             [
-                isinstance(variances, pd.Series) 
+                isinstance(variances, pd.Series)
                 for variances in tyk2_complex_lambdas_means_variances[2]
             ]
         )
