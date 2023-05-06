@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 import alchemlyb
-from alchemlyb.estimators import TI_GQ
+from alchemlyb.estimators import TI_GQ, TI
 from alchemlyb.parsing import amber
 
 
@@ -38,6 +38,24 @@ def tyk2_complex(amber_tyk2_example_complex):
 def benzene_VDW(gmx_benzene_VDW_dHdl):
     dHdl = alchemlyb.concat(gmx_benzene_VDW_dHdl)
     return dHdl
+
+
+@pytest.fixture
+def ethanol_lambdas_means_variances(ethanol):
+    dHdl = ethanol.sort_index(level=ethanol.index.names[1:])
+    means = dHdl.groupby(level=dHdl.index.names[1:]).mean()
+    variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
+    lambdas, new_means, new_variances = TI_GQ().separate_mean_variance(means, variances)
+    return lambdas, new_means, new_variances
+
+
+@pytest.fixture
+def tyk2_complex_lambdas_means_variances(tyk2_complex):
+    dHdl = tyk2_complex.sort_index(level=tyk2_complex.index.names[1:])
+    means = dHdl.groupby(level=dHdl.index.names[1:]).mean()
+    variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
+    lambdas, new_means, new_variances = TI_GQ().separate_mean_variance(means, variances)
+    return lambdas, new_means, new_variances
 
 
 class TIestimatorMixin:
@@ -74,48 +92,60 @@ class TestTIGQ(TIestimatorMixin):
         return request.getfixturevalue(get_dHdl), E, dE
 
 
-def test_TI_GQ_separate_dhdl_multiple_column(ethanol):
-    dHdl = ethanol
-    estimator = TI_GQ().fit(dHdl)
-    assert isinstance(estimator.separate_dhdl()[0], list)
-    assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()[1]])
-    assert all(
-        [isinstance(variances, pd.Series) for variances in estimator.separate_dhdl()[2]]
+class Test_TI_GQ_separate_mean_and_variance_multi_column:
+    """Tests for TI_GQ separate_mean_and_variance function with multiple-column data"""    
+
+    def test_lambda_list(self, ethanol_lambdas_means_variances):
+        assert isinstance(ethanol_lambdas_means_variances[0], list)
+
+    def test_mean_list(self, ethanol_lambdas_means_variances):
+        assert all([isinstance(means, pd.Series) for means in ethanol_lambdas_means_variances[1]])
+
+    def test_variance_list(self, ethanol_lambdas_means_variances):
+        assert all(
+        [isinstance(variances, pd.Series) for variances in ethanol_lambdas_means_variances[2]]
     )
-    assert sorted([len(dhdl) for dhdl in estimator.separate_dhdl()[1]]) == [5, 7]
-    assert isinstance(estimator.get_quadrature_points(), dict)
+        
+    def test_data_length(self, ethanol_lambdas_means_variances):
+        assert sorted([len(means) for means in ethanol_lambdas_means_variances[1]]) == [5, 7]
 
 
-def test_TI_GQ_separate_dhdl_single_column(tyk2_complex):
-    dHdl = tyk2_complex
-    estimator = TI_GQ().fit(dHdl)
-    assert isinstance(estimator.separate_dhdl()[0], list)
-    assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()[1]])
-    assert all(
-        [isinstance(variances, pd.Series) for variances in estimator.separate_dhdl()[2]]
+class Test_TI_GQ_separate_mean_and_variance_single_column():
+    """Tests for TI_GQ separate_mean_and_variance function with single-column data"""
+
+    def test_lambda_list(self, tyk2_complex_lambdas_means_variances):
+        assert isinstance(tyk2_complex_lambdas_means_variances[0], list)
+
+    def test_mean_list(self, tyk2_complex_lambdas_means_variances):
+        assert all([isinstance(means, pd.Series) for means in tyk2_complex_lambdas_means_variances[1]])
+
+    def test_variance_list(self, tyk2_complex_lambdas_means_variances):
+        assert all(
+        [isinstance(variances, pd.Series) for variances in tyk2_complex_lambdas_means_variances[2]]
     )
-    assert [len(dhdl) for dhdl in estimator.separate_dhdl()[1]] == [12]
-    assert isinstance(estimator.get_quadrature_points(), dict)
+
+    def test_data_length(self, tyk2_complex_lambdas_means_variances):
+        assert [len(means) for means in tyk2_complex_lambdas_means_variances[1]] == [12]
 
 
-def test_TI_GQ_separate_dhdl_no_pertubed(tyk2_complex):
+def test_TI_GQ_separate_mean_variance_no_pertubed(tyk2_complex):
     """The test for the case where two lambda are there and one is not pertubed"""
     dHdl = tyk2_complex
     dHdl.insert(1, "bound-lambda", [1.0] * len(dHdl))
     dHdl.insert(1, "bound", [1.0] * len(dHdl))
     dHdl.set_index("bound-lambda", append=True, inplace=True)
-    estimator = TI_GQ().fit(dHdl)
-    assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()[1]])
-    assert [len(dhdl) for dhdl in estimator.separate_dhdl()[1]] == [12]
+    means = dHdl.groupby(level=dHdl.index.names[1:]).mean()
+    variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
+    _, new_means, _ = TI_GQ().separate_mean_variance(means, variances)
+    assert all([isinstance(dhdl, pd.Series) for dhdl in new_means])
+    assert [len(dhdl) for dhdl in new_means] == [12]
 
 
 def test_TI_GQ_not_quadrature_points(benzene_VDW):
     """The test for the case where the simulation lambdas are not quadrature points"""
     dHdl = benzene_VDW
-    try:
+    with pytest.raises(ValueError):
         TI_GQ().fit(dHdl)
-    except:
-        pass
 
 
 def test_TI_GQ_multi_lambda_scaling(ethanol_Coulomb):
@@ -125,10 +155,8 @@ def test_TI_GQ_multi_lambda_scaling(ethanol_Coulomb):
     dHdl.reset_index(inplace=True)
     dHdl["vdw-lambda"] = dHdl["coul-lambda"]
     dHdl.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
-    try:
+    with pytest.raises(ValueError):
         TI_GQ().fit(dHdl)
-    except:
-        pass
 
 
 class Test_Units:
@@ -143,9 +171,8 @@ class Test_Units:
         assert ti.dhdl.attrs["temperature"] == 300
         assert ti.dhdl.attrs["energy_unit"] == "kT"
 
-    def test_ti_separate_dhdl(self, tyk2_complex):
-        ti = TI_GQ().fit(tyk2_complex)
-        dhdl_list = ti.separate_dhdl()[1]
+    def test_ti_separate_mean_variance(self, tyk2_complex_lambdas_means_variances):
+        dhdl_list = tyk2_complex_lambdas_means_variances[1]
         for dhdl in dhdl_list:
             assert dhdl.attrs["temperature"] == 300
             assert dhdl.attrs["energy_unit"] == "kT"
@@ -160,9 +187,22 @@ class Test_MultipleColumnUnits:
         dhdl = ethanol
         return dhdl
 
-    def test_ti_separate_dhdl(self, dhdl):
-        ti = TI_GQ().fit(dhdl)
-        dhdl_list = ti.separate_dhdl()[1]
+    def test_ti_separate_mean_variance(self, ethanol_lambdas_means_variances):
+        dhdl_list = ethanol_lambdas_means_variances[1]
         for dhdl in dhdl_list:
             assert dhdl.attrs["temperature"] == 300
             assert dhdl.attrs["energy_unit"] == "kT"
+
+
+def test_TI_TIGQ_comparision(tyk2_complex):
+    """Test for comparing TI and TI_GQ results"""
+    
+    ti = TI().fit(tyk2_complex)
+    ti_gq = TI().fit(tyk2_complex)
+    ti_results = ti.delta_f_.iloc[0, -1]
+    ti_gq_results = ti_gq.delta_f_.iloc[0, -1]
+
+    assert ti_results == pytest.approx(ti_gq_results, rel=1e-2)
+
+
+
