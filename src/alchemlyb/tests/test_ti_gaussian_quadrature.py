@@ -47,7 +47,7 @@ def ethanol_lambdas_means_variances_index(ethanol):
     variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
     lambdas, new_means, new_variances, index_list = TI_GQ().separate_mean_variance(
         means, variances
-        )
+    )
     return lambdas, new_means, new_variances, index_list
 
 
@@ -58,7 +58,7 @@ def tyk2_complex_lambdas_means_variances_index(tyk2_complex):
     variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
     lambdas, new_means, new_variances, index_list = TI_GQ().separate_mean_variance(
         means, variances
-        )
+    )
     return lambdas, new_means, new_variances, index_list
 
 
@@ -203,7 +203,9 @@ class Test_Units:
         assert ti.dhdl.attrs["temperature"] == 300
         assert ti.dhdl.attrs["energy_unit"] == "kT"
 
-    def test_ti_separate_mean_variance(self, tyk2_complex_lambdas_means_variances_index):
+    def test_ti_separate_mean_variance(
+            self, tyk2_complex_lambdas_means_variances_index
+    ):
         dhdl_list = tyk2_complex_lambdas_means_variances_index[1]
         for dhdl in dhdl_list:
             assert dhdl.attrs["temperature"] == 300
