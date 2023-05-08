@@ -45,7 +45,9 @@ def ethanol_lambdas_means_variances_index(ethanol):
     dHdl = ethanol.sort_index(level=ethanol.index.names[1:])
     means = dHdl.groupby(level=dHdl.index.names[1:]).mean()
     variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
-    lambdas, new_means, new_variances, index_list = TI_GQ().separate_mean_variance(means, variances)
+    lambdas, new_means, new_variances, index_list = TI_GQ().separate_mean_variance(
+        means, variances
+        )
     return lambdas, new_means, new_variances, index_list
 
 
@@ -54,7 +56,9 @@ def tyk2_complex_lambdas_means_variances_index(tyk2_complex):
     dHdl = tyk2_complex.sort_index(level=tyk2_complex.index.names[1:])
     means = dHdl.groupby(level=dHdl.index.names[1:]).mean()
     variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
-    lambdas, new_means, new_variances, index_list = TI_GQ().separate_mean_variance(means, variances)
+    lambdas, new_means, new_variances, index_list = TI_GQ().separate_mean_variance(
+        means, variances
+        )
     return lambdas, new_means, new_variances, index_list
 
 
@@ -115,7 +119,9 @@ class Test_TI_GQ_separate_mean_and_variance_multi_column:
         )
 
     def test_data_length(self, ethanol_lambdas_means_variances_index):
-        assert sorted([len(means) for means in ethanol_lambdas_means_variances_index[1]]) == [
+        assert sorted(
+            [len(means) for means in ethanol_lambdas_means_variances_index[1]]
+        ) == [
             5,
             7,
         ]
@@ -147,7 +153,9 @@ class Test_TI_GQ_separate_mean_and_variance_single_column:
         )
 
     def test_data_length(self, tyk2_complex_lambdas_means_variances_index):
-        assert [len(means) for means in tyk2_complex_lambdas_means_variances_index[1]] == [12]
+        assert [
+            len(means) for means in tyk2_complex_lambdas_means_variances_index[1]
+        ] == [12]
 
     def test_index_length(self, tyk2_complex_lambdas_means_variances_index):
         assert len(tyk2_complex_lambdas_means_variances_index[3]) == 12
