@@ -204,7 +204,7 @@ class Test_Units:
         assert ti.dhdl.attrs["energy_unit"] == "kT"
 
     def test_ti_separate_mean_variance(
-            self, tyk2_complex_lambdas_means_variances_index
+        self, tyk2_complex_lambdas_means_variances_index
     ):
         dhdl_list = tyk2_complex_lambdas_means_variances_index[1]
         for dhdl in dhdl_list:
