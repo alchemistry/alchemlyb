@@ -3,6 +3,7 @@
 """
 import pandas as pd
 import numpy as np
+import copy
 import pytest
 
 import alchemlyb
@@ -177,6 +178,20 @@ def test_TI_GQ_separate_mean_variance_no_pertubed(tyk2_complex):
 def test_TI_GQ_not_quadrature_points(benzene_VDW):
     """The test for the case where the simulation lambdas are not quadrature points"""
     dHdl = benzene_VDW
+    with pytest.raises(ValueError):
+        TI_GQ().fit(dHdl)
+
+
+def test_TI_GQ_unsupported_lambda_numbers(tyk2_complex):
+    """The test for the case where there are more lambdas than supported"""
+    dHdl_1 = tyk2_complex
+    # add a second copy and change it lambda values
+    dHdl_2 = copy.deepcopy(dHdl_1)
+    dHdl_2.reset_index(inplace=True)
+    dHdl_2.lambdas += 0.01
+    dHdl_2.set_index(["time", "lambdas"], inplace=True)
+    # combine the to copys to have a dataset with more lambdas than supported
+    dHdl = alchemlyb.concat([dHdl_1, dHdl_2])
     with pytest.raises(ValueError):
         TI_GQ().fit(dHdl)
 
