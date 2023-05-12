@@ -196,31 +196,24 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         # get the lambda vaules
         lambdas = means.reset_index()[means.index.names].values
 
-        if len(means.index.names) == 1:
-            name = means.columns[0]
-            lambda_list.append(means.index)
-            dhdl_list.append(means[name])
-            variance_list.append(variances[name])
-            index_list.extend(means.index)
-
-        else:
-            for i in range(len(l_types)):
-                # obtain the lambda points between 0.0 and 1.0
-                l_masks = (0.0 < lambdas[:, i]) & (lambdas[:, i] < 1.0)
-                if not l_masks.any():
-                    continue
-                new_means = means.iloc[l_masks, i]
-                new_variances = variances.iloc[l_masks, i]
-                index_list.extend(new_means.index)
-                for l in l_types:
-                    if l != l_types[i]:
-                        new_means = new_means.reset_index(l, drop=True)
-                        new_variances = new_variances.reset_index(l, drop=True)
-                new_means.attrs = means.attrs
-                new_variances.attrs = variances.attrs
-                lambda_list.append(new_means.index)
-                dhdl_list.append(new_means)
-                variance_list.append(new_variances)
+        for i in range(len(l_types)):
+            # obtain the lambda points between 0.0 and 1.0
+            l_masks = (0.0 < lambdas[:, i]) & (lambdas[:, i] < 1.0)
+            if not l_masks.any():
+                continue
+            new_means = means.iloc[l_masks, i]
+            new_variances = variances.iloc[l_masks, i]
+            index_list.extend(new_means.index)
+            # for multi-lambda case, extract the relevant column
+            for l in l_types:
+                if l != l_types[i]:
+                    new_means = new_means.reset_index(l, drop=True)
+                    new_variances = new_variances.reset_index(l, drop=True)
+            new_means.attrs = means.attrs
+            new_variances.attrs = variances.attrs
+            lambda_list.append(new_means.index)
+            dhdl_list.append(new_means)
+            variance_list.append(new_variances)
 
         return lambda_list, dhdl_list, variance_list, index_list
         
