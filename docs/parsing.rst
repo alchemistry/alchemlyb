@@ -49,6 +49,21 @@ requires some care due to shortcomings in how pandas currently handles
 metadata (see issue `pandas-dev/pandas#28283 <https://github.com/pandas-dev/pandas/issues/28283>`_).
 
 
+Serialisation
+'''''''''''''
+
+To facilitate IO of the dataframe, the ``dHdl`` and ``u_nk`` could be serialised
+and load back via the `parquet <https://pandas.pydata.org/docs/user_guide/io.html#io-parquet>`_ ::
+
+    from alchemlyb.parsing.parquet import extract_dHdl, extract_u_nk
+    import pandas as pd
+
+    u_nk.to_parquet(path='u_nk.parquet', index=True)
+    dHdl.to_parquet(path='dHdl.parquet', index=True)
+
+    new_u_nk = extract_u_nk('u_nk.parquet', T=300)
+    new_dHdl = extract_dHdl('dHdl.parquet', T=300)
+
 
 .. _dHdl:
 
@@ -211,4 +226,5 @@ See the documentation for the package you are using for more details on parser u
     amber
     namd
     gomc
+    parquet
     
