@@ -18,7 +18,7 @@ The rules for this file:
   * 2.1.0
 
 Enhancements
-  - Add a parser to read serialised pandas dataframe (parquet) (PR#218).
+  - Add a parser to read serialised pandas dataframe (parquet) (issue #316, PR#317).
 
 
 06/04/2023 xiki-tempula
