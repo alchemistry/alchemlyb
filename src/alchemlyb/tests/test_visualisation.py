@@ -212,7 +212,7 @@ def test_plot_convergence_final_nan():
             "Backward_Error": [np.nan, np.nan],
         }
     )
-    df.attrs = estimate.delta_f_.attrs
+    df.attrs = {"temperature": 300, "energy_unit": "kT"}
     ax = plot_convergence(df)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
