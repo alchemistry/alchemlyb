@@ -34,7 +34,7 @@ def extract_u_nk(path, T):
     .. versionadded:: 2.1.0
 
     """
-    u_nk = extract_dHdl(path, T)
+    u_nk = pd.read_parquet(path)
     columns = list(u_nk.columns)
     if isinstance(columns[0], str) and columns[0][0] == "(":
         new_columns = []
