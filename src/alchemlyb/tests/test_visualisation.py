@@ -202,6 +202,22 @@ def test_plot_convergence(gmx_benzene_Coulomb_u_nk):
     plt.close(ax.figure)
 
 
+def test_plot_convergence_final_nan():
+    """Test the case where the Error of the final estimate is NaN."""
+    df = pd.DataFrame(
+        data={
+            "Forward": [1, 2],
+            "Forward_Error": [np.nan, np.nan],
+            "Backward": [1, 2],
+            "Backward_Error": [np.nan, np.nan],
+        }
+    )
+    df.attrs = estimate.delta_f_.attrs
+    ax = plot_convergence(df)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
+
 class Test_Units:
     @staticmethod
     @pytest.fixture()
