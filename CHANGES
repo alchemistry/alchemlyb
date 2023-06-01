@@ -19,6 +19,7 @@ The rules for this file:
 
 Enhancements
   - Add a parser to read serialised pandas dataframe (parquet) (issue #316, PR#317).
+  - workflow.ABFE allow parquet as input (issue #316, PR#317).
 
 
 06/04/2023 xiki-tempula

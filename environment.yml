@@ -8,4 +8,5 @@ dependencies:
 - pymbar>=4
 - scipy
 - scikit-learn
+- pyarrow
 - matplotlib
