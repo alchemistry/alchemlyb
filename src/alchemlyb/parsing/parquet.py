@@ -5,7 +5,7 @@ from . import _init_attrs
 
 @_init_attrs
 def extract_u_nk(path, T):
-    r"""Return reduced potentials `u_nk` from a pandas parquet file.
+    r"""Return reduced potentials `u_nk` (unit: kT) from a pandas parquet file.
 
     The parquet file should be serialised from the dataframe output
     from any parser with command
@@ -29,6 +29,8 @@ def extract_u_nk(path, T):
     pyarraw serializers would handle the float or string column name fine but will
     convert multi-lambda column name from `(0.0, 0.0)` to `"('0.0', '0.0')"`.
     This parser will restore the correct column name.
+    Also parquet serialisation doesn't preserve the :attr:`pandas.DataFrame.attrs`.
+    So the temperature is assigned in this function.
 
 
     .. versionadded:: 2.1.0
@@ -52,7 +54,7 @@ def extract_u_nk(path, T):
 
 @_init_attrs
 def extract_dHdl(path, T):
-    r"""Return gradients `dH/dl` from a pandas parquet file.
+    r"""Return gradients `dH/dl` (unit: kT) from a pandas parquet file.
 
     The parquet file should be serialised from the dataframe output
     from any parser with command
@@ -69,6 +71,11 @@ def extract_dHdl(path, T):
     -------
     dH/dl : DataFrame
         dH/dl as a function of time for this lambda window.
+
+    Note
+    ----
+    Parquet serialisation doesn't preserve the :attr:`pandas.DataFrame.attrs`.
+    So the temperature is assigned in this function.
 
 
     .. versionadded:: 2.1.0
