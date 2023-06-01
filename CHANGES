@@ -13,6 +13,15 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+*/*/2023 xiki-tempula
+
+  * 2.1.0
+
+Fixes
+  - Fix the case where visualisation.plot_convergence would fail when the final
+   error is NaN (issue #318, PR#317).
+
+
 06/04/2023 xiki-tempula
 
   * 2.0.1
