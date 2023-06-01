@@ -52,8 +52,16 @@ metadata (see issue `pandas-dev/pandas#28283 <https://github.com/pandas-dev/pand
 Serialisation
 '''''''''''''
 
-To facilitate IO of the dataframe, the ``dHdl`` and ``u_nk`` could be serialised
-and load back via the `parquet <https://pandas.pydata.org/docs/user_guide/io.html#io-parquet>`_ ::
+Alchemlyb data structures (``dHdl`` and ``u_nk``) can be serialized as dataframes
+and made persistent.
+We use the `parquet <https://pandas.pydata.org/docs/user_guide/io.html#io-parquet>`_
+format for serializing (writing) to a file and de-serializing (reading) from a 
+parquet file.
+
+For serialization we simply use the :meth:`pandas.DataFrame.to_parquet` method of
+a :class:`pandas.DataFrame`. For loading alchemlyb data we provide the 
+:func:`alchemlyb.parsing.parquet.extract_dHdl` and 
+:func:`alchemlyb.parsing.parquet.extract_u_nk` functions as shown in the example::
 
     from alchemlyb.parsing.parquet import extract_dHdl, extract_u_nk
     import pandas as pd
