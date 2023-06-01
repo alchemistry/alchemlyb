@@ -53,5 +53,6 @@ setup(
         "scikit-learn",
         "matplotlib",
         "loguru",
+        "pyarrow",
     ],
 )

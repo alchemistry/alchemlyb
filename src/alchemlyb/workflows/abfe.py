@@ -1,4 +1,5 @@
 import os
+import warnings
 from os.path import join
 from pathlib import Path
 
@@ -11,7 +12,7 @@ from .base import WorkflowBase
 from .. import concat
 from ..convergence import forward_backward_convergence
 from ..estimators import MBAR, BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
-from ..parsing import gmx, amber
+from ..parsing import gmx, amber, parquet
 from ..postprocessors.units import get_unit_converter
 from ..preprocessing.subsampling import decorrelate_dhdl, decorrelate_u_nk
 from ..visualisation import (
@@ -38,14 +39,14 @@ class ABFE(WorkflowBase):
         The unit used for printing and plotting results. {'kcal/mol', 'kJ/mol',
         'kT'}. Default: 'kT'.
     software : str
-        The software used for generating input (case-insensitive). {'GROMACS', 'AMBER'}.
+        The software used for generating input (case-insensitive). {'GROMACS', 'AMBER', 'PARQUET'}.
         This option chooses the appropriate parser for the input file.
     dir : str
         Directory in which data files are stored. Default: os.path.curdir.
-        The input files are searched using the pattern of
-        ``dir + '/**/' + prefix + '*' + suffix``.
     prefix : str
-        Prefix for datafile sets. Default: 'dhdl'.
+        Prefix for datafile sets. This argument accepts regular expressions and
+        the input files are searched using
+        ``Path(dir).glob("**/" + prefix + "*" + suffix)``. Default: 'dhdl'.
     suffix : str
         Suffix for datafile sets. Default: 'xvg'.
     outdirectory : str
@@ -61,6 +62,11 @@ class ABFE(WorkflowBase):
 
 
     .. versionadded:: 1.0.0
+    .. versionchanged:: 2.0.1
+        The `dir` argument expects a real directory without wildcards and wildcards will no longer
+        work as expected. Use `prefix` to specify wildcard-based patterns to search under `dir`.
+    .. versionchanged:: 2.1.0
+        The serialised dataframe could be read via software='PARQUET'.
     """
 
     def __init__(
@@ -82,6 +88,12 @@ class ABFE(WorkflowBase):
             f"{software}"
         )
         reg_exp = "**/" + prefix + "*" + suffix
+        if "*" in dir:
+            warnings.warn(
+                f"A real directory is expected in `dir`={dir}, wildcard expressions should be supplied to `prefix`."
+            )
+        if not Path(dir).is_dir():
+            raise ValueError(f"The input directory `dir`={dir} is not a directory.")
         self.file_list = list(map(str, Path(dir).glob(reg_exp)))
 
         if len(self.file_list) == 0:
@@ -97,6 +109,9 @@ class ABFE(WorkflowBase):
         elif software == "AMBER":
             self._extract_u_nk = amber.extract_u_nk
             self._extract_dHdl = amber.extract_dHdl
+        elif software == "PARQUET":
+            self._extract_u_nk = parquet.extract_u_nk
+            self._extract_dHdl = parquet.extract_dHdl
         else:
             raise NotImplementedError(f"{software} parser not found.")
 

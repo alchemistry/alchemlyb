@@ -49,6 +49,29 @@ requires some care due to shortcomings in how pandas currently handles
 metadata (see issue `pandas-dev/pandas#28283 <https://github.com/pandas-dev/pandas/issues/28283>`_).
 
 
+Serialisation
+'''''''''''''
+
+Alchemlyb data structures (``dHdl`` and ``u_nk``) can be serialized as dataframes
+and made persistent.
+We use the `parquet <https://pandas.pydata.org/docs/user_guide/io.html#io-parquet>`_
+format for serializing (writing) to a file and de-serializing (reading) from a 
+parquet file.
+
+For serialization we simply use the :meth:`pandas.DataFrame.to_parquet` method of
+a :class:`pandas.DataFrame`. For loading alchemlyb data we provide the 
+:func:`alchemlyb.parsing.parquet.extract_dHdl` and 
+:func:`alchemlyb.parsing.parquet.extract_u_nk` functions as shown in the example::
+
+    from alchemlyb.parsing.parquet import extract_dHdl, extract_u_nk
+    import pandas as pd
+
+    u_nk.to_parquet(path='u_nk.parquet', index=True)
+    dHdl.to_parquet(path='dHdl.parquet', index=True)
+
+    new_u_nk = extract_u_nk('u_nk.parquet', T=300)
+    new_dHdl = extract_dHdl('dHdl.parquet', T=300)
+
 
 .. _dHdl:
 
@@ -211,4 +234,5 @@ See the documentation for the package you are using for more details on parser u
     amber
     namd
     gomc
+    parquet
     

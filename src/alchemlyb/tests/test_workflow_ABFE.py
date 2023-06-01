@@ -5,6 +5,7 @@ import pytest
 from alchemtest.amber import load_bace_example
 from alchemtest.gmx import load_ABFE
 
+import alchemlyb.parsing.amber
 from alchemlyb.workflows.abfe import ABFE
 
 
@@ -42,6 +43,25 @@ class TestInit:
                 suffix="xvg",
                 T=310,
             )
+
+    def test_notdir(self):
+        with pytest.raises(ValueError, match="The input directory `dir`="):
+            ABFE(
+                dir="abfasfsd",
+                prefix="dhdl",
+                suffix="xvg",
+                T=310,
+            )
+
+    def test_wildcard_in_dir(self):
+        with pytest.raises(ValueError):
+            with pytest.warns(match="A real directory is expected in `dir`="):
+                ABFE(
+                    dir="/*/",
+                    prefix="dhdl",
+                    suffix="xvg",
+                    T=310,
+                )
 
 
 class TestRun:
@@ -378,3 +398,33 @@ class Test_automatic_amber:
         """Test if if the summary is right."""
         summary = workflow.generate_result()
         assert np.isclose(summary["TI"]["Stages"]["TOTAL"], 1.40405980473, 0.1)
+
+
+class Test_automatic_parquet:
+    """Test the full automatic workflow for load_ABFE from parquet data."""
+
+    @staticmethod
+    @pytest.fixture(scope="class")
+    def workflow(tmp_path_factory):
+        outdir = tmp_path_factory.mktemp("out")
+        for i, u_nk in enumerate(load_bace_example()["data"]["complex"]["vdw"]):
+            df = alchemlyb.parsing.amber.extract_u_nk(u_nk, T=298)
+            df.to_parquet(path=f"{outdir}/u_nk_{i}.parquet", index=True)
+
+        workflow = ABFE(
+            units="kcal/mol",
+            software="PARQUET",
+            dir=str(outdir),
+            prefix="u_nk_",
+            suffix="parquet",
+            T=298.0,
+            outdirectory=str(outdir),
+        )
+        workflow.read()
+        workflow.estimate(estimators="BAR")
+        return workflow
+
+    def test_summary(self, workflow):
+        """Test if if the summary is right."""
+        summary = workflow.generate_result()
+        assert np.isclose(summary["BAR"]["Stages"]["TOTAL"], 1.40405980473, 0.1)
