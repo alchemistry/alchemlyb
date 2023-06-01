@@ -16,7 +16,7 @@ def extract_u_nk(path, T):
     path : str
         Path to parquet file to extract dataframe from.
     T : float
-        Temperature in Kelvin the simulations sampled.
+        Temperature in Kelvin of the simulations.
 
     Returns
     -------
