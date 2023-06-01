@@ -9,7 +9,7 @@ def extract_u_nk(path, T):
 
     The parquet file should be serialised from the dataframe output
     from any parser with command
-    (`u_nk_df.to_parquet(path=path, index=True)`).
+    (``u_nk_df.to_parquet(path=path, index=True)``).
 
     Parameters
     ----------
