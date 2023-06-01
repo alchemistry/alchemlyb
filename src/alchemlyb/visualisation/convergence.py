@@ -93,13 +93,14 @@ def plot_convergence(dataframe, units=None, final_error=None, ax=None):
     if final_error is None:
         final_error = backward_error[-1]
 
-    line0 = ax.fill_between(
-        [0, 1],
-        backward[-1] - final_error,
-        backward[-1] + final_error,
-        color="#D2B9D3",
-        zorder=1,
-    )
+    if np.isfinite(backward[-1]) and np.isfinite(final_error):
+        line0 = ax.fill_between(
+            [0, 1],
+            backward[-1] - final_error,
+            backward[-1] + final_error,
+            color="#D2B9D3",
+            zorder=1,
+        )
     line1 = ax.errorbar(
         f_ts,
         forward,
