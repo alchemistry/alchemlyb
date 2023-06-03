@@ -134,3 +134,19 @@ class TestEstimatorMixOut:
         _estimator = estimator()
         with pytest.raises(AttributeError):
             _estimator.states_ = 1
+
+
+def test_bootstrap(gmx_benzene_Coulomb_u_nk):
+    u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
+    mbar = MBAR(n_bootstraps=50)
+    mbar.fit(u_nk)
+    mbar_bootstrap_mean = mbar.delta_f_.loc[0.00, 1.00]
+    mbar_bootstrap_err = mbar.d_delta_f_.loc[0.00, 1.00]
+
+    mbar = MBAR()
+    mbar.fit(u_nk)
+    mbar_mean = mbar.delta_f_.loc[0.00, 1.00]
+    mbar_err = mbar.d_delta_f_.loc[0.00, 1.00]
+
+    assert mbar_bootstrap_mean == mbar_mean
+    assert mbar_bootstrap_err != mbar_err
