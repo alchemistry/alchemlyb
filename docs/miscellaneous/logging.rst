@@ -33,5 +33,5 @@ Alternatively, one could save to a file simply with ::
     from loguru import logger
     logger.add("file_{time}.log")
 
-See for `configured to log to a file <https://loguru.readthedocs.io/en/stable/overview.html#easier-file-logging-with-rotation-retention-compression>`_
+See `configure to log to a file <https://loguru.readthedocs.io/en/stable/overview.html#easier-file-logging-with-rotation-retention-compression>`_
 for more explanation.
