@@ -28,7 +28,6 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 
     verbose : bool, optional
         Set to ``True`` if verbose debug output from :mod:`pymbar` is desired.
-        Output from alchemlyb is logged via :mod:`loguru`.
 
     Attributes
     ----------
