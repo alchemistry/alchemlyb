@@ -408,6 +408,9 @@ class ABFE(WorkflowBase):
             'MBAR']. Note that the estimators are in their original form where
             no unit conversion has been attempted.
 
+        .. versionchanged:: 2.1.0
+        `n_bootstraps=50` is used for MBAR estimator.
+
         """
         # Make estimators into a tuple
         if isinstance(estimators, str):
@@ -441,7 +444,12 @@ class ABFE(WorkflowBase):
         for estimator in estimators:
             if estimator == "MBAR":
                 self.logger.info("Run MBAR estimator.")
-                self.estimator[estimator] = MBAR(**kwargs).fit(u_nk)
+                self.logger.info(
+                    "By default, n_bootstraps=50 is used to estimate the "
+                    "MBAR error. Supply n_bootstraps=0 to use analytic error."
+                )
+                estimator_kwargs = {"n_bootstraps": 50, **kwargs}
+                self.estimator[estimator] = MBAR(**estimator_kwargs).fit(u_nk)
             elif estimator == "BAR":
                 self.logger.info("Run BAR estimator.")
                 self.estimator[estimator] = BAR(**kwargs).fit(u_nk)
