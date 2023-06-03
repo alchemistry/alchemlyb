@@ -20,7 +20,7 @@ The rules for this file:
 Enhancements
   - Add a parser to read serialised pandas dataframe (parquet) (issue #316, PR#317).
   - workflow.ABFE allow parquet as input (issue #316, PR#317).
-  - Allow MBAR estimator to use bootstrap to compute error (issue #320, PR#317).
+  - Allow MBAR estimator to use bootstrap to compute error (issue #320, PR#322).
 
 Fixes
   - Fix the case where visualisation.plot_convergence would fail when the final
