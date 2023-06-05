@@ -115,7 +115,11 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
 
         # apply gaussian quadrature multiplication at each lambda state 
         deltas = weights * mean_values
+        deltas = np.insert(deltas, 0, [0.0], axis=0)
+        deltas = np.append(deltas, [0.0], axis=0)
         d_deltas_squared = np.square(weights) * variance_values
+        d_deltas_squared = np.insert(d_deltas_squared, 0, [0.0], axis=0)
+        d_deltas_squared = np.append(d_deltas_squared, [0.0], axis=0)
         # build matrix of deltas between each state
         adelta = np.zeros((len(deltas), len(deltas)))
         ad_delta = np.zeros_like(adelta)
@@ -132,6 +136,8 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             adelta += np.diagflat(np.array(out), k=j)
             ad_delta += np.diagflat(np.array(dout), k=j)
 
+        adelta = (adelta - adelta.T)
+        ad_delta = (ad_delta + ad_delta.T) - 2 * np.diagflat(d_deltas_squared)
         # yield standard delta_f_ cumulative free energies from one state to another
         self._delta_f_ = pd.DataFrame(
             adelta, columns=index_list, index=index_list
@@ -214,6 +220,12 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             lambda_list.append(new_means.index)
             dhdl_list.append(new_means)
             variance_list.append(new_variances)
+        
+        # add two end stats at all lambda zeros and ones
+        if len(l_types) == 1:
+            index_list = [0.0] + index_list + [1.0]
+        else:
+            index_list = [tuple([0.0]*len(l_types))] + index_list + [tuple([1.0]*len(l_types))]
 
         return lambda_list, dhdl_list, variance_list, index_list
         
