@@ -13,20 +13,14 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-*/*/* hl2500
 
-  * Unreleased
-
-Enhancements
-  - Add a TI estimator using gaussian quadrature to calculate the free energy.
-    (issue #302, PR #304)
-
-
-*/*/2023 xiki-tempula
+*/*/2023 xiki-tempula, hl2500
 
   * 2.1.0
 
 Enhancements
+  - Add a TI estimator using gaussian quadrature to calculate the free energy.
+    (issue #302, PR #304)
   - Add a parser to read serialised pandas dataframe (parquet) (issue #316, PR#317).
   - workflow.ABFE allow parquet as input (issue #316, PR#317).
 
