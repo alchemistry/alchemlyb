@@ -86,9 +86,9 @@ class TestTIGQ(TIestimatorMixin):
 
     @pytest.fixture(
         params=[
-            ("ethanol_Coulomb", 10.597, 0.04498),
-            ("ethanol_VDW", -3.340, 0.07548),
-            ("ethanol", 7.257, 0.08786),
+            ("ethanol_Coulomb", 10.565, 0.03002),
+            ("ethanol_VDW", -3.386, 0.05707),
+            ("ethanol", 7.179, 0.06449),
             ("tyk2_complex", -50.504, 0.09930),
         ],
     )
@@ -123,12 +123,12 @@ class Test_TI_GQ_separate_mean_and_variance_multi_column:
         assert sorted(
             [len(means) for means in ethanol_lambdas_means_variances_index[1]]
         ) == [
-            5,
-            7,
+            12,
+            12,
         ]
 
     def test_index_length(self, ethanol_lambdas_means_variances_index):
-        assert len(ethanol_lambdas_means_variances_index[3]) == 12
+        assert len(ethanol_lambdas_means_variances_index[3]) == 26
 
 
 class Test_TI_GQ_separate_mean_and_variance_single_column:
@@ -159,7 +159,7 @@ class Test_TI_GQ_separate_mean_and_variance_single_column:
         ] == [12]
 
     def test_index_length(self, tyk2_complex_lambdas_means_variances_index):
-        assert len(tyk2_complex_lambdas_means_variances_index[3]) == 12
+        assert len(tyk2_complex_lambdas_means_variances_index[3]) == 14
 
 
 def test_TI_GQ_separate_mean_variance_no_pertubed(tyk2_complex):
@@ -243,11 +243,11 @@ class Test_MultipleColumnUnits:
             assert dhdl.attrs["energy_unit"] == "kT"
 
 
-def test_TI_TIGQ_comparision(tyk2_complex):
+def test_TI_TIGQ_comparision(ethanol):
     """Test for comparing TI and TI_GQ results"""
 
-    ti = TI().fit(tyk2_complex)
-    ti_gq = TI_GQ().fit(tyk2_complex)
+    ti = TI().fit(ethanol)
+    ti_gq = TI_GQ().fit(ethanol)
     ti_energy_results = ti.delta_f_.iloc[0, -1]
     ti_gq_energy_results = ti_gq.delta_f_.iloc[0, -1]
     ti_variance_results = ti.d_delta_f_.iloc[0, -1]
