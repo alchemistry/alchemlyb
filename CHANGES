@@ -22,6 +22,19 @@ Enhancements
     (issue #302, PR #304)
 
 
+*/*/2023 xiki-tempula
+
+  * 2.1.0
+
+Enhancements
+  - Add a parser to read serialised pandas dataframe (parquet) (issue #316, PR#317).
+  - workflow.ABFE allow parquet as input (issue #316, PR#317).
+
+Fixes
+  - Fix the case where visualisation.plot_convergence would fail when the final
+   error is NaN (issue #318, PR#317).
+
+
 06/04/2023 xiki-tempula
 
   * 2.0.1
