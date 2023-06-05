@@ -70,6 +70,9 @@ In addition to the free energy differences, we also have access to the errors on
 If the simulations are performed at certain gaussian quadrature points, :class:`~alchemlyb.estimators.TI_GQ` can be used to estimate the free energy.
 The usage of :class:`~alchemlyb.estimators.TI_GQ` is similar to :class:`~alchemlyb.estimators.TI`, but instead of the free energy differences between 
 each :math:`\lambda` window, the values in the ``delta_f_`` and ``d_delta_f_`` tables are cumulative addition of estimation from one :math:`\lambda` window to another.
+To be consistent with :class:`~alchemlyb.estimators.TI` and other estimators, the diagonal values are set to zeros and two end states at :math:`\lambda`
+0 and 1 are added, although the simulation may not be performed at :math:`\lambda` 0 and 1. However, they are not considered to estimate the final results.
+For example, the values at :math:`\lambda` 0 is 0 and :math:`\lambda` 1 is the same as the previous gaussian quadrature point.
 
 List of TI-based estimators
 ---------------------------
