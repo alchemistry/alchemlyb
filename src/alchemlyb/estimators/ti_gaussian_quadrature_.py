@@ -221,7 +221,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             dhdl_list.append(new_means)
             variance_list.append(new_variances)
         
-        # add two end stats at all lambda zeros and ones
+        # add two end states at all lambda zeros and ones
         if len(l_types) == 1:
             index_list = [0.0] + index_list + [1.0]
         else:
