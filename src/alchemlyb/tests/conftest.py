@@ -3,6 +3,7 @@ fixture that are made directly from parsing the files. Any additional operations
 concat should be done at local level."""
 
 import pytest
+from _pytest.logging import LogCaptureFixture
 from alchemtest.amber import load_bace_example, load_simplesolvated, load_tyk2_example
 from alchemtest.gmx import (
     load_benzene,
@@ -22,6 +23,7 @@ from alchemtest.namd import (
     load_restarted,
     load_restarted_reversed,
 )
+from loguru import logger
 
 from alchemlyb.parsing import gmx, amber, gomc, namd
 
@@ -295,3 +297,10 @@ def namd_idws_restarted_reversed():
     u_nk = namd.extract_u_nk(dataset["data"]["both"], T=300)
 
     return u_nk
+
+
+@pytest.fixture
+def caplog(caplog: LogCaptureFixture):
+    handler_id = logger.add(caplog.handler, format="{message}")
+    yield caplog
+    logger.remove(handler_id)

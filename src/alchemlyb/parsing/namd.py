@@ -1,18 +1,16 @@
 """Parsers for extracting alchemical data from `NAMD <http://www.ks.uiuc.edu/Research/namd/>`_ output files.
 
 """
-import logging
 from os.path import basename
 from re import split
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 
 from . import _init_attrs
 from .util import anyopen
 from ..postprocessors.units import R_kJmol, kJ2kcal
-
-logger = logging.getLogger("alchemlyb.parsers.NAMD")
 
 k_b = R_kJmol * kJ2kcal
 

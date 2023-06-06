@@ -18,15 +18,23 @@ The rules for this file:
 
   * 2.1.0
 
+Changes
+  - Use loguru instead of logging for log (issue #301, PR #303).
+
 Enhancements
   - Add a TI estimator using gaussian quadrature to calculate the free energy.
     (issue #302, PR #304)
   - Add a parser to read serialised pandas dataframe (parquet) (issue #316, PR#317).
   - workflow.ABFE allow parquet as input (issue #316, PR#317).
+  - Allow MBAR estimator to use bootstrap to compute error (issue #320, PR#322).
 
 Fixes
   - Fix the case where visualisation.plot_convergence would fail when the final
-   error is NaN (issue #318, PR#317).
+    error is NaN (issue #318, PR#319).
+
+DeprecationWarning
+  - The default MBAR error estimator in workflow.ABFE.estimate will change from
+    analytic to bootstrap=50 in 2.2.0 (issue #320, PR#322).
 
 
 06/04/2023 xiki-tempula

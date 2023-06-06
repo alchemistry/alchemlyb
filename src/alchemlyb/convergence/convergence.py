@@ -1,10 +1,10 @@
 """Functions for assessing convergence of free energy estimates and raw data."""
 
-import logging
 from warnings import warn
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 
 from .. import concat
 from ..estimators import BAR, TI, MBAR, FEP_ESTIMATORS, TI_ESTIMATORS
@@ -65,7 +65,6 @@ def forward_backward_convergence(df_list, estimator="MBAR", num=10, **kwargs):
        Use pymbar.MBAR instead of the AutoMBAR option.
 
     """
-    logger = logging.getLogger("alchemlyb.convergence." "forward_backward_convergence")
     logger.info("Start convergence analysis.")
     logger.info("Check data availability.")
     if estimator.upper() != estimator:
@@ -335,7 +334,6 @@ def A_c(series_list, precision=0.01, tol=2):
        https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8397498/#FD18
 
     """
-    logger = logging.getLogger("alchemlyb.convergence.A_c")
     n_R_c = len(series_list)
     R_c_list = [fwdrev_cumavg_Rc(series, precision, tol)[0] for series in series_list]
     logger.info(f"R_c list: {R_c_list}")
