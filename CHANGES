@@ -27,7 +27,11 @@ Enhancements
 
 Fixes
   - Fix the case where visualisation.plot_convergence would fail when the final
-   error is NaN (issue #318, PR#319).
+    error is NaN (issue #318, PR#319).
+
+DeprecationWarning
+  - The default MBAR error estimator will change from analytic to bootstrap
+    (issue #320, PR#322).
 
 
 06/04/2023 xiki-tempula

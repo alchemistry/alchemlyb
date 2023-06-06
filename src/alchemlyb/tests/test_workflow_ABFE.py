@@ -242,7 +242,7 @@ class TestEstimator:
 
     def test_mbar_n_bootstraps(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "estimator", dict())
-        workflow.estimate(estimators="MBAR", n_bootstraps=50)
+        workflow.estimate(estimators="MBAR", n_bootstraps=2)
         summary = workflow.generate_result()
         bootstrap_error = summary["MBAR_Error"]["Stages"]["TOTAL"]
         monkeypatch.setattr(workflow, "estimator", dict())

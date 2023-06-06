@@ -439,6 +439,10 @@ class ABFE(WorkflowBase):
         for estimator in estimators:
             if estimator == "MBAR":
                 logger.info("Run MBAR estimator.")
+                warnings.warn(
+                    "From 2.2.0, n_bootstraps=50 will be the default for estimating MBAR error.",
+                    DeprecationWarning,
+                )
                 self.estimator[estimator] = MBAR(**kwargs).fit(u_nk)
             elif estimator == "BAR":
                 logger.info("Run BAR estimator.")
