@@ -190,8 +190,8 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             variance of the potential energy gradient with respect to lambda for each
             configuration that lambda k is perturbed.
         index_list : list
-            A list of :class:`tuple` such that each :class:`tuple` is the index of the final
-            `delta_f_` and `d_delta_f_`
+            A list of :class:`float` or :class:`tuple` such that each :class:`float` 
+            or :class:`tuple` is the index of the final `delta_f_` and `d_delta_f_`
         """
         lambda_list = []
         dhdl_list = []
