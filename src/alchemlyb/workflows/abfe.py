@@ -404,7 +404,7 @@ class ABFE(WorkflowBase):
             no unit conversion has been attempted.
 
         .. versionchanged:: 2.1.0
-        DeprecationWarning for using analytic error for MBAR estimator.
+            DeprecationWarning for using analytic error for MBAR estimator.
 
         """
         # Make estimators into a tuple
