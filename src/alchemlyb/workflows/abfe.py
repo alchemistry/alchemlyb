@@ -403,6 +403,7 @@ class ABFE(WorkflowBase):
             'MBAR']. Note that the estimators are in their original form where
             no unit conversion has been attempted.
 
+
         .. versionchanged:: 2.1.0
             DeprecationWarning for using analytic error for MBAR estimator.
 
