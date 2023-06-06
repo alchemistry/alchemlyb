@@ -30,8 +30,8 @@ Fixes
     error is NaN (issue #318, PR#319).
 
 DeprecationWarning
-  - The default MBAR error estimator will change from analytic to bootstrap
-    (issue #320, PR#322).
+  - The default MBAR error estimator in workflow.ABFE.estimate will change from
+  analytic to bootstrap (issue #320, PR#322).
 
 
 06/04/2023 xiki-tempula
