@@ -11,17 +11,15 @@ Some of the file parsing parts are adapted from
 
 """
 
-import logging
 import re
 
 import numpy as np
 import pandas as pd
+from loguru import logger
 
 from . import _init_attrs_dict
 from .util import anyopen
 from ..postprocessors.units import R_kJmol, kJ2kcal
-
-logger = logging.getLogger("alchemlyb.parsers.Amber")
 
 k_b = R_kJmol * kJ2kcal
 
@@ -345,7 +343,7 @@ def extract(outfile, T):
                 if None in mbar:
                     msg = "Something strange parsing the following MBAR section."
                     msg += "\nMaybe the mbar_lambda values are incorrect?"
-                    logger.error("%s\n%s", msg, mbar)
+                    logger.error("{}\n{}", msg, mbar)
                     raise ValueError(msg)
 
                 reference_energy = mbar[file_datum.mbar_lambda_idx]

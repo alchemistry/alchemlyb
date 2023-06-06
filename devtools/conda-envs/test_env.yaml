@@ -9,11 +9,20 @@ dependencies:
 - scipy
 - scikit-learn
 - matplotlib
+- loguru
 - pyarrow
 
-  # Testing
+# Testing
 - pytest
 - pytest-cov
 - pytest-xdist
 - pytest-black
 - codecov
+
+# Doc
+- sphinx
+- sphinx_rtd_theme
+
+- pip:
+  - alchemtest @ https://github.com/alchemistry/alchemtest/archive/master.zip
+

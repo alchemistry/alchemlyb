@@ -53,10 +53,6 @@ jobs:
         extra-specs: |
             python=${{ matrix.python-version }}
 
-    - name: Install alchemtest
-      run: |
-        python -m pip install https://github.com/alchemistry/alchemtest/archive/master.zip
-
     - name: Install package (with no dependencies)
       run: |
         python -m pip install . --no-deps

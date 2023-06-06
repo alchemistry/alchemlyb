@@ -1,5 +1,3 @@
-import logging
-
 import pandas as pd
 import pymbar
 from sklearn.base import BaseEstimator
@@ -25,12 +23,11 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 
     method : str, optional, default="robust"
         The optimization routine to use.  This can be any of the methods
-        available via :func:`scipy.optimize.minimize` or 
+        available via :func:`scipy.optimize.minimize` or
         :func:`scipy.optimize.root`.
 
     verbose : bool, optional
         Set to ``True`` if verbose debug output from :mod:`pymbar` is desired.
-        Output from alchemlyb is logged via :mod:`logging`.
 
     Attributes
     ----------
@@ -77,7 +74,6 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         self.initial_f_k = initial_f_k
         self.method = method
         self.verbose = verbose
-        self.logger = logging.getLogger("alchemlyb.estimators.MBAR")
 
         # handle for pymbar.MBAR object
         self._mbar = None
