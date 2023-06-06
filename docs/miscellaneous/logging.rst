@@ -22,7 +22,7 @@ Then add other custom sink ::
 
 The loguru logger is compatible with the :mod:`logging` module of the Python
 standard library and can easily be
-`configured to log to a *logging* handler <https://loguru.readthedocs.io/en/stable/overview.html#entirely-compatible-with-standard-logging>`_.
+`configured to log to a logging handler <https://loguru.readthedocs.io/en/stable/overview.html#entirely-compatible-with-standard-logging>`_.
 
 
 Save to a file
