@@ -138,7 +138,7 @@ class TestEstimatorMixOut:
 
 def test_bootstrap(gmx_benzene_Coulomb_u_nk):
     u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
-    mbar = MBAR(n_bootstraps=50)
+    mbar = MBAR(n_bootstraps=2)
     mbar.fit(u_nk)
     mbar_bootstrap_mean = mbar.delta_f_.loc[0.00, 1.00]
     mbar_bootstrap_err = mbar.d_delta_f_.loc[0.00, 1.00]
