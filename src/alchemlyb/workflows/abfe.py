@@ -403,6 +403,10 @@ class ABFE(WorkflowBase):
             'MBAR']. Note that the estimators are in their original form where
             no unit conversion has been attempted.
 
+
+        .. versionchanged:: 2.1.0
+            DeprecationWarning for using analytic error for MBAR estimator.
+
         """
         # Make estimators into a tuple
         if isinstance(estimators, str):
@@ -436,6 +440,10 @@ class ABFE(WorkflowBase):
         for estimator in estimators:
             if estimator == "MBAR":
                 logger.info("Run MBAR estimator.")
+                warnings.warn(
+                    "From 2.2.0, n_bootstraps=50 will be the default for estimating MBAR error.",
+                    DeprecationWarning,
+                )
                 self.estimator[estimator] = MBAR(**kwargs).fit(u_nk)
             elif estimator == "BAR":
                 logger.info("Run BAR estimator.")

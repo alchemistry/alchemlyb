@@ -240,6 +240,17 @@ class TestEstimator:
         summary = workflow.generate_result()
         assert np.isclose(summary["MBAR"]["Stages"]["TOTAL"], 21.645742066696315, 0.1)
 
+    def test_mbar_n_bootstraps(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, "estimator", dict())
+        workflow.estimate(estimators="MBAR", n_bootstraps=2)
+        summary = workflow.generate_result()
+        bootstrap_error = summary["MBAR_Error"]["Stages"]["TOTAL"]
+        monkeypatch.setattr(workflow, "estimator", dict())
+        workflow.estimate(estimators="MBAR", n_bootstraps=0)
+        summary = workflow.generate_result()
+        non_bootstrap_error = summary["MBAR_Error"]["Stages"]["TOTAL"]
+        assert bootstrap_error != non_bootstrap_error
+
     def test_single_estimator_ti(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "estimator", dict())
         monkeypatch.setattr(workflow, "summary", None)

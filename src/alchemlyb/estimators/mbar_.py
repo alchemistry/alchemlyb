@@ -26,6 +26,10 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         available via :func:`scipy.optimize.minimize` or
         :func:`scipy.optimize.root`.
 
+    n_bootstraps : int, optional
+        Whether to use bootstrap to estimate uncertainty. `0` means use analytic error
+        estimation. 50~200 is a reasonable range to do bootstrap.
+
     verbose : bool, optional
         Set to ``True`` if verbose debug output from :mod:`pymbar` is desired.
 
@@ -59,6 +63,8 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
        `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
     .. versionchanged:: 2.0.0
         default value for `method` was changed from "hybr" to "robust"
+    .. versionchanged:: 2.1.0
+        `n_bootstraps` option added.
     """
 
     def __init__(
@@ -67,6 +73,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         relative_tolerance=1.0e-7,
         initial_f_k=None,
         method="robust",
+        n_bootstraps=0,
         verbose=False,
     ):
         self.maximum_iterations = maximum_iterations
@@ -74,6 +81,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         self.initial_f_k = initial_f_k
         self.method = method
         self.verbose = verbose
+        self.n_bootstraps = n_bootstraps
 
         # handle for pymbar.MBAR object
         self._mbar = None
@@ -108,8 +116,15 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
             verbose=self.verbose,
             initial_f_k=self.initial_f_k,
             solver_protocol=self.method,
+            n_bootstraps=self.n_bootstraps,
         )
-        out = self._mbar.compute_free_energy_differences(return_theta=True)
+        if self.n_bootstraps == 0:
+            uncertainty_method = None
+        else:
+            uncertainty_method = "bootstrap"
+        out = self._mbar.compute_free_energy_differences(
+            return_theta=True, uncertainty_method=uncertainty_method
+        )
         self._delta_f_ = pd.DataFrame(
             out["Delta_f"], columns=self._states_, index=self._states_
         )
