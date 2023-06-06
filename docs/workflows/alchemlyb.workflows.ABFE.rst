@@ -18,13 +18,10 @@ are to
    complete workflow.
    
 For a GROMACS ABFE simulation, executing the workflow would look similar
-to the following code (The log is configured by logger). ::
+to the following code (:ref:`See how to configure the logger <logging_section>`). ::
 
     >>> from alchemtest.gmx import load_ABFE
     >>> from alchemlyb.workflows import ABFE
-    >>> # Enable the logger
-    >>> import logging
-    >>> logging.basicConfig(filename='ABFE.log', level=logging.INFO)
     >>> # Obtain the path of the data
     >>> import os
     >>> dir = os.path.dirname(load_ABFE()['data']['complex'][0])

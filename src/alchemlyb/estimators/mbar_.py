@@ -1,5 +1,3 @@
-import logging
-
 import pandas as pd
 import pymbar
 from sklearn.base import BaseEstimator
@@ -34,7 +32,6 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 
     verbose : bool, optional
         Set to ``True`` if verbose debug output from :mod:`pymbar` is desired.
-        Output from alchemlyb is logged via :mod:`logging`.
 
     Attributes
     ----------
@@ -85,7 +82,6 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         self.method = method
         self.verbose = verbose
         self.n_bootstraps = n_bootstraps
-        self.logger = logging.getLogger("alchemlyb.estimators.MBAR")
 
         # handle for pymbar.MBAR object
         self._mbar = None
