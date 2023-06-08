@@ -130,7 +130,7 @@ def plot_convergence(dataframe, units=None, final_error=None, ax=None):
 
     xticks_spacing = len(r_ts) // 10 or 1
     xticks = r_ts[::xticks_spacing]
-    plt.xticks(xticks, ["%.2f" % i for i in xticks], fontsize=10)
+    plt.xticks(xticks, [f"{i:.2f}" for i in xticks], fontsize=10)
     plt.yticks(fontsize=10)
 
     ax.legend(

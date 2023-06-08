@@ -71,7 +71,7 @@ class SectionParser:
         try:
             self.fileh = anyopen(self.filename, "r")
         except:
-            logger.exception("Cannot open file %s", filename)
+            logger.exception("Cannot open file {}", filename)
             raise
         self.lineno = 0
 
@@ -198,18 +198,18 @@ def file_validation(outfile):
         line = secp.skip_lines(5)
 
         if not line:
-            logger.error("The file %s does not contain any data, it's empty.", outfile)
+            logger.error("The file {} does not contain any data, it's empty.", outfile)
             raise ValueError(f"file {outfile} does not contain any data.")
 
         if not secp.skip_after("^   2.  CONTROL  DATA  FOR  THE  RUN"):
-            logger.error('No "CONTROL DATA" section found in file %s.', outfile)
+            logger.error('No "CONTROL DATA" section found in file {}.', outfile)
             raise ValueError(f'no "CONTROL DATA" section found in file {outfile}')
 
         (ntpr,) = secp.extract_section("^Nature and format of output:", "^$", ["ntpr"])
         nstlim, dt = secp.extract_section("Molecular dynamics:", "^$", ["nstlim", "dt"])
         (T,) = secp.extract_section("temperature regulation:", "^$", ["temp0"])
         if not T:
-            logger.error('No valid "temp0" record found in file %s.', outfile)
+            logger.error('No valid "temp0" record found in file {}.', outfile)
             raise ValueError(f'no valid "temp0" record found in file {outfile}')
 
         (clambda,) = secp.extract_section(
@@ -217,7 +217,7 @@ def file_validation(outfile):
         )
         if clambda is None:
             logger.error(
-                'No free energy section found in file %s, "clambda" was None.', outfile
+                'No free energy section found in file {}, "clambda" was None.', outfile
             )
             raise ValueError(f"no free energy section found in file {outfile}")
 
@@ -236,8 +236,8 @@ def file_validation(outfile):
 
             if clambda_str not in mbar_lambdas:
                 logger.warning(
-                    "WARNING: lamba %s not contained in set of "
-                    "MBAR lambas: %s\nNot using MBAR.",
+                    "WARNING: lamba {} not contained in set of "
+                    "MBAR lambas: {}\nNot using MBAR.",
                     clambda_str,
                     ", ".join(mbar_lambdas),
                 )
@@ -246,8 +246,8 @@ def file_validation(outfile):
                 mbar_nlambda = len(mbar_lambdas)
                 if mbar_nlambda != mbar_states:
                     logger.error(
-                        "the number of lambda windows read (%s)"
-                        "is different from what expected (%d)",
+                        "the number of lambda windows read ({})"
+                        "is different from what expected ({})",
                         ",".join(mbar_lambdas),
                         mbar_states,
                     )
@@ -262,16 +262,16 @@ def file_validation(outfile):
                     file_datum.mbar_energies.append([])
 
         if not secp.skip_after("^   3.  ATOMIC "):
-            logger.error('No "ATOMIC" section found in the file %s.', outfile)
+            logger.error('No "ATOMIC" section found in the file {}.', outfile)
             raise ValueError(f'no "ATOMIC" section found in file {outfile}')
 
         (t0,) = secp.extract_section("^ begin time", "^$", ["coords"])
         if t0 is None:
-            logger.error("No starting simulation time in file %s.", outfile)
+            logger.error("No starting simulation time in file {}.", outfile)
             raise ValueError(f"No starting simulation time in file {outfile}")
 
         if not secp.skip_after("^   4.  RESULTS"):
-            logger.error('No "RESULTS" section found in the file %s.', outfile)
+            logger.error('No "RESULTS" section found in the file {}.', outfile)
             raise ValueError(f'no "RESULTS" section found in file {outfile}')
 
     file_datum.clambda = clambda
@@ -360,13 +360,13 @@ def extract(outfile, T):
 
         if high_E_cnt:
             logger.warning(
-                "%i MBAR energ%s > 0.0 kcal/mol",
+                "{} MBAR energ{} > 0.0 kcal/mol",
                 high_E_cnt,
                 "ies are" if high_E_cnt > 1 else "y is",
             )
 
     if not finished:
-        logger.warning("WARNING: file %s is a prematurely terminated run", outfile)
+        logger.warning("WARNING: file {} is a prematurely terminated run", outfile)
 
     if file_datum.have_mbar:
         mbar_time = [
@@ -387,10 +387,10 @@ def extract(outfile, T):
         mbar_df = None
 
     if not nensec:
-        logger.warning("WARNING: File %s does not contain any dV/dl data", outfile)
+        logger.warning("WARNING: File {} does not contain any dV/dl data", outfile)
         dHdl_df = None
     else:
-        logger.info("Read %s dV/dl data points in file %s", nensec, outfile)
+        logger.info("Read {} dV/dl data points in file {}", nensec, outfile)
         dHdl_df = convert_to_pandas(file_datum)
         dHdl_df["dHdl"] *= beta
 
