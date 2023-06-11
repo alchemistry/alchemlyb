@@ -46,15 +46,15 @@ The free energy differences (in units of :math:`k_B T`) between each :math:`\lam
 
 So we can get the endpoint differences (free energy difference between :math:`\lambda = 0` and :math:`\lambda = 1`) of each with::
 
-    >>> ti_coul.delta_f_.iloc[0, -1]
+    >>> ti_coul.delta_f_.loc[0.00, 1.00]
     3.0890270218676896
 
-    >>> ti_vdw.delta_f_.iloc[0, -1]
+    >>> ti_vdw.delta_f_.loc[0.00, 1.00]
     -3.0558175199846058
 
 giving us a solvation free energy in units of :math:`k_B T` for benzene of::
     
-    >>> ti_coul.delta_f_.iloc[0, -1] + ti_vdw.delta_f_.iloc[0, -1]
+    >>> ti_coul.delta_f_.loc[0.00, 1.00] + ti_vdw.delta_f_.loc[0.00, 1.00]
     0.033209501883083803
 
 In addition to the free energy differences, we also have access to the errors on these differences via the ``d_delta_f_`` attribute::
@@ -67,12 +67,14 @@ In addition to the free energy differences, we also have access to the errors on
     0.75  0.015038  0.011486  0.007458  0.000000  0.006447
     1.00  0.016362  0.013172  0.009858  0.006447  0.000000
 
+Estimate free energy with gaussian quadrature
+---------------------------------------------
 If the simulations are performed at certain gaussian quadrature points, :class:`~alchemlyb.estimators.TI_GQ` can be used to estimate the free energy.
 The usage of :class:`~alchemlyb.estimators.TI_GQ` is similar to :class:`~alchemlyb.estimators.TI`, but instead of the free energy differences between 
-each :math:`\lambda` window, the values in the ``delta_f_`` and ``d_delta_f_`` tables are cumulative addition of estimation from one :math:`\lambda` window to another.
+:math:`\lambda` windows, the values in the ``delta_f_`` and ``d_delta_f_`` tables are cumulative addition of estimation from one :math:`\lambda` window to another.
 To be consistent with :class:`~alchemlyb.estimators.TI` and other estimators, the diagonal values are set to zeros and two end states at :math:`\lambda`
-0 and 1 are added, although the simulation may not be performed at :math:`\lambda` 0 and 1. However, they are not considered to estimate the final results.
-For example, the values at :math:`\lambda` 0 is 0 and :math:`\lambda` 1 is the same as the previous gaussian quadrature point.
+0 and 1 are added, although the simulation may not be performed at :math:`\lambda` 0 and 1. The value at :math:`\lambda` 0 is set to zero and the value at :math:`\lambda` 1 
+is the same as the previous gaussian quadrature point.
 
 List of TI-based estimators
 ---------------------------
