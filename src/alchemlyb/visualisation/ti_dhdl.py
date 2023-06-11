@@ -188,7 +188,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
 
     for i, j in zip(xs[1:], xt[1:]):
         ax.annotate(
-            ("%.2f" % (i - 1.0 if i > 1.0 else i) if not j == "" else ""),
+            ("{:.2f}".format(i - 1.0 if i > 1.0 else i) if not j == "" else ""),
             xy=(i, 0),
             size=10,
             rotation=90,

@@ -99,7 +99,7 @@ class ABFE(WorkflowBase):
         if len(self.file_list) == 0:
             raise ValueError(f"No file has been matched to {reg_exp}.")
 
-        logger.info(f"Found {len(self.file_list)} xvg files.")
+        logger.info(f"Found {len(self.file_list)} {suffix} files.")
         logger.info("Unsorted file list: \n {}", "\n".join(self.file_list))
 
         if software == "GROMACS":
