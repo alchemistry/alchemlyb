@@ -227,5 +227,4 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         else:
             index_list = [tuple([0.0]*len(l_types))] + index_list + [tuple([1.0]*len(l_types))]
 
-        return lambda_list, dhdl_list, variance_list, index_list
-        
+        return lambda_list, dhdl_list, variance_list, index_list        
