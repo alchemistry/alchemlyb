@@ -529,16 +529,18 @@ class TestU_nk2series:
 
 class TestLogging:
     def test_detect_equilibration(self, caplog, u_nk):
-        caplog.set_level(logging.DEBUG)
-        decorrelate_u_nk(u_nk, remove_burnin=True)
-        assert "Running equilibration detection." in caplog.text
-        assert "Start index:" in caplog.text
-        assert "Statistical inefficiency:" in caplog.text
-        assert "Number of uncorrelated samples:" in caplog.text
+        with caplog.at_level(logging.DEBUG):
+            decorrelate_u_nk(u_nk, remove_burnin=True)
+
+            assert "Running equilibration detection." in caplog.text
+            assert "Start index:" in caplog.text
+            assert "Statistical inefficiency:" in caplog.text
+            assert "Number of uncorrelated samples:" in caplog.text
 
     def test_statistical_inefficiency(self, caplog, u_nk):
-        caplog.set_level(logging.DEBUG)
-        decorrelate_u_nk(u_nk)
-        assert "Running statistical inefficiency analysis." in caplog.text
-        assert "Statistical inefficiency:" in caplog.text
-        assert "Number of uncorrelated samples:" in caplog.text
+        with caplog.at_level(logging.DEBUG):
+            decorrelate_u_nk(u_nk)
+
+            assert "Running statistical inefficiency analysis." in caplog.text
+            assert "Statistical inefficiency:" in caplog.text
+            assert "Number of uncorrelated samples:" in caplog.text
