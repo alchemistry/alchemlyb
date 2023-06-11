@@ -7,6 +7,7 @@ import pandas as pd
 from pymbar.timeseries import detect_equilibration as _detect_equilibration
 from pymbar.timeseries import statistical_inefficiency as _statistical_inefficiency
 from pymbar.timeseries import subsample_correlated_data as _subsample_correlated_data
+from loguru import logger
 
 from .. import pass_attrs
 
@@ -516,12 +517,15 @@ def statistical_inefficiency(
         df = slicing(df, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series (could use fft=True but needs test)
+        logger.debug("Running statistical inefficiency analysis.")
         statinef = _statistical_inefficiency(series)
+        logger.debug("Statistical inefficiency: {:.2f}.", statinef)
 
         # use the subsample_correlated_data function to get the subsample index
         indices = _subsample_correlated_data(
             series, g=statinef, conservative=conservative
         )
+        logger.debug("Number of uncorrelated samples: {}.", len(indices))
         df = df.iloc[indices]
     else:
         df = slicing(df, lower=lower, upper=upper, step=step)
@@ -592,12 +596,16 @@ def equilibrium_detection(
         df = slicing(df, lower=lower, upper=upper, step=step)
 
         # calculate statistical inefficiency of series, with equilibrium detection
+        logger.debug("Running equilibration detection.")
         t, statinef, Neff_max = _detect_equilibration(series.values)
+        logger.debug("Start index: {}.", t)
+        logger.debug("Statistical inefficiency: {:.2f}.", statinef)
 
         series_equil = series[t:]
         df_equil = df[t:]
 
         indices = _subsample_correlated_data(series_equil, g=statinef)
+        logger.debug("Number of uncorrelated samples: {}.", len(indices))
         df = df_equil.iloc[indices]
     else:
         df = slicing(df, lower=lower, upper=upper, step=step)
