@@ -23,7 +23,7 @@ Changes
 
 Enhancements
   - "Statistical inefficiency" is logged at debug level for equilibrium_detection
-    and statistical_inefficiency (issue #295, PR#317).
+    and statistical_inefficiency (issue #295, PR#325).
   - Add a parser to read serialised pandas dataframe (parquet) (issue #316, PR#317).
   - workflow.ABFE allow parquet as input (issue #316, PR#317).
   - Allow MBAR estimator to use bootstrap to compute error (issue #320, PR#322).
