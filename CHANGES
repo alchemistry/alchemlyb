@@ -18,6 +18,8 @@ The rules for this file:
   * 2.1.0
 
 Changes
+  - ValueError raised if concatenated amber output file is passed to amber
+    parser (issue #315, PR #324).
   - Change the % based string formatting to {} based string formatting (issue #323, PR #324).
   - Use loguru instead of logging for log (issue #301, PR #303).
 
