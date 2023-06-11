@@ -73,8 +73,8 @@ a :class:`pandas.DataFrame`. For loading alchemlyb data we provide the
     new_dHdl = extract_dHdl('dHdl.parquet', T=300)
 
 .. Note::
-Serialization of :class:`pandas.DataFrame` to 'parquet' file is only allowed
-for `pandas>=2`, whereas the deserialization is permitted for any pandas version.
+    Serialization of :class:`pandas.DataFrame` to `parquet` file is only allowed
+    for `pandas>=2`, whereas the deserialization is permitted for any pandas version.
 
 .. _dHdl:
 
