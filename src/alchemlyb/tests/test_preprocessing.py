@@ -1,6 +1,8 @@
 """Tests for preprocessing functions.
 
 """
+import logging
+
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
@@ -523,3 +525,22 @@ class TestU_nk2series:
     def test_other_method_ValueError(self, u_nk):
         with pytest.raises(ValueError, match="Decorrelation method bogus not found."):
             u_nk2series(u_nk, method="bogus")
+
+
+class TestLogging:
+    def test_detect_equilibration(self, caplog, u_nk):
+        with caplog.at_level(logging.DEBUG):
+            decorrelate_u_nk(u_nk, remove_burnin=True)
+
+            assert "Running equilibration detection." in caplog.text
+            assert "Start index:" in caplog.text
+            assert "Statistical inefficiency:" in caplog.text
+            assert "Number of uncorrelated samples:" in caplog.text
+
+    def test_statistical_inefficiency(self, caplog, u_nk):
+        with caplog.at_level(logging.DEBUG):
+            decorrelate_u_nk(u_nk)
+
+            assert "Running statistical inefficiency analysis." in caplog.text
+            assert "Statistical inefficiency:" in caplog.text
+            assert "Number of uncorrelated samples:" in caplog.text
