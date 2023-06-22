@@ -332,10 +332,18 @@ def extract(outfile, T):
                     "^ NSTEP", "^ ---", ["NSTEP", "DV/DL"], extra=line
                 )
                 if nstep != old_nstep and dvdl is not None and nstep is not None:
+                    if finished:
+                        raise ValueError(
+                            "TI Energy detected after the TIMINGS section. Did you concatenate the output file?"
+                        )
                     file_datum.gradients.append(dvdl)
                     nensec += 1
                     old_nstep = nstep
             elif line.startswith("MBAR Energy analysis") and file_datum.have_mbar:
+                if finished:
+                    raise ValueError(
+                        "MBAR Energy detected after the TIMINGS section. Did you concatenate the output file?"
+                    )
                 mbar = secp.extract_section(
                     "^MBAR", "^ ---", file_datum.mbar_lambdas, extra=line
                 )
@@ -356,7 +364,6 @@ def extract(outfile, T):
                     )
             elif line == "   5.  TIMINGS\n":
                 finished = True
-                break
 
         if high_E_cnt:
             logger.warning(
