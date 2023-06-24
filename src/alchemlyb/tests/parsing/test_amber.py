@@ -1,6 +1,7 @@
 """Amber parser tests.
 
 """
+import bz2
 import logging
 
 import pandas as pd
@@ -250,3 +251,35 @@ def test_u_nk_improper(improper_filename, names=("time", "lambdas")):
         assert u_nk.index.names == names
     except Exception:
         assert "0.5626" in improper_filename
+
+
+def test_concatenated_amber_u_nk(tmp_path):
+    with bz2.open(load_bace_example()["data"]["complex"]["decharge"][0], "rt") as file:
+        content = file.read()
+
+    with open(tmp_path / "amber.out", "w") as f:
+        f.write(content)
+        f.write("\n")
+        f.write(content)
+
+    with pytest.raises(
+        ValueError,
+        match="MBAR Energy detected after the TIMINGS section.",
+    ):
+        extract(tmp_path / "amber.out", 298)
+
+
+def test_concatenated_amber_dhdl(tmp_path):
+    with bz2.open(load_bace_example()["data"]["complex"]["decharge"][0], "rt") as file:
+        content = file.read().replace("MBAR Energy analysis", "")
+
+    with open(tmp_path / "amber.out", "w") as f:
+        f.write(content)
+        f.write("\n")
+        f.write(content)
+
+    with pytest.raises(
+        ValueError,
+        match="TI Energy detected after the TIMINGS section.",
+    ):
+        extract(tmp_path / "amber.out", 298)

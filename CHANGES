@@ -14,17 +14,26 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
-*/*/2023 xiki-tempula, hl2500
+*/*/2023 hl2500
+
+  * 2.2.0
+  
+Enhancements
+  - Add a TI estimator using gaussian quadrature to calculate the free energy.
+    (issue #302, PR #304)
+  
+
+22/06/2023 xiki-tempula
 
   * 2.1.0
 
 Changes
+  - ValueError raised if concatenated amber output file is passed to amber
+    parser (issue #315, PR #326).
   - Change the % based string formatting to {} based string formatting (issue #323, PR #324).
   - Use loguru instead of logging for log (issue #301, PR #303).
 
 Enhancements
-  - Add a TI estimator using gaussian quadrature to calculate the free energy.
-    (issue #302, PR #304)
   - "Statistical inefficiency" is logged at debug level for equilibrium_detection
     and statistical_inefficiency (issue #295, PR#325).
   - Add a parser to read serialised pandas dataframe (parquet) (issue #316, PR#317).
