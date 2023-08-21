@@ -21,6 +21,12 @@ References
    equilibration detection in molecular simulations. Journal of Chemical Theory
    and Computation 12, 1799-1805. doi: `10.1021/acs.jctc.5b00784
    <https://doi.org/10.1021/acs.jctc.5b00784>`_.
+
+.. [He2020] X. He, S. Liu, T.-S. Lee, B. Ji, V. H. Man, D. M. York, J. Wang. (2020).
+   Fast, Accurate, and Reliable Protocols for Routine Calculations of Protein–Ligand
+   Binding Affinities in Drug Design Projects Using AMBER GPU-TI with Ff14SB/GAFF.  
+   ACS Omega 5, 4611-4619. doi: `10.1021/acsomega.9b04233
+   <https://doi.org/10.1021/acsomega.9b04233>`_.
    
 .. [Fan2020] Fan, S., B. I. Iorga, and O. Beckstein. (2020). Prediction of
    octanol-water partition coefficients for the SAMPL6-log P molecules using
