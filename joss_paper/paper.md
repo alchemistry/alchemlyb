@@ -68,7 +68,7 @@ To evaluate the accuracy of the free energy estimate, *alchemlyb* offers a range
 
 # Acknowledgements
 
-O.B. and D.D. designed the project. Z.W., D.D., contribute to the new features. Z.W., D.D., O.B. maintain the codebase. Z.W., M.R.S wrote the manuscript.
+O.B. and D.D. designed the project. Z.W., D.D., contributed to the new features. Z.W., D.D., O.B. maintain the codebase. M.R.S. provided advice on porting features from alchemical_analysis. Z.W., M.R.S wrote the manuscript.
 
 # References
 
