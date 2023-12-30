@@ -36,7 +36,8 @@ bibliography: paper.bib
 
 *Alchemlyb* is a dedicated open-source software package tailored for the analysis of alchemical free energy calculations, an integral part of computational chemistry and biology, most notably in the field of drug discovery. The software spans a wide range of functions, starting with the extraction of raw data from molecular dynamics (MD) engines, moving on to data preprocessing tasks such as decorrelation of time series, using various estimators to derive free energy estimates from simulation samples, and finally providing quality analysis tools for data convergence checking.
 
-A distinctive attribute of *alchemlyb* is its streamlined, end-to-end analysis workflow. This user-friendly workflow facilitates navigation through the entire analysis pipeline, from the initial data input stage to the final result derivation, enabling researchers from diverse scientific backgrounds, and not solely computational chemistry specialists, to utilize alchemlyb effectively.
+A distinctive attribute of *alchemlyb* is its streamlined, end-to-end analysis workflow. This user-friendly workflow facilitates navigation through the entire analysis pipeline, from the initial data input stage to the final result derivation. This attribute enhances accessibility, enabling researchers from diverse scientific backgrounds, and not solely computational chemistry specialists, to utilize alchemlyb effectively.
+
 
 # Statement of need
 
@@ -53,8 +54,7 @@ Notably, *alchemlyb*'s robust and user-friendly nature has led to its integratio
 
 # Implementation
 
-The solvation free energy is a physcial property that is often computed by computational chemist. This quantity can be obtained by constructiong two end states, where one is the ligand in water and interacting with both the water and itself (coupled state) while the other is the ligand interacting with itself but not interacting with the water (decoupled state)and thus, mimicing the pure solvent and ligand in the gas phase. The free energy difference between these two end state would be the solvation free energy. To determine the free energy difference associated with decoupling a drug from its environment, it is essential to ensure sufficient overlap in phase space between the coupled and decoupled states, a condition often challenging to achieve. Overlapping is facilitated by introducing a parameter lambda ($\lambda $) that connects the two end-states, leading to the creation of a series of intermediate states. MD engines are employed to simulate the system at these states, generating and accumulating free energy data.
-
+Solvation free energy, a key physical property often computed by computational chemists, involves constructing two end states: one where the ligand interacts with water and itself (coupled state), and the other where the ligand interacts only with itself, mimicking the pure solvent and ligand in the gas phase (decoupled state). The solvation free energy is then obtained by calculating the free energy difference between these two end states. To achieve this, it is crucial to ensure sufficient overlap in phase space between the coupled and decoupled states, a condition often challenging to achieve. Overlapping is facilitated by introducing a parameter lambda ($\lambda $) that connects the two end-states, resulting in a series of intermediate states. MD engines simulate the system at these states, generating and accumulating free energy data.
 
 *Alchemlyb* offers specific parsers designed to load raw free energy data from various MD engines, converting them into standard pandas dataframes. Two types of free energy data are considered: potential energy differences between lambda states (u_nk), which are used for free energy perturbation (FEP) methods [@zwanzig1954high], and $dU/d\lambda $ at all lambda states, suitable for thermodynamic integration (TI) methods [@kirkwood1935statistical].
 
@@ -62,13 +62,13 @@ In *alchemlyb*, TI [@paliwal2011benchmark] and TI with Gaussian quadrature [@gus
 
 To evaluate the accuracy of the free energy estimate, *alchemlyb* offers a range of assessment tools. The error of the TI method is correlated with the average curvature [@pham2011identifying], while the error of perturbation methods depends on the overlap in sampled energy distributions [@pohorille2010good]. *Alchemlyb* visualizes the smoothness of the integrand for TI methods and the overlap matrix for perturbation methods. Additionally, the accumulated samples should be collected from equilibrated simulations, and *alchemlyb* has tools for plotting the convergence of the free energy estimate as a function of simulation time [@yang2004free] to detect potentially un-equilibrated data.
 
-*Alchemlyb* offers all these tools as a library for users to customize each stage of the analysis (Figure 1). Additionally, *alchemlyb* provides an automated end-to-end workflow that reads in the raw input data and performs the decorelation, estimation, and quality plotting of the estimate, which allows one to estimate, for example, the solvation free energy with one line code. The workflow could also be used to faciliate more complicated calculations, such as the Absolute binding free energy, which is just the free energy difference between the solvation free energy of ligand in water and the solvation free energy of the ligand in the binding pocket of the protein.
+*Alchemlyb* offers all these tools as a library for users to customize each stage of the analysis (Figure 1). Additionally, *alchemlyb* provides an automated end-to-end workflow that reads in the raw input data and performs decorrelation, estimation, and quality plotting of the estimate. This workflow allows for the estimation of quantities such as solvation free energy with minimal code. Moreover, one could it facilitates more complex calculations, such as absolute binding free energy, which is the free energy difference between the solvation free energy of the ligand in water and the solvation free energy of the ligand in the protein's binding pocket. 
 
 ![The building blocks of *alchemlyb*](Fig1.pdf)
 
 # Acknowledgements
 
-We acknowledge contributions from XXXXX during the genesis of this project.
+O.B. and D.D. designed the project. Z.W., D.D., contribute to the new features. Z.W., D.D., O.B. maintain the codebase. Z.W. and M.R.S wrote the manuscript.
 
 # References
 
