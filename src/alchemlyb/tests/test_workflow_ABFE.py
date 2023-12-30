@@ -258,7 +258,7 @@ class TestEstimator:
         summary = workflow.generate_result()
         assert np.isclose(summary["TI"]["Stages"]["TOTAL"], 21.51472826028906, 0.1)
 
-    def test_unprocessed_n_uk(self, workflow, monkeypatch):
+    def test_unprocessed_u_nk(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "u_nk_sample_list", None)
         monkeypatch.setattr(workflow, "estimator", dict())
         workflow.estimate()
