@@ -19,7 +19,7 @@ The rules for this file:
   * 2.2.0
 
 Changes
- - For pandas>=2.1, metadata will be loaded from the parquet file (issue #331, PR #326).
+ - For pandas>=2.1, metadata will be loaded from the parquet file (issue #331, PR #340).
   
 Enhancements
   - Add a TI estimator using gaussian quadrature to calculate the free energy.
