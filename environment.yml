@@ -10,3 +10,4 @@ dependencies:
 - scikit-learn
 - pyarrow
 - matplotlib
+- loguru

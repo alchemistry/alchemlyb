@@ -26,6 +26,10 @@ Changes
 Enhancements
   - Add a TI estimator using gaussian quadrature to calculate the free energy.
     (issue #302, PR #304)
+  - Warning issued when the series is `None` for `statistical_inefficiency`
+    (issue #337, PR #338)
+  - ValueError issued when `df` and `series` for `statistical_inefficiency`
+    doesn't have the same length (issue #337, PR #338)
   
 
 22/06/2023 xiki-tempula
