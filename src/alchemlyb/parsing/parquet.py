@@ -1,9 +1,42 @@
 import pandas as pd
+from loguru import logger
 
 from . import _init_attrs
 
 
-@_init_attrs
+def _read_parquet_with_metadata(path: str, T: float) -> pd.DataFrame:
+    """
+    Check if the metadata is included in the Dataframe and has the correct
+    temperature.
+
+    Parameters
+    ----------
+    path : str
+        Path to parquet file to extract dataframe from.
+    T : float
+        Temperature in Kelvin of the simulations.
+
+    Returns
+    -------
+    DataFrame
+    """
+    df = pd.read_parquet(path)
+    if "temperature" not in df.attrs:
+        logger.warning(
+            f"No temperature metadata found in {path}. "
+            f"Serialise the Dataframe with pandas>=2.1 to preserve the metadata."
+        )
+        df.attrs["temperature"] = T
+        df.attrs["energy_unit"] = "kT"
+    else:
+        if df.attrs["temperature"] != T:
+            raise ValueError(
+                f"Temperature in the input ({T}) doesn't match the temperature "
+                f"in the dataframe ({df.attrs['temperature']})."
+            )
+    return df
+
+
 def extract_u_nk(path, T):
     r"""Return reduced potentials `u_nk` (unit: kT) from a pandas parquet file.
 
@@ -36,7 +69,7 @@ def extract_u_nk(path, T):
     .. versionadded:: 2.1.0
 
     """
-    u_nk = pd.read_parquet(path)
+    u_nk = _read_parquet_with_metadata(path, T)
     columns = list(u_nk.columns)
     if isinstance(columns[0], str) and columns[0][0] == "(":
         new_columns = []
@@ -81,4 +114,4 @@ def extract_dHdl(path, T):
     .. versionadded:: 2.1.0
 
     """
-    return pd.read_parquet(path)
+    return _read_parquet_with_metadata(path, T)

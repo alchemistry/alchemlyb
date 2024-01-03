@@ -363,6 +363,15 @@ def _prepare_input(df, series, drop_duplicates, sort):
     series : Series
         Formatted Series.
     """
+    if series is None:
+        warnings.warn(
+            "The series input is `None`, would not subsample according to statistical inefficiency."
+        )
+
+    elif len(df) != len(series):
+        raise ValueError(
+            f"The length of df ({len(df)}) should be same as the length of series ({len(series)})."
+        )
     if _check_multiple_times(df):
         if drop_duplicates:
             df, series = _drop_duplicates(df, series)
