@@ -47,7 +47,7 @@ setup(
     tests_require=["pytest", "alchemtest"],
     install_requires=[
         "numpy",
-        "pandas>=1.4",
+        "pandas>=2.1",
         "pymbar>=4",
         "scipy",
         "scikit-learn",

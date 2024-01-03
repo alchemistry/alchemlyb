@@ -41,8 +41,8 @@ def u_nk(gmx_benzene_Coulomb_u_nk):
 
 
 @pytest.fixture()
-def multi_index_u_nk(gmx_ABFE_complex_n_uk):
-    return gmx_ABFE_complex_n_uk[0]
+def multi_index_u_nk(gmx_ABFE_complex_u_nk):
+    return gmx_ABFE_complex_u_nk[0]
 
 
 @pytest.fixture()
@@ -470,7 +470,7 @@ def test_decorrelate_dhdl_multiple_l(multi_index_dHdl):
     )
 
 
-def test_raise_non_uk(multi_index_dHdl):
+def test_raise_nou_nk(multi_index_dHdl):
     with pytest.raises(ValueError):
         decorrelate_u_nk(
             multi_index_dHdl,

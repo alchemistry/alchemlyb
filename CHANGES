@@ -14,11 +14,13 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
-*/*/2023 hl2500
+*/*/2023 hl2500, xiki-tempula
 
   * 2.2.0
 
 Changes
+  - Require pandas >= 2.1 (PR #340)
+  - For pandas>=2.1, metadata will be loaded from the parquet file (issue #331, PR #340).
   - add support for Python 3.12, remove Python 3.8 support (issue #341, PR #304).
 
 Enhancements

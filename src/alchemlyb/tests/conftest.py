@@ -82,7 +82,7 @@ def gmx_ABFE():
 
 
 @pytest.fixture
-def gmx_ABFE_complex_n_uk(gmx_ABFE):
+def gmx_ABFE_complex_u_nk(gmx_ABFE):
     return [gmx.extract_u_nk(file, T=300) for file in gmx_ABFE["complex"]]
 
 
