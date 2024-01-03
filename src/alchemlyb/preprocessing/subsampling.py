@@ -364,7 +364,7 @@ def _prepare_input(df, series, drop_duplicates, sort):
         Formatted Series.
     """
     if series is None:
-        logger.warning(
+        warnings.warn(
             "The series input is `None`, would not subsample according to statistical inefficiency."
         )
 
