@@ -4,7 +4,7 @@ from loguru import logger
 from . import _init_attrs
 
 
-def _check_metadata(path: str, T: float) -> pd.DataFrame:
+def _read_parquet_with_metadata(path: str, T: float) -> pd.DataFrame:
     """
     Check if the metadata is included in the Dataframe and has the correct
     temperature.
@@ -69,7 +69,7 @@ def extract_u_nk(path, T):
     .. versionadded:: 2.1.0
 
     """
-    u_nk = _check_metadata(path, T)
+    u_nk = _read_parquet_with_metadata(path, T)
     columns = list(u_nk.columns)
     if isinstance(columns[0], str) and columns[0][0] == "(":
         new_columns = []
@@ -114,4 +114,4 @@ def extract_dHdl(path, T):
     .. versionadded:: 2.1.0
 
     """
-    return _check_metadata(path, T)
+    return _read_parquet_with_metadata(path, T)
