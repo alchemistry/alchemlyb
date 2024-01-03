@@ -29,24 +29,24 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macOS-latest", "windows-latest"]
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         # Only test lowest and highest version on the expensive/slow
         # macOS and windows runners (UPDATE when supported versions change):	
         exclude:
         - os: macOS-latest
           python-version: 3.10
         - os: macOS-latest
-          python-version: 3.9
+          python-version: 3.11
         - os: windows-latest
           python-version: 3.10
         - os: windows-latest
-          python-version: 3.9
+          python-version: 3.11
 
     steps:
     - uses: actions/checkout@v3
 
     # More info on options: https://github.com/conda-incubator/setup-miniconda
-    - uses: mamba-org/provision-with-micromamba@main
+    - uses: mamba-org/setup-micromamba@main
       with:
         environment-file: devtools/conda-envs/test_env.yaml
         environment-name: test
