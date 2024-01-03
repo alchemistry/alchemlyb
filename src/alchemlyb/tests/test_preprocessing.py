@@ -551,8 +551,9 @@ def test_unequil_input(dHdl):
         statistical_inefficiency(dHdl, series=dHdl[:10])
 
 
-def test_series_none(dHdl, caplog):
+def test_series_none(dHdl):
     with pytest.warns(
-        "The series input is `None`, would not subsample according to statistical inefficiency."
+        UserWarning,
+        match="The series input is `None`, would not subsample according to statistical inefficiency.",
     ):
         statistical_inefficiency(dHdl, series=None)
