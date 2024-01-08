@@ -50,7 +50,7 @@ jobs:
       with:
         environment-file: devtools/conda-envs/test_env.yaml
         environment-name: test
-        extra-specs: |
+        create-args: |
             python=${{ matrix.python-version }}
 
     - name: Install package (with no dependencies)
