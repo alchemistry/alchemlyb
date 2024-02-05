@@ -132,6 +132,9 @@ def generate_input_linear_approximation(
         f"variable paramstart equal {parameter_range[0]}\n",
         "variable TK equal TEMP\n",
         "variable PBAR equal PRESS\n",
+        "variable pinst equal press\n",
+        "variable tinst equal temp\n",
+        "variable pe equal pe\n",
         "fix 1 all npt temp ${TK} ${TK} 1.0 iso ${PBAR} ${PBAR} # Change dampening factors according to your system\n",
         "thermo ${freq}\n",
         "\n# Group atoms\n",
@@ -169,7 +172,7 @@ def generate_input_linear_approximation(
         "    compute pe_inter_3 solute group/group solvent pair no kspace yes\n",
         "    thermo_style custom v_vstep v_time v_param temp press pe evdwl enthalpy &\n",
         "        c_pe_solute_1 c_pe_solute_2 c_pe_solute_3 c_pe_solvent_1 c_pe_solvent_2 c_pe_solvent_3 c_pe_inter_2 c_pe_inter_3\n",
-        "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_tinst v_pinst v_pe v_evdwl v_enthalpy &\n",
+        "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_tinst v_pinst v_pe &\n",
         "        c_pe_solute_1 c_pe_solute_2 c_pe_solute_3 c_pe_solvent_1 c_pe_solvent_2 c_pe_solvent_3 c_pe_inter_2 c_pe_inter_3 &\n",
         f"        file files/linear_{name1}_" + "${param}.txt\n",
         "\n    run ${runtime}\n\n",
@@ -203,7 +206,7 @@ def generate_input_linear_approximation(
         file[-1:-1] = "unfix ADAPT2\n"
         ind = [ii for ii, x in enumerate(file) if "fix FEPout" in x][0]
         file[ind] = (
-            "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_param2 v_tinst v_pinst v_pe v_evdwl v_enthalpy &\n"
+            "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_param2 v_tinst v_pinst v_pe&\n"
         )
         file[ind + 2] = (
             f"        file files/linear_{name1}_"
@@ -322,6 +325,9 @@ def generate_traj_input(
         f"variable paramstart equal {parameter_range[0]}\n",
         "variable TK equal TEMP\n",
         "variable PBAR equal PRESS\n",
+        "variable pinst equal press\n",
+        "variable tinst equal temp\n",
+        "variable pe equal pe\n",
         "fix 1 all npt temp ${TK} ${TK} 1.0 iso ${PBAR} ${PBAR} # Change dampening factors according to your system\n",
         "thermo ${freq}\n",
         "\n# Set-up Loop\n",
@@ -349,7 +355,7 @@ def generate_traj_input(
         f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm2\n",
         "    compute FEPdf all fep ${TK} &\n",
         f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm\n",
-        "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_deltacdm v_tinst v_pinst v_pe v_evdwl v_enthalpy &\n",
+        "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_deltacdm v_tinst v_pinst v_pe &\n",
         f"        c_FEPdb[1] c_FEPdf[1] file files/ti_{name1}_" + "${param}.txt\n",
         "\n    dump TRAJ all custom ${freq} "
         + f"files/dump_{name1}_"
@@ -392,7 +398,7 @@ def generate_traj_input(
         )
         ind = [ii for ii, x in enumerate(file) if "fix FEPout" in x][0]
         file[ind] = (
-            "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_deltacdm v_param2 v_delta2cdm v_tinst v_pinst v_pe v_evdwl v_enthalpy &\n"
+            "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_deltacdm v_param2 v_delta2cdm v_tinst v_pinst v_pe &\n"
         )
         file[ind + 1] = (
             f"        c_FEPdb[1] c_FEPdf[1] c_FEP2db[1] c_FEP2df[1] file files/ti_{name1}_"
