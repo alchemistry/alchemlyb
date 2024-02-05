@@ -151,9 +151,9 @@ def generate_input_linear_approximation(
         "    variable paramramp equal ramp(v_param0,v_param)\n",
         "    fix ADAPT all adapt/fep ${freq} &\n",
         f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_paramramp\n",
-        "    thermo_style custom v_vstep v_time v_paramramp temp press pe evdwl enthalpy\n",
+        "    thermo_style custom v_paramramp temp press pe evdwl enthalpy\n",
         "    run ${runtime} # Run Ramp\n",
-        "    thermo_style custom v_vstep v_time v_param temp press pe evdwl enthalpy\n",
+        "    thermo_style custom v_param temp press pe evdwl enthalpy\n",
         "    run ${runtime} # Run Equil\n",
         "\n    label skipequil\n\n",
         f"    write_data files/npt_{name1}_" + "${param}.data\n",
@@ -170,7 +170,7 @@ def generate_input_linear_approximation(
         "    compute pe_solvent_3 solvent group/group solvent pair no kspace yes\n",
         "    compute pe_inter_2 solute group/group solvent pair yes kspace no\n",
         "    compute pe_inter_3 solute group/group solvent pair no kspace yes\n",
-        "    thermo_style custom v_vstep v_time v_param temp press pe evdwl enthalpy &\n",
+        "    thermo_style custom v_param temp press pe evdwl enthalpy &\n",
         "        c_pe_solute_1 c_pe_solute_2 c_pe_solute_3 c_pe_solvent_1 c_pe_solvent_2 c_pe_solvent_3 c_pe_inter_2 c_pe_inter_3\n",
         "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_tinst v_pinst v_pe &\n",
         "        c_pe_solute_1 c_pe_solute_2 c_pe_solute_3 c_pe_solvent_1 c_pe_solvent_2 c_pe_solvent_3 c_pe_inter_2 c_pe_inter_3 &\n",
@@ -206,7 +206,7 @@ def generate_input_linear_approximation(
         file[-1:-1] = "unfix ADAPT2\n"
         ind = [ii for ii, x in enumerate(file) if "fix FEPout" in x][0]
         file[ind] = (
-            "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_param2 v_tinst v_pinst v_pe&\n"
+            "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_param2 v_tinst v_pinst v_pe&\n"
         )
         file[ind + 2] = (
             f"        file files/linear_{name1}_"
@@ -332,7 +332,6 @@ def generate_traj_input(
         "fix 1 all npt temp ${TK} ${TK} 1.0 iso ${PBAR} ${PBAR} # Change dampening factors according to your system\n",
         "thermo ${freq}\n",
         "\n# Set-up Loop\n",
-        "variable nblocks equal 1/v_delta",
         "variable runid loop 0 ${nblocks} pad\n",
         "    label runloop1\n",
         "\n    # Adjust param for the box and equilibrate\n",
@@ -343,20 +342,20 @@ def generate_traj_input(
         "    variable paramramp equal ramp(v_param0,v_param)\n",
         "    fix ADAPT all adapt/fep ${freq} &\n",
         f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_paramramp\n",
-        "    thermo_style custom v_vstep v_time v_paramramp temp press pe evdwl enthalpy\n",
+        "    thermo_style custom v_paramramp temp press pe evdwl enthalpy\n",
         "    run ${runtime} # Run Ramp\n",
-        "    thermo_style custom v_vstep v_time v_param temp press pe evdwl enthalpy\n",
+        "    thermo_style custom v_param temp press pe evdwl enthalpy\n",
         "    run ${runtime} # Run Equil\n",
         "\n    label skipequil\n\n",
         f"    write_data files/npt_{name1}_" + "${param}.data\n",
         "\n    # Initialize computes\n",
-        "    thermo_style custom v_vstep v_time v_param temp press pe evdwl enthalpy\n",
+        "    thermo_style custom  v_param temp press pe evdwl enthalpy\n",
         "    variable deltacdm2 equal -v_deltacdm\n",
         "    compute FEPdb all fep ${TK} &\n",
         f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm2\n",
         "    compute FEPdf all fep ${TK} &\n",
         f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm\n",
-        "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_deltacdm v_tinst v_pinst v_pe &\n",
+        "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_deltacdm v_tinst v_pinst v_pe &\n",
         f"        c_FEPdb[1] c_FEPdf[1] file files/ti_{name1}_" + "${param}.txt\n",
         "\n    dump TRAJ all custom ${freq} "
         + f"files/dump_{name1}_"
@@ -399,7 +398,7 @@ def generate_traj_input(
         )
         ind = [ii for ii, x in enumerate(file) if "fix FEPout" in x][0]
         file[ind] = (
-            "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_deltacdm v_param2 v_delta2cdm v_tinst v_pinst v_pe &\n"
+            "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_deltacdm v_param2 v_delta2cdm v_tinst v_pinst v_pe &\n"
         )
         file[ind + 1] = (
             f"        c_FEPdb[1] c_FEPdf[1] c_FEP2db[1] c_FEP2df[1] file files/ti_{name1}_"
@@ -525,7 +524,7 @@ def generate_mbar_input(
         "fix 1 all npt temp ${TK} ${TK} 1.0 iso ${PBAR} ${PBAR} # Change dampening factors according to your system\n",
         "thermo ${freq}\n",
         "\n# Set-up Loop\n",
-        "variable nblocks equal 1/v_delta",
+        "variable nblocks equal 1/v_delta\n",
         "variable runid loop 0 ${nblocks} pad\n",
         "    label runloop1\n",
         "\n    # Adjust param for the box and equilibrate\n",
@@ -536,20 +535,20 @@ def generate_mbar_input(
         "    variable paramramp equal ramp(v_param0,v_param)\n",
         "    fix ADAPT all adapt/fep ${freq} &\n",
         f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_paramramp\n",
-        "    thermo_style custom v_vstep v_time v_paramramp temp press pe evdwl enthalpy\n",
+        "    thermo_style custom v_paramramp temp press pe evdwl enthalpy\n",
         "    run ${runtime} # Run Ramp\n",
-        "    thermo_style custom v_vstep v_time v_param temp press pe evdwl enthalpy\n",
+        "    thermo_style custom v_param temp press pe evdwl enthalpy\n",
         "    run ${runtime} # Run Equil\n",
         "\n    label skipequil\n\n",
         f"    write_data files/npt_{name1}_" + "${param}.data\n",
         "\n    # Initialize computes\n",
-        "    thermo_style custom v_vstep v_time v_param temp press pe evdwl enthalpy\n",
+        "    thermo_style custom v_param temp press pe evdwl enthalpy\n",
         "    variable deltacdm2 equal -v_deltacdm\n",
         "    compute FEPdb all fep ${TK} &\n",
         f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm2\n",
         "    compute FEPdf all fep ${TK} &\n",
         f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm\n",
-        "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_deltacdm v_tinst v_pinst v_pe &\n",
+        "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_deltacdm v_tinst v_pinst v_pe &\n",
         f"        c_FEPdb[1] c_FEPdf[1] file files/ti_{name1}_" + "${param}.txt\n",
         "\n    dump TRAJ all custom ${freq} "
         + f"files/dump_{name1}_"
@@ -569,7 +568,7 @@ def generate_mbar_input(
     file2 = []
     for i in range(nblocks):
         tmp = [
-            "    variable delta{0:0d} ".format(i) + f"(v_runid-{i})*v_delta\n",
+            "    variable delta{0:0d} equal ".format(i) + f"(v_runid-{i})*v_delta\n",
             "    compute FEP{0:03d} all fep ".format(i) + "${TK} &\n",
             f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_delta{i}\n",
             "    variable param{0:03d} equal v_param+v_delta{0:0d}\n".format(i),
@@ -596,7 +595,7 @@ def generate_mbar_input(
                 + "{}_{}.txt\n\n".format(name2, parameter2_value),
             ]
         file2.extend(tmp)
-    file[39:39] = file2
+    file[40:40] = file2
 
     file2 = []
     for i in range(nblocks):
@@ -634,7 +633,7 @@ def generate_mbar_input(
         )
         ind = [ii for ii, x in enumerate(file) if "fix FEPout" in x][0]
         file[ind] = (
-            "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_deltacdm v_param2 v_delta2cdm v_tinst v_pinst v_pe &\n"
+            "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_deltacdm v_param2 v_delta2cdm v_tinst v_pinst v_pe &\n"
         )
         file[ind + 1] = (
             f"        c_FEPdb[1] c_FEPdf[1] c_FEP2db[1] c_FEP2df[1] file files/ti_{name1}_"
