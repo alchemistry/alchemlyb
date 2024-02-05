@@ -606,7 +606,6 @@ def generate_mbar_input(
                 "    unfix FEPout{0:03d}\n".format(i),
             ]
         )
-    print(file2)
     file[-7:-7] = file2
 
     if parameter2 is not None:
