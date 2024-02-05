@@ -328,13 +328,14 @@ def generate_traj_input(
         "variable pinst equal press\n",
         "variable tinst equal temp\n",
         "variable pe equal pe\n",
+        "\n",
         "fix 1 all npt temp ${TK} ${TK} 1.0 iso ${PBAR} ${PBAR} # Change dampening factors according to your system\n",
         "thermo ${freq}\n",
         "\n# Set-up Loop\n",
         "variable nblocks equal 1/v_delta",
         "variable runid loop 0 ${nblocks} pad\n",
         "    label runloop1\n",
-        "\n# Adjust param for the box and equilibrate\n",
+        "\n    # Adjust param for the box and equilibrate\n",
         "    variable param equal v_paramstart-v_runid*v_delta\n",
         '    if "${runid} == 0" then &\n',
         '        "jump SELF skipequil"\n',
@@ -387,6 +388,242 @@ def generate_traj_input(
             f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_delta2cdm\n",
         ]
         file[11:11] = file2
+        file[-1:-1] = "unfix ADAPT2\n"
+        file[-1:-1] = "uncompute FEP2db\n"
+        file[-1:-1] = "uncompute FEP2df\n"
+        ind = [ii for ii, x in enumerate(file) if "write_data files/npt" in x][0]
+        file[ind] = (
+            f"    write_data files/npt_{name1}_"
+            + "${param}_"
+            + f"{name2}_{parameter2_value}.data\n"
+        )
+        ind = [ii for ii, x in enumerate(file) if "fix FEPout" in x][0]
+        file[ind] = (
+            "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_deltacdm v_param2 v_delta2cdm v_tinst v_pinst v_pe &\n"
+        )
+        file[ind + 1] = (
+            f"        c_FEPdb[1] c_FEPdf[1] c_FEP2db[1] c_FEP2df[1] file files/ti_{name1}_"
+            + "${param}_"
+            + f"{name2}_{parameter2_value}.txt\n"
+        )
+        file[ind + 2] = (
+            "\n    dump TRAJ all custom ${freq} "
+            + f"files/dump_{name1}_"
+            + "${param}_"
+            + f"{name2}_{parameter2_value}.lammpstrj id mol type element xu yu zu\n"
+        )
+
+    if output_file is not None:
+        with open(output_file, "w") as f:
+            for line in file:
+                f.write(line)
+
+    return file
+
+
+def generate_mbar_input(
+    parameter,
+    parameter_range,
+    parameter_change,
+    pair_style,
+    types_solvent,
+    types_solute,
+    del_parameter=0.01,
+    output_file=None,
+    parameter2=None,
+    parameter2_value=None,
+    pair_style2=None,
+    del_parameter2=None,
+):
+    """Outputs the section of a LAMMPS input file that loops over the values of parameter being changed (e.g., lambda)
+    Small perturbations in the potential energy are also output so that the derivative can be calculated for thermodynamic
+    integration. Trajectories are produces so that files for MBAR analysis may be generated in post-processing.
+
+    The input data file for this script should be an equilibrated frame in the NPT ensemble. Notice that the input file contains
+    the following keywords that you might replace with the values for your simulation using `sed`: TEMP, PRESS
+
+    Parameters
+    ----------
+    parameter : str
+        Parameter being varied, see table in `compute fep <https://docs.lammps.org/compute_fep.html>`_ for the options in
+        your pair-potential
+    parameter_range : list[float]
+        Range of parameter values to be changed where the first value should be the value with which the system has been
+        equilibrated.
+    parameter_change : float
+        The size of the step between parameter values. Take care that number of points needed to traverse the given range
+        should result in an integer, otherwise LAMMPS will not end at the desired value.
+    pair_style : str
+        String of LAMMPS pair style being changes
+    types_solvent : str
+        String defining atom types in the solvent (not spaces)
+    types_solute : str
+        String defining atom types in the solute (not spaces)
+    del_parameter : float, default=0.1
+        Change used to calculate the forward and backward difference used to compute the derivative through a central difference
+        approximation.
+    output_file : str, default=None
+        File name and path for optional output file
+    parameter2 : str, default=None
+        Parameter that has been varied and is set to another value in this simulation, e.g., lambda when the Coulomb potential
+        is set to zero. Using this feature avoids complications with writing the pair potential information in the data file.
+        See table in `compute fep <https://docs.lammps.org/compute_fep.html>`_ for the options in your pair-potential
+    pair_style2 : str, default=None
+        String with LAMMPS pair style being set for ``parameter2``
+    parameter2_value : float, default=None
+        Value to set ``parameter2``
+    del_parameter2 : float, default=None
+        Change used to calculate the forward and backward difference used to compute the derivative through a central difference
+        approximation for parameter2.
+
+    Returns
+    -------
+    file : list[str]
+        List of strings representing lines in a file
+
+    """
+    nblocks = (parameter_range[1] - parameter_range[0]) / parameter_change
+    if nblocks % 1 > 0:
+        raise ValueError(
+            f"The number of steps needed to traverse the parameter range, {parameter_range}, with a step size of, {parameter_change} is not an integer"
+        )
+    else:
+        nblocks = int(nblocks)
+
+    if any(
+        [
+            x is not None
+            for x in [parameter2, pair_style2, parameter2_value, del_parameter2]
+        ]
+    ) and not all(
+        [
+            x is not None
+            for x in [parameter2, pair_style2, parameter2_value, del_parameter2]
+        ]
+    ):
+        raise ValueError(
+            (
+                f"If any values for 'parameter2' are provided, all must be provided: parameter2={parameter2}, "
+                + f"parameter2_value={parameter2_value}, pair_style2={pair_style2}, del_parameter2={del_parameter2}"
+            )
+        )
+    name1 = "-".join([pair_style.replace("/", "-"), parameter])
+    file = [
+        "\n# Variables and System Conditions\n",
+        "variable freq equal 1000 # Consider changing\n",
+        "variable runtime equal 1000000\n",
+        f"variable delta equal {parameter_change} \n",
+        f"variable nblocks equal {nblocks} \n",
+        f"variable deltacdm equal {del_parameter} # delta used in central different method for derivative in TI\n",
+        f"variable paramstart equal {parameter_range[0]}\n",
+        "variable TK equal TEMP\n",
+        "variable PBAR equal PRESS\n",
+        "variable pinst equal press\n",
+        "variable tinst equal temp\n",
+        "variable pe equal pe\n",
+        "\n",
+        "fix 1 all npt temp ${TK} ${TK} 1.0 iso ${PBAR} ${PBAR} # Change dampening factors according to your system\n",
+        "thermo ${freq}\n",
+        "\n# Set-up Loop\n",
+        "variable nblocks equal 1/v_delta",
+        "variable runid loop 0 ${nblocks} pad\n",
+        "    label runloop1\n",
+        "\n    # Adjust param for the box and equilibrate\n",
+        "    variable param equal v_paramstart-v_runid*v_delta\n",
+        '    if "${runid} == 0" then &\n',
+        '        "jump SELF skipequil"\n',
+        "    variable param0 equal v_paramstart-(v_runid-1)*v_delta\n",
+        "    variable paramramp equal ramp(v_param0,v_param)\n",
+        "    fix ADAPT all adapt/fep ${freq} &\n",
+        f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_paramramp\n",
+        "    thermo_style custom v_vstep v_time v_paramramp temp press pe evdwl enthalpy\n",
+        "    run ${runtime} # Run Ramp\n",
+        "    thermo_style custom v_vstep v_time v_param temp press pe evdwl enthalpy\n",
+        "    run ${runtime} # Run Equil\n",
+        "\n    label skipequil\n\n",
+        f"    write_data files/npt_{name1}_" + "${param}.data\n",
+        "\n    # Initialize computes\n",
+        "    thermo_style custom v_vstep v_time v_param temp press pe evdwl enthalpy\n",
+        "    variable deltacdm2 equal -v_deltacdm\n",
+        "    compute FEPdb all fep ${TK} &\n",
+        f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm2\n",
+        "    compute FEPdf all fep ${TK} &\n",
+        f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm\n",
+        "    fix FEPout all ave/time ${freq} 1 ${freq} v_vstep v_time v_param v_deltacdm v_tinst v_pinst v_pe &\n",
+        f"        c_FEPdb[1] c_FEPdf[1] file files/ti_{name1}_" + "${param}.txt\n",
+        "\n    dump TRAJ all custom ${freq} "
+        + f"files/dump_{name1}_"
+        + "${param}.lammpstrj id mol type element xu yu zu\n",
+        "\n    run ${runtime}\n\n",
+        "    uncompute FEPdb\n",
+        "    uncompute FEPdf\n",
+        '    if "${runid} != 0" then &\n',
+        '        "unfix ADAPT"\n',
+        "    unfix FEPout\n",
+        "    undump TRAJ\n",
+        "\n    next runid\n",
+        "    jump SELF runloop1\n",
+        "write_data npt.data nocoeff\n",
+    ]
+
+    file2 = []
+    for i in range(nblocks):
+        tmp = [
+            "    variable delta{0:0d} ".format(i) + f"(v_runid-{i})*v_delta\n",
+            "    compute FEP{0:03d} all fep ".format(i) + "${TK} &\n",
+            f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_delta{i}\n",
+            "    variable param{0:03d} equal v_param+v_delta{0:0d}\n".format(i),
+            "    fix FEPout{0:03d} all".format(i)
+            + " ave/time ${freq} 1 ${freq} "
+            + "v_time v_param v_param{0:03d} &\n".format(i),
+            "        c_FEP{0:03d}[1] c_FEP{0:03d}[2] c_FEP{0:03d}[3]".format(i)
+            + f" file files/mbar_{name1}"
+            + "_${param}_${param"
+            + str("{0:03d}".format(i))
+            + "}.txt\n\n",
+        ]
+        if parameter2 is not None:
+            ind = [ii for ii, x in enumerate(tmp) if "fix FEPout" in x][0]
+            tmp[ind : ind + 2] = [
+                "    fix FEPout{0:03d} all".format(i)
+                + " ave/time ${freq} 1 ${freq} "
+                + "v_time v_param v_param{0:03d} v_param2 &\n".format(i),
+                "        c_FEP{0:03d}[1] c_FEP{0:03d}[2] c_FEP{0:03d}[3]".format(i)
+                + f" file files/mbar_{name1}"
+                + "_${param}_${param"
+                + str("{0:03d}".format(i))
+                + "}_"
+                + "{}_{}.txt\n\n".format(name2, parameter2_value),
+            ]
+        file2.extend(tmp)
+    file[39:39] = file2
+
+    file2 = []
+    for i in range(nblocks):
+        file2.extend(
+            [
+                "    uncompute FEP{0:03d}\n".format(i),
+                "    unfix FEPout{0:03d}\n".format(i),
+            ]
+        )
+    print(file2)
+    file[-7:-7] = file2
+
+    if parameter2 is not None:
+        name2 = "-".join([pair_style2.replace("/", "-"), parameter2])
+        file[6:6] = (f"variable delta2cdm equal {del_parameter2}\n",)
+        file2 = [
+            "\n# Set Previous Change\n",
+            f"variable param2 equal {parameter2_value}\n",
+            "fix ADAPT2 all adapt/fep 1 &\n",
+            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_param2\n",
+            "variable delta2cdm2 equal -v_delta2cdm\n",
+            "compute FEP2db all fep ${TK} &\n",
+            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_delta2cdm2\n",
+            "compute FEP2df all fep ${TK} &\n",
+            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_delta2cdm\n",
+        ]
+        file[14:14] = file2
         file[-1:-1] = "unfix ADAPT2\n"
         file[-1:-1] = "uncompute FEP2db\n"
         file[-1:-1] = "uncompute FEP2df\n"
