@@ -574,7 +574,7 @@ def generate_mbar_input(
             "    variable param{0:03d} equal v_param+v_delta{0:0d}\n".format(i),
             "    fix FEPout{0:03d} all".format(i)
             + " ave/time ${freq} 1 ${freq} "
-            + "v_time v_param v_param{0:03d} &\n".format(i),
+            + "v_param v_param{0:03d} &\n".format(i),
             "        c_FEP{0:03d}[1] c_FEP{0:03d}[2] c_FEP{0:03d}[3]".format(i)
             + f" file files/mbar_{name1}"
             + "_${param}_${param"
@@ -586,7 +586,7 @@ def generate_mbar_input(
             tmp[ind : ind + 2] = [
                 "    fix FEPout{0:03d} all".format(i)
                 + " ave/time ${freq} 1 ${freq} "
-                + "v_time v_param v_param{0:03d} v_param2 &\n".format(i),
+                + "v_param v_param{0:03d} v_param2 &\n".format(i),
                 "        c_FEP{0:03d}[1] c_FEP{0:03d}[2] c_FEP{0:03d}[3]".format(i)
                 + f" file files/mbar_{name1}"
                 + "_${param}_${param"
@@ -773,7 +773,7 @@ def generate_rerun_mbar(
             "variable param{0:03d} equal v_param+v_delta{0:0d}\n".format(i),
             "fix FEPout{0:03d} all".format(i)
             + " ave/time ${freq} 1 ${freq} "
-            + "v_time v_param v_param{0:03d} &\n".format(i),
+            + "v_param v_param{0:03d} &\n".format(i),
             "    c_FEP{0:03d}[1] c_FEP{0:03d}[2] c_FEP{0:03d}[3]".format(i)
             + f" file files/mbar_{name1}"
             + "_${param}_${param"
@@ -785,7 +785,7 @@ def generate_rerun_mbar(
             tmp[ind : ind + 2] = [
                 "fix FEPout{0:03d} all".format(i)
                 + " ave/time ${freq} 1 ${freq} "
-                + "v_time v_param v_param{0:03d} v_param2 &\n".format(i),
+                + "v_param v_param{0:03d} v_param2 &\n".format(i),
                 "    c_FEP{0:03d}[1] c_FEP{0:03d}[2] c_FEP{0:03d}[3]".format(i)
                 + f" file files/mbar_{name1}"
                 + "_${param}_${param"
