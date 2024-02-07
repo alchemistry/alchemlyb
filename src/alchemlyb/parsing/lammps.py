@@ -129,7 +129,7 @@ def generate_input_linear_approximation(
         "variable runtime equal 1000000\n",
         f"variable delta equal {parameter_change} \n",
         f"variable nblocks equal {nblocks} \n",
-        f"variable paramstart equal {parameter_range[0]}\n",
+        f"variable paramstart equal {parameter_range[1]}\n",
         "variable TK equal TEMP\n",
         "variable PBAR equal PRESS\n",
         "variable pinst equal press\n",
@@ -322,7 +322,7 @@ def generate_traj_input(
         f"variable delta equal {parameter_change} \n",
         f"variable nblocks equal {nblocks} \n",
         f"variable deltacdm equal {del_parameter} # delta used in central different method for derivative in TI\n",
-        f"variable paramstart equal {parameter_range[0]}\n",
+        f"variable paramstart equal {parameter_range[1]}\n",
         "variable TK equal TEMP\n",
         "variable PBAR equal PRESS\n",
         "variable pinst equal press\n",
@@ -514,7 +514,7 @@ def generate_mbar_input(
         f"variable delta equal {parameter_change} \n",
         f"variable nblocks equal {nblocks} \n",
         f"variable deltacdm equal {del_parameter} # delta used in central different method for derivative in TI\n",
-        f"variable paramstart equal {parameter_range[0]}\n",
+        f"variable paramstart equal {parameter_range[1]}\n",
         "variable TK equal TEMP\n",
         "variable PBAR equal PRESS\n",
         "variable pinst equal press\n",
@@ -582,6 +582,7 @@ def generate_mbar_input(
             + "}.txt\n\n",
         ]
         if parameter2 is not None:
+            name2 = "-".join([pair_style2.replace("/", "-"), parameter2])
             ind = [ii for ii, x in enumerate(tmp) if "fix FEPout" in x][0]
             tmp[ind : ind + 2] = [
                 "    fix FEPout{0:03d} all".format(i)
@@ -1203,8 +1204,8 @@ def extract_dHdl(
     Results
     -------
     dHdl : pandas.Dataframe
-        Dataframe of potential energy for each alchemical state (k) for each frame (n).
-        Note that the units for timestamps are not considered in the calculation.
+        Dataframe of the derivative for the potential energy for each alchemical state (k) 
+        for each frame (n). Note that the units for timestamps are not considered in the calculation.
 
         Attributes
 
@@ -1305,10 +1306,10 @@ def extract_dHdl(
 
         data = data.iloc[:, col_indices]
         if column_lambda2 is None:
+            # dU_back: U(l-dl) - U(l); dU_forw: U(l+dl) - U(l)
             data.columns = ["time", "fep-lambda", "dlambda", "dU_back", "dU_forw"]
             data["fep"] = (data.dU_forw - data.dU_back) / (2 * data.dlambda)
             data.drop(columns=["dlambda", "dU_back", "dU_forw"], inplace=True)
-            dHdl = pd.concat([dHdl, data], axis=0, sort=False)
         else:
             data.columns = [
                 "time",
@@ -1336,6 +1337,7 @@ def extract_dHdl(
                 ],
                 inplace=True,
             )
+        dHdl = pd.concat([dHdl, data], axis=0, sort=False)
 
     if column_lambda2 is None:
         dHdl.set_index(["time", "fep-lambda"], inplace=True)
@@ -1345,3 +1347,129 @@ def extract_dHdl(
         dHdl.mul({"coul": beta, "vdw": beta})
 
     return dHdl
+
+
+@_init_attrs
+def extract_H(
+    fep_files,
+    T,
+    column_lambda1=2,
+    column_pe=5,
+    column_lambda2=None,
+    units="real",
+):
+    """This function will go into alchemlyb.parsing.lammps
+
+    Each file is imported as a data frame where the columns kept are either:
+        [0, column_lambda, column_dlambda1, columns_derivative[0], columns_derivative[1]]
+    or if columns_lambda2 is not None:
+        [
+            0, column_lambda, column_dlambda1, column_lambda2, column_dlambda2,
+            columns_derivative1[0], columns_derivative1[1], columns_derivative2[0], columns_derivative2[1]
+        ]
+
+    Parameters
+    ----------
+    filenames : str
+        Path to fepout file(s) to extract data from. Filenames and paths are
+        aggregated using [glob](https://docs.python.org/3/library/glob.html). For example, "/path/to/files/something_*_*.txt".
+    temperature : float
+        Temperature in Kelvin at which the simulation was sampled.
+    column_lambda1 : int, default=2
+        Index for column (column number minus one) representing the lambda at which the system is equilibrated.
+    column_pe : int, default=5
+        Index for column (column number minus one) representing the potential energy of the system.
+    column_lambda2 : int, default=None
+        Index for column (column number minus one) for a second value of lambda.
+        If this array is ``None`` then we do not expect two lambda values.
+    units : str, default="real"
+        Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
+
+    Results
+    -------
+    H : pandas.Dataframe
+        Dataframe of potential energy for each alchemical state (k) for each frame (n).
+        Note that the units for timestamps are not considered in the calculation.
+
+        Attributes
+
+        - temperature in K or dimensionless
+        - energy unit in kT
+
+    """
+
+    # Collect Files
+    files = glob.glob(fep_files)
+    if not files:
+        raise ValueError("No files have been found that match: {}".format(fep_files))
+
+    if units == "real":
+        beta = 1 / (k_b * T)
+    elif units == "lj":
+        beta = 1 / T
+    else:
+        raise ValueError(
+            "LAMMPS unit type, {}, is not supported. Supported types are: real and lj".format(
+                units
+            )
+        )
+
+    if not isinstance(column_lambda1, int):
+        raise ValueError(
+            "Provided column_lambda1 must be type 'int', instead: {}".format(
+                type(column_lambda1)
+            )
+        )
+    if not isinstance(column_pe, int):
+        raise ValueError(
+            "Provided column_pe must be type 'int', instead: {}".format(
+                type(column_pe)
+            )
+        )
+    if column_lambda2 is not None and not isinstance(column_lambda2, int):
+        raise ValueError(
+            "Provided column_lambda2 must be type 'int', instead: {}".format(
+                type(column_lambda2)
+            )
+        )
+
+    if column_lambda2 is None:
+        df_H = pd.DataFrame(columns=["time", "fep-lambda", "U"])
+        col_indices = [0, column_lambda1, column_pe]
+    else:
+        df_H = pd.DataFrame(
+            columns=["time", "coul-lambda", "vdw-lambda", "U"]
+        )
+        col_indices = [0, column_lambda2, column_lambda1, column_pe]
+    
+    for file in files:
+        if not os.path.isfile(file):
+            raise ValueError("File not found: {}".format(file))
+
+        data = pd.read_csv(file, sep=" ", comment="#")
+        lx = len(data.columns)
+        if [False for x in col_indices if x > lx]:
+            raise ValueError(
+                "Number of columns, {}, is less than index: {}".format(lx, col_indices)
+            )
+
+        data = data.iloc[:, col_indices]
+        if column_lambda2 is None:
+            data.columns = ["time", "fep-lambda", "U"]
+        else:
+            data.columns = [
+                "time",
+                "coul-lambda",
+                "vdw-lambda",
+                "U",
+            ]
+        df_H = pd.concat([df_H, data], axis=0, sort=False)
+
+
+    if column_lambda2 is None:
+        df_H.set_index(["time", "fep-lambda"], inplace=True)
+    else:
+        df_H.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
+    df_H.mul({"U": beta})
+
+    return df_H
