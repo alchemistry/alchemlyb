@@ -566,7 +566,7 @@ def generate_mbar_input(
     ]
 
     file2 = []
-    for i in range(nblocks):
+    for i in range(nblocks+1):
         tmp = [
             "    variable delta{0:0d} equal ".format(i) + f"(v_runid-{i})*v_delta\n",
             "    compute FEP{0:03d} all fep ".format(i) + "${TK} &\n",
@@ -599,7 +599,7 @@ def generate_mbar_input(
     file[40:40] = file2
 
     file2 = []
-    for i in range(nblocks):
+    for i in range(nblocks+1):
         file2.extend(
             [
                 "    uncompute FEP{0:03d}\n".format(i),
@@ -763,7 +763,7 @@ def generate_rerun_mbar(
             + f"{name2}_{parameter2_value}.data\n"
         )
 
-    for i in range(nblocks):
+    for i in range(nblocks+1):
         value2 = parameter_range[0] + parameter_change * i
         delta = value2 - parameter_value
         tmp = "variable delta{0:0d}".format(i) + " equal {0:." + str(prec) + "f}\n"
