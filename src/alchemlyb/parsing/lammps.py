@@ -2,7 +2,7 @@
 
 For clarity, we would like to distinguish the difference between $\lambda$ and $\lambda'$. We refer to $\lambda$ as 
 the potential scaling of the equilibrated system, so that when this value is changed, the system undergoes another equilibration 
-step. One the otherhand, $\lambda'$ is the value used to scaled the potentials for the configurations of the system equilibrated 
+step. One the other hand, $\lambda'$ is the value used to scaled the potentials for the configurations of the system equilibrated 
 for $\lambda$. The value of $\lambda'$ is used in two instances. First, in thermodynamic integration (TI), values of $\lambda'$ 
 that are very close to $\lambda$ can be used to calculate the derivative. This is needed because LAMMPS does not compute 
 explicit derivatives, although one should check whether they can derive an explicit expression, they cannot for changes of 
@@ -816,8 +816,69 @@ def generate_rerun_mbar(
 
     return file
 
+def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
+    """ Pull a tuple representing the lambda values used, as defined by the filenames.
 
-def _get_bar_lambdas(fep_files, indices=[2, 3]):
+    Parameters
+    ----------
+    filename : str
+        Filename and path
+    separator : str, default="_"
+        Separator used to breakup the filename. The choice in ``indices`` is dependent on this choice.
+    indices : list, default=[2, 3]
+        Indices used to pull :math:`\lambda` and :math:`\lambda'`
+    prec : int, default=4
+        Number of decimal points in the output.
+
+    Returns
+    -------
+    tuple[float]
+        Tuple of lambda values
+
+    """
+    
+    name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
+    if not _isfloat(name_array[indices[0]]):
+        raise ValueError(
+            f"Entry, {indices[0]} in filename cannot be converted to float: {name_array[indices[0]]}"
+        )
+    if not _isfloat(name_array[indices[1]]):
+        raise ValueError(
+            f"Entry, {indices[1]} in filename cannot be converted to float: {name_array[indices[1]]}"
+        )
+    return (round(float(name_array[indices[0]]), prec), round(float(name_array[indices[1]]), prec))
+
+def _lambda2_from_filename(filename, separator="_", index=-1, prec=4):
+    """ Pull the :math:`\lambda'` value, as defined by the filenames.
+    
+    Here :math:`\lambda'` is the scaling value applied to a configuration that is equilibrated to
+    a different value of :math:`\lambda`.
+
+    Parameters
+    ----------
+    filename : str
+        Filename and path
+    separator : str, default="_"
+        Separator used to breakup the filename. The choice in ``index`` is dependent on this choice.
+    index : list, default=1
+        Index used to pull :math:`\lambda'`
+    prec : int, default=4
+        Number of decimal points in the output.
+
+    Returns
+    -------
+    float
+        Lambda prime value
+
+    """
+    name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
+    if not _isfloat(name_array[index]):
+        raise ValueError(
+            f"Entry, {index} in filename cannot be converted to float: {name_array[index]}"
+        )
+    return round(float(name_array[index]), prec)
+
+def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4):
     """Retrieves all lambda values from FEP filenames.
 
     Parameters
@@ -827,6 +888,8 @@ def _get_bar_lambdas(fep_files, indices=[2, 3]):
     indices : list[int], default=[1,2]
         In provided file names, using underscore as a separator, these indices mark the part of the filename
         containing the lambda information.
+    prec : int, default=4
+        Number of decimal places defined used in ``round()`` function.
 
     Returns
     -------
@@ -837,34 +900,10 @@ def _get_bar_lambdas(fep_files, indices=[2, 3]):
 
     """
 
-    def tuple_from_filename(filename, separator="_", indices=[2, 3]):
-        name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(
-            separator
-        )
-        if not _isfloat(name_array[indices[0]]):
-            raise ValueError(
-                f"Entry, {indices[0]} in filename cannot be converted to float: {name_array[indices[0]]}"
-            )
-        if not _isfloat(name_array[indices[1]]):
-            raise ValueError(
-                f"Entry, {indices[1]} in filename cannot be converted to float: {name_array[indices[1]]}"
-            )
-        return (float(name_array[indices[0]]), float(name_array[indices[1]]))
-
-    def lambda2_from_filename(filename, separator="_", index=-1):
-        name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(
-            separator
-        )
-        if not _isfloat(name_array[index]):
-            raise ValueError(
-                f"Entry, {index} in filename cannot be converted to float: {name_array[index]}"
-            )
-        return float(name_array[index])
-
-    lambda_pairs = [tuple_from_filename(y, indices=indices) for y in fep_files]
+    lambda_pairs = [_tuple_from_filename(y, indices=indices, prec=prec) for y in fep_files]
     if len(indices) == 3:
         lambda2 = list(
-            set([lambda2_from_filename(y, index=indices[2]) for y in fep_files])
+            set([_lambda2_from_filename(y, index=indices[2], prec=prec) for y in fep_files])
         )
         if len(lambda2) > 1:
             raise ValueError(
@@ -880,7 +919,7 @@ def _get_bar_lambdas(fep_files, indices=[2, 3]):
         raise ValueError(
             "Lambda values must be convertible to floats: {}".format(check_float)
         )
-    if [x for x in lambda_values if float(x) < 0]:
+    if [x for x in lambda_values if round(float(x), prec) < 0]:
         raise ValueError("Lambda values must be positive: {}".format(lambda_values))
 
     # check that all needed lamba combinations are present
@@ -947,12 +986,13 @@ def _get_bar_lambdas(fep_files, indices=[2, 3]):
 def extract_u_nk(
     fep_files,
     T,
-    columns_lambda1=[2, 3],
+    columns_lambda1=[1,2],
     column_u_nk=4,
     column_lambda2=None,
     indices=[1, 2],
     units="real",
     vdw_lambda=1,
+    prec=4,
 ):
     """This function will go into alchemlyb.parsing.lammps
 
@@ -968,7 +1008,7 @@ def extract_u_nk(
         aggregated using [glob](https://docs.python.org/3/library/glob.html). For example, "/path/to/files/something_*_*.txt".
     temperature : float
         Temperature in Kelvin at which the simulation was sampled.
-    columns_lambda1 : list[int]
+    columns_lambda1 : list[int], default=[1,2]
         Indices for columns (column number minus one) representing (1) the lambda at which the system is equilibrated and (2) the lambda used
         in the computation of the potential energy.
     column_u_nk : int, default=4
@@ -984,7 +1024,9 @@ def extract_u_nk(
         Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
     vdw_lambda : int, default=1
         In the case that ``column_lambda2 is not None``, this integer represents which lambda represents vdw interactions.
-
+    prec : int, default=4
+        Number of decimal places defined used in ``round()`` function.
+        
     Results
     -------
     u_nk_df : pandas.Dataframe
@@ -1029,7 +1071,7 @@ def extract_u_nk(
             f"Provided column for u_nk must be type int. column_u_nk: {column_u_nk}, type: {type(column_u_nk)}"
         )
 
-    lambda_values, _, lambda2 = _get_bar_lambdas(files, indices=indices)
+    lambda_values, _, lambda2 = _get_bar_lambdas(files, indices=indices, prec=prec)
 
     if column_lambda2 is None:
         u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
@@ -1056,6 +1098,9 @@ def extract_u_nk(
             lambda1_col, lambda1_2_col = "fep-lambda", "fep-lambda2"
             columns_a = ["time", "fep-lambda"]
             columns_b = lambda_values
+            data[[lambda1_col, lambda1_2_col]] = data[[lambda1_col, lambda1_2_col]].apply(
+                lambda x: round(x, prec)
+            )
         else:
             columns_a = ["time", "coul-lambda", "vdw-lambda"]
             if vdw_lambda == 1:
@@ -1082,6 +1127,9 @@ def extract_u_nk(
                 raise ValueError(
                     f"'vdw_lambda must be either 1 or 2, not: {vdw_lambda}'"
                 )
+            data[columns_a[1:]+[lambda1_2_col]] = data[columns_a[1:]+[lambda1_2_col]].apply(
+                lambda x: round(x, prec)
+            )
 
         for lambda1 in list(data[lambda1_col].unique()):
             tmp_df = data.loc[data[lambda1_col] == lambda1]
@@ -1108,12 +1156,14 @@ def extract_u_nk(
                         axis=0,
                         sort=False,
                     )
-
-                column_name = lambda_values[
-                    [ii for ii, x in enumerate(lambda_values) if float(x) == lambda12][
-                        0
-                    ]
-                ]
+                    
+                column_list = [ii for ii, x in enumerate(lambda_values) if round(float(x), prec) == lambda12]
+                if not column_list:
+                    raise ValueError("Lambda values found in files do not align with those in the filenames. " \
+                        "Check that 'column_indices' are defined correctly.")
+                else:
+                    column_name = lambda_values[column_list[0]]
+                    
                 if column_lambda2 is not None:
                     column_name = (
                         (lambda2, column_name)
