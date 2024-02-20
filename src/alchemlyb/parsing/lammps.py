@@ -987,7 +987,7 @@ def extract_u_nk(
     fep_files,
     T,
     columns_lambda1=[1,2],
-    column_u_nk=4,
+    column_u_nk=3,
     column_lambda2=None,
     indices=[1, 2],
     units="real",
@@ -1160,7 +1160,7 @@ def extract_u_nk(
                 column_list = [ii for ii, x in enumerate(lambda_values) if round(float(x), prec) == lambda12]
                 if not column_list:
                     raise ValueError("Lambda values found in files do not align with those in the filenames. " \
-                        "Check that 'column_indices' are defined correctly.")
+                        "Check that 'columns_lambda' are defined correctly.")
                 else:
                     column_name = lambda_values[column_list[0]]
                     
@@ -1194,6 +1194,9 @@ def extract_u_nk(
                 u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] = (
                     beta * tmp_df2["u_nk"]
                 )
+                if lambda1 == lambda12 and u_nk.loc[u_nk[lambda1_col] == lambda1, column_name][0] != 0:
+                    raise ValueError(f"The difference in PE should be zero when lambda = lambda', {lambda1} = {lambda12}," \
+                        " Check that 'column_u_nk' was defined correctly.")
 
     if column_lambda2 is None:
         u_nk.set_index(["time", "fep-lambda"], inplace=True)
@@ -1207,8 +1210,8 @@ def extract_u_nk(
 def extract_dHdl(
     fep_files,
     T,
-    column_lambda1=2,
-    column_dlambda1=3,
+    column_lambda1=1,
+    column_dlambda1=2,
     column_lambda2=None,
     column_dlambda2=None,
     columns_derivative1=[10, 11],
