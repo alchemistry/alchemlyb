@@ -103,7 +103,7 @@ def generate_input_linear_approximation(
         List of strings representing lines in a file
 
     """
-    nblocks = (parameter_range[1] - parameter_range[0]) / parameter_change
+    nblocks = abs(parameter_range[1] - parameter_range[0]) / parameter_change
     if nblocks % 1 > 0:
         raise ValueError(
             "The number of steps needed to traverse the parameter range, {}, with a step size of, {} is not an integer".format(
@@ -289,7 +289,7 @@ def generate_traj_input(
         List of strings representing lines in a file
 
     """
-    nblocks = (parameter_range[1] - parameter_range[0]) / parameter_change
+    nblocks = abs(parameter_range[1] - parameter_range[0]) / parameter_change
     if nblocks % 1 > 0:
         raise ValueError(
             f"The number of steps needed to traverse the parameter range, {parameter_range}, with a step size of, {parameter_change} is not an integer"
@@ -481,7 +481,7 @@ def generate_mbar_input(
         List of strings representing lines in a file
 
     """
-    nblocks = (parameter_range[1] - parameter_range[0]) / parameter_change
+    nblocks = abs(parameter_range[1] - parameter_range[0]) / parameter_change
     if nblocks % 1 > 0:
         raise ValueError(
             f"The number of steps needed to traverse the parameter range, {parameter_range}, with a step size of, {parameter_change} is not an integer"
@@ -708,7 +708,7 @@ def generate_rerun_mbar(
         List of strings representing lines in a file
 
     """
-    nblocks = (parameter_range[1] - parameter_range[0]) / parameter_change
+    nblocks = abs(parameter_range[1] - parameter_range[0]) / parameter_change
     if nblocks % 1 > 0:
         raise ValueError(
             "The number of steps needed to traverse the parameter range, {}, with a step size of, {} is not an integer".format(
