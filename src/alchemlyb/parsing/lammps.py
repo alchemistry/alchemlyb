@@ -10,20 +10,8 @@ $\lambda'$ in the soft Lennard-Jones (LJ) potential.
 
 The parsers featured in this module are constructed to parse LAMMPS output files output using the 
 [`fix ave/time command`](https://docs.lammps.org/fix_ave_time.html), containing data for given potential energy values (an 
-approximation of the Hamiltonian) at specified values of $\lambda$ and $\lambda'$, $U_{\lambda,\lambda'}$. Because generating 
-the input files can be cumbersome, functions have been included to generate the appropriate sections. If a linear approximation 
-can be made to calculate $U_{\lambda,\lambda'}$ from $U_{\lambda}$ in post-processing, we recommend using 
-:func:`alchemlyb.parsing.generate_input_linear_approximation()`. If a linear approximation cannot be made (such as changing 
-$\lambda$ in the soft-LJ potential) we recommend running a loop over all values of $\lambda$ saving frames spaced to be 
-independent samples, and an output file with small perturbations with $\lambda'$ to calculate the derivative for TI in 
-post-processing. This is achieved with `alchemlyb.parsing.generate_traj_input()`. After this first simulation, we then 
-recommend the files needed for MBAR are generated using the [rerun](https://docs.lammps.org/rerun.html) feature in LAMMPS. 
-Breaking up the computation like this will allow one to add additional points to their MBAR analysis without repeating the 
-points from an initial simulation. Generating the file for a rerun is achieved with 
-:func:`alchemlyb.parsing.generate_rerun_mbar()`. Notice that the output files do not contain the header information expected 
-in LAMMPS as that is system specific and left to the user.
-
-Note that in LAMMPS, [fix adapt/fep](https://docs.lammps.org/fix_adapt_fep.html) changes $\lambda$ and 
+approximation of the Hamiltonian) at specified values of $\lambda$ and $\lambda'$, $U_{\lambda,\lambda'}$. Note that in 
+LAMMPS, [fix adapt/fep](https://docs.lammps.org/fix_adapt_fep.html) changes $\lambda$ and 
 [compute fep](https://docs.lammps.org/compute_fep.html) changes $\lambda'$.
 
 .. versionadded:: 1.0.0
