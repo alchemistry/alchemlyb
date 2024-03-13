@@ -27,10 +27,8 @@ Enhancements
 Enhancements
   - Addition of `block_average` function in both `convergence` and 
     `visualization` (Issue #380, PR #381)
-  - add CITATION.cff file with all authors from AUTHORS (issue #394, PR #395)
-
-Changes
-  - modernize build system: replaced setup.py,cfg with pyproject.toml (#385)
+  - Add support for LAMMPS FEP files (Issue #349, PR #348)
+ 
 
 08/24/2024 xiki-tempula
 
