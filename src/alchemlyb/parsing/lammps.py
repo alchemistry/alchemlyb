@@ -28,12 +28,14 @@ from scipy import constants
 from . import _init_attrs
 from ..postprocessors.units import R_kJmol, kJ2kcal
 
+
 def _isfloat(x):
     try:
         float(x)
         return True
     except ValueError:
         return False
+
 
 def beta_from_units(T, units):
     """Output value of beta from temperature and units.
@@ -49,35 +51,29 @@ def beta_from_units(T, units):
     -------
     beta : float
         Value of beta used to scale the potential energy.
-        
+
     Raises
     ------
     ValueError
         If unit string is not recognized.
-        
+
     .. versionadded:: 1.??
     """
-    if units == "real": # E in kcal/mol, T in K
+    if units == "real":  # E in kcal/mol, T in K
         beta = 1 / (R_kJmol * kJ2kcal * T)
-    elif units == "lj": # Nondimensional E and T scaled by epsilon
+    elif units == "lj":  # Nondimensional E and T scaled by epsilon
         beta = 1 / T
-    elif units == "metal": # E in eV, T in K
-        beta = 1 / (R_kJmol * kJ2kcal * T) # NoteHere!!!!
-    elif units == "si": # E in J, T in K
-        beta = 1 / (
-            constants.R * T * 
-            constants.physical_constants["electron volt"][0]
-        )
-    elif units == "cgs": # E in ergs, T in K
+    elif units == "metal":  # E in eV, T in K
+        beta = 1 / (R_kJmol * kJ2kcal * T)  # NoteHere!!!!
+    elif units == "si":  # E in J, T in K
+        beta = 1 / (constants.R * T * constants.physical_constants["electron volt"][0])
+    elif units == "cgs":  # E in ergs, T in K
         beta = 1 / (constants.R * T * 1e-7)
-    elif units == "electron": # E in Hartrees, T in K
-        beta = 1 / (
-            constants.R * T * 
-            constants.physical_constants["Hartree energy"][0]
-        )
-    elif units == "micro": # E in epicogram-micrometer^2/microsecond^2, T in K
+    elif units == "electron":  # E in Hartrees, T in K
+        beta = 1 / (constants.R * T * constants.physical_constants["Hartree energy"][0])
+    elif units == "micro":  # E in epicogram-micrometer^2/microsecond^2, T in K
         beta = 1 / (constants.R * T * 1e-15)
-    elif units == "nano": # E in attogram-nanometer^2/nanosecond^2, T in K
+    elif units == "nano":  # E in attogram-nanometer^2/nanosecond^2, T in K
         beta = 1 / (constants.R * T * 1e-21)
     else:
         raise ValueError(
@@ -85,12 +81,12 @@ def beta_from_units(T, units):
                 units
             )
         )
-        
+
     return beta
 
 
 def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
-    """ Pull a tuple representing the lambda values used, as defined by the filenames.
+    """Pull a tuple representing the lambda values used, as defined by the filenames.
 
     Parameters
     ----------
@@ -110,7 +106,7 @@ def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
 
     .. versionadded:: 1.??
     """
-    
+
     name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
     if not _isfloat(name_array[indices[0]]):
         raise ValueError(
@@ -120,11 +116,15 @@ def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
         raise ValueError(
             f"Entry, {indices[1]} in filename cannot be converted to float: {name_array[indices[1]]}"
         )
-    return (round(float(name_array[indices[0]]), prec), round(float(name_array[indices[1]]), prec))
+    return (
+        round(float(name_array[indices[0]]), prec),
+        round(float(name_array[indices[1]]), prec),
+    )
+
 
 def _lambda_from_filename(filename, separator="_", index=-1, prec=4):
-    """ Pull the :math:`\lambda'` value, as defined by the filenames.
-    
+    """Pull the :math:`\lambda'` value, as defined by the filenames.
+
     Here :math:`\lambda'` is the scaling value applied to a configuration that is equilibrated to
     a different value of :math:`\lambda`.
 
@@ -153,6 +153,7 @@ def _lambda_from_filename(filename, separator="_", index=-1, prec=4):
         )
     return round(float(name_array[index]), prec)
 
+
 def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
     """Retrieves all lambda values from FEP filenames.
 
@@ -178,10 +179,17 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
     .. versionadded:: 1.??
     """
 
-    lambda_pairs = [_tuple_from_filename(y, indices=indices, prec=prec) for y in fep_files]
+    lambda_pairs = [
+        _tuple_from_filename(y, indices=indices, prec=prec) for y in fep_files
+    ]
     if len(indices) == 3:
         lambda2 = list(
-            set([_lambda_from_filename(y, index=indices[2], prec=prec) for y in fep_files])
+            set(
+                [
+                    _lambda_from_filename(y, index=indices[2], prec=prec)
+                    for y in fep_files
+                ]
+            )
         )
         if len(lambda2) > 1:
             raise ValueError(
@@ -262,16 +270,16 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
 
 @_init_attrs
 def extract_u_nk_from_u_n(
-    fep_files, 
-    T, 
-    column_lambda, 
-    column_u_cross, 
-    dependence=lambda x : (x), 
-    units="real", 
-    index=-1, 
-    prec=4, 
+    fep_files,
+    T,
+    column_lambda,
+    column_u_cross,
+    dependence=lambda x: (x),
+    units="real",
+    index=-1,
+    prec=4,
 ):
-    """ Produce u_nk from files containing u_n given a separable dependence on lambda.
+    """Produce u_nk from files containing u_n given a separable dependence on lambda.
 
     Parameters
     ----------
@@ -283,7 +291,7 @@ def extract_u_nk_from_u_n(
     columns_lambda : int
         Indices for columns (file column number minus one) representing the lambda at which the system is equilibrated
     column_cross : int
-        Index for the column (file column number minus one) representing the potential energy of the cross interactions 
+        Index for the column (file column number minus one) representing the potential energy of the cross interactions
         between the solute and solvent.
     dependence : func, default=`lambda x : (x)`
         Dependence of changing variable on the potential energy, which must be separable.
@@ -295,7 +303,7 @@ def extract_u_nk_from_u_n(
         Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
-        
+
     Returns
     -------
     u_nk_df : pandas.Dataframe
@@ -306,7 +314,7 @@ def extract_u_nk_from_u_n(
 
         - temperature in K
         - energy unit in kT
-            
+
     .. versionadded:: 1.??
     """
     # Collect Files
@@ -326,8 +334,8 @@ def extract_u_nk_from_u_n(
         )
 
     lambda_values = list(
-            set([_lambda_from_filename(y, index=index, prec=prec) for y in files])
-        )
+        set([_lambda_from_filename(y, index=index, prec=prec) for y in files])
+    )
 
     u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
     lc = len(lambda_values)
@@ -346,9 +354,7 @@ def extract_u_nk_from_u_n(
         data = data.iloc[:, col_indices]
         data.columns = ["time", "fep-lambda", "u_cross"]
         lambda1_col = "fep-lambda"
-        data[[lambda1_col]] = data[[lambda1_col]].apply(
-            lambda x: round(x, prec)
-        )
+        data[[lambda1_col]] = data[[lambda1_col]].apply(lambda x: round(x, prec))
 
         for lambda1 in list(data[lambda1_col].unique()):
             tmp_df = data.loc[data[lambda1_col] == lambda1]
@@ -381,12 +387,19 @@ def extract_u_nk_from_u_n(
                     )
 
                 u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12] = (
-                    beta * tmp_df["u_cross"] * (dependence(lambda12) / dependence(lambda1) - 1)
+                    beta
+                    * tmp_df["u_cross"]
+                    * (dependence(lambda12) / dependence(lambda1) - 1)
                 )
 
-                if lambda1 == lambda12 and u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12][0] != 0:
-                    raise ValueError(f"The difference in PE should be zero when lambda = lambda', {lambda1} = {lambda12}," \
-                        " Check that the 'column_u_n' was defined correctly.")
+                if (
+                    lambda1 == lambda12
+                    and u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12][0] != 0
+                ):
+                    raise ValueError(
+                        f"The difference in PE should be zero when lambda = lambda', {lambda1} = {lambda12},"
+                        " Check that the 'column_u_n' was defined correctly."
+                    )
 
     u_nk.set_index(["time", "fep-lambda"], inplace=True)
 
@@ -397,7 +410,7 @@ def extract_u_nk_from_u_n(
 def extract_u_nk(
     fep_files,
     T,
-    columns_lambda1=[1,2],
+    columns_lambda1=[1, 2],
     column_u_nk=3,
     column_lambda2=None,
     indices=[1, 2],
@@ -409,11 +422,11 @@ def extract_u_nk(
     """This function will go into alchemlyb.parsing.lammps
 
     Each file is imported as a data frame where the columns kept are either::
-    
+
         [0, columns_lambda1[0] columns_lambda1[1], column_u_nk]
-        
+
     or if columns_lambda2 is not None::
-    
+
         [0, columns_lambda1[0] columns_lambda1[1], column_lambda2, column_u_nk]
 
     Parameters
@@ -443,7 +456,7 @@ def extract_u_nk(
         Number of decimal places defined used in ``round()`` function.
     force : bool, default=False
         If ``True`` the dataframe will be created, even if not all lambda and lambda prime combinations are available.
-        
+
     Results
     -------
     u_nk_df : pandas.Dataframe
@@ -482,7 +495,9 @@ def extract_u_nk(
             f"Provided column for u_nk must be type int. column_u_nk: {column_u_nk}, type: {type(column_u_nk)}"
         )
 
-    lambda_values, _, lambda2 = _get_bar_lambdas(files, indices=indices, prec=prec, force=force)
+    lambda_values, _, lambda2 = _get_bar_lambdas(
+        files, indices=indices, prec=prec, force=force
+    )
 
     if column_lambda2 is None:
         u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
@@ -509,9 +524,9 @@ def extract_u_nk(
             lambda1_col, lambda1_2_col = "fep-lambda", "fep-lambda2"
             columns_a = ["time", "fep-lambda"]
             columns_b = lambda_values
-            data[[lambda1_col, lambda1_2_col]] = data[[lambda1_col, lambda1_2_col]].apply(
-                lambda x: round(x, prec)
-            )
+            data[[lambda1_col, lambda1_2_col]] = data[
+                [lambda1_col, lambda1_2_col]
+            ].apply(lambda x: round(x, prec))
         else:
             columns_a = ["time", "coul-lambda", "vdw-lambda"]
             if vdw_lambda == 1:
@@ -538,9 +553,9 @@ def extract_u_nk(
                 raise ValueError(
                     f"'vdw_lambda must be either 1 or 2, not: {vdw_lambda}'"
                 )
-            data[columns_a[1:]+[lambda1_2_col]] = data[columns_a[1:]+[lambda1_2_col]].apply(
-                lambda x: round(x, prec)
-            )
+            data[columns_a[1:] + [lambda1_2_col]] = data[
+                columns_a[1:] + [lambda1_2_col]
+            ].apply(lambda x: round(x, prec))
 
         for lambda1 in list(data[lambda1_col].unique()):
             tmp_df = data.loc[data[lambda1_col] == lambda1]
@@ -567,21 +582,27 @@ def extract_u_nk(
                         axis=0,
                         sort=False,
                     )
-                    
-                column_list = [ii for ii, x in enumerate(lambda_values) if round(float(x), prec) == lambda12]
+
+                column_list = [
+                    ii
+                    for ii, x in enumerate(lambda_values)
+                    if round(float(x), prec) == lambda12
+                ]
                 if not column_list:
-                    raise ValueError("Lambda values found in files do not align with those in the filenames. " \
-                        "Check that 'columns_lambda' are defined correctly.")
+                    raise ValueError(
+                        "Lambda values found in files do not align with those in the filenames. "
+                        "Check that 'columns_lambda' are defined correctly."
+                    )
                 else:
                     column_name = lambda_values[column_list[0]]
-                    
+
                 if column_lambda2 is not None:
                     column_name = (
                         (lambda2, column_name)
                         if vdw_lambda == 1
                         else (column_name, lambda2)
                     )
-                    
+
                 if u_nk.loc[u_nk[lambda1_col] == lambda1, column_name][0] != abs(0):
                     raise ValueError(
                         "Energy values already available for lambda, {}, lambda', {}. Check for a duplicate file.".format(
@@ -606,9 +627,14 @@ def extract_u_nk(
                 u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] = (
                     beta * tmp_df2["u_nk"]
                 )
-                if lambda1 == lambda12 and u_nk.loc[u_nk[lambda1_col] == lambda1, column_name][0] != 0:
-                    raise ValueError(f"The difference in PE should be zero when lambda = lambda', {lambda1} = {lambda12}," \
-                        " Check that 'column_u_nk' was defined correctly.")
+                if (
+                    lambda1 == lambda12
+                    and u_nk.loc[u_nk[lambda1_col] == lambda1, column_name][0] != 0
+                ):
+                    raise ValueError(
+                        f"The difference in PE should be zero when lambda = lambda', {lambda1} = {lambda12},"
+                        " Check that 'column_u_nk' was defined correctly."
+                    )
 
     if column_lambda2 is None:
         u_nk.set_index(["time", "fep-lambda"], inplace=True)
@@ -624,13 +650,13 @@ def extract_dHdl_from_u_n(
     T,
     column_lambda=None,
     column_u_cross=None,
-    dependence=lambda x : (1/x),
+    dependence=lambda x: (1 / x),
     units="real",
 ):
     """Produce dHdl dataframe from sparated contributions of the potential energy.
 
     Each file is imported as a data frame where the columns are::
-    
+
         [0, column_lambda, column_solvent, column_solute, column_cross]
 
     Parameters
@@ -646,7 +672,7 @@ def extract_dHdl_from_u_n(
         Index for the column (file column number minus one) representing the potential energy of the system
     dependence : func, default=`lambda x : (1/x)`
         Transform of lambda needed to convert the potential energy into the derivative of the potential energy with respect to lambda, which must be separable.
-        For example, for the LJ potential U = eps * f(sig, r), dU/deps = f(sig, r), so we need a dependence function of 1/eps to convert the 
+        For example, for the LJ potential U = eps * f(sig, r), dU/deps = f(sig, r), so we need a dependence function of 1/eps to convert the
         potential energy to the derivative with respect to eps.
     units : str, default="real"
         Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
@@ -654,7 +680,7 @@ def extract_dHdl_from_u_n(
     Results
     -------
     dHdl : pandas.Dataframe
-        Dataframe of the derivative for the potential energy for each alchemical state (k) 
+        Dataframe of the derivative for the potential energy for each alchemical state (k)
         for each frame (n). Note that the units for timestamps are not considered in the calculation.
 
         Attributes
@@ -696,10 +722,10 @@ def extract_dHdl_from_u_n(
             )
 
         data = data.iloc[:, col_indices]
-        
+
         data.columns = ["time", "fep-lambda", "U"]
         data["fep"] = dependence(data.loc[:, "fep-lambda"]) * data.U
-        data.drop( columns=["U"], inplace=True)
+        data.drop(columns=["U"], inplace=True)
 
         dHdl = pd.concat([dHdl, data], axis=0, sort=False)
 
@@ -724,11 +750,11 @@ def extract_dHdl(
     """This function will go into alchemlyb.parsing.lammps
 
     Each file is imported as a data frame where the columns kept are either::
-    
+
         [0, column_lambda, column_dlambda1, columns_derivative[0], columns_derivative[1]]
-        
+
     or if columns_lambda2 is not None::
-    
+
         [
             0, column_lambda, column_dlambda1, column_lambda2, column_dlambda2,
             columns_derivative1[0], columns_derivative1[1], columns_derivative2[0],
@@ -760,7 +786,7 @@ def extract_dHdl(
     Results
     -------
     dHdl : pandas.Dataframe
-        Dataframe of the derivative for the potential energy for each alchemical state (k) 
+        Dataframe of the derivative for the potential energy for each alchemical state (k)
         for each frame (n). Note that the units for timestamps are not considered in the calculation.
 
         Attributes
@@ -909,11 +935,11 @@ def extract_H(
     """This function will go into alchemlyb.parsing.lammps
 
     Each file is imported as a data frame where the columns kept are either::
-    
+
         [0, column_lambda, column_dlambda1, columns_derivative[0], columns_derivative[1]]
-        
+
     or if columns_lambda2 is not None::
-    
+
         [
             0, column_lambda, column_dlambda1, column_lambda2, column_dlambda2,
             columns_derivative1[0], columns_derivative1[1], columns_derivative2[0], columns_derivative2[1]
@@ -965,9 +991,7 @@ def extract_H(
         )
     if not isinstance(column_pe, int):
         raise ValueError(
-            "Provided column_pe must be type 'int', instead: {}".format(
-                type(column_pe)
-            )
+            "Provided column_pe must be type 'int', instead: {}".format(type(column_pe))
         )
     if column_lambda2 is not None and not isinstance(column_lambda2, int):
         raise ValueError(
@@ -980,11 +1004,9 @@ def extract_H(
         df_H = pd.DataFrame(columns=["time", "fep-lambda", "U"])
         col_indices = [0, column_lambda1, column_pe]
     else:
-        df_H = pd.DataFrame(
-            columns=["time", "coul-lambda", "vdw-lambda", "U"]
-        )
+        df_H = pd.DataFrame(columns=["time", "coul-lambda", "vdw-lambda", "U"])
         col_indices = [0, column_lambda2, column_lambda1, column_pe]
-    
+
     for file in files:
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
@@ -1007,7 +1029,6 @@ def extract_H(
                 "U",
             ]
         df_H = pd.concat([df_H, data], axis=0, sort=False)
-
 
     if column_lambda2 is None:
         df_H.set_index(["time", "fep-lambda"], inplace=True)
