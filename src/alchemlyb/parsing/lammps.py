@@ -11,7 +11,7 @@ $\lambda'$ in the soft Lennard-Jones (LJ) potential.
 The parsers featured in this module are constructed to parse LAMMPS output files output using the 
 [`fix ave/time command`](https://docs.lammps.org/fix_ave_time.html), containing data for given potential energy values (an 
 approximation of the Hamiltonian) at specified values of $\lambda$ and $\lambda'$, $U_{\lambda,\lambda'}$. Because generating 
-the input files can be combersome, functions have been included to generate the appropriate sections. If a linear approximation 
+the input files can be cumbersome, functions have been included to generate the appropriate sections. If a linear approximation 
 can be made to calculate $U_{\lambda,\lambda'}$ from $U_{\lambda}$ in post-processing, we recommend using 
 :func:`alchemlyb.parsing.generate_input_linear_approximation()`. If a linear approximation cannot be made (such as changing 
 $\lambda$ in the soft-LJ potential) we recommend running a loop over all values of $\lambda$ saving frames spaced to be 
@@ -35,12 +35,10 @@ import warnings
 import numpy as np
 import pandas as pd
 import glob
+from scipy import constants
 
 from . import _init_attrs
 from ..postprocessors.units import R_kJmol, kJ2kcal
-
-k_b = R_kJmol * kJ2kcal
-
 
 def _isfloat(x):
     try:
@@ -49,772 +47,59 @@ def _isfloat(x):
     except ValueError:
         return False
 
-
-def generate_input_linear_approximation(
-    parameter,
-    parameter_range,
-    parameter_change,
-    pair_style,
-    types_solvent,
-    types_solute,
-    output_file=None,
-    parameter2=None,
-    parameter2_value=None,
-    pair_style2=None,
-):
-    """Outputs the section of a LAMMPS input file that separates the Coulomb, nonbonded, and bond/angle/torsional contributions
-    of the solute and solvent. As long as the parameter being changed is linearly dependent on the potential energy, these files for
-    each value of the parameter can be used for thermodynamic integration (TI) or multi-state Bennett acceptance ratio (MBAR).
-
-    The input data file for this script should be an equilibrated frame in the NPT ensemble. Notice that the input file contains
-    the following keywords that you might replace with the values for your simulation using `sed`: TEMP, PRESS
+def beta_from_units(T, units):
+    """Output value of beta from temperature and units.
 
     Parameters
     ----------
-    parameter : str
-        Parameter being varied, see table in `compute fep <https://docs.lammps.org/compute_fep.html>`_ for the options in
-        your pair-potential
-    parameter_range : list[float]
-        Range of parameter values to be changed where the first value should be the value with which the system has been
-        equilibrated.
-    parameter_change : float
-        The size of the step between parameter values. Take care that number of points needed to traverse the given range
-        should result in an integer, otherwise LAMMPS will not end at the desired value.
-    pair_style : str
-        String with LAMMPS pair style being altered
-    types_solvent : str
-        String defining atom types in the solvent (with no spaces, e.g., *4)
-    types_solute : str
-        String defining atom types in the solute (with no spaces, e.g., 5*9)
-    output_file : str, default=None
-        File name and path for optional output file
-    parameter2 : str, default=None
-        Parameter that has been varied and is set to another value in this simulation, e.g., lambda when the Coulomb potential
-        is set to zero. Using this feature avoids complications with writing the pair potential information in the data file.
-        See table in `compute fep <https://docs.lammps.org/compute_fep.html>`_ for the options in your pair-potential
-    pair_style2 : str, default=None
-        String with LAMMPS pair style for ``parameter2``
-    parameter2_value : float, default=None
-        Value to set ``parameter2``
+    T : float
+        Temperature that the system was run with
+    units : str
+        LAMMPS style unit
 
     Returns
     -------
-    file : list[str]
-        List of strings representing lines in a file
-
+    beta : float
+        Value of beta used to scale the potential energy.
+        
+    Raises
+    ------
+    ValueError
+        If unit string is not recognized.
+        
+    .. versionadded:: 1.??
     """
-    nblocks = round(abs(parameter_range[1] - parameter_range[0]) / parameter_change, 6)
-    if nblocks % 1 > 0:
+    if units == "real": # E in kcal/mol, T in K
+        beta = 1 / (R_kJmol * kJ2kcal * T)
+    elif units == "lj": # Nondimensional E and T scaled by epsilon
+        beta = 1 / T
+    elif units == "metal": # E in eV, T in K
+        beta = 1 / (R_kJmol * kJ2kcal * T) # NoteHere!!!!
+    elif units == "si": # E in J, T in K
+        beta = 1 / (
+            constants.R * T * 
+            constants.physical_constants["electron volt"][0]
+        )
+    elif units == "cgs": # E in ergs, T in K
+        beta = 1 / (constants.R * T * 1e-7)
+    elif units == "electron": # E in Hartrees, T in K
+        beta = 1 / (
+            constants.R * T * 
+            constants.physical_constants["Hartree energy"][0]
+        )
+    elif units == "micro": # E in epicogram-micrometer^2/microsecond^2, T in K
+        beta = 1 / (constants.R * T * 1e-15)
+    elif units == "nano": # E in attogram-nanometer^2/nanosecond^2, T in K
+        beta = 1 / (constants.R * T * 1e-21)
+    else:
         raise ValueError(
-            "The number of steps needed to traverse the parameter range, {}, with a step size of, {} is not an integer".format(
-                parameter_range, parameter_change
+            "LAMMPS unit type, {}, is not supported. Supported types are: real and lj".format(
+                units
             )
         )
-    else:
-        nblocks = int(nblocks)
+        
+    return beta
 
-    if any(
-        [x is not None for x in [parameter2, pair_style2, parameter2_value]]
-    ) and not all([x is not None for x in [parameter2, pair_style2, parameter2_value]]):
-        raise ValueError(
-            (
-                f"If any values for 'parameter2' are provided, all must be provided: parameter2={parameter2}, "
-                + f"parameter2_value={parameter2_value}, pair_style2={pair_style2}"
-            )
-        )
-    name1 = "-".join([pair_style.replace("/", "-"), parameter])
-    file = [
-        "\n# Variables and System Conditions\n",
-        "variable freq equal 1000 # Consider changing\n",
-        "variable runtime equal 1000000\n",
-        f"variable delta equal {parameter_change} \n",
-        f"variable nblocks equal {nblocks} \n",
-        f"variable paramstart equal {parameter_range[1]}\n",
-        "variable TK equal TEMP\n",
-        "variable PBAR equal PRESS\n",
-        "variable pinst equal press\n",
-        "variable tinst equal temp\n",
-        "variable pe equal pe\n",
-        "fix 1 all npt temp ${TK} ${TK} 1.0 iso ${PBAR} ${PBAR} # Change dampening factors according to your system\n",
-        "thermo ${freq}\n",
-        "\n# Group atoms\n",
-        f"group solute type {types_solute}\n",
-        f"group solvent type {types_solvent}\n",
-        "\n# Set-up Loop\n",
-        "variable runid loop 0 ${nblocks} pad\n",
-        "    label runloop1\n",
-        "\n# Adjust param for the box and equilibrate\n",
-        "    variable param equal v_paramstart-v_runid*v_delta\n",
-        '    if "${runid} == 0" then &\n',
-        '        "jump SELF skipequil"\n',
-        "    variable param0 equal v_paramstart-(v_runid-1)*v_delta\n",
-        "    variable paramramp equal ramp(v_param0,v_param)\n",
-        "    fix ADAPT all adapt/fep ${freq} &\n",
-        f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_paramramp\n",
-        "    thermo_style custom v_paramramp temp press pe evdwl enthalpy\n",
-        "    run ${runtime} # Run Ramp\n",
-        "    thermo_style custom v_param temp press pe evdwl enthalpy\n",
-        "    run ${runtime} # Run Equil\n",
-        "\n    label skipequil\n\n",
-        f"    write_data files/npt_{name1}_" + "${param}.data\n",
-        "\n    # Initialize computes\n",
-        "    ## Compute PE for contributions for bonds, angles, dihedrals, and impropers\n",
-        "    compute pe_solute_bond solute pe/atom bond angle dihedral improper # PE from nonpair/noncharged intramolecular interactions\n",
-        "    compute pe_solute_1 solute reduce sum c_pe_solute_bond\n",
-        "    compute pe_solvent_bond solvent pe/atom bond angle dihedral improper # PE from nonpair/noncharged intramolecular interactions\n",
-        "    compute pe_solvent_1 solvent reduce sum c_pe_solvent_bond\n",
-        "\n    ## Compute PE for contributions for pair and charges\n",
-        "    compute pe_solute_2 solute group/group solute pair yes kspace no\n",
-        "    compute pe_solute_3 solute group/group solute pair no kspace yes\n",
-        "    compute pe_solvent_2 solvent group/group solvent pair yes kspace no\n",
-        "    compute pe_solvent_3 solvent group/group solvent pair no kspace yes\n",
-        "    compute pe_inter_2 solute group/group solvent pair yes kspace no\n",
-        "    compute pe_inter_3 solute group/group solvent pair no kspace yes\n",
-        "    thermo_style custom v_param temp press pe evdwl enthalpy &\n",
-        "        c_pe_solute_1 c_pe_solute_2 c_pe_solute_3 c_pe_solvent_1 c_pe_solvent_2 c_pe_solvent_3 c_pe_inter_2 c_pe_inter_3\n",
-        "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_tinst v_pinst v_pe &\n",
-        "        c_pe_solute_1 c_pe_solute_2 c_pe_solute_3 c_pe_solvent_1 c_pe_solvent_2 c_pe_solvent_3 c_pe_inter_2 c_pe_inter_3 &\n",
-        f"        file files/linear_{name1}_" + "${param}.txt\n",
-        "\n    run ${runtime}\n\n",
-        "    uncompute pe_solute_bond\n",
-        "    uncompute pe_solute_1\n",
-        "    uncompute pe_solvent_bond\n",
-        "    uncompute pe_solvent_1\n",
-        "    uncompute pe_solute_2\n",
-        "    uncompute pe_solute_3\n",
-        "    uncompute pe_solvent_2\n",
-        "    uncompute pe_solvent_3\n",
-        "    uncompute pe_inter_2\n",
-        "    uncompute pe_inter_3\n",
-        '    if "${runid} != 0" then &\n',
-        '        "unfix ADAPT"\n',
-        "    unfix FEPout\n",
-        "\n    next runid\n",
-        "    jump SELF runloop1\n",
-        "write_data npt.data nocoeff\n",
-    ]
-
-    if parameter2 is not None:
-        name2 = "-".join([pair_style2.replace("/", "-"), parameter2])
-        file2 = [
-            "\n# Set Previous Change\n",
-            f"variable param2 equal {parameter2_value}\n",
-            "fix ADAPT2 all adapt/fep 1 &\n",
-            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_param2\n",
-        ]
-        file[13:13] = file2
-        file[-1:-1] = "unfix ADAPT2\n"
-        ind = [ii for ii, x in enumerate(file) if "fix FEPout" in x][0]
-        file[ind] = (
-            "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_param2 v_tinst v_pinst v_pe&\n"
-        )
-        file[ind + 2] = (
-            f"        file files/linear_{name1}_"
-            + "${param}_"
-            + f"{name2}_{parameter2_value}.txt\n"
-        )
-        ind = [ii for ii, x in enumerate(file) if "write_data files/npt" in x][0]
-        file[ind] = (
-            f"    write_data files/npt_{name1}_"
-            + "${param}_"
-            + f"{name2}_{parameter2_value}.data\n"
-        )
-
-    if output_file is not None:
-        with open(output_file, "w") as f:
-            for line in file:
-                f.write(line)
-
-    return file
-
-
-def generate_traj_input(
-    parameter,
-    parameter_range,
-    parameter_change,
-    pair_style,
-    types_solvent,
-    types_solute,
-    del_parameter=0.01,
-    output_file=None,
-    parameter2=None,
-    parameter2_value=None,
-    pair_style2=None,
-    del_parameter2=None,
-):
-    """Outputs the section of a LAMMPS input file that loops over the values of parameter being changed (e.g., lambda)
-    Small perturbations in the potential energy are also output so that the derivative can be calculated for thermodynamic
-    integration. Trajectories are produces so that files for MBAR analysis may be generated in post-processing.
-
-    The input data file for this script should be an equilibrated frame in the NPT ensemble. Notice that the input file contains
-    the following keywords that you might replace with the values for your simulation using `sed`: TEMP, PRESS
-
-    Parameters
-    ----------
-    parameter : str
-        Parameter being varied, see table in `compute fep <https://docs.lammps.org/compute_fep.html>`_ for the options in
-        your pair-potential
-    parameter_range : list[float]
-        Range of parameter values to be changed where the first value should be the value with which the system has been
-        equilibrated.
-    parameter_change : float
-        The size of the step between parameter values. Take care that number of points needed to traverse the given range
-        should result in an integer, otherwise LAMMPS will not end at the desired value.
-    pair_style : str
-        String of LAMMPS pair style being changes
-    types_solvent : str
-        String defining atom types in the solvent (not spaces)
-    types_solute : str
-        String defining atom types in the solute (not spaces)
-    del_parameter : float, default=0.1
-        Change used to calculate the forward and backward difference used to compute the derivative through a central difference
-        approximation.
-    output_file : str, default=None
-        File name and path for optional output file
-    parameter2 : str, default=None
-        Parameter that has been varied and is set to another value in this simulation, e.g., lambda when the Coulomb potential
-        is set to zero. Using this feature avoids complications with writing the pair potential information in the data file.
-        See table in `compute fep <https://docs.lammps.org/compute_fep.html>`_ for the options in your pair-potential
-    pair_style2 : str, default=None
-        String with LAMMPS pair style being set for ``parameter2``
-    parameter2_value : float, default=None
-        Value to set ``parameter2``
-    del_parameter2 : float, default=None
-        Change used to calculate the forward and backward difference used to compute the derivative through a central difference
-        approximation for parameter2.
-
-    Returns
-    -------
-    file : list[str]
-        List of strings representing lines in a file
-
-    """
-    nblocks = round(abs(parameter_range[1] - parameter_range[0]) / parameter_change, 6)
-    if nblocks % 1 > 0:
-        raise ValueError(
-            f"The number of steps needed to traverse the parameter range, {parameter_range}, with a step size of, {parameter_change} is not an integer"
-        )
-    else:
-        nblocks = int(nblocks)
-
-    if any(
-        [
-            x is not None
-            for x in [parameter2, pair_style2, parameter2_value, del_parameter2]
-        ]
-    ) and not all(
-        [
-            x is not None
-            for x in [parameter2, pair_style2, parameter2_value, del_parameter2]
-        ]
-    ):
-        raise ValueError(
-            (
-                f"If any values for 'parameter2' are provided, all must be provided: parameter2={parameter2}, "
-                + f"parameter2_value={parameter2_value}, pair_style2={pair_style2}, del_parameter2={del_parameter2}"
-            )
-        )
-    name1 = "-".join([pair_style.replace("/", "-"), parameter])
-    file = [
-        "\n# Variables and System Conditions\n",
-        "variable freq equal 1000 # Consider changing\n",
-        "variable runtime equal 1000000\n",
-        f"variable delta equal {parameter_change} \n",
-        f"variable nblocks equal {nblocks} \n",
-        f"variable deltacdm equal {del_parameter} # delta used in central different method for derivative in TI\n",
-        f"variable paramstart equal {parameter_range[1]}\n",
-        "variable TK equal TEMP\n",
-        "variable PBAR equal PRESS\n",
-        "variable pinst equal press\n",
-        "variable tinst equal temp\n",
-        "variable pe equal pe\n",
-        "\n",
-        "fix 1 all npt temp ${TK} ${TK} 1.0 iso ${PBAR} ${PBAR} # Change dampening factors according to your system\n",
-        "thermo ${freq}\n",
-        "\n# Set-up Loop\n",
-        "variable runid loop 0 ${nblocks} pad\n",
-        "    label runloop1\n",
-        "\n    # Adjust param for the box and equilibrate\n",
-        "    variable param equal v_paramstart-v_runid*v_delta\n",
-        '    if "${runid} == 0" then &\n',
-        '        "jump SELF skipequil"\n',
-        "    variable param0 equal v_paramstart-(v_runid-1)*v_delta\n",
-        "    variable paramramp equal ramp(v_param0,v_param)\n",
-        "    fix ADAPT all adapt/fep ${freq} &\n",
-        f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_paramramp\n",
-        "    thermo_style custom v_paramramp temp press pe evdwl enthalpy\n",
-        "    run ${runtime} # Run Ramp\n",
-        "    thermo_style custom v_param temp press pe evdwl enthalpy\n",
-        "    run ${runtime} # Run Equil\n",
-        "\n    label skipequil\n\n",
-        f"    write_data files/npt_{name1}_" + "${param}.data\n",
-        "\n    # Initialize computes\n",
-        "    thermo_style custom  v_param temp press pe evdwl enthalpy\n",
-        "    variable deltacdm2 equal -v_deltacdm\n",
-        "    compute FEPdb all fep ${TK} &\n",
-        f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm2\n",
-        "    compute FEPdf all fep ${TK} &\n",
-        f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm\n",
-        "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_deltacdm v_tinst v_pinst v_pe &\n",
-        f"        c_FEPdb[1] c_FEPdf[1] file files/ti_{name1}_" + "${param}.txt\n",
-        "\n    dump TRAJ all custom ${freq} "
-        + f"files/dump_{name1}_"
-        + "${param}.lammpstrj id mol type element xu yu zu\n",
-        "\n    run ${runtime}\n\n",
-        "    uncompute FEPdb\n",
-        "    uncompute FEPdf\n",
-        '    if "${runid} != 0" then &\n',
-        '        "unfix ADAPT"\n',
-        "    unfix FEPout\n",
-        "    undump TRAJ\n",
-        "\n    next runid\n",
-        "    jump SELF runloop1\n",
-        "write_data npt.data nocoeff\n",
-    ]
-
-    if parameter2 is not None:
-        name2 = "-".join([pair_style2.replace("/", "-"), parameter2])
-        file[6:6] = (f"variable delta2cdm equal {del_parameter2}\n",)
-        file2 = [
-            "\n# Set Previous Change\n",
-            f"variable param2 equal {parameter2_value}\n",
-            "fix ADAPT2 all adapt/fep 1 &\n",
-            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_param2\n",
-            "variable delta2cdm2 equal -v_delta2cdm\n",
-            "compute FEP2db all fep ${TK} &\n",
-            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_delta2cdm2\n",
-            "compute FEP2df all fep ${TK} &\n",
-            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_delta2cdm\n",
-        ]
-        file[11:11] = file2
-        file[-1:-1] = "unfix ADAPT2\n"
-        file[-1:-1] = "uncompute FEP2db\n"
-        file[-1:-1] = "uncompute FEP2df\n"
-        ind = [ii for ii, x in enumerate(file) if "write_data files/npt" in x][0]
-        file[ind] = (
-            f"    write_data files/npt_{name1}_"
-            + "${param}_"
-            + f"{name2}_{parameter2_value}.data\n"
-        )
-        ind = [ii for ii, x in enumerate(file) if "fix FEPout" in x][0]
-        file[ind] = (
-            "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_deltacdm v_param2 v_delta2cdm v_tinst v_pinst v_pe &\n"
-        )
-        file[ind + 1] = (
-            f"        c_FEPdb[1] c_FEPdf[1] c_FEP2db[1] c_FEP2df[1] file files/ti_{name1}_"
-            + "${param}_"
-            + f"{name2}_{parameter2_value}.txt\n"
-        )
-        file[ind + 2] = (
-            "\n    dump TRAJ all custom ${freq} "
-            + f"files/dump_{name1}_"
-            + "${param}_"
-            + f"{name2}_{parameter2_value}.lammpstrj id mol type element xu yu zu\n"
-        )
-
-    if output_file is not None:
-        with open(output_file, "w") as f:
-            for line in file:
-                f.write(line)
-
-    return file
-
-
-def generate_mbar_input(
-    parameter,
-    parameter_range,
-    parameter_change,
-    pair_style,
-    types_solvent,
-    types_solute,
-    del_parameter=0.01,
-    output_file=None,
-    parameter2=None,
-    parameter2_value=None,
-    pair_style2=None,
-    del_parameter2=None,
-):
-    """Outputs the section of a LAMMPS input file that loops over the values of parameter being changed (e.g., lambda)
-    Small perturbations in the potential energy are also output so that the derivative can be calculated for thermodynamic
-    integration. Trajectories are produces so that files for MBAR analysis may be generated in post-processing.
-
-    The input data file for this script should be an equilibrated frame in the NPT ensemble. Notice that the input file contains
-    the following keywords that you might replace with the values for your simulation using `sed`: TEMP, PRESS
-
-    Parameters
-    ----------
-    parameter : str
-        Parameter being varied, see table in `compute fep <https://docs.lammps.org/compute_fep.html>`_ for the options in
-        your pair-potential
-    parameter_range : list[float]
-        Range of parameter values to be changed where the first value should be the value with which the system has been
-        equilibrated.
-    parameter_change : float
-        The size of the step between parameter values. Take care that number of points needed to traverse the given range
-        should result in an integer, otherwise LAMMPS will not end at the desired value.
-    pair_style : str
-        String of LAMMPS pair style being changes
-    types_solvent : str
-        String defining atom types in the solvent (not spaces)
-    types_solute : str
-        String defining atom types in the solute (not spaces)
-    del_parameter : float, default=0.1
-        Change used to calculate the forward and backward difference used to compute the derivative through a central difference
-        approximation.
-    output_file : str, default=None
-        File name and path for optional output file
-    parameter2 : str, default=None
-        Parameter that has been varied and is set to another value in this simulation, e.g., lambda when the Coulomb potential
-        is set to zero. Using this feature avoids complications with writing the pair potential information in the data file.
-        See table in `compute fep <https://docs.lammps.org/compute_fep.html>`_ for the options in your pair-potential
-    pair_style2 : str, default=None
-        String with LAMMPS pair style being set for ``parameter2``
-    parameter2_value : float, default=None
-        Value to set ``parameter2``
-    del_parameter2 : float, default=None
-        Change used to calculate the forward and backward difference used to compute the derivative through a central difference
-        approximation for parameter2.
-
-    Returns
-    -------
-    file : list[str]
-        List of strings representing lines in a file
-
-    """
-    nblocks = round(abs(parameter_range[1] - parameter_range[0]) / parameter_change, 6)
-    if nblocks % 1 > 0:
-        raise ValueError(
-            f"The number of steps needed to traverse the parameter range, {parameter_range}, with a step size of, {parameter_change} is not an integer"
-        )
-    else:
-        nblocks = int(nblocks)
-
-    if any(
-        [
-            x is not None
-            for x in [parameter2, pair_style2, parameter2_value, del_parameter2]
-        ]
-    ) and not all(
-        [
-            x is not None
-            for x in [parameter2, pair_style2, parameter2_value, del_parameter2]
-        ]
-    ):
-        raise ValueError(
-            (
-                f"If any values for 'parameter2' are provided, all must be provided: parameter2={parameter2}, "
-                + f"parameter2_value={parameter2_value}, pair_style2={pair_style2}, del_parameter2={del_parameter2}"
-            )
-        )
-    name1 = "-".join([pair_style.replace("/", "-"), parameter])
-    file = [
-        "\n# Variables and System Conditions\n",
-        "variable freq equal 1000 # Consider changing\n",
-        "variable runtime equal 1000000\n",
-        f"variable delta equal {parameter_change} \n",
-        f"variable nblocks equal {nblocks} \n",
-        f"variable deltacdm equal {del_parameter} # delta used in central different method for derivative in TI\n",
-        f"variable paramstart equal {parameter_range[1]}\n",
-        "variable TK equal TEMP\n",
-        "variable PBAR equal PRESS\n",
-        "variable pinst equal press\n",
-        "variable tinst equal temp\n",
-        "variable pe equal pe\n",
-        "\n",
-        "fix 1 all npt temp ${TK} ${TK} 1.0 iso ${PBAR} ${PBAR} # Change dampening factors according to your system\n",
-        "thermo ${freq}\n",
-        "\n# Set-up Loop\n",
-        "variable nblocks equal 1/v_delta\n",
-        "variable runid loop 0 ${nblocks} pad\n",
-        "    label runloop1\n",
-        "\n    # Adjust param for the box and equilibrate\n",
-        "    variable param equal v_paramstart-v_runid*v_delta\n",
-        '    if "${runid} == 0" then &\n',
-        '        "jump SELF skipequil"\n',
-        "    variable param0 equal v_paramstart-(v_runid-1)*v_delta\n",
-        "    variable paramramp equal ramp(v_param0,v_param)\n",
-        "    fix ADAPT all adapt/fep ${freq} &\n",
-        f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_paramramp\n",
-        "    thermo_style custom v_paramramp temp press pe evdwl enthalpy\n",
-        "    run ${runtime} # Run Ramp\n",
-        "    thermo_style custom v_param temp press pe evdwl enthalpy\n",
-        "    run ${runtime} # Run Equil\n",
-        "\n    label skipequil\n\n",
-        f"    write_data files/npt_{name1}_" + "${param}.data\n",
-        "\n    # Initialize computes\n",
-        "    thermo_style custom v_param temp press pe evdwl enthalpy\n",
-        "    variable deltacdm2 equal -v_deltacdm\n",
-        "    compute FEPdb all fep ${TK} &\n",
-        f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm2\n",
-        "    compute FEPdf all fep ${TK} &\n",
-        f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_deltacdm\n",
-        "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_deltacdm v_tinst v_pinst v_pe &\n",
-        f"        c_FEPdb[1] c_FEPdf[1] file files/ti_{name1}_" + "${param}.txt\n",
-        "\n    dump TRAJ all custom ${freq} "
-        + f"files/dump_{name1}_"
-        + "${param}.lammpstrj id mol type element xu yu zu\n",
-        "\n    run ${runtime}\n\n",
-        "    uncompute FEPdb\n",
-        "    uncompute FEPdf\n",
-        '    if "${runid} != 0" then &\n',
-        '        "unfix ADAPT"\n',
-        "    unfix FEPout\n",
-        "    undump TRAJ\n",
-        "\n    next runid\n",
-        "    jump SELF runloop1\n",
-        "write_data npt.data nocoeff\n",
-    ]
-
-    file2 = []
-    for i in range(nblocks+1):
-        tmp = [
-            "    variable delta{0:0d} equal ".format(i) + f"(v_runid-{i})*v_delta\n",
-            "    compute FEP{0:03d} all fep ".format(i) + "${TK} &\n",
-            f"        pair {pair_style} {parameter} {types_solute} {types_solvent} v_delta{i}\n",
-            "    variable param{0:03d} equal v_param+v_delta{0:0d}\n".format(i),
-            "    fix FEPout{0:03d} all".format(i)
-            + " ave/time ${freq} 1 ${freq} "
-            + "v_param v_param{0:03d} &\n".format(i),
-            "        c_FEP{0:03d}[1] c_FEP{0:03d}[2] c_FEP{0:03d}[3]".format(i)
-            + f" file files/mbar_{name1}"
-            + "_${param}_${param"
-            + str("{0:03d}".format(i))
-            + "}.txt\n\n",
-        ]
-        if parameter2 is not None:
-            name2 = "-".join([pair_style2.replace("/", "-"), parameter2])
-            ind = [ii for ii, x in enumerate(tmp) if "fix FEPout" in x][0]
-            tmp[ind : ind + 2] = [
-                "    fix FEPout{0:03d} all".format(i)
-                + " ave/time ${freq} 1 ${freq} "
-                + "v_param v_param{0:03d} v_param2 &\n".format(i),
-                "        c_FEP{0:03d}[1] c_FEP{0:03d}[2] c_FEP{0:03d}[3]".format(i)
-                + f" file files/mbar_{name1}"
-                + "_${param}_${param"
-                + str("{0:03d}".format(i))
-                + "}_"
-                + "{}_{}.txt\n\n".format(name2, parameter2_value),
-            ]
-        file2.extend(tmp)
-    file[40:40] = file2
-
-    file2 = []
-    for i in range(nblocks+1):
-        file2.extend(
-            [
-                "    uncompute FEP{0:03d}\n".format(i),
-                "    unfix FEPout{0:03d}\n".format(i),
-            ]
-        )
-    file[-7:-7] = file2
-
-    if parameter2 is not None:
-        name2 = "-".join([pair_style2.replace("/", "-"), parameter2])
-        file[6:6] = (f"variable delta2cdm equal {del_parameter2}\n",)
-        file2 = [
-            "\n# Set Previous Change\n",
-            f"variable param2 equal {parameter2_value}\n",
-            "fix ADAPT2 all adapt/fep 1 &\n",
-            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_param2\n",
-            "variable delta2cdm2 equal -v_delta2cdm\n",
-            "compute FEP2db all fep ${TK} &\n",
-            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_delta2cdm2\n",
-            "compute FEP2df all fep ${TK} &\n",
-            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_delta2cdm\n",
-        ]
-        file[14:14] = file2
-        file[-1:-1] = "unfix ADAPT2\n"
-        file[-1:-1] = "uncompute FEP2db\n"
-        file[-1:-1] = "uncompute FEP2df\n"
-        ind = [ii for ii, x in enumerate(file) if "write_data files/npt" in x][0]
-        file[ind] = (
-            f"    write_data files/npt_{name1}_"
-            + "${param}_"
-            + f"{name2}_{parameter2_value}.data\n"
-        )
-        ind = [ii for ii, x in enumerate(file) if "fix FEPout" in x][0]
-        file[ind] = (
-            "    fix FEPout all ave/time ${freq} 1 ${freq} v_param v_deltacdm v_param2 v_delta2cdm v_tinst v_pinst v_pe &\n"
-        )
-        file[ind + 1] = (
-            f"        c_FEPdb[1] c_FEPdf[1] c_FEP2db[1] c_FEP2df[1] file files/ti_{name1}_"
-            + "${param}_"
-            + f"{name2}_{parameter2_value}.txt\n"
-        )
-        file[ind + 2] = (
-            "\n    dump TRAJ all custom ${freq} "
-            + f"files/dump_{name1}_"
-            + "${param}_"
-            + f"{name2}_{parameter2_value}.lammpstrj id mol type element xu yu zu\n"
-        )
-
-    if output_file is not None:
-        with open(output_file, "w") as f:
-            for line in file:
-                f.write(line)
-
-    return file
-
-
-def generate_rerun_mbar(
-    parameter_value,
-    parameter,
-    parameter_range,
-    parameter_change,
-    pair_style,
-    types_solvent,
-    types_solute,
-    output_file=None,
-    parameter2=None,
-    pair_style2=None,
-    parameter2_value=None,
-):
-    """Outputs the section of a LAMMPS input file that reruns trajectories for different lambda values and calculates
-    the potential energy for all other lambda values with this set of configurations.
-
-    Parameters
-    ----------
-    parameter_value : float
-        Value of parameter being varied (e.g., lambda)
-    parameter : str
-        Parameter being varied, see table in `compute fep <https://docs.lammps.org/compute_fep.html>`_ for the options in
-        your pair-potential
-    parameter_range : list[float]
-        Range of parameter values to be changed where the first value should be the value with which the system has been
-        equilibrated.
-    parameter_change : float
-        The size of the step between parameter values. Take care that number of points needed to traverse the given range
-        should result in an integer, otherwise lammps will not end at the desired value.
-    pair_style : str
-        String of LAMMPS pair style being changes
-    types_solvent : str
-        String defining atom types in the solvent (not spaces)
-    types_solute : str
-        String defining atom types in the solute (not spaces)
-    output_file : str, default=None
-        File name and path for optional output file
-    parameter2 : str, default=None
-        Parameter that has been varied and is set to another value in this simulation, e.g., lambda for the coulombic potential
-        is set to zero. Using this feature avoids complicaitons with writing the pair potential information in the data file.
-        See table in `compute fep <https://docs.lammps.org/compute_fep.html>`_ for the options in your pair-potential
-    pair_style2 : str, default=None
-        String with LAMMPS pair style being set for ``parameter2``
-    parameter2_value : float, default=None
-        Value to set ``parameter2``
-
-    Returns
-    -------
-    file : list[str]
-        List of strings representing lines in a file
-
-    """
-    nblocks = round(abs(parameter_range[1] - parameter_range[0]) / parameter_change, 6)
-    if nblocks % 1 > 0:
-        raise ValueError(
-            "The number of steps needed to traverse the parameter range, {}, with a step size of, {} is not an integer".format(
-                parameter_range, parameter_change
-            )
-        )
-    else:
-        nblocks = int(nblocks)
-
-    if any(
-        [x is not None for x in [parameter2, pair_style2, parameter2_value]]
-    ) and not all([x is not None for x in [parameter2, pair_style2, parameter2_value]]):
-        raise ValueError(
-            (
-                f"If any values for 'parameter2' are provided, all must be provided: parameter2={parameter2}, "
-                + f"parameter2_value={parameter2_value}, pair_style2={pair_style2}"
-            )
-        )
-
-    if np.isclose(parameter_range[0], 0):
-        prec = int(np.abs(int(np.log10(np.abs(parameter_change)))))
-    else:
-        prec = max(
-            int(np.abs(int(np.log10(np.abs(parameter_range[0]))))),
-            int(np.abs(int(np.log10(np.abs(parameter_change))) + 1)),
-        )
-    name1 = "-".join([pair_style.replace("/", "-"), parameter])
-    file = [
-        "\n# Variables and System Conditions\n",
-        f"variable param equal {parameter_value}\n",
-        "variable freq equal 1000 # Consider changing\n",
-        "variable runtime equal 1000000\n",
-        f"variable delta equal {parameter_change}\n",
-        "variable TK equal TEMP\n",
-        "\nthermo ${freq}\n",
-        f"read_data files/npt_{name1}_" + "${param}.data\n",
-        "\n# Initialize computes\n",
-    ]
-    if parameter2 is not None:
-        file2 = [
-            "\n# Set Previous Change\n",
-            "variable param2 equal {parameter2_value}\n",
-            "fix ADAPT2 all adapt/fep 1 &\n",
-            f"    pair {pair_style2} {parameter2} {types_solute} {types_solvent} v_param2\n",
-        ]
-        file[8:8] = file2
-        name2 = "-".join([pair_style2.replace("/", "-"), parameter2])
-        ind = [ii for ii, x in enumerate(file) if "read_data files/npt" in x][0]
-        file[ind] = (
-            f"read_data files/npt_{name1}_"
-            + "${param}_"
-            + f"{name2}_{parameter2_value}.data\n"
-        )
-
-    for i in range(nblocks+1):
-        value2 = parameter_range[0] + parameter_change * i
-        delta = value2 - parameter_value
-        tmp = "variable delta{0:0d}".format(i) + " equal {0:." + str(prec) + "f}\n"
-        tmp = [
-            tmp.format(delta),
-            "compute FEP{0:03d} all fep ".format(i) + "${TK} &\n",
-            f"    pair {pair_style} {parameter} {types_solute} {types_solvent} v_delta{i}\n",
-            "variable param{0:03d} equal v_param+v_delta{0:0d}\n".format(i),
-            "fix FEPout{0:03d} all".format(i)
-            + " ave/time ${freq} 1 ${freq} "
-            + "v_param v_param{0:03d} &\n".format(i),
-            "    c_FEP{0:03d}[1] c_FEP{0:03d}[2] c_FEP{0:03d}[3]".format(i)
-            + f" file files/mbar_{name1}"
-            + "_${param}_${param"
-            + str("{0:03d}".format(i))
-            + "}.txt\n\n",
-        ]
-        if parameter2 is not None:
-            ind = [ii for ii, x in enumerate(tmp) if "fix FEPout" in x][0]
-            tmp[ind : ind + 2] = [
-                "fix FEPout{0:03d} all".format(i)
-                + " ave/time ${freq} 1 ${freq} "
-                + "v_param v_param{0:03d} v_param2 &\n".format(i),
-                "    c_FEP{0:03d}[1] c_FEP{0:03d}[2] c_FEP{0:03d}[3]".format(i)
-                + f" file files/mbar_{name1}"
-                + "_${param}_${param"
-                + str("{0:03d}".format(i))
-                + "}_"
-                + "{}_{}.txt\n\n".format(name2, parameter2_value),
-            ]
-        file.extend(tmp)
-
-    if parameter2 is not None:
-        file.append(
-            f"\nrerun files/dump_{name1}_"
-            + "${param}_"
-            + f"{name2}_{parameter2_value}.lammpstrj "
-            + "every ${freq} dump xu yu zu\n\n"
-        )
-    else:
-        file.append(
-            f"\nrerun files/dump_{name1}"
-            + "_${param}.lammpstrj every ${freq} dump xu yu zu\n\n"
-        )
-
-    if output_file is not None:
-        with open(output_file, "w") as f:
-            for line in file:
-                f.write(line)
-
-    return file
 
 def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     """ Pull a tuple representing the lambda values used, as defined by the filenames.
@@ -835,6 +120,7 @@ def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     tuple[float]
         Tuple of lambda values
 
+    .. versionadded:: 1.??
     """
     
     name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
@@ -848,7 +134,7 @@ def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
         )
     return (round(float(name_array[indices[0]]), prec), round(float(name_array[indices[1]]), prec))
 
-def _lambda2_from_filename(filename, separator="_", index=-1, prec=4):
+def _lambda_from_filename(filename, separator="_", index=-1, prec=4):
     """ Pull the :math:`\lambda'` value, as defined by the filenames.
     
     Here :math:`\lambda'` is the scaling value applied to a configuration that is equilibrated to
@@ -870,6 +156,7 @@ def _lambda2_from_filename(filename, separator="_", index=-1, prec=4):
     float
         Lambda prime value
 
+    .. versionadded:: 1.??
     """
     name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
     if not _isfloat(name_array[index]):
@@ -878,7 +165,7 @@ def _lambda2_from_filename(filename, separator="_", index=-1, prec=4):
         )
     return round(float(name_array[index]), prec)
 
-def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4):
+def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
     """Retrieves all lambda values from FEP filenames.
 
     Parameters
@@ -890,6 +177,8 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4):
         containing the lambda information.
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
+    force : bool, default=False
+        If ``True`` the dataframe will be created, even if not all lambda and lambda prime combinations are available.
 
     Returns
     -------
@@ -898,12 +187,13 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4):
     lambda_pairs : list
         List of tuples containing two floats, lambda and lambda'.
 
+    .. versionadded:: 1.??
     """
 
     lambda_pairs = [_tuple_from_filename(y, indices=indices, prec=prec) for y in fep_files]
     if len(indices) == 3:
         lambda2 = list(
-            set([_lambda2_from_filename(y, index=indices[2], prec=prec) for y in fep_files])
+            set([_lambda_from_filename(y, index=indices[2], prec=prec) for y in fep_files])
         )
         if len(lambda2) > 1:
             raise ValueError(
@@ -965,13 +255,13 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4):
             [(lambda_value, x) for x in lambda_array if x not in tmp_array]
         )
 
-    if missing_combinations_bar:
+    if missing_combinations_bar and not force:
         raise ValueError(
             "BAR calculation cannot be performed without the following lambda-lambda prime combinations: {}".format(
                 missing_combinations_bar
             )
         )
-    if extra_combinations_bar:
+    if extra_combinations_bar and not force:
         warnings.warn(
             "The following combinations of lambda and lambda prime are extra and being discarded for BAR analysis: {}".format(
                 extra_combinations_bar
@@ -980,6 +270,139 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4):
         lambda_pairs = [x for x in lambda_pairs if x not in extra_combinations_bar]
 
     return lambda_values, lambda_pairs, lambda2
+
+
+@_init_attrs
+def extract_u_nk_from_u_n(
+    fep_files, 
+    T, 
+    column_lambda, 
+    column_u_cross, 
+    dependence=lambda x : (x), 
+    units="real", 
+    index=-1, 
+    prec=4, 
+):
+    """ Produce u_nk from files containing u_n given a separable dependence on lambda.
+
+    Parameters
+    ----------
+    filenames : str
+        Path to fepout file(s) to extract data from. Filenames and paths are
+        aggregated using [glob](https://docs.python.org/3/library/glob.html). For example, "/path/to/files/something_*.txt".
+    temperature : float
+        Temperature in Kelvin at which the simulation was sampled.
+    columns_lambda : int
+        Indices for columns (file column number minus one) representing the lambda at which the system is equilibrated
+    column_cross : int
+        Index for the column (file column number minus one) representing the potential energy of the cross interactions 
+        between the solute and solvent.
+    dependence : func, default=`lambda x : (x)`
+        Dependence of changing variable on the potential energy, which must be separable.
+    index : int, default=-1
+        In provided file names, using underscore as a separator, these indices mark the part of the filename
+        containing the lambda information for :func:`alchemlyb.parsing._get_bar_lambdas`. If ``column_lambda2 != None``
+        this list should be of length three, where the last value represents the invariant lambda.
+    units : str, default="real"
+        Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
+    prec : int, default=4
+        Number of decimal places defined used in ``round()`` function.
+        
+    Returns
+    -------
+    u_nk_df : pandas.Dataframe
+        Dataframe of potential energy for each alchemical state (k) for each frame (n).
+        Note that the units for timestamps are not considered in the calculation.
+
+        Attributes
+
+        - temperature in K
+        - energy unit in kT
+            
+    .. versionadded:: 1.??
+    """
+    # Collect Files
+    files = glob.glob(fep_files)
+    if not files:
+        raise ValueError(f"No files have been found that match: {fep_files}")
+
+    beta = beta_from_units(T, units)
+
+    if not isinstance(column_lambda, int):
+        raise ValueError(
+            f"Provided column for lambda must be type int. column_u_lambda: {column_lambda}, type: {type(column_lambda)}"
+        )
+    if not isinstance(column_u_cross, int):
+        raise ValueError(
+            f"Provided column for u_cross must be type int. column_u_cross: {column_u_cross}, type: {type(column_u_cross)}"
+        )
+
+    lambda_values = list(
+            set([_lambda_from_filename(y, index=index, prec=prec) for y in files])
+        )
+
+    u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
+    lc = len(lambda_values)
+    col_indices = [0, column_lambda, column_u_cross]
+
+    for file in files:
+        if not os.path.isfile(file):
+            raise ValueError("File not found: {}".format(file))
+
+        data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        lx = len(data.columns)
+        if [False for x in col_indices if x > lx]:
+            raise ValueError(
+                "Number of columns, {}, is less than index: {}".format(lx, col_indices)
+            )
+        data = data.iloc[:, col_indices]
+        data.columns = ["time", "fep-lambda", "u_cross"]
+        lambda1_col = "fep-lambda"
+        data[[lambda1_col]] = data[[lambda1_col]].apply(
+            lambda x: round(x, prec)
+        )
+
+        for lambda1 in list(data[lambda1_col].unique()):
+            tmp_df = data.loc[data[lambda1_col] == lambda1]
+            lr = tmp_df.shape[0]
+            for lambda12 in lambda_values:
+                if u_nk[u_nk[lambda1_col] == lambda1].shape[0] == 0:
+                    u_nk = pd.concat(
+                        [
+                            u_nk,
+                            pd.concat(
+                                [
+                                    tmp_df[["time", "fep-lambda"]],
+                                    pd.DataFrame(
+                                        np.zeros((lr, lc)),
+                                        columns=lambda_values,
+                                    ),
+                                ],
+                                axis=1,
+                            ),
+                        ],
+                        axis=0,
+                        sort=False,
+                    )
+
+                if u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12][0] != 0:
+                    raise ValueError(
+                        "Energy values already available for lambda, {}, lambda', {}.".format(
+                            lambda1, lambda12
+                        )
+                    )
+
+                u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12] = (
+                    beta * tmp_df["u_cross"] * (dependence(lambda12) / dependence(lambda1) - 1)
+                )
+
+                if lambda1 == lambda12 and u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12][0] != 0:
+                    raise ValueError(f"The difference in PE should be zero when lambda = lambda', {lambda1} = {lambda12}," \
+                        " Check that the 'column_u_n' was defined correctly.")
+
+    u_nk.set_index(["time", "fep-lambda"], inplace=True)
+
+    return u_nk
 
 
 @_init_attrs
@@ -993,6 +416,7 @@ def extract_u_nk(
     units="real",
     vdw_lambda=1,
     prec=4,
+    force=False,
 ):
     """This function will go into alchemlyb.parsing.lammps
 
@@ -1026,6 +450,8 @@ def extract_u_nk(
         In the case that ``column_lambda2 is not None``, this integer represents which lambda represents vdw interactions.
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
+    force : bool, default=False
+        If ``True`` the dataframe will be created, even if not all lambda and lambda prime combinations are available.
         
     Results
     -------
@@ -1038,6 +464,7 @@ def extract_u_nk(
         - temperature in K
         - energy unit in kT
 
+    .. versionadded:: 1.??
     """
 
     # Collect Files
@@ -1045,14 +472,7 @@ def extract_u_nk(
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
 
-    if units == "real":
-        beta = 1 / (k_b * T)
-    elif units == "lj":
-        beta = 1 / T
-    else:
-        raise ValueError(
-            f"LAMMPS unit type, {units}, is not supported. Supported types are: real and lj"
-        )
+    beta = beta_from_units(T, units)
 
     if len(columns_lambda1) != 2:
         raise ValueError(
@@ -1064,14 +484,14 @@ def extract_u_nk(
         )
     if column_lambda2 is not None and not isinstance(column_lambda2, int):
         raise ValueError(
-            f"Provided column for u_nk must be type int. column_u_nk: {column_lambda2}, type: {type(column_lambda2)}"
+            f"Provided column for lambda must be type int. column_lambda2: {column_lambda2}, type: {type(column_lambda2)}"
         )
     if not isinstance(column_u_nk, int):
         raise ValueError(
             f"Provided column for u_nk must be type int. column_u_nk: {column_u_nk}, type: {type(column_u_nk)}"
         )
 
-    lambda_values, _, lambda2 = _get_bar_lambdas(files, indices=indices, prec=prec)
+    lambda_values, _, lambda2 = _get_bar_lambdas(files, indices=indices, prec=prec, force=force)
 
     if column_lambda2 is None:
         u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
@@ -1086,7 +506,7 @@ def extract_u_nk(
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
-        data = pd.read_csv(file, sep=" ", comment="#")
+        data = pd.read_csv(file, sep=" ", comment="#", header=None)
         lx = len(data.columns)
         if [False for x in col_indices if x > lx]:
             raise ValueError(
@@ -1170,9 +590,10 @@ def extract_u_nk(
                         if vdw_lambda == 1
                         else (column_name, lambda2)
                     )
-                if u_nk.loc[u_nk[lambda1_col] == lambda1, column_name][0] != 0:
+                    
+                if u_nk.loc[u_nk[lambda1_col] == lambda1, column_name][0] != abs(0):
                     raise ValueError(
-                        "Energy values already available for lambda, {}, lambda', {}.".format(
+                        "Energy values already available for lambda, {}, lambda', {}. Check for a duplicate file.".format(
                             lambda1, lambda12
                         )
                     )
@@ -1207,6 +628,96 @@ def extract_u_nk(
 
 
 @_init_attrs
+def extract_dHdl_from_u_n(
+    fep_files,
+    T,
+    column_lambda=None,
+    column_u_cross=None,
+    dependence=lambda x : (1/x),
+    units="real",
+):
+    """Produce dHdl dataframe from sparated contributions of the potential energy.
+
+    Each file is imported as a data frame where the columns are:
+        [0, column_lambda, column_solvent, column_solute, column_cross]
+
+    Parameters
+    ----------
+    filenames : str
+        Path to fepout file(s) to extract data from. Filenames and paths are
+        aggregated using [glob](https://docs.python.org/3/library/glob.html). For example, "/path/to/files/something_*.txt".
+    T : float
+        Temperature in Kelvin at which the simulation was sampled.
+    columns_lambda : int, default=None
+        Indices for columns (file column number minus one) representing the lambda at which the system is equilibrated
+    column_u : int, default=None
+        Index for the column (file column number minus one) representing the potential energy of the system
+    dependence : func, default=`lambda x : (1/x)`
+        Transform of lambda needed to convert the potential energy into the derivative of the potential energy with respect to lambda, which must be separable.
+        For example, for the LJ potential U = eps * f(sig, r), dU/deps = f(sig, r), so we need a dependence function of 1/eps to convert the 
+        potential energy to the derivative with respect to eps.
+    units : str, default="real"
+        Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
+
+    Results
+    -------
+    dHdl : pandas.Dataframe
+        Dataframe of the derivative for the potential energy for each alchemical state (k) 
+        for each frame (n). Note that the units for timestamps are not considered in the calculation.
+
+        Attributes
+
+        - temperature in K or dimensionless
+        - energy unit in kT
+
+    .. versionadded:: 1.??
+    """
+
+    # Collect Files
+    files = glob.glob(fep_files)
+    if not files:
+        raise ValueError(f"No files have been found that match: {fep_files}")
+
+    beta = beta_from_units(T, units)
+
+    if not isinstance(column_lambda, int):
+        raise ValueError(
+            f"Provided column for lambda must be type int. column_lambda: {column_lambda}, type: {type(column_lambda)}"
+        )
+    if not isinstance(column_u_cross, int):
+        raise ValueError(
+            f"Provided column for u_cross must be type int. column_u_cross: {column_u_cross}, type: {type(column_u_cross)}"
+        )
+
+    dHdl = pd.DataFrame(columns=["time", "fep-lambda", "fep"])
+    col_indices = [0, column_lambda, column_u_cross]
+
+    for file in files:
+        if not os.path.isfile(file):
+            raise ValueError("File not found: {}".format(file))
+
+        data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        lx = len(data.columns)
+        if [False for x in col_indices if x > lx]:
+            raise ValueError(
+                "Number of columns, {}, is less than index: {}".format(lx, col_indices)
+            )
+
+        data = data.iloc[:, col_indices]
+        
+        data.columns = ["time", "fep-lambda", "U"]
+        data["fep"] = dependence(data.loc[:, "fep-lambda"]) * data.U
+        data.drop( columns=["U"], inplace=True)
+
+        dHdl = pd.concat([dHdl, data], axis=0, sort=False)
+
+    dHdl.set_index(["time", "fep-lambda"], inplace=True)
+    dHdl.mul({"fep": beta})
+
+    return dHdl
+
+
+@_init_attrs
 def extract_dHdl(
     fep_files,
     T,
@@ -1216,7 +727,6 @@ def extract_dHdl(
     column_dlambda2=None,
     columns_derivative1=[10, 11],
     columns_derivative2=[12, 13],
-    index=-1,
     units="real",
 ):
     """This function will go into alchemlyb.parsing.lammps
@@ -1248,9 +758,6 @@ def extract_dHdl(
     columns_derivative : list[int], default=[10,11]
         Indices for columns (column number minus one) representing the lambda at which to find the forward
         and backward distance.
-    index : int, default=-1
-        In provided file names, using underscore as a separator, this index marks the part of the filename
-        containing the lambda information for :func:`alchemlyb.parsing._get_ti_lambdas`.
     units : str, default="real"
         Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
 
@@ -1265,6 +772,7 @@ def extract_dHdl(
         - temperature in K or dimensionless
         - energy unit in kT
 
+    .. versionadded:: 1.??
     """
 
     # Collect Files
@@ -1272,16 +780,7 @@ def extract_dHdl(
     if not files:
         raise ValueError("No files have been found that match: {}".format(fep_files))
 
-    if units == "real":
-        beta = 1 / (k_b * T)
-    elif units == "lj":
-        beta = 1 / T
-    else:
-        raise ValueError(
-            "LAMMPS unit type, {}, is not supported. Supported types are: real and lj".format(
-                units
-            )
-        )
+    beta = beta_from_units(T, units)
 
     if not isinstance(column_lambda1, int):
         raise ValueError(
@@ -1350,7 +849,7 @@ def extract_dHdl(
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
-        data = pd.read_csv(file, sep=" ", comment="#")
+        data = pd.read_csv(file, sep=" ", comment="#", header=None)
         lx = len(data.columns)
         if [False for x in col_indices if x > lx]:
             raise ValueError(
@@ -1449,6 +948,7 @@ def extract_H(
         - temperature in K or dimensionless
         - energy unit in kT
 
+    .. versionadded:: 1.??
     """
 
     # Collect Files
@@ -1456,16 +956,7 @@ def extract_H(
     if not files:
         raise ValueError("No files have been found that match: {}".format(fep_files))
 
-    if units == "real":
-        beta = 1 / (k_b * T)
-    elif units == "lj":
-        beta = 1 / T
-    else:
-        raise ValueError(
-            "LAMMPS unit type, {}, is not supported. Supported types are: real and lj".format(
-                units
-            )
-        )
+    beta = beta_from_units(T, units)
 
     if not isinstance(column_lambda1, int):
         raise ValueError(
@@ -1499,7 +990,7 @@ def extract_H(
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
-        data = pd.read_csv(file, sep=" ", comment="#")
+        data = pd.read_csv(file, sep=" ", comment="#", header=None)
         lx = len(data.columns)
         if [False for x in col_indices if x > lx]:
             raise ValueError(
