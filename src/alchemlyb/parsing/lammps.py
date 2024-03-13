@@ -1,18 +1,18 @@
-""" Parsers for extracting alchemical data from [LAMMPS](https://docs.lammps.org/Manual.html) output files.
+""" Parsers for extracting alchemical data from `LAMMPS <https://docs.lammps.org/Manual.html>`_ output files.
 
-For clarity, we would like to distinguish the difference between $\lambda$ and $\lambda'$. We refer to $\lambda$ as 
+For clarity, we would like to distinguish the difference between :math:`\lambda` and :math:`\lambda'`. We refer to :math:`\lambda` as 
 the potential scaling of the equilibrated system, so that when this value is changed, the system undergoes another equilibration 
-step. One the other hand, $\lambda'$ is the value used to scaled the potentials for the configurations of the system equilibrated 
-for $\lambda$. The value of $\lambda'$ is used in two instances. First, in thermodynamic integration (TI), values of $\lambda'$ 
-that are very close to $\lambda$ can be used to calculate the derivative. This is needed because LAMMPS does not compute 
+step. One the other hand, :math:`\lambda'` is the value used to scaled the potentials for the configurations of the system equilibrated 
+for :math:`\lambda`. The value of :math:`\lambda'` is used in two instances. First, in thermodynamic integration (TI), values of :math:`\lambda'` 
+that are very close to :math:`\lambda` can be used to calculate the derivative. This is needed because LAMMPS does not compute 
 explicit derivatives, although one should check whether they can derive an explicit expression, they cannot for changes of 
-$\lambda'$ in the soft Lennard-Jones (LJ) potential.
+:math:`\lambda'` in the soft Lennard-Jones (LJ) potential.
 
 The parsers featured in this module are constructed to parse LAMMPS output files output using the 
-[`fix ave/time command`](https://docs.lammps.org/fix_ave_time.html), containing data for given potential energy values (an 
-approximation of the Hamiltonian) at specified values of $\lambda$ and $\lambda'$, $U_{\lambda,\lambda'}$. Note that in 
-LAMMPS, [fix adapt/fep](https://docs.lammps.org/fix_adapt_fep.html) changes $\lambda$ and 
-[compute fep](https://docs.lammps.org/compute_fep.html) changes $\lambda'$.
+`fix ave/time command <https://docs.lammps.org/fix_ave_time.html>`_, containing data for given potential energy values (an 
+approximation of the Hamiltonian) at specified values of :math:`\lambda` and :math:`\lambda'`, :math:`U_{\lambda,\lambda'}`. Note that in 
+LAMMPS, `fix adapt/fep <https://docs.lammps.org/fix_adapt_fep.html>`_ changes :math:`\lambda` and 
+`compute fep <https://docs.lammps.org/compute_fep.html>`_ changes :math:`\lambda'`.
 
 .. versionadded:: 1.0.0
 
@@ -277,7 +277,7 @@ def extract_u_nk_from_u_n(
     ----------
     filenames : str
         Path to fepout file(s) to extract data from. Filenames and paths are
-        aggregated using [glob](https://docs.python.org/3/library/glob.html). For example, "/path/to/files/something_*.txt".
+        aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*.txt".
     temperature : float
         Temperature in Kelvin at which the simulation was sampled.
     columns_lambda : int
@@ -408,16 +408,19 @@ def extract_u_nk(
 ):
     """This function will go into alchemlyb.parsing.lammps
 
-    Each file is imported as a data frame where the columns kept are either:
+    Each file is imported as a data frame where the columns kept are either::
+    
         [0, columns_lambda1[0] columns_lambda1[1], column_u_nk]
-    or if columns_lambda2 is not None:
+        
+    or if columns_lambda2 is not None::
+    
         [0, columns_lambda1[0] columns_lambda1[1], column_lambda2, column_u_nk]
 
     Parameters
     ----------
     filenames : str
         Path to fepout file(s) to extract data from. Filenames and paths are
-        aggregated using [glob](https://docs.python.org/3/library/glob.html). For example, "/path/to/files/something_*_*.txt".
+        aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
     temperature : float
         Temperature in Kelvin at which the simulation was sampled.
     columns_lambda1 : list[int], default=[1,2]
@@ -626,14 +629,15 @@ def extract_dHdl_from_u_n(
 ):
     """Produce dHdl dataframe from sparated contributions of the potential energy.
 
-    Each file is imported as a data frame where the columns are:
+    Each file is imported as a data frame where the columns are::
+    
         [0, column_lambda, column_solvent, column_solute, column_cross]
 
     Parameters
     ----------
     filenames : str
         Path to fepout file(s) to extract data from. Filenames and paths are
-        aggregated using [glob](https://docs.python.org/3/library/glob.html). For example, "/path/to/files/something_*.txt".
+        aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
     columns_lambda : int, default=None
@@ -719,19 +723,23 @@ def extract_dHdl(
 ):
     """This function will go into alchemlyb.parsing.lammps
 
-    Each file is imported as a data frame where the columns kept are either:
+    Each file is imported as a data frame where the columns kept are either::
+    
         [0, column_lambda, column_dlambda1, columns_derivative[0], columns_derivative[1]]
-    or if columns_lambda2 is not None:
+        
+    or if columns_lambda2 is not None::
+    
         [
             0, column_lambda, column_dlambda1, column_lambda2, column_dlambda2,
-            columns_derivative1[0], columns_derivative1[1], columns_derivative2[0], columns_derivative2[1]
+            columns_derivative1[0], columns_derivative1[1], columns_derivative2[0],
+            columns_derivative2[1]
         ]
 
     Parameters
     ----------
     filenames : str
         Path to fepout file(s) to extract data from. Filenames and paths are
-        aggregated using [glob](https://docs.python.org/3/library/glob.html). For example, "/path/to/files/something_*_*.txt".
+        aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
     temperature : float
         Temperature in Kelvin at which the simulation was sampled.
     column_lambda1 : int, default=2
@@ -900,9 +908,12 @@ def extract_H(
 ):
     """This function will go into alchemlyb.parsing.lammps
 
-    Each file is imported as a data frame where the columns kept are either:
+    Each file is imported as a data frame where the columns kept are either::
+    
         [0, column_lambda, column_dlambda1, columns_derivative[0], columns_derivative[1]]
-    or if columns_lambda2 is not None:
+        
+    or if columns_lambda2 is not None::
+    
         [
             0, column_lambda, column_dlambda1, column_lambda2, column_dlambda2,
             columns_derivative1[0], columns_derivative1[1], columns_derivative2[0], columns_derivative2[1]
@@ -912,7 +923,7 @@ def extract_H(
     ----------
     filenames : str
         Path to fepout file(s) to extract data from. Filenames and paths are
-        aggregated using [glob](https://docs.python.org/3/library/glob.html). For example, "/path/to/files/something_*_*.txt".
+        aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
     temperature : float
         Temperature in Kelvin at which the simulation was sampled.
     column_lambda1 : int, default=2
