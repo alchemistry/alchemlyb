@@ -1,6 +1,7 @@
 """Amber parser tests.
 
 """
+
 import bz2
 import logging
 

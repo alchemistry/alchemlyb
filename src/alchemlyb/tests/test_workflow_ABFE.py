@@ -35,10 +35,10 @@ def workflow(tmp_path_factory):
 
 
 class TestInit:
-    def test_nofilematch(self):
+    def test_nofilematch(self, tmp_path):
         with pytest.raises(ValueError, match="No file has been matched to"):
             ABFE(
-                dir="./",
+                dir=str(tmp_path),
                 prefix="dhdl",
                 suffix="xvg",
                 T=310,

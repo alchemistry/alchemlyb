@@ -1,6 +1,7 @@
 """NAMD parser tests.
 
 """
+
 import bz2
 from os.path import basename
 from re import search
@@ -12,6 +13,7 @@ from alchemtest.namd import load_restarted_reversed
 from alchemtest.namd import load_tyr2ala
 
 from alchemlyb.parsing.namd import extract_u_nk, extract
+
 
 # Indices of lambda values in the following line in NAMD fepout files:
 # #NEW FEP WINDOW: LAMBDA SET TO 0.6 LAMBDA2 0.7 LAMBDA_IDWS 0.5
