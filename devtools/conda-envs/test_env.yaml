@@ -24,5 +24,5 @@ dependencies:
 - sphinx_rtd_theme
 
 - pip:
-  - alchemtest @ git+https://github.com/xiki-tempula/alchemtest.git@feat_main
+  - alchemtest @ https://github.com/alchemistry/alchemtest/archive/master.zip
 
