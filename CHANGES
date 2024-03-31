@@ -30,6 +30,10 @@ Enhancements
     (issue #337, PR #338)
   - ValueError issued when `df` and `series` for `statistical_inefficiency`
     doesn't have the same length (issue #337, PR #338)
+
+Fixes
+  - data_fraction column in workflow.convergence won't be affected by the
+    unit conversion (issue #350, PR#319).
   
 
 22/06/2023 xiki-tempula
