@@ -1,6 +1,7 @@
 """Tests for all FEP-based estimators in ``alchemlyb``.
 
 """
+
 import pytest
 
 import alchemlyb
