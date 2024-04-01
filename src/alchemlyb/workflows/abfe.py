@@ -801,7 +801,10 @@ class ABFE(WorkflowBase):
             logger.error(msg)
             raise ValueError(msg)
 
-        self.convergence = get_unit_converter(self.units)(convergence)
+        unit_converted_convergence = get_unit_converter(self.units)(convergence)
+        # Otherwise the data_fraction column is converted as well.
+        unit_converted_convergence["data_fraction"] = convergence["data_fraction"]
+        self.convergence = unit_converted_convergence
 
         logger.info(f"Plot convergence analysis to {dF_t} under {self.out}.")
 
