@@ -13,7 +13,7 @@ build:
     python: "mambaforge-4.10"
 
 conda:
-    environment: devtools/conda-envs/test_env.yaml
+    environment: docs/requirements.yaml
 
 python:
   install:
