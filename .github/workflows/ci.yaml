@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macOS-latest", "windows-latest"]
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11"]
         # Only test lowest and highest version on the expensive/slow
         # macOS and windows runners (UPDATE when supported versions change):	
         exclude:
@@ -50,7 +50,7 @@ jobs:
       with:
         environment-file: devtools/conda-envs/test_env.yaml
         environment-name: test
-        extra-specs: |
+        create-args: |
             python=${{ matrix.python-version }}
 
     - name: Install package (with no dependencies)

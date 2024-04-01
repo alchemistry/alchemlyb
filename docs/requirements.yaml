@@ -1,0 +1,9 @@
+name: docs
+channels:
+dependencies:
+    # Base depends
+  - python=3.10
+  - pip
+  # Doc
+  - sphinx
+  - sphinx_rtd_theme
