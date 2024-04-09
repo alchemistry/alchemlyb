@@ -1,5 +1,5 @@
 ---
-title: 'Alchemlyb: The Simple Alchemistry Library'
+title: 'alchemlyb: the simple alchemistry library'
 tags:
   - Python
   - alchemistry
@@ -36,7 +36,7 @@ bibliography: paper.bib
 
 # Summary
 
-*Alchemlyb* is a dedicated open-source software package tailored for the analysis of alchemical free energy calculations,
+*alchemlyb* is a dedicated open-source software package tailored for the analysis of alchemical free energy calculations,
     an integral part of computational chemistry and biology,
     most notably in the field of drug discovery.
 The software spans a wide range of functions,
@@ -109,7 +109,7 @@ The error of the TI method is correlated with the average curvature [@pham2011id
 Additionally, the accumulated samples should be collected from equilibrated simulations,
     and *alchemlyb* has tools for plotting the convergence of the free energy estimate as a function of simulation time [@yang2004free] to detect potentially un-equilibrated data.
 
-*Alchemlyb* offers all these tools as a library for users to customize each stage of the analysis (Figure 1).
+*alchemlyb* offers all these tools as a library for users to customize each stage of the analysis (Figure 1).
 Additionally, *alchemlyb* provides an automated end-to-end workflow that reads in the raw input data and performs decorrelation, estimation, and quality plotting of the estimate.
 This workflow allows for the estimation of quantities such as solvation free energy with minimal code.
 Moreover, this facilitates more complex calculations, such as absolute binding free energy, which is the free energy difference between the solvation free energy of the ligand in water and the solvation free energy of the ligand in the protein's binding pocket. 
