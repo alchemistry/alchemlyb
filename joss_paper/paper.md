@@ -11,13 +11,14 @@ authors:
     equal-contrib: true
     affiliation: 1
   - name: David L. Dotson
-    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
     orcid: 0000-0001-5879-2942
+    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
     affiliation: 2
   - name: Michael R. Shirts
     orcid: 0000-0003-3249-1097
     affiliation: 3
   - name: Author with no affiliation
+    orcid: 
     corresponding: true # (This is how to denote the corresponding author)
     affiliation: 3
 affiliations:
