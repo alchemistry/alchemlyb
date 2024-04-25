@@ -69,9 +69,8 @@ Unlike its predecessor, *alchemlyb* breaks down components of the workflow into 
 This innovation enables consistent processing of free energy data from diverse MD engines, facilitating streamlined comparison and combination of results.
 
 Notably, *alchemlyb*'s robust and user-friendly nature has led to its integration into other automated workflow libraries such as BioSimSpace [@hedges2023suite].
-This further enhances its accessibility and usability within broader scientific workflows, reinforcing its position as a versatile and essential tool in the field of computational chemistry [^1].
+This further enhances its accessibility and usability within broader scientific workflows, reinforcing its position as a versatile and essential tool in the field of computational chemistry.
 
-[^1]: As of 29/12/2023, *alchemlyb* has been downloaded 23,922 times from [conda-forge](https://anaconda.org/conda-forge/alchemlyb/files).
 
 # Implementation
 
