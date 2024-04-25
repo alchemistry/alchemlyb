@@ -17,10 +17,10 @@ authors:
   - name: Michael R. Shirts
     orcid: 0000-0003-3249-1097
     affiliation: 3
-  - name: Author with no affiliation
-    orcid: 
+  - name: Oliver Beckstein
+    orcid: 0000-0003-1340-0831
     corresponding: true # (This is how to denote the corresponding author)
-    affiliation: 3
+    affiliation: 4
 affiliations:
  - name: Exscientia, Oxford, UK
    index: 1
@@ -28,8 +28,10 @@ affiliations:
    index: 2
  - name: University of Colorado Boulder, Boulder, Colorado, USA
    index: 3
+ - name: Arizona State University, Tempe, Arizona, USA
+   index: 4
 
-date: 29 December 2023
+date: 24 April 2024
 bibliography: paper.bib
 
 ---
