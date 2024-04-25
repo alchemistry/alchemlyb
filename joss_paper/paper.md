@@ -103,7 +103,12 @@ Moreover, this facilitates more complex calculations, such as absolute binding f
 
 # Acknowledgements
 
+Some work on alchemlyb was supported by grants from the  National Institutes of Health (Award No R01GM118772 to O.B.) and the National Science Foundation (award ACI-1443054 to O.B.).
+
+# Author contributions
+
 D.D. and O.B. designed the project. Z.W., D.D., contributed to the new features. Z.W., D.D., O.B. maintain the codebase. Z.W., M.R.S, O.B. wrote the manuscript.
+
 
 # References
 
