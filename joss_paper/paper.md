@@ -98,7 +98,7 @@ Moreover, this facilitates more complex calculations, such as absolute binding f
 
 # Acknowledgements
 
-O.B. and D.D. designed the project. Z.W., D.D., contributed to the new features. Z.W., D.D., O.B. maintain the codebase. Z.W., M.R.S wrote the manuscript.
+D.D. and O.B. designed the project. Z.W., D.D., contributed to the new features. Z.W., D.D., O.B. maintain the codebase. Z.W., M.R.S, O.B. wrote the manuscript.
 
 # References
 
