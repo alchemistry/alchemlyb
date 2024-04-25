@@ -62,11 +62,11 @@ In an initial step data are read from the native MD package file formats and the
 Additional functions enable subsampling or decorrelation of data and applying estimators from statistical mechanics to derive free energy quantities.
 Overall, *alchemlyb* implements modular building blocks to simplify the process of extracting crucial thermodynamic insights from molecular simulations in a uniform manner.
 
-
-The [alchemical-analysis.py](https://github.com/MobleyLab/alchemical-analysis) tool [@klimovich2015guidelines], which preceeded *alchemlyb*, addressed this problem.
-Now that [alchemical-analysis.py](https://github.com/MobleyLab/alchemical-analysis) has been deprecated, *alchemlyb* continues to provide a unified, engine-agnostic analysis workflow.
-Unlike its predecessor, *alchemlyb* breaks down components of the workflow into modular tools, allowing users to more easily customize their analysis.
-This innovation enables consistent processing of free energy data from diverse MD engines, facilitating streamlined comparison and combination of results.
+*alchemlyb* succeeds the widely-used but now deprecated [alchemical-analysis.py](https://github.com/MobleyLab/alchemical-analysis) tool [@klimovich2015guidelines], which combined pre-processing, free energy estimation, and plotting in a single script. 
+`alchemical-analysis.py` was not thoroughly tested and hard to integrate into modern workflows due to its monolithic design. 
+*alchemlyb* improves over its predecessor with a modular, function based design and thorough testing of all components using continuous integration.
+Thus, *alchemlyb* is primarily a library that enables users to easily use well-tested building blocks with in their own tools while additionally providing examples of complete end-to-end workflows.
+This innovation enables consistent processing of free energy data from diverse MD packages, facilitating streamlined comparison and combination of results.
 
 Notably, *alchemlyb*'s robust and user-friendly nature has led to its integration into other automated workflow libraries such as BioSimSpace [@hedges2023suite].
 This further enhances its accessibility and usability within broader scientific workflows, reinforcing its position as a versatile and essential tool in the field of computational chemistry.
