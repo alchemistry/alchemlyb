@@ -54,12 +54,13 @@ Other free energies extracted from simulations are useful in solution thermodyna
 Molecular dynamics (MD) packages such as GROMACS [@pronk2013gromacs], AMBER [@case2014ff14sb], NAMD [@phillips2020scalable], and GOMC [@cummings2021open] are used to run free energy simulations and many of these packages also contain tools for the subsequent processing of simulation data into free energies.
 However, there are no standard output formats and analysis tools implement different algorithms for the different stages of the free energy data processing pipeline.
 Therefore, it is very difficult to analyze data from different MD packages in a consistent manner.
-Furthermore, the native analysis tools do not always implement current best practices [@klimovich2015guidelines] or are out of date
-Overall, the coupling between data generation and analysis in most MD packages hinders seamless collaboration and comparison of results across.
+Furthermore, the native analysis tools do not always implement current best practices [@klimovich2015guidelines,@Mey2020aa] or are out of date
+Overall, the coupling between data generation and analysis in most MD packages hinders seamless collaboration and comparison of results across packages.
 
 *alchemlyb* addresses this problem by focusing only on the data analysis with the goal to provide a unified interface for working with free energy data.
-In an initial step data are read from the native MD package file formats and then organized into a common standard data structure, a pandas Dataframe.
-Additional functions enable subsampling or decorrelation of data and applying estimators from statistical mechanics to derive free energy quantities.
+In an initial step data are read from the native MD package file formats and then organized into a common standard data structure, a *pandas* `Dataframe` [@mckinney-proc-scipy-2010] (https://pandas.pydata.org).
+Functions are provided for pre-processing data by subsampling or decorrelation.
+Statistical mechanical estimators are available to derive free energy quantities; these estimators are implemented as classes with the same API as estimators in scikit-learn [@scikitlearn2011,@sklearn2013api] (https://scikit-learn.org).
 Overall, *alchemlyb* implements modular building blocks to simplify the process of extracting crucial thermodynamic insights from molecular simulations in a uniform manner.
 
 *alchemlyb* succeeds the widely-used but now deprecated [alchemical-analysis.py](https://github.com/MobleyLab/alchemical-analysis) tool [@klimovich2015guidelines], which combined pre-processing, free energy estimation, and plotting in a single script. 
@@ -73,30 +74,62 @@ Notably, *alchemlyb*'s robust and user-friendly nature has led to its integratio
 
 # Implementation
 
-Solvation free energy, a key physical property often computed by computational chemists, involves constructing two end states: one where the ligand interacts with water and itself (coupled state), and the other where the ligand interacts only with itself, mimicking the pure solvent and ligand in the gas phase (decoupled state).
-The solvation free energy is then obtained by calculating the free energy difference between these two end states.
-To achieve this, it is crucial to ensure sufficient overlap in phase space between the coupled and decoupled states, a condition often challenging to achieve.
-Overlapping is facilitated by introducing a parameter `lambda` ($\lambda $) that connects the two end-states, resulting in a series of intermediate states.
-MD engines simulate the system at these states, generating and accumulating free energy data.
+Free energy differences are fundamental to understand many different processes at the molecular scale, ranging from the binding of drug molecules to their receptor proteins or nucleic acids through the partitioning of molecules into different solvents or phases to the stability of crystals and biomolecules.
+The calculation of free energy differences is challenging but in the specific case of binding free energies and partitioning free energies, alchemical free energy calculations have emerged as a de-facto standard approach whereby non-physical intermediate states are introduced to bridge between the physical end states of the process of interest, such as the drug bound to the receptor and the drug free in solution [@Mey2020aa].
+In stratified ("windowed") alchemical free energy calculations, the system's interaction (its Hamiltonian) is continuously transformed as a function of a vector of $N$ alchemical parameters $\vec{\lambda}=(\lambda_1, \lambda_2, \dots, \lambda_N)$, so that in general $\vec{\lambda}=(0, 0, \dots, 0)$ indicates the initial physically realizable state and $\vec{\lambda} = (1, 1, \dots, 1)$ the final physically realizable state, while any intermediate configurations are non-physical but required for converging the calculations. 
+At each $\vec{\lambda}$-value (or "window"), the system configurations are sampled in the relevant thermodynamic ensemble, typically using molecular dynamics (MD) or Monte Carlo (MC) simulations and relevant quantities are calculated and stored for each sampled conformation.
+Estimators are then applied to these quantities to yield free energy differences between states and thus between the final and initial state, which equals the desired physical free energy difference.
 
-*alchemlyb* offers specific parsers designed to load raw free energy data from various MD engines, converting them into standard `pandas` `DataFrames`.
+## Core design principles
+
+*alchemlyb* is a Python library that seeks to make doing alchemical free energy calculations easier and less error prone. 
+It includes functionality for parsing data from file formats of widely used simulation packages, subsampling these data, and fitting these data with an estimator to obtain free energies. 
+Functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data while estimators are implemented as a classes that follow the tried-and-tested scikit-learn API.
+General and robust workflows following best practices are also provided, which can be used as reference implementations and examples.
+
+First and foremost, scientific code must be correct and we try to ensure this requirement by following best software engineering practices during development, close to full test coverage of all code in the library (currently 99%), and providing citations to published papers for included algorithms. 
+We use a curated, public data set (*alchemtest* (https://github.com/alchemistry/alchemtest)) for automated testing.
+
+The guiding design principles are summarized as:
+
+1. Use functions when possible, classes only when necessary (or for estimators, see (2)).
+2. For estimators, mimic the object-oriented scikit-learn API as much as possible.
+3. Aim for a consistent interface throughout, e.g. all parsers take similar inputs and yield a common set of outputs, using the `pandas.DataFrame` as the underlying data structure.
+4. Have *all* functionality tested.
+
+*alchemlyb* is published under the open source BSD-3 clause license.
+
+## Library structure
+
+*alchemlyb* offers specific parsers in `alchemlyb.parsing` to load raw free energy data from various MD packages (GROMACS [@pronk2013gromacs], AMBER [@case2014ff14sb], NAMD [@phillips2020scalable], and GOMC [@cummings2021open]).
+The raw data are converted into a standard format as a `pandas.DataFrame` and converted from the energy of the software to units of $k T$ where $k = 1.380649 \times 10^{-23}\,\text{J}\,\text{K}^{-1}$ is Boltzmann's constant and $T$ is the temperature at which the simulation was performed.
+Metadata such as $T$ and the energy unit are stored in DataFrame attributes and propagated through *alchemlyb*, which enables seamless unit conversion with functions in the `alchemlyb.postprocessing` module.
 Two types of free energy data are considered: Hamiltonian gradients (`dHdl`, $dH/d\lambda$) at all lambda states, suitable for thermodynamic integration (TI) estimators [@kirkwood1935statistical], and reduced potential energy differences between lambda states (`u_nk`, $u_{nk}$), which are used for free energy perturbation (FEP) estimators [@zwanzig1954high].
 
-In *alchemlyb*, TI [@paliwal2011benchmark] and TI with Gaussian quadrature [@gusev2023active] estimators are implemented in the TI category of estimators.
-FEP category estimators include Bennett Acceptance Ratio (BAR) [@bennett1976efficient] and Multistate BAR (MBAR) [@shirts2008statistically].
-These estimators assume uncorrelated samples, and *alchemlyb* provides tools for data resampling based on autocorrelation times [@chodera2007use].
+Both types of estimators assume uncorrelated samples, which requires subsampling of the raw data.
+The `alchemlyb.preprocessing.subsampling` module provides tools for data subsampling based on autocorrelation times [@chodera2007use,@Chodera2016aa] as well as simple slicing of the `dHdl` and `u_nk` DataFrames.
+
+The two major classes of commonly used estimators are implemented in `alchemlyb.estimators`.
+Unlike other components  of *alchemlyb* that are implemented as pure functions, estimators are implemented as classes and follow the well-known scikit-learn API [@sklearn2013api] where instantiation sets the parameters (e.g., `estimator = MBAR(maximum_iterations=10000)`) and calling of the `fit()` method (e.g., `estimator.fit(u_nk)`) applies the estimator to the data and populates output attributes of the class; these results attributes are customarily indicated with a trailing underscore (e.g., `estimator.delta_f_` for the matrix of free energy differences between all states). 
+In *alchemlyb*, TI [@paliwal2011benchmark] and TI with Gaussian quadrature [@gusev2023active] estimators are implemented in the TI category of estimators (module `alchemlyb.estimators.TI`).
+FEP category estimators (module `alchemlyb.estimators.FEP`) include Bennett Acceptance Ratio (BAR) [@bennett1976efficient] and Multistate BAR (MBAR) [@shirts2008statistically], which are implemented in the `pymbar` package [@shirts2008statistically] (https://github.com/choderalab/pymbar) and called from *alchemlyb*.
 
 To evaluate the accuracy of the free energy estimate, *alchemlyb* offers a range of assessment tools.
 The error of the TI method is correlated with the average curvature [@pham2011identifying], while the error of FEP estimators depends on the overlap in sampled energy distributions [@pohorille2010good].
-*alchemlyb* visualizes the smoothness of the integrand for TI estimators and the overlap matrix for FEP estimators.
-Additionally, the accumulated samples should be collected from equilibrated simulations, and *alchemlyb* has tools for plotting the convergence of the free energy estimate as a function of simulation time [@yang2004free] and means to compute the "fractional equilibration time" [@fan2020aa] to detect potentially un-equilibrated data.
+*alchemlyb*  the smoothness of the integrand for TI estimators and the overlap matrix for FEP estimators.
+The accumulated samples should be collected from equilibrated simulations and *alchemlyb* contains tools for assessing (`alchemlyb.convergence`) and plotting (`alchemlyb.visualisation`) the convergence of the free energy estimate as a function of simulation time [@yang2004free] and means to compute the "fractional equilibration time" [@fan2020aa] to detect potentially un-equilibrated data.
 
 *alchemlyb* offers all these tools as a library for users to customize each stage of the analysis (Figure 1).
-Additionally, *alchemlyb* provides an automated end-to-end workflow that reads in the raw input data and performs decorrelation, estimation, and quality plotting of the estimate.
-This workflow allows for the estimation of quantities such as solvation free energy with minimal code.
-Moreover, this facilitates more complex calculations, such as absolute binding free energy, which is the free energy difference between the solvation free energy of the ligand in water and the solvation free energy of the ligand in the protein's binding pocket. 
 
-![The building blocks of *alchemlyb*](Fig1.pdf)
+![The building blocks of *alchemlyb*. Raw data from simulation packages are parsed into common data structures depending on the free energy quantities, pre-processed, and processed with a free energy estimator. The resulting free energy differences are analyzed for convergence and plotted for quality assessment.](Fig1.pdf)
+
+
+## Workflows
+
+The building blocks are sufficient to compute free energies from alchemical free energy simulations and assess their reliability.
+*alchemlyb* also provides a structure to combined the building blocks into full end-to-end workflows (module `alchemlyb.workflows`).
+As an example, the `ABFE` workflow for absolute binding free energy estimation reads in the raw input data and performs decorrelation, estimation, and quality plotting of the estimate.
+It can directly estimate quantities such as solvation free energies and makes it easy to calculate more complex quantities such as absolute binding free energies (as the difference between the solvation free energy of the ligand in water and the solvation free energy of the ligand in the protein's binding pocket).
 
 
 
