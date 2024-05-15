@@ -31,7 +31,7 @@ affiliations:
  - name: Arizona State University, Tempe, Arizona, USA
    index: 4
 
-date: 24 April 2024
+date: 31 May 2024
 bibliography: paper.bib
 
 ---
@@ -65,11 +65,10 @@ Overall, *alchemlyb* implements modular building blocks to simplify the process 
 *alchemlyb* succeeds the widely-used but now deprecated [alchemical-analysis.py](https://github.com/MobleyLab/alchemical-analysis) tool [@klimovich2015guidelines], which combined pre-processing, free energy estimation, and plotting in a single script. 
 `alchemical-analysis.py` was not thoroughly tested and hard to integrate into modern workflows due to its monolithic design. 
 *alchemlyb* improves over its predecessor with a modular, function based design and thorough testing of all components using continuous integration.
-Thus, *alchemlyb* is primarily a library that enables users to easily use well-tested building blocks with in their own tools while additionally providing examples of complete end-to-end workflows.
+Thus, *alchemlyb* is primarily a library that enables users to easily use well-tested building blocks within their own tools while additionally providing examples of complete end-to-end workflows.
 This innovation enables consistent processing of free energy data from diverse MD packages, facilitating streamlined comparison and combination of results.
 
-Notably, *alchemlyb*'s robust and user-friendly nature has led to its integration into other automated workflow libraries such as BioSimSpace [@hedges2023suite].
-This further enhances its accessibility and usability within broader scientific workflows, reinforcing its position as a versatile and essential tool in the field of computational chemistry.
+Notably, *alchemlyb*'s robust and user-friendly nature has led to its integration into other automated workflow libraries such as BioSimSpace [@hedges2023suite] or MDPOW [@fan2020aa], demonstrating its accessibility and usability within broader scientific workflows and reinforcing its position as a versatile tool in the field of computational chemistry.
 
 
 # Implementation
