@@ -117,7 +117,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         ]
         self._states_ = u_nk.columns.values.tolist()
 
-        if self.initial_f_k == "BAR":
+        if isinstance(self.initial_f_k, str) and self.initial_f_k == "BAR":
             bar = BAR(
                 maximum_iterations=self.maximum_iterations,
                 relative_tolerance=self.relative_tolerance,
