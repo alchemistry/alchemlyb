@@ -89,7 +89,7 @@ These estimators assume uncorrelated samples, and *alchemlyb* provides tools for
 To evaluate the accuracy of the free energy estimate, *alchemlyb* offers a range of assessment tools.
 The error of the TI method is correlated with the average curvature [@pham2011identifying], while the error of FEP estimators depends on the overlap in sampled energy distributions [@pohorille2010good].
 *alchemlyb* visualizes the smoothness of the integrand for TI estimators and the overlap matrix for FEP estimators.
-Additionally, the accumulated samples should be collected from equilibrated simulations, and *alchemlyb* has tools for plotting the convergence of the free energy estimate as a function of simulation time [@yang2004free] to detect potentially un-equilibrated data.
+Additionally, the accumulated samples should be collected from equilibrated simulations, and *alchemlyb* has tools for plotting the convergence of the free energy estimate as a function of simulation time [@yang2004free] and means to compute the "fractional equilibration time" [@fan2020aa] to detect potentially un-equilibrated data.
 
 *alchemlyb* offers all these tools as a library for users to customize each stage of the analysis (Figure 1).
 Additionally, *alchemlyb* provides an automated end-to-end workflow that reads in the raw input data and performs decorrelation, estimation, and quality plotting of the estimate.
