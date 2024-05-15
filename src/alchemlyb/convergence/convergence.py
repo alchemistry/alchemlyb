@@ -95,7 +95,8 @@ def forward_backward_convergence(df_list, estimator="MBAR", num=10, **kwargs):
             sample.append(data[: len(data) // num * i])
         sample = concat(sample)
         result = estimator_fit.fit(sample)
-        estimator_fit.initial_f_k = result.delta_f_.iloc[0, :]
+        if estimator == "MBAR":
+            estimator_fit.initial_f_k = result.delta_f_.iloc[0, :]
         forward_list.append(result.delta_f_.iloc[0, -1])
         if estimator.lower() == "bar":
             error = np.sqrt(
@@ -123,7 +124,8 @@ def forward_backward_convergence(df_list, estimator="MBAR", num=10, **kwargs):
             sample.append(data[-len(data) // num * i :])
         sample = concat(sample)
         result = estimator_fit.fit(sample)
-        estimator_fit.initial_f_k = result.delta_f_.iloc[0, :]
+        if estimator == "MBAR":
+            estimator_fit.initial_f_k = result.delta_f_.iloc[0, :]
         backward_list.append(result.delta_f_.iloc[0, -1])
         if estimator.lower() == "bar":
             error = np.sqrt(
