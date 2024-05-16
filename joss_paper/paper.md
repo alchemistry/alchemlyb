@@ -12,28 +12,28 @@ authors:
     affiliation: 1
   - name: David L. Dotson
     orcid: 0000-0001-5879-2942
-    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
-    affiliation: "2, 5"
+    equal-contrib: true
+    affiliation: "2, 3"
   - name: David Mobley
     orcid: 0000-0002-1083-5533
-    affiliation: 3	
+    affiliation: 4	
   - name: Michael R. Shirts
     orcid: 0000-0003-3249-1097
-    affiliation: 4
+    affiliation: 5
   - name: Oliver Beckstein
     orcid: 0000-0003-1340-0831
-    corresponding: true # (This is how to denote the corresponding author)
-    affiliation: 5
+    corresponding: true
+    affiliation: 2
 affiliations:
  - name: Exscientia, Oxford, UK
    index: 1
- - name: Datryllic LLC, Phoenix, Arizona, USA (current affiliation)
-   index: 2
- - name: University of California Irvine, Irvine, California, USA
-   index: 3
- - name: University of Colorado Boulder, Boulder, Colorado, USA
-   index: 4
  - name: Arizona State University, Tempe, Arizona, USA
+   index: 2
+ - name: Datryllic LLC, Phoenix, Arizona, USA (present affiliation)
+   index: 3
+ - name: University of California Irvine, Irvine, California, USA
+   index: 4
+ - name: University of Colorado Boulder, Boulder, Colorado, USA
    index: 5
 
 date: 31 May 2024
