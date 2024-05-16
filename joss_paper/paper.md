@@ -130,9 +130,9 @@ The error of the TI method is correlated with the average curvature [@pham2011id
 *alchemlyb* creates visualizations the smoothness of the integrand for TI estimators and the overlap matrix for FEP estimators, which can be qualitatively and quantitatively analyzed to determine the degree of overlap between simulated alchemical states, and suggest whether additional simulations should be run.
 For statistical validity, the accumulated samples should be collected from equilibrated simulations and *alchemlyb* contains tools for assessing (`alchemlyb.convergence`) and plotting (`alchemlyb.visualisation`) the convergence of the free energy estimate as a function of simulation time [@yang2004free] and means to compute the "fractional equilibration time" [@fan2020aa] to detect potentially un-equilibrated data.
 
-*alchemlyb* offers all these tools as a library for users to customize each stage of the analysis (Figure 1).
+*alchemlyb* offers all these tools as a library for users to customize each stage of the analysis (\autoref{fig:buildingblocks}).
 
-![The building blocks of *alchemlyb*. Raw data from simulation packages are parsed into common data structures depending on the free energy quantities, pre-processed, and processed with a free energy estimator. The resulting free energy differences are analyzed for convergence and plotted for quality assessment.](Fig1.pdf)
+![The building blocks of *alchemlyb*. Raw data from simulation packages are parsed into common data structures depending on the free energy quantities, pre-processed, and processed with a free energy estimator. The resulting free energy differences are analyzed for convergence and plotted for quality assessment.\label{fig:buildingblocks}](Fig1.pdf)
 
 
 ## Workflows
