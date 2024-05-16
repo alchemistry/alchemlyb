@@ -152,7 +152,7 @@ Ian Kenney, Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, 
 
 # Author contributions
 
-D.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.D., contributed to new features. Z.W., D.D., O.B. maintained the code base. Z.W., M.R.S, O.B. wrote the manuscript.
+D.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.D., contributed to new features. Z.W., D.D., O.B. maintained the code base. Z.W., D.D., M.R.S, O.B. wrote the manuscript.
 
 
 # References
