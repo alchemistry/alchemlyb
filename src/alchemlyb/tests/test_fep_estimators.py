@@ -151,3 +151,10 @@ def test_bootstrap(gmx_benzene_Coulomb_u_nk):
 
     assert mbar_bootstrap_mean == mbar_mean
     assert mbar_bootstrap_err != mbar_err
+
+
+def test_wrong_initial_f_k():
+    with pytest.raises(
+        ValueError, match="Only `BAR` is supported as string input to `initial_f_k`"
+    ):
+        MBAR(initial_f_k="aaa")
