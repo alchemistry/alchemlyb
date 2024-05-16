@@ -44,7 +44,7 @@ bibliography: paper.bib
 # Summary
 
 *alchemlyb* is an open-source Python software package for the analysis of alchemical free energy calculations, an important method in computational chemistry and biology, most notably in the field of drug discovery.
-Its functionality contains individual composable building blocks for all aspects of a full typical free energy analysis workflow, starting with the extraction of raw data from the output of diverse molecular dynamics (MD) packages, moving on to data preprocessing tasks such as decorrelation of time series, using various estimators to derive free energy estimates from simulation samples, and finally providing quality analysis tools for data convergence checking and visualization.
+Its functionality contains individual composable building blocks for all aspects of a full typical free energy analysis workflow, starting with the extraction of raw data from the output of diverse molecular simulation packages, moving on to data preprocessing tasks such as decorrelation of time series, using various estimators to derive free energy estimates from simulation samples, and finally providing quality analysis tools for data convergence checking and visualization.
 *alchemlyb* also contains high-level end-to-end workflows that combine multiple building blocks into a user-friendly analysis pipeline from the initial data input stage to the final results. This workflow functionality enhances accessibility by enabling researchers from diverse scientific backgrounds, and not solely computational chemistry specialists, to use *alchemlyb* effectively.
 
 
@@ -55,7 +55,7 @@ Notably, absolute binding free energy calculations between proteins and ligands 
 The resultant estimates of these free energies are essential for understanding binding affinity throughout various stages of drug discovery, such as hit identification and lead optimization [@merz2010drug].
 Other free energies extracted from simulations are useful in solution thermodynamics, chemical engineering, environmental science, and material science.
 
-Molecular dynamics (MD) packages such as GROMACS [@pronk2013gromacs], AMBER [@case2014ff14sb], NAMD [@phillips2020scalable], and GOMC [@cummings2021open] are used to run free energy simulations and many of these packages also contain tools for the subsequent processing of simulation data into free energies.
+Molecular simulation packages such as GROMACS [@Abraham2015aa], Amber [@Case2005uq], NAMD [@phillips2020scalable], and GOMC [@Nejahi2021aa] are used to run free energy simulations and many of these packages also contain tools for the subsequent processing of simulation data into free energies.
 However, there are no standard output formats and analysis tools implement different algorithms for the different stages of the free energy data processing pipeline.
 Therefore, it is very difficult to analyze data from different MD packages in a consistent manner.
 Furthermore, the native analysis tools do not always implement current best practices [@klimovich2015guidelines; @Mey2020aa] or are out of date
@@ -73,7 +73,7 @@ Statistical mechanical estimators are available to extract free energies and the
 Thus, *alchemlyb* is a library that enables users to easily use well-tested building blocks within their own tools while additionally providing examples of complete end-to-end workflows.
 This innovation enables consistent processing of free energy data from diverse MD packages, facilitating streamlined comparison and combination of results.
 
-Notably, *alchemlyb*'s robust and user-friendly nature has led to its integration into other automated workflow libraries such as BioSimSpace [@hedges2023suite] or MDPOW [@fan2020aa], demonstrating its accessibility and usability within broader scientific workflows and reinforcing its position as a versatile tool in the field of computational chemistry.
+Notably, *alchemlyb*'s robust and user-friendly nature has led to its integration into other automated workflow libraries such as BioSimSpace [@Hedges2019aa] or MDPOW [@fan2020aa], demonstrating its accessibility and usability within broader scientific workflows and reinforcing its position as a versatile tool in the field of computational chemistry.
 
 
 # Implementation
@@ -112,7 +112,7 @@ The guiding design principles are summarized as:
 
 ## Library structure
 
-*alchemlyb* offers specific parsers in `alchemlyb.parsing` to load raw free energy data from various MD packages (GROMACS [@pronk2013gromacs], AMBER [@case2014ff14sb], NAMD [@phillips2020scalable], and GOMC [@cummings2021open]).
+*alchemlyb* offers specific parsers in `alchemlyb.parsing` to load raw free energy data from various molecular simulation packages (GROMACS [@Abraham2015aa], Amber [@Case2005uq], NAMD [@phillips2020scalable], and GOMC [@Nejahi2021aa]).
 The raw data are converted into a standard format as a `pandas.DataFrame` and converted from the energy of the software to units of $k T$ where $k = 1.380649 \times 10^{-23}\,\text{J}\,\text{K}^{-1}$ is Boltzmann's constant and $T$ is the temperature at which the simulation was performed.
 Metadata such as $T$ and the energy unit are stored in DataFrame attributes and propagated through *alchemlyb*, which enables seamless unit conversion with functions in the `alchemlyb.postprocessing` module.
 Two types of free energy data are considered: Hamiltonian gradients (`dHdl`, $dH/d\lambda$) at all lambda states, suitable for thermodynamic integration (TI) estimators [@kirkwood1935statistical], and reduced potential energy differences between lambda states (`u_nk`, $u_{nk}$), which are used for free energy perturbation (FEP) estimators [@zwanzig1954high].
