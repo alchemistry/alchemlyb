@@ -88,7 +88,7 @@ Stratified alchemical free energy calculations have emerged as a de-facto standa
 In such free energy calculations, overlapping states are created by the introduction of a parameter $\lambda$ that continuously connects the functional form (the Hamiltonian of the system) of the two end-states, resulting in a series of intermediate states each with a different $\lambda$ value between 0 and 1 and with the physically realizable end states at $\lambda=0$ and $\lambda=1$.
 In general, $N$ alchemical parameters are used to describe the alchemical transformation with a parameter vector $\vec{\lambda}=(\lambda_1, \lambda_2, \dots, \lambda_N)$, so that $\vec{\lambda}=(0, 0, \dots, 0)$ indicates the initial and $\vec{\lambda} = (1, 1, \dots, 1)$ the final state.
 The intermediate states are non-physical but required for converging the calculations. 
-At each $\vec{\lambda}$-value (or "window"), the system configurations are sampled in the relevant thermodynamic ensemble, typically using molecular dynamics (MD) or Monte Carlo (MC) simulations, while generating and accumulating free energy data discussed below.
+At each $\vec{\lambda}$-value (or "window"), the system configurations are sampled in the relevant thermodynamic ensemble, typically using MD or Monte Carlo (MC) simulations, while generating and accumulating free energy data discussed below.
 Estimators are then applied to these data to compute free energy differences between states, including the difference between the final and initial state, thus yielding the desired free energy difference of the physical process of interest.
 
 ## Core design principles
