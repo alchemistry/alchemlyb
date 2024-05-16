@@ -13,7 +13,7 @@ authors:
   - name: David L. Dotson
     orcid: 0000-0001-5879-2942
     equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
-    affiliation: 2
+    affiliation: "2, 5"
   - name: David Mobley
     orcid: 0000-0002-1083-5533
     affiliation: 3	
@@ -27,7 +27,7 @@ authors:
 affiliations:
  - name: Exscientia, Oxford, UK
    index: 1
- - name: Datryllic LLC, Phoenix, Arizona, USA
+ - name: Datryllic LLC, Phoenix, Arizona, USA (current affiliation)
    index: 2
  - name: University of California Irvine, Irvine, California, USA
    index: 3
