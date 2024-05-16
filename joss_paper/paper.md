@@ -58,7 +58,7 @@ Furthermore, the native analysis tools do not always implement current best prac
 Overall, the coupling between data generation and analysis in most MD packages hinders seamless collaboration and comparison of results across different implementations of data generation for free energy calculations.
 
 *alchemlyb* addresses this problem by focusing only on the data analysis portion of this process with the goal to provide a unified interface for working with free energy data generated from different MD packages.
-In an initial step data are read from the native MD package file formats and then organized into a common standard data structure, organized as a *pandas* `Dataframe` [@mckinney-proc-scipy-2010] (https://pandas.pydata.org).
+In an initial step data are read from the native MD package file formats and then organized into a common standard data structure, organized as a *pandas* `DataFrame` [@mckinney-proc-scipy-2010] (https://pandas.pydata.org).
 Functions are provided for pre-processing data by subsampling or decorrelation.
 Statistical mechanical estimators are available to extract free energies and thermodynamic expectations as well associated metrics of quality; these estimators are implemented as classes with the same API as estimators in scikit-learn [@scikitlearn2011,@sklearn2013api] (https://scikit-learn.org).
 *alchemlyb* implements modular building blocks to simplify the process of extracting crucial thermodynamic insights from molecular simulations in a uniform manner.
@@ -145,7 +145,7 @@ Some work on alchemlyb was supported by grants from the  National Institutes of 
 
 # Author contributions
 
-D.D. and O.B. designed the project. Z.W., D.D., contributed to the new features. Z.W., D.D., O.B. maintain the codebase. Z.W., M.R.S, O.B. wrote the manuscript.
+D.D. and O.B. designed the project. Z.W., D.D., contributed to the new features. Z.W., D.D., O.B. maintain the code base. Z.W., M.R.S, O.B. wrote the manuscript.
 
 
 # References
