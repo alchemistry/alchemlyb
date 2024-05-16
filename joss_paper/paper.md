@@ -55,19 +55,19 @@ Notably, absolute binding free energy calculations between proteins and ligands 
 The resultant estimates of these free energies are essential for understanding binding affinity throughout various stages of drug discovery, such as hit identification and lead optimization [@merz2010drug].
 Other free energies extracted from simulations are useful in solution thermodynamics, chemical engineering, environmental science, and material science.
 
-Molecular simulation packages such as GROMACS [@Abraham2015aa], Amber [@Case2005uq], NAMD [@phillips2020scalable], and GOMC [@Nejahi2021aa] are used to run free energy simulations and many of these packages also contain tools for the subsequent processing of simulation data into free energies.
+Molecular simulation packages such as [GROMACS](https://www.gromacs.org/) [@Abraham2015aa], [Amber](https://ambermd.org/) [@Case2005uq], [NAMD](https://www.ks.uiuc.edu/Research/namd/) [@phillips2020scalable], and [GOMC](https://gomc-wsu.org/) [@Nejahi2021aa] are used to run free energy simulations and many of these packages also contain tools for the subsequent processing of simulation data into free energies.
 However, there are no standard output formats and analysis tools implement different algorithms for the different stages of the free energy data processing pipeline.
 Therefore, it is very difficult to analyze data from different MD packages in a consistent manner.
 Furthermore, the native analysis tools do not always implement current best practices [@klimovich2015guidelines; @Mey2020aa] or are out of date
 Overall, the coupling between data generation and analysis in most MD packages hinders seamless collaboration and comparison of results across different implementations of data generation for free energy calculations.
 
 *alchemlyb* addresses this problem by focusing only on the data analysis portion of this process with the goal to provide a unified interface for working with free energy data generated from different MD packages.
-In an initial step data are read from the native MD package file formats and then organized into a common standard data structure, organized as a *pandas* `DataFrame` [@mckinney-proc-scipy-2010] (https://pandas.pydata.org).
+In an initial step data are read from the native MD package file formats and then organized into a common standard data structure, organized as a [*pandas*](https://pandas.pydata.org) `DataFrame` [@mckinney-proc-scipy-2010].
 Functions are provided for pre-processing data by subsampling or decorrelation.
-Statistical mechanical estimators are available to extract free energies and thermodynamic expectations as well associated metrics of quality; these estimators are implemented as classes with the same API as estimators in scikit-learn [@scikitlearn2011; @sklearn2013api] (https://scikit-learn.org).
+Statistical mechanical estimators are available to extract free energies and thermodynamic expectations as well associated metrics of quality; these estimators are implemented as classes with the same API as estimators in [scikit-learn](https://scikit-learn.org) [@scikitlearn2011; @sklearn2013api].
 *alchemlyb* implements modular building blocks to simplify the process of extracting crucial thermodynamic insights from molecular simulations in a uniform manner.
 
-*alchemlyb* succeeds the widely-used but now deprecated `alchemical-analysis.py` tool (https://github.com/MobleyLab/alchemical-analysis) [@klimovich2015guidelines], which combined pre-processing, free energy estimation, and plotting in a single script.
+*alchemlyb* succeeds the widely-used but now deprecated [`alchemical-analysis.py` tool](https://github.com/MobleyLab/alchemical-analysis) [@klimovich2015guidelines], which combined pre-processing, free energy estimation, and plotting in a single script.
 `alchemical-analysis.py` was not thoroughly tested and hard to integrate into modern workflows due to its monolithic design, and only supported outdated Python 2.
 *alchemlyb* improves over its predecessor with a modular, function based design and thorough testing of all components using continuous integration.
 Thus, *alchemlyb* is a library that enables users to easily use well-tested building blocks within their own tools while additionally providing examples of complete end-to-end workflows.
@@ -99,7 +99,7 @@ Functions are simple in usage and pure in scope, and can be chained together to 
 General and robust workflows following best practices are also provided, which can be used as reference implementations and examples.
 
 First and foremost, scientific code must be correct and we try to ensure this requirement by following best software engineering practices during development, close to full test coverage of all code in the library (currently 99%), and providing citations to published papers for included algorithms. 
-We use a curated, public data set (*alchemtest* (https://github.com/alchemistry/alchemtest)) for automated testing.
+We use a curated, public data set ([*alchemtest*](https://github.com/alchemistry/alchemtest)) for automated testing; code in *alchemtest* is published under the open source BSD-3 clause license while all data are included under an [open license](https://opendefinition.org/licenses/#recommended-conformant-licenses) such as [CC0](https://creativecommons.org/publicdomain/zero/1.0/) (public domain) or [CC-BY](http://opendefinition.org/licenses/cc-by/) (attribution required).
 
 The guiding design principles are summarized as:
 
@@ -112,7 +112,7 @@ The guiding design principles are summarized as:
 
 ## Library structure
 
-*alchemlyb* offers specific parsers in `alchemlyb.parsing` to load raw free energy data from various molecular simulation packages (GROMACS [@Abraham2015aa], Amber [@Case2005uq], NAMD [@phillips2020scalable], and GOMC [@Nejahi2021aa]).
+*alchemlyb* offers specific parsers in `alchemlyb.parsing` to load raw free energy data from various molecular simulation packages ([GROMACS](https://www.gromacs.org/) [@Abraham2015aa], [Amber](https://ambermd.org/) [@Case2005uq], [NAMD](https://www.ks.uiuc.edu/Research/namd/) [@phillips2020scalable], and [GOMC](https://gomc-wsu.org/) [@Nejahi2021aa]) and provides a general structure for implementing parsers for other packages that are not yet supported.
 The raw data are converted into a standard format as a `pandas.DataFrame` and converted from the energy of the software to units of $k T$ where $k = 1.380649 \times 10^{-23}\,\text{J}\,\text{K}^{-1}$ is Boltzmann's constant and $T$ is the temperature at which the simulation was performed.
 Metadata such as $T$ and the energy unit are stored in DataFrame attributes and propagated through *alchemlyb*, which enables seamless unit conversion with functions in the `alchemlyb.postprocessing` module.
 Two types of free energy data are considered: Hamiltonian gradients (`dHdl`, $dH/d\lambda$) at all lambda states, suitable for thermodynamic integration (TI) estimators [@kirkwood1935statistical], and reduced potential energy differences between lambda states (`u_nk`, $u_{nk}$), which are used for free energy perturbation (FEP) estimators [@zwanzig1954high].
@@ -123,7 +123,7 @@ The `alchemlyb.preprocessing.subsampling` module provides tools for data subsamp
 The two major classes of commonly used estimators are implemented in `alchemlyb.estimators`.
 Unlike other components  of *alchemlyb* that are implemented as pure functions, estimators are implemented as classes and follow the well-known scikit-learn API [@sklearn2013api] where instantiation sets the parameters (e.g., `estimator = MBAR(maximum_iterations=10000)`) and calling of the `fit()` method (e.g., `estimator.fit(u_nk)`) applies the estimator to the data and populates output attributes of the class; these results attributes are customarily indicated with a trailing underscore (e.g., `estimator.delta_f_` for the matrix of free energy differences between all states). 
 In *alchemlyb*, TI [@paliwal2011benchmark] and TI with Gaussian quadrature [@gusev2023active] estimators are implemented in the TI category of estimators (module `alchemlyb.estimators.TI`).
-FEP category estimators (module `alchemlyb.estimators.FEP`) include Bennett Acceptance Ratio (BAR) [@bennett1976efficient] and Multistate BAR (MBAR) [@shirts2008statistically], which are implemented in the `pymbar` package [@shirts2008statistically] (https://github.com/choderalab/pymbar) and called from *alchemlyb*.
+FEP category estimators (module `alchemlyb.estimators.FEP`) include Bennett Acceptance Ratio (BAR) [@bennett1976efficient] and Multistate BAR (MBAR) [@shirts2008statistically], which are implemented in the [*pymbar*](https://github.com/choderalab/pymbar) package [@shirts2008statistically] and called from *alchemlyb*.
 
 To evaluate the accuracy of the free energy estimate, *alchemlyb* offers a range of assessment tools.
 The error of the TI method is correlated with the average curvature [@pham2011identifying], while the error of FEP estimators depends on the overlap in sampled energy distributions [@pohorille2010good].
