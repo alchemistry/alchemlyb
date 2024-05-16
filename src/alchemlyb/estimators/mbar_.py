@@ -22,9 +22,13 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
     relative_tolerance : float, optional
         Set to determine the relative tolerance convergence criteria.
 
-    initial_f_k : np.ndarray, float, shape=(K), optional
-        Set to the initial dimensionless free energies to use as a
-        guess (default None, which sets all :math:`f_k = 0`).
+    initial_f_k : np.ndarray, float, shape=(K), optional or String `BAR`
+        When `isinstance(initial_f_k, np.ndarray)`, `initial_f_k` will be used as
+        initial guess for MBAR estimator. initial_f_k should be dimensionless
+        free energies.
+        When `initial_f_k is None`, initial_f_k will be set to 0.
+        When initial_f_k == `BAR`, a BAR calculation will be done and
+        the result is used as the initial guess (default).
 
     method : str, optional, default="robust"
         The optimization routine to use.  This can be any of the methods
