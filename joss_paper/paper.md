@@ -149,7 +149,7 @@ Some work on alchemlyb was supported by grants from the  National Institutes of 
 
 # Author contributions
 
-D.D. and O.B. designed the project. Z.W., D.D., contributed to the new features. Z.W., D.D., O.B. maintain the code base. Z.W., M.R.S, O.B. wrote the manuscript.
+D.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.D., contributed to new features. Z.W., D.D., O.B. maintain the code base. Z.W., M.R.S, O.B. wrote the manuscript.
 
 
 # References
