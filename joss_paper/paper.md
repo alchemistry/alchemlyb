@@ -14,22 +14,27 @@ authors:
     orcid: 0000-0001-5879-2942
     equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
     affiliation: 2
+  - name: David Mobley
+    orcid: 0000-0002-1083-5533
+    affiliation: 3	
   - name: Michael R. Shirts
     orcid: 0000-0003-3249-1097
-    affiliation: 3
+    affiliation: 4
   - name: Oliver Beckstein
     orcid: 0000-0003-1340-0831
     corresponding: true # (This is how to denote the corresponding author)
-    affiliation: 4
+    affiliation: 5
 affiliations:
  - name: Exscientia, Oxford, UK
    index: 1
- - name: Datryllic LLC, Phoenix, AZ, USA
+ - name: Datryllic LLC, Phoenix, Arizona, USA
    index: 2
- - name: University of Colorado Boulder, Boulder, Colorado, USA
+ - name: University of California Irvine, Irvine, California, USA
    index: 3
- - name: Arizona State University, Tempe, Arizona, USA
+ - name: University of Colorado Boulder, Boulder, Colorado, USA
    index: 4
+ - name: Arizona State University, Tempe, Arizona, USA
+   index: 5
 
 date: 31 May 2024
 bibliography: paper.bib
