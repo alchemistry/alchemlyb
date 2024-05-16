@@ -67,8 +67,8 @@ Functions are provided for pre-processing data by subsampling or decorrelation.
 Statistical mechanical estimators are available to extract free energies and thermodynamic expectations as well associated metrics of quality; these estimators are implemented as classes with the same API as estimators in scikit-learn [@scikitlearn2011; @sklearn2013api] (https://scikit-learn.org).
 *alchemlyb* implements modular building blocks to simplify the process of extracting crucial thermodynamic insights from molecular simulations in a uniform manner.
 
-*alchemlyb* succeeds the widely-used but now deprecated [alchemical-analysis.py](https://github.com/MobleyLab/alchemical-analysis) tool [@klimovich2015guidelines], which combined pre-processing, free energy estimation, and plotting in a single script. 
-`alchemical-analysis.py` was not thoroughly tested and hard to integrate into modern workflows due to its monolithic design, as well as remaining in python 2. 
+*alchemlyb* succeeds the widely-used but now deprecated `alchemical-analysis.py` tool (https://github.com/MobleyLab/alchemical-analysis) [@klimovich2015guidelines], which combined pre-processing, free energy estimation, and plotting in a single script.
+`alchemical-analysis.py` was not thoroughly tested and hard to integrate into modern workflows due to its monolithic design, and only supported outdated Python 2.
 *alchemlyb* improves over its predecessor with a modular, function based design and thorough testing of all components using continuous integration.
 Thus, *alchemlyb* is a library that enables users to easily use well-tested building blocks within their own tools while additionally providing examples of complete end-to-end workflows.
 This innovation enables consistent processing of free energy data from diverse MD packages, facilitating streamlined comparison and combination of results.
