@@ -58,13 +58,13 @@ Other free energies extracted from simulations are useful in solution thermodyna
 Molecular dynamics (MD) packages such as GROMACS [@pronk2013gromacs], AMBER [@case2014ff14sb], NAMD [@phillips2020scalable], and GOMC [@cummings2021open] are used to run free energy simulations and many of these packages also contain tools for the subsequent processing of simulation data into free energies.
 However, there are no standard output formats and analysis tools implement different algorithms for the different stages of the free energy data processing pipeline.
 Therefore, it is very difficult to analyze data from different MD packages in a consistent manner.
-Furthermore, the native analysis tools do not always implement current best practices [@klimovich2015guidelines,@Mey2020aa] or are out of date
+Furthermore, the native analysis tools do not always implement current best practices [@klimovich2015guidelines; @Mey2020aa] or are out of date
 Overall, the coupling between data generation and analysis in most MD packages hinders seamless collaboration and comparison of results across different implementations of data generation for free energy calculations.
 
 *alchemlyb* addresses this problem by focusing only on the data analysis portion of this process with the goal to provide a unified interface for working with free energy data generated from different MD packages.
 In an initial step data are read from the native MD package file formats and then organized into a common standard data structure, organized as a *pandas* `DataFrame` [@mckinney-proc-scipy-2010] (https://pandas.pydata.org).
 Functions are provided for pre-processing data by subsampling or decorrelation.
-Statistical mechanical estimators are available to extract free energies and thermodynamic expectations as well associated metrics of quality; these estimators are implemented as classes with the same API as estimators in scikit-learn [@scikitlearn2011,@sklearn2013api] (https://scikit-learn.org).
+Statistical mechanical estimators are available to extract free energies and thermodynamic expectations as well associated metrics of quality; these estimators are implemented as classes with the same API as estimators in scikit-learn [@scikitlearn2011; @sklearn2013api] (https://scikit-learn.org).
 *alchemlyb* implements modular building blocks to simplify the process of extracting crucial thermodynamic insights from molecular simulations in a uniform manner.
 
 *alchemlyb* succeeds the widely-used but now deprecated [alchemical-analysis.py](https://github.com/MobleyLab/alchemical-analysis) tool [@klimovich2015guidelines], which combined pre-processing, free energy estimation, and plotting in a single script. 
@@ -118,7 +118,7 @@ Metadata such as $T$ and the energy unit are stored in DataFrame attributes and 
 Two types of free energy data are considered: Hamiltonian gradients (`dHdl`, $dH/d\lambda$) at all lambda states, suitable for thermodynamic integration (TI) estimators [@kirkwood1935statistical], and reduced potential energy differences between lambda states (`u_nk`, $u_{nk}$), which are used for free energy perturbation (FEP) estimators [@zwanzig1954high].
 
 Both types of estimators assume uncorrelated samples in order to give unbiased estimates of the uncertainties, which requires subsampling of the raw data.
-The `alchemlyb.preprocessing.subsampling` module provides tools for data subsampling based on autocorrelation times [@chodera2007use,@Chodera2016aa] as well as simple slicing of the `dHdl` and `u_nk` DataFrames.
+The `alchemlyb.preprocessing.subsampling` module provides tools for data subsampling based on autocorrelation times [@chodera2007use; @Chodera2016aa] as well as simple slicing of the `dHdl` and `u_nk` DataFrames.
 
 The two major classes of commonly used estimators are implemented in `alchemlyb.estimators`.
 Unlike other components  of *alchemlyb* that are implemented as pure functions, estimators are implemented as classes and follow the well-known scikit-learn API [@sklearn2013api] where instantiation sets the parameters (e.g., `estimator = MBAR(maximum_iterations=10000)`) and calling of the `fit()` method (e.g., `estimator.fit(u_nk)`) applies the estimator to the data and populates output attributes of the class; these results attributes are customarily indicated with a trailing underscore (e.g., `estimator.delta_f_` for the matrix of free energy differences between all states). 
