@@ -2,6 +2,7 @@
 
 """
 
+import numpy as np
 import pytest
 
 import alchemlyb
@@ -158,3 +159,11 @@ def test_wrong_initial_f_k():
         ValueError, match="Only `BAR` is supported as string input to `initial_f_k`"
     ):
         MBAR(initial_f_k="aaa")
+
+
+@pytest.mark.parametrize("initial_f_k", ["BAR", None])
+def test_initial_f_k(gmx_benzene_Coulomb_u_nk, initial_f_k):
+    u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
+    mbar = MBAR(initial_f_k=initial_f_k)
+    mbar.fit(u_nk)
+    assert np.isclose(mbar.delta_f_.loc[0.00, 1.00], 3.0411556983908046)
