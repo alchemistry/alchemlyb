@@ -27,7 +27,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         initial guess for MBAR estimator. initial_f_k should be dimensionless
         free energies.
         When `initial_f_k` is ``None``, ``initial_f_k`` will be set to 0.
-        When initial_f_k == `BAR`, a BAR calculation will be done and
+        When `initial_f_k` is set to "BAR", a BAR calculation will be done and
         the result is used as the initial guess (default).
 
         .. versionchanged:: 2.3.0
