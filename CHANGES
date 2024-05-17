@@ -16,7 +16,7 @@ The rules for this file:
 
 **/**/2024 xiki-tempula
 
-  * 2.2.1
+  * 2.3.0
 
 Changes
   - Default value for keyword argument `initial_nk` of the MBAR estimator was
