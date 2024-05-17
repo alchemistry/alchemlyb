@@ -24,8 +24,9 @@ Changes
     `None` (start from all zeros) as this change provides a sizable speedup (PR #357)
     
 Enhancements
-  - `forward_backward_convergence` uses the result from the previous step as the initial guess for the next step. (PR #357)
   - `forward_backward_convergence` uses the bootstrap error when the statistical error is too large. (PR #357)
+  - `BAR` result is used as initial guess for `MBAR` estimator. (PR #357)
+  - `forward_backward_convergence` uses the result from the previous step as the initial guess for the next step. (PR #357)
 
 06/04/2024 hl2500, xiki-tempula
 
