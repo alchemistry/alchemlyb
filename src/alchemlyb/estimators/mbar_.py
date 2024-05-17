@@ -26,7 +26,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         When `isinstance(initial_f_k, np.ndarray)`, `initial_f_k` will be used as
         initial guess for MBAR estimator. initial_f_k should be dimensionless
         free energies.
-        When `initial_f_k is None`, initial_f_k will be set to 0.
+        When `initial_f_k` is ``None``, ``initial_f_k`` will be set to 0.
         When initial_f_k == `BAR`, a BAR calculation will be done and
         the result is used as the initial guess (default).
 
