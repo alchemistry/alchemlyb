@@ -18,6 +18,11 @@ The rules for this file:
 
   * 2.2.1
 
+Changes
+  - Default value for keyword argument `initial_nk` of the MBAR estimator was
+    changed to "BAR" (run an initial BAR calculation before MBAR) instead of 
+    `None` (start from all zeros) as this change provides a sizable speedup (PR #357)
+    
 Enhancements
   - `BAR` result is used as initial guess for `MBAR` estimator. (PR #357)
   - `forward_backward_convergence` uses the result from the previous step as the initial guess for the next step. (PR #357)
