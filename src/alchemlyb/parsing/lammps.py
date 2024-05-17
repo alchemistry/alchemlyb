@@ -391,7 +391,6 @@ def extract_u_nk_from_u_n(
                     * tmp_df["u_cross"]
                     * (dependence(lambda12) / dependence(lambda1) - 1)
                 )
-
                 if (
                     lambda1 == lambda12
                     and u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12][0] != 0
