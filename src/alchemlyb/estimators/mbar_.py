@@ -30,6 +30,11 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         When initial_f_k == `BAR`, a BAR calculation will be done and
         the result is used as the initial guess (default).
 
+        .. versionchanged:: 2.3.0
+           The new default is now "BAR" as it provides a substantial speedup
+           over the previous default `None`.
+           
+
     method : str, optional, default="robust"
         The optimization routine to use.  This can be any of the methods
         available via :func:`scipy.optimize.minimize` or
