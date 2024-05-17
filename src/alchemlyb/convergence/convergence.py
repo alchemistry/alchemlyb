@@ -82,7 +82,7 @@ def forward_backward_convergence(df_list, estimator="MBAR", num=10, **kwargs):
         raise ValueError(msg)
     else:
         # select estimator class by name
-        estimator_fit = estimators_dispatch[estimator](**kwargs).fit
+        my_estimator = estimators_dispatch[estimator](**kwargs)
         logger.info(f"Use {estimator} estimator for convergence analysis.")
 
     logger.info("Begin forward analysis")
@@ -94,7 +94,9 @@ def forward_backward_convergence(df_list, estimator="MBAR", num=10, **kwargs):
         for data in df_list:
             sample.append(data[: len(data) // num * i])
         sample = concat(sample)
-        result = estimator_fit(sample)
+        result = my_estimator.fit(sample)
+        if estimator == "MBAR":
+            my_estimator.initial_f_k = result.delta_f_.iloc[0, :]
         forward_list.append(result.delta_f_.iloc[0, -1])
         if estimator.lower() == "bar":
             error = np.sqrt(
@@ -121,7 +123,9 @@ def forward_backward_convergence(df_list, estimator="MBAR", num=10, **kwargs):
         for data in df_list:
             sample.append(data[-len(data) // num * i :])
         sample = concat(sample)
-        result = estimator_fit(sample)
+        result = my_estimator.fit(sample)
+        if estimator == "MBAR":
+            my_estimator.initial_f_k = result.delta_f_.iloc[0, :]
         backward_list.append(result.delta_f_.iloc[0, -1])
         if estimator.lower() == "bar":
             error = np.sqrt(

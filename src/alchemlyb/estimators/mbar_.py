@@ -1,7 +1,12 @@
+from __future__ import annotations
+from typing import Literal
+
+import numpy as np
 import pandas as pd
 import pymbar
 from sklearn.base import BaseEstimator
 
+from . import BAR
 from .base import _EstimatorMixOut
 
 
@@ -17,9 +22,18 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
     relative_tolerance : float, optional
         Set to determine the relative tolerance convergence criteria.
 
-    initial_f_k : np.ndarray, float, shape=(K), optional
-        Set to the initial dimensionless free energies to use as a
-        guess (default None, which sets all :math:`f_k = 0`).
+    initial_f_k : np.ndarray, float, shape=(K), optional or String `BAR`
+        When `isinstance(initial_f_k, np.ndarray)`, `initial_f_k` will be used as
+        initial guess for MBAR estimator. initial_f_k should be dimensionless
+        free energies.
+        When `initial_f_k` is ``None``, ``initial_f_k`` will be set to 0.
+        When `initial_f_k` is set to "BAR", a BAR calculation will be done and
+        the result is used as the initial guess (default).
+
+        .. versionchanged:: 2.3.0
+           The new default is now "BAR" as it provides a substantial speedup
+           over the previous default `None`.
+           
 
     method : str, optional, default="robust"
         The optimization routine to use.  This can be any of the methods
@@ -71,14 +85,19 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         self,
         maximum_iterations=10000,
         relative_tolerance=1.0e-7,
-        initial_f_k=None,
+        initial_f_k: np.ndarray | Literal["BAR"] | None = "BAR",
         method="robust",
         n_bootstraps=0,
         verbose=False,
     ):
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
-        self.initial_f_k = initial_f_k
+        if isinstance(initial_f_k, str) and initial_f_k != "BAR":
+            raise ValueError(
+                f"Only `BAR` is supported as string input to `initial_f_k`. Got ({initial_f_k})."
+            )
+        else:
+            self.initial_f_k = initial_f_k
         self.method = method
         self.verbose = verbose
         self.n_bootstraps = n_bootstraps
@@ -108,13 +127,24 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         ]
         self._states_ = u_nk.columns.values.tolist()
 
+        if isinstance(self.initial_f_k, str) and self.initial_f_k == "BAR":
+            bar = BAR(
+                maximum_iterations=self.maximum_iterations,
+                relative_tolerance=self.relative_tolerance,
+                verbose=self.verbose,
+            )
+            bar.fit(u_nk)
+            initial_f_k = bar.delta_f_.iloc[0, :]
+        else:
+            initial_f_k = self.initial_f_k
+
         self._mbar = pymbar.MBAR(
             u_nk.T,
             N_k,
             maximum_iterations=self.maximum_iterations,
             relative_tolerance=self.relative_tolerance,
             verbose=self.verbose,
-            initial_f_k=self.initial_f_k,
+            initial_f_k=initial_f_k,
             solver_protocol=self.method,
             n_bootstraps=self.n_bootstraps,
         )
