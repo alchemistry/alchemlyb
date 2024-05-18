@@ -166,6 +166,8 @@ def _forward_backward_convergence_estimate(
     """
     sample = concat(sample_list)
     result = my_estimator.fit(sample)
+    if estimator == "MBAR":
+        my_estimator.initial_f_k = result.delta_f_.iloc[0, :]
     mean = result.delta_f_.iloc[0, -1]
     if estimator.lower() == "bar":
         error = np.sqrt(
