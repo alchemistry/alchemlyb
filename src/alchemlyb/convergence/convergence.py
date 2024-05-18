@@ -42,6 +42,9 @@ def forward_backward_convergence(
     error_tol : float
         The maximum error tolerated for analytic error. If the analytic error is
         bigger than the error tolerance, the bootstrap error will be used.
+
+        .. versionadded:: 2.3.0
+
     kwargs : dict
         Keyword arguments to be passed to the estimator.
 
