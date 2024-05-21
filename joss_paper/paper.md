@@ -14,6 +14,9 @@ authors:
     orcid: 0000-0001-5879-2942
     equal-contrib: true
     affiliation: "2, 3"
+  - name: Domenico Marson
+    orcid: 0000-0003-1839-9868
+    affiliation: 6
   - name: David Mobley
     orcid: 0000-0002-1083-5533
     affiliation: 4	
@@ -35,6 +38,8 @@ affiliations:
    index: 4
  - name: University of Colorado Boulder, Boulder, Colorado, USA
    index: 5
+ - name: Molecular Biology and Nanotechnology Laboratory (MolBNL@UniTS), DEA, University of Trieste, Trieste, Italy
+   index: 6
 
 date: 31 May 2024
 bibliography: paper.bib
@@ -148,11 +153,11 @@ It can directly estimate quantities such as solvation free energies and makes it
 Some work on alchemlyb was supported by grants from the  National Institutes of Health (Award No R01GM118772 to O.B.) and the National Science Foundation (award ACI-1443054 to O.B.). 
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
 
-Ian Kenney, Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Hyungro Lee, Mohammad S. Barhaghi, Alexander Schlaich, Jérôme Hénin, Thomas T. Joseph, Irfan Alibay, Pascal Merz, Domenico Marson, and Haoxi Li contributed code to *alchemlyb*.
+Ian Kenney, Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Hyungro Lee, Mohammad S. Barhaghi, Alexander Schlaich, Jérôme Hénin, Thomas T. Joseph, Irfan Alibay, Pascal Merz, and Haoxi Li contributed code to *alchemlyb*.
 
 # Author contributions
 
-D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, O.B. wrote the manuscript.
+D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., D.M. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, O.B. wrote the manuscript.
 
 
 # References
