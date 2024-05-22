@@ -158,11 +158,11 @@ It can directly estimate quantities such as solvation free energies and makes it
 Some work on alchemlyb was supported by grants from the  National Institutes of Health (Award No R01GM118772 to O.B., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). 
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
 
-Ian Kenney, Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Hyungro Lee, Mohammad S. Barhaghi, Alexander Schlaich, Jérôme Hénin, Thomas T. Joseph, Irfan Alibay, Pascal Merz, and Haoxi Li contributed code to *alchemlyb*.
+Ian Kenney, Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Hyungro Lee, Mohammad S. Barhaghi, Alexander Schlaich, Jérôme Hénin, Irfan Alibay, Pascal Merz, and Haoxi Li contributed code to *alchemlyb*.
 
 # Author contributions
 
-D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., D.M. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, O.B. wrote the manuscript.
+D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., D.M., T.T.J. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, O.B. wrote the manuscript.
 
 
 # References
