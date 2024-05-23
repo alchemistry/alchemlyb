@@ -20,6 +20,9 @@ authors:
   - name: Thomas T. Joseph
     orcid: 0000-0003-1323-3244
     affiliation: 7
+  - name: Haoxi Li
+    orcid: 0009-0004-8369-1042
+    affiliation: 8  
   - name: David Mobley
     orcid: 0000-0002-1083-5533
     affiliation: 4	
@@ -45,6 +48,8 @@ affiliations:
    index: 6
  - name: Department of Anesthesiology and Critical Care, Perelman School of Medicine, University of Pennsylvania, Philadelphia, Pennsylvania, USA
    index: 7
+ - name: UNC Eshelman School of Pharmacy, University of North Carolina, Chapel Hill, NC, USA.
+   index: 8 
 
 date: 31 May 2024
 bibliography: paper.bib
@@ -105,7 +110,7 @@ Estimators are then applied to these data to compute free energy differences bet
 
 *alchemlyb* is a Python library that seeks to make doing alchemical free energy calculations easier and less error prone. 
 It includes functionality for parsing data from file formats of widely used simulation packages, subsampling these data, and fitting these data with an estimator to obtain free energies. 
-Functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data while estimators are implemented as a classes that follow the tried-and-tested scikit-learn API.
+Functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data while estimators are implemented as classes that follow the tried-and-tested scikit-learn API.
 General and robust workflows following best practices are also provided, which can be used as reference implementations and examples.
 
 First and foremost, scientific code must be correct and we try to ensure this requirement by following best software engineering practices during development, close to full test coverage of all code in the library (currently 99%), and providing citations to published papers for included algorithms. 
@@ -158,11 +163,11 @@ It can directly estimate quantities such as solvation free energies and makes it
 Some work on alchemlyb was supported by grants from the  National Institutes of Health (Award No R01GM118772 to O.B., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). 
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
 
-Ian Kenney, Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Hyungro Lee, Mohammad S. Barhaghi, Alexander Schlaich, Jérôme Hénin, Irfan Alibay, Pascal Merz, and Haoxi Li contributed code to *alchemlyb*.
+Ian Kenney, Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Hyungro Lee, Mohammad S. Barhaghi, Alexander Schlaich, Jérôme Hénin, Irfan Alibay, and Pascal Merz contributed code to *alchemlyb*.
 
 # Author contributions
 
-D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., D.M., T.T.J. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, O.B. wrote the manuscript.
+D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., D.M., T.T.J., H.L. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, O.B. wrote the manuscript.
 
 
 # References
