@@ -158,6 +158,8 @@ For statistical validity, the accumulated samples should be collected from equil
 ## Workflows
 
 The building blocks are sufficient to compute free energies from alchemical free energy simulations and assess their reliability.
+This functionality is used, for example, by the Streamlined Alchemical Free Energy Perturbation (SAFEP) analysis scripts [@santiagomcrae223].
+
 *alchemlyb* also provides a structure to combine the building blocks into full end-to-end workflows (module `alchemlyb.workflows`).
 As an example, the `ABFE` workflow for absolute binding free energy estimation reads in the raw input data and performs decorrelation, estimation, and quality plotting of the estimate.
 It can directly estimate quantities such as solvation free energies and makes it easy to calculate more complex quantities such as absolute binding free energies (as the difference between the solvation free energy of the ligand in water and the solvation free energy of the ligand in the protein's binding pocket).
