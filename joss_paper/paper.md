@@ -23,6 +23,9 @@ authors:
   - name: Haoxi Li
     orcid: 0009-0004-8369-1042
     affiliation: 8  
+  - name: Alexander Schlaich
+    orcid: 0000-0002-4250-363X
+    affiliation: 9
   - name: David Mobley
     orcid: 0000-0002-1083-5533
     affiliation: 4	
@@ -51,6 +54,8 @@ affiliations:
  - name: UNC Eshelman School of Pharmacy, University of North Carolina, Chapel Hill, NC, USA.
    index: 8 
 
+ - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, 70569 Stuttgart, Germany 
+   index: 9
 date: 31 May 2024
 bibliography: paper.bib
 
@@ -73,11 +78,11 @@ Other free energies extracted from simulations are useful in solution thermodyna
 Molecular simulation packages such as [GROMACS](https://www.gromacs.org/) [@Abraham2015aa], [Amber](https://ambermd.org/) [@Case2005uq], [NAMD](https://www.ks.uiuc.edu/Research/namd/) [@phillips2020scalable], and [GOMC](https://gomc-wsu.org/) [@Nejahi2021aa] are used to run free energy simulations and many of these packages also contain tools for the subsequent processing of simulation data into free energies.
 However, there are no standard output formats and analysis tools implement different algorithms for the different stages of the free energy data processing pipeline.
 Therefore, it is very difficult to analyze data from different MD packages in a consistent manner.
-Furthermore, the native analysis tools do not always implement current best practices [@klimovich2015guidelines; @Mey2020aa] or are out of date
-Overall, the coupling between data generation and analysis in most MD packages hinders seamless collaboration and comparison of results across different implementations of data generation for free energy calculations.
+Furthermore, the native analysis tools do not always implement current best practices [@klimovich2015guidelines; @Mey2020aa] or are out of date.
+Overall, the coupling between data generation and analysis in most simulation packages hinders seamless collaboration and comparison of results across different implementations of data generation for free energy calculations.
 
-*alchemlyb* addresses this problem by focusing only on the data analysis portion of this process with the goal to provide a unified interface for working with free energy data generated from different MD packages.
-In an initial step data are read from the native MD package file formats and then organized into a common standard data structure, organized as a [*pandas*](https://pandas.pydata.org) `DataFrame` [@mckinney-proc-scipy-2010].
+*alchemlyb* addresses this problem by focusing only on the data analysis portion of this process with the goal to provide a unified interface for working with free energy data generated from different software packages.
+In an initial step data are read from the native package file formats and then organized into a common standard data structure, organized as a [*pandas*](https://pandas.pydata.org) `DataFrame` [@mckinney-proc-scipy-2010].
 Functions are provided for pre-processing data by subsampling or decorrelation.
 Statistical mechanical estimators are available to extract free energies and thermodynamic expectations as well associated metrics of quality; these estimators are implemented as classes with the same API as estimators in [scikit-learn](https://scikit-learn.org) [@scikitlearn2011; @sklearn2013api].
 *alchemlyb* implements modular building blocks to simplify the process of extracting crucial thermodynamic insights from molecular simulations in a uniform manner.
@@ -86,7 +91,7 @@ Statistical mechanical estimators are available to extract free energies and the
 `alchemical-analysis.py` was not thoroughly tested and hard to integrate into modern workflows due to its monolithic design, and only supported outdated Python 2.
 *alchemlyb* improves over its predecessor with a modular, function based design and thorough testing of all components using continuous integration.
 Thus, *alchemlyb* is a library that enables users to easily use well-tested building blocks within their own tools while additionally providing examples of complete end-to-end workflows.
-This innovation enables consistent processing of free energy data from diverse MD packages, facilitating streamlined comparison and combination of results.
+This innovation enables consistent processing of free energy data from diverse simulation packages, facilitating streamlined comparison and combination of results.
 
 Notably, *alchemlyb*'s robust and user-friendly nature has led to its integration into other automated workflow libraries such as BioSimSpace [@Hedges2019aa] or MDPOW [@fan2020aa], demonstrating its accessibility and usability within broader scientific workflows and reinforcing its position as a versatile tool in the field of computational chemistry.
 
@@ -103,7 +108,7 @@ Stratified alchemical free energy calculations have emerged as a de-facto standa
 In such free energy calculations, overlapping states are created by the introduction of a parameter $\lambda$ that continuously connects the functional form (the Hamiltonian of the system) of the two end-states, resulting in a series of intermediate states each with a different $\lambda$ value between 0 and 1 and with the physically realizable end states at $\lambda=0$ and $\lambda=1$.
 In general, $N$ alchemical parameters are used to describe the alchemical transformation with a parameter vector $\vec{\lambda}=(\lambda_1, \lambda_2, \dots, \lambda_N)$, so that $\vec{\lambda}=(0, 0, \dots, 0)$ indicates the initial and $\vec{\lambda} = (1, 1, \dots, 1)$ the final state.
 The intermediate states are non-physical but required for converging the calculations. 
-At each $\vec{\lambda}$-value (or "window"), the system configurations are sampled in the relevant thermodynamic ensemble, typically using MD or Monte Carlo (MC) simulations, while generating and accumulating free energy data discussed below.
+At each $\vec{\lambda}$-value (or "window"), the system configurations are sampled in the relevant thermodynamic ensemble, typically using Molecular Dynamics (MD) or Monte Carlo (MC) simulations, while generating and accumulating free energy data discussed below.
 Estimators are then applied to these data to compute free energy differences between states, including the difference between the final and initial state, thus yielding the desired free energy difference of the physical process of interest.
 
 ## Core design principles
@@ -153,21 +158,21 @@ For statistical validity, the accumulated samples should be collected from equil
 ## Workflows
 
 The building blocks are sufficient to compute free energies from alchemical free energy simulations and assess their reliability.
-*alchemlyb* also provides a structure to combined the building blocks into full end-to-end workflows (module `alchemlyb.workflows`).
+*alchemlyb* also provides a structure to combine the building blocks into full end-to-end workflows (module `alchemlyb.workflows`).
 As an example, the `ABFE` workflow for absolute binding free energy estimation reads in the raw input data and performs decorrelation, estimation, and quality plotting of the estimate.
 It can directly estimate quantities such as solvation free energies and makes it easy to calculate more complex quantities such as absolute binding free energies (as the difference between the solvation free energy of the ligand in water and the solvation free energy of the ligand in the protein's binding pocket).
 
 
 # Acknowledgements
 
-Some work on alchemlyb was supported by grants from the  National Institutes of Health (Award No R01GM118772 to O.B., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). 
+Some work on alchemlyb was supported by grants from the  National Institutes of Health (Award No R01GM118772 to O.B., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). A.S. acknowledges funding by Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy - EXC 2075 – 390740016 and support by the Stuttgart Center for Simulation Science (SimTech).
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
 
-Ian Kenney, Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Hyungro Lee, Mohammad S. Barhaghi, Alexander Schlaich, Jérôme Hénin, Irfan Alibay, and Pascal Merz contributed code to *alchemlyb*.
+Ian Kenney, Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Hyungro Lee, Mohammad S. Barhaghi, Jérôme Hénin, Irfan Alibay, and Pascal Merz contributed code to *alchemlyb*.
 
 # Author contributions
 
-D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., D.M., T.T.J., H.L. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, O.B. wrote the manuscript.
+D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., D.M., T.T.J., H.L., A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, O.B. wrote the manuscript.
 
 
 # References
