@@ -14,24 +14,27 @@ authors:
     orcid: 0000-0001-5879-2942
     equal-contrib: true
     affiliation: "2, 3"
-  - name: Domenico Marson
-    orcid: 0000-0003-1839-9868
-    affiliation: 6
+  - name: Jérôme Hénin
+    orcid: 0000-0003-2540-4098
+    affiliation: 4
   - name: Thomas T. Joseph
     orcid: 0000-0003-1323-3244
-    affiliation: 7
+    affiliation: 5
   - name: Haoxi Li
     orcid: 0009-0004-8369-1042
-    affiliation: 8
+    affiliation: 6
+  - name: Domenico Marson
+    orcid: 0000-0003-1839-9868
+    affiliation: 7
   - name: Alexander Schlaich
     orcid: 0000-0002-4250-363X
-    affiliation: 9
+    affiliation: 8
   - name: David Mobley
     orcid: 0000-0002-1083-5533
-    affiliation: 4	
+    affiliation: 9
   - name: Michael R. Shirts
     orcid: 0000-0003-3249-1097
-    affiliation: 5
+    affiliation: 10
   - name: Oliver Beckstein
     orcid: 0000-0003-1340-0831
     corresponding: true
@@ -43,19 +46,21 @@ affiliations:
    index: 2
  - name: Datryllic LLC, Phoenix, Arizona, USA (present affiliation)
    index: 3
- - name: University of California Irvine, Irvine, California, USA
+ - name: Université Paris Cité, CNRS, Laboratoire de Biochimie Théorique, Paris, France
    index: 4
- - name: University of Colorado Boulder, Boulder, Colorado, USA
-   index: 5
- - name: Molecular Biology and Nanotechnology Laboratory (MolBNL@UniTS), DEA, University of Trieste, Trieste, Italy
-   index: 6
  - name: Department of Anesthesiology and Critical Care, Perelman School of Medicine, University of Pennsylvania, Philadelphia, Pennsylvania, USA
-   index: 7
+   index: 5
  - name: UNC Eshelman School of Pharmacy, University of North Carolina, Chapel Hill, NC, USA.
-   index: 8 
-
+   index: 6
+ - name: Molecular Biology and Nanotechnology Laboratory (MolBNL@UniTS), DEA, University of Trieste, Trieste, Italy
+   index: 7
  - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, 70569 Stuttgart, Germany 
+   index: 8
+ - name: University of California Irvine, Irvine, California, USA
    index: 9
+ - name: University of Colorado Boulder, Boulder, Colorado, USA
+   index: 10
+
 date: 31 May 2024
 bibliography: paper.bib
 
@@ -158,7 +163,7 @@ For statistical validity, the accumulated samples should be collected from equil
 ## Workflows
 
 The building blocks are sufficient to compute free energies from alchemical free energy simulations and assess their reliability.
-This functionality is used, for example, by the Streamlined Alchemical Free Energy Perturbation (SAFEP) analysis scripts [@santiagomcrae223].
+This functionality is used, for example, by the Streamlined Alchemical Free Energy Perturbation (SAFEP) analysis scripts [@Salari2018; @santiagomcrae2023].
 
 *alchemlyb* also provides a structure to combine the building blocks into full end-to-end workflows (module `alchemlyb.workflows`).
 As an example, the `ABFE` workflow for absolute binding free energy estimation reads in the raw input data and performs decorrelation, estimation, and quality plotting of the estimate.
