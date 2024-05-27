@@ -354,13 +354,9 @@ class ABFE(WorkflowBase):
         if len(self.u_nk_list) > 0:
             logger.info(f"Processing the u_nk data set with skiptime of {skiptime}.")
 
-            self.u_nk_sample_list = []
-            for index, u_nk in enumerate(self.u_nk_list):
-                # Find the starting frame
-
+            def _decorrelate_u_nk(u_nk, skiptime, threshold, index):
                 u_nk = u_nk[u_nk.index.get_level_values("time") >= skiptime]
                 subsample = decorrelate_u_nk(u_nk, uncorr, remove_burnin=True)
-
                 if len(subsample) < threshold:
                     logger.warning(
                         f"Number of u_nk {len(subsample)} "
@@ -368,19 +364,24 @@ class ABFE(WorkflowBase):
                         f"threshold {threshold}."
                     )
                     logger.info(f"Take all the u_nk for state {index}.")
-                    self.u_nk_sample_list.append(u_nk)
+                    subsample = u_nk
                 else:
                     logger.info(
                         f"Take {len(subsample)} uncorrelated "
                         f"u_nk for state {index}."
                     )
-                    self.u_nk_sample_list.append(subsample)
+                return subsample
+
+            self.u_nk_sample_list = Parallel(n_jobs=-1)(
+                delayed(_decorrelate_u_nk)(u_nk, skiptime, threshold)
+                for index, u_nk in enumerate(self.u_nk_list)
+            )
         else:
             logger.info("No u_nk data being subsampled")
 
         if len(self.dHdl_list) > 0:
-            self.dHdl_sample_list = []
-            for index, dHdl in enumerate(self.dHdl_list):
+
+            def _decorrelate_dhdl(dHdl, skiptime, threshold, index):
                 dHdl = dHdl[dHdl.index.get_level_values("time") >= skiptime]
                 subsample = decorrelate_dhdl(dHdl, remove_burnin=True)
                 if len(subsample) < threshold:
@@ -390,13 +391,18 @@ class ABFE(WorkflowBase):
                         f"threshold {threshold}."
                     )
                     logger.info(f"Take all the dHdl for state {index}.")
-                    self.dHdl_sample_list.append(dHdl)
+                    subsample = dHdl
                 else:
                     logger.info(
                         f"Take {len(subsample)} uncorrelated "
                         f"dHdl for state {index}."
                     )
-                    self.dHdl_sample_list.append(subsample)
+                return subsample
+
+            self.dHdl_sample_list = Parallel(n_jobs=-1)(
+                delayed(_decorrelate_dhdl)(dHdl, skiptime, threshold, index)
+                for index, dHdl in enumerate(self.dHdl_list)
+            )
         else:
             logger.info("No dHdl data being subsampled")
 
