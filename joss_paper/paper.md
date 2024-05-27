@@ -22,7 +22,7 @@ authors:
     affiliation: 7
   - name: Haoxi Li
     orcid: 0009-0004-8369-1042
-    affiliation: 8  
+    affiliation: 8
   - name: Alexander Schlaich
     orcid: 0000-0002-4250-363X
     affiliation: 9
@@ -73,11 +73,11 @@ Its functionality contains individual composable building blocks for all aspects
 In the pharmaceutical sector, computational chemistry techniques are integral for evaluating potential drug compounds based on their protein binding affinity [@deng2009computations].
 Notably, absolute binding free energy calculations between proteins and ligands or relative binding affinity of ligands to the same protein are routinely employed for this purpose [@merz2010drug].
 The resultant estimates of these free energies are essential for understanding binding affinity throughout various stages of drug discovery, such as hit identification and lead optimization [@merz2010drug].
-Other free energies extracted from simulations are useful in solution thermodynamics, chemical engineering, environmental science, and material science.
+Other free energies extracted from simulations are useful in solution thermodynamics, chemical engineering, environmental science, and material science [@Schlaich2015aa].
 
-Molecular simulation packages such as [GROMACS](https://www.gromacs.org/) [@Abraham2015aa], [Amber](https://ambermd.org/) [@Case2005uq], [NAMD](https://www.ks.uiuc.edu/Research/namd/) [@phillips2020scalable], and [GOMC](https://gomc-wsu.org/) [@Nejahi2021aa] are used to run free energy simulations and many of these packages also contain tools for the subsequent processing of simulation data into free energies.
+Molecular simulation packages such as [GROMACS](https://www.gromacs.org/) [@Abraham2015aa], [Amber](https://ambermd.org/) [@Case2005uq], [NAMD](https://www.ks.uiuc.edu/Research/namd/) [@phillips2020scalable], [LAMPPS](https://lammps.org/) [@Thompson2022aa], and [GOMC](https://gomc-wsu.org/) [@Nejahi2021aa] are used to run free energy simulations and many of these packages also contain tools for the subsequent processing of simulation data into free energies.
 However, there are no standard output formats and analysis tools implement different algorithms for the different stages of the free energy data processing pipeline.
-Therefore, it is very difficult to analyze data from different MD packages in a consistent manner.
+Therefore, it is very difficult to analyze data from different simulation packages in a consistent manner.
 Furthermore, the native analysis tools do not always implement current best practices [@klimovich2015guidelines; @Mey2020aa] or are out of date.
 Overall, the coupling between data generation and analysis in most simulation packages hinders seamless collaboration and comparison of results across different implementations of data generation for free energy calculations.
 
