@@ -6,6 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from joblib import Parallel, delayed
 from loguru import logger
 
 from .base import WorkflowBase
@@ -136,28 +137,43 @@ class ABFE(WorkflowBase):
         self.u_nk_sample_list = None
         self.dHdl_sample_list = None
 
-        u_nk_list = []
-        dHdl_list = []
-        for file in self.file_list:
-            if read_u_nk:
+        if read_u_nk:
+
+            def extract_u_nk(_extract_u_nk, file, T):
                 try:
-                    u_nk = self._extract_u_nk(file, T=self.T)
+                    u_nk = _extract_u_nk(file, T)
                     logger.info(f"Reading {len(u_nk)} lines of u_nk from {file}")
-                    u_nk_list.append(u_nk)
+                    return u_nk
                 except Exception as exc:
                     msg = f"Error reading u_nk from {file}."
                     logger.error(msg)
                     raise OSError(msg) from exc
 
-            if read_dHdl:
+            u_nk_list = Parallel(n_jobs=-1)(
+                delayed(extract_u_nk)(self._extract_u_nk, file, self.T)
+                for file in self.file_list
+            )
+        else:
+            u_nk_list = []
+
+        if read_dHdl:
+
+            def extract_dHdl(_extract_dHdl, file, T):
                 try:
-                    dhdl = self._extract_dHdl(file, T=self.T)
+                    dhdl = _extract_dHdl(file, T)
                     logger.info(f"Reading {len(dhdl)} lines of dhdl from {file}")
-                    dHdl_list.append(dhdl)
+                    return dhdl
                 except Exception as exc:
                     msg = f"Error reading dHdl from {file}."
                     logger.error(msg)
                     raise OSError(msg) from exc
+
+            dHdl_list = Parallel(n_jobs=-1)(
+                delayed(extract_dHdl)(self._extract_dHdl, file, self.T)
+                for file in self.file_list
+            )
+        else:
+            dHdl_list = []
 
         # Sort the files according to the state
         if read_u_nk:
