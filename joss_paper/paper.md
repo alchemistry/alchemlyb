@@ -44,11 +44,11 @@ authors:
   - name: Oliver Beckstein
     orcid: 0000-0003-1340-0831
     corresponding: true
-    affiliation: 2
+    affiliation: "2,12"
 affiliations:
  - name: Exscientia, Oxford, UK
    index: 1
- - name: Arizona State University, Tempe, Arizona, USA
+ - name: Department of Physics, Arizona State University, Tempe, Arizona, USA
    index: 2
  - name: Datryllic LLC, Phoenix, Arizona, USA (present affiliation)
    index: 3
@@ -68,6 +68,8 @@ affiliations:
    index: 10
  - name: Pacific Northwest National Laboratory, Richland, Washington, USA
    index: 11
+ - name: Center for Biological Physics, Arizona State University, Tempe, AZ, USA
+   index: 12
 
 date: 31 May 2024
 bibliography: paper.bib
