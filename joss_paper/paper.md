@@ -20,12 +20,12 @@ authors:
   - name: Thomas T. Joseph
     orcid: 0000-0003-1323-3244
     affiliation: 5
-  - name: Haoxi Li
-    orcid: 0009-0004-8369-1042
-    affiliation: 6
   - name: Hyungro Lee
     orcid: 0000-0002-4221-7094
     affiliation: 11
+  - name: Haoxi Li
+    orcid: 0009-0004-8369-1042
+    affiliation: 6
   - name: Domenico Marson
     orcid: 0000-0003-1839-9868
     affiliation: 7
