@@ -23,6 +23,9 @@ authors:
   - name: Ian M. Kenney
     orchid: 0000-0002-9749-8866
     affiliation: 2
+  - name: Hyungro Lee
+    orcid: 0000-0002-4221-7094
+    affiliation: 11
   - name: Haoxi Li
     orcid: 0009-0004-8369-1042
     affiliation: 6
@@ -63,6 +66,8 @@ affiliations:
    index: 9
  - name: University of Colorado Boulder, Boulder, Colorado, USA
    index: 10
+ - name: Pacific Northwest National Laboratory, Richland, Washington, USA
+   index: 11
 
 date: 31 May 2024
 bibliography: paper.bib
@@ -178,11 +183,11 @@ It can directly estimate quantities such as solvation free energies and makes it
 Some work on alchemlyb was supported by grants from the  National Institutes of Health (Award No R01GM118772 to O.B., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). A.S. acknowledges funding by Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy - EXC 2075 – 390740016 and support by the Stuttgart Center for Simulation Science (SimTech).
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
 
-Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Hyungro Lee, Mohammad S. Barhaghi, Jérôme Hénin, Irfan Alibay, and Pascal Merz contributed code to *alchemlyb*.
+Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Mohammad S. Barhaghi, Jérôme Hénin, Irfan Alibay, and Pascal Merz contributed code to *alchemlyb*.
 
 # Author contributions
 
-D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., D.M., T.T.J., H.L., A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
+D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., D.M., T.T.J., H.L., H.L., A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
 
 
 # References
