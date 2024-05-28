@@ -128,7 +128,7 @@ Estimators are then applied to these data to compute free energy differences bet
 
 *alchemlyb* is a Python library that seeks to make doing alchemical free energy calculations easier and less error prone. 
 It includes functionality for parsing data from file formats of widely used simulation packages, subsampling these data, and fitting these data with an estimator to obtain free energies. 
-Functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data while estimators are implemented as classes that follow the tried-and-tested scikit-learn API.
+Functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data while estimators are implemented as classes that follow the tried-and-tested scikit-learn API [@sklearn2013api].
 General and robust workflows following best practices are also provided, which can be used as reference implementations and examples.
 
 First and foremost, scientific code must be correct and we try to ensure this requirement by following best software engineering practices during development, close to full test coverage of all code in the library (currently 99%), and providing citations to published papers for included algorithms. 
@@ -141,13 +141,15 @@ The guiding design principles are summarized as:
 3. Aim for a consistent interface throughout, e.g. all parsers take similar inputs and yield a common set of outputs, using the `pandas.DataFrame` as the underlying data structure.
 4. Have *all* functionality tested.
 
-*alchemlyb* is published under the open source BSD-3 clause license.
+*alchemlyb* supports recent versions of Python 3 and follows the [NEP 29 (Recommend Python and NumPy version support as a community policy standard)](https://numpy.org/neps/nep-0029-deprecation_policy.html) standard (transitioning to the [SPEC 0 (Minimum Supported Dependencies)](https://scientific-python.org/specs/spec-0000/) Scientific Python Ecosystem Coordination community standard) for deciding on when to drop support for older versions of Python and dependencies.
+Releases are numbered following the [Semantic Versioning 2.0.0](https://semver.org/) standard of MAJOR.MINOR.PATCHLEVEL, which ensures that users immediately understand if a release may break backwards compatibility (increase of the major version), adds new features (increase of minor version), or only contains bug fixes or other changes that do not directly affect users.
+All code is published under the open source BSD-3 clause license.
 
 ## Library structure
 
 *alchemlyb* offers specific parsers in `alchemlyb.parsing` to load raw free energy data from various molecular simulation packages ([GROMACS](https://www.gromacs.org/) [@Abraham2015aa], [Amber](https://ambermd.org/) [@Case2005uq], [NAMD](https://www.ks.uiuc.edu/Research/namd/) [@phillips2020scalable], and [GOMC](https://gomc-wsu.org/) [@Nejahi2021aa]) and provides a general structure for implementing parsers for other packages that are not yet supported.
-The raw data are converted into a standard format as a `pandas.DataFrame` and converted from the energy of the software to units of $k T$ where $k = 1.380649 \times 10^{-23}\,\text{J}\,\text{K}^{-1}$ is Boltzmann's constant and $T$ is the temperature at which the simulation was performed.
-Metadata such as $T$ and the energy unit are stored in DataFrame attributes and propagated through *alchemlyb*, which enables seamless unit conversion with functions in the `alchemlyb.postprocessing` module.
+The raw data are converted into a standard format as a `pandas.DataFrame` [@mckinney-proc-scipy-2010] and converted from the energy of the software to units of $k T$ where $k = 1.380649 \times 10^{-23}\,\text{J}\,\text{K}^{-1}$ is Boltzmann's constant and $T$ is the temperature at which the simulation was performed.
+Metadata such as $T$ and the energy unit are stored in `DataFrame` attributes and propagated through *alchemlyb*, which enables seamless unit conversion with functions in the `alchemlyb.postprocessing` module.
 Two types of free energy data are considered: Hamiltonian gradients (`dHdl`, $dH/d\lambda$) at all lambda states, suitable for thermodynamic integration (TI) estimators [@kirkwood1935statistical], and reduced potential energy differences between lambda states (`u_nk`, $u_{nk}$), which are used for free energy perturbation (FEP) estimators [@zwanzig1954high].
 
 Both types of estimators assume uncorrelated samples in order to give unbiased estimates of the uncertainties, which requires subsampling of the raw data.
@@ -160,7 +162,7 @@ FEP category estimators (module `alchemlyb.estimators.FEP`) include Bennett Acce
 
 To evaluate the accuracy of the free energy estimate, *alchemlyb* offers a range of assessment tools.
 The error of the TI method is correlated with the average curvature [@pham2011identifying], while the error of FEP estimators depends on the overlap in sampled energy distributions [@pohorille2010good].
-*alchemlyb* creates visualizations the smoothness of the integrand for TI estimators and the overlap matrix for FEP estimators, which can be qualitatively and quantitatively analyzed to determine the degree of overlap between simulated alchemical states, and suggest whether additional simulations should be run.
+*alchemlyb* creates visualizations of the smoothness of the integrand for TI estimators and the overlap matrix for FEP estimators, which can be qualitatively and quantitatively analyzed to determine the degree of overlap between simulated alchemical states, and suggest whether additional simulations should be run.
 For statistical validity, the accumulated samples should be collected from equilibrated simulations and *alchemlyb* contains tools for assessing (`alchemlyb.convergence`) and plotting (`alchemlyb.visualisation`) the convergence of the free energy estimate as a function of simulation time [@yang2004free] and means to compute the "fractional equilibration time" [@fan2020aa] to detect potentially un-equilibrated data.
 
 *alchemlyb* offers all these tools as a library for users to customize each stage of the analysis (\autoref{fig:buildingblocks}).
