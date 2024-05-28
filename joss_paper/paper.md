@@ -35,6 +35,9 @@ authors:
   - name: Michael R. Shirts
     orcid: 0000-0003-3249-1097
     affiliation: 10
+  - name: Hyungro Lee
+    orcid: 0000-0002-4221-7094
+    affiliation: 11
   - name: Oliver Beckstein
     orcid: 0000-0003-1340-0831
     corresponding: true
@@ -60,6 +63,8 @@ affiliations:
    index: 9
  - name: University of Colorado Boulder, Boulder, Colorado, USA
    index: 10
+ - name: Pacific Northwest National Laboratory, Richland, Washington, USA
+   index: 11
 
 date: 31 May 2024
 bibliography: paper.bib
