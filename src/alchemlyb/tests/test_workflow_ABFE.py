@@ -30,6 +30,7 @@ def workflow(tmp_path_factory):
         overlap="O_MBAR.pdf",
         breakdown=True,
         forwrev=10,
+        n_jobs=1,
     )
     return workflow
 
@@ -79,6 +80,7 @@ class TestRun:
                 overlap=None,
                 breakdown=None,
                 forwrev=None,
+                n_jobs=1,
             )
 
     def test_single_estimator(self, workflow, monkeypatch):
@@ -88,7 +90,12 @@ class TestRun:
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
         monkeypatch.setattr(workflow, "estimator", dict())
         workflow.run(
-            uncorr=None, estimators="MBAR", overlap=None, breakdown=True, forwrev=None
+            uncorr=None,
+            estimators="MBAR",
+            overlap=None,
+            breakdown=True,
+            forwrev=None,
+            n_jobs=1,
         )
         assert "MBAR" in workflow.estimator
 
@@ -96,7 +103,12 @@ class TestRun:
     def test_no_forwrev(self, workflow, monkeypatch, forwrev):
         monkeypatch.setattr(workflow, "convergence", None)
         workflow.run(
-            uncorr=None, estimators=None, overlap=None, breakdown=None, forwrev=forwrev
+            uncorr=None,
+            estimators=None,
+            overlap=None,
+            breakdown=None,
+            forwrev=forwrev,
+            n_jobs=1,
         )
         assert workflow.convergence is None
 
@@ -128,7 +140,7 @@ class TestRead:
         monkeypatch.setattr(workflow, "dHdl_list", [])
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
-        workflow.read(read_u_nk, read_dHdl)
+        workflow.read(read_u_nk, read_dHdl, n_jobs=1)
         if read_u_nk:
             assert len(workflow.u_nk_list) == 30
         else:
@@ -148,7 +160,7 @@ class TestRead:
 
         monkeypatch.setattr(workflow, "_extract_u_nk", extract_u_nk)
         with pytest.raises(OSError, match=r"Error reading u_nk"):
-            workflow.read()
+            workflow.read(n_jobs=1)
 
     def test_read_invalid_dHdl(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
@@ -159,7 +171,7 @@ class TestRead:
 
         monkeypatch.setattr(workflow, "_extract_dHdl", extract_dHdl)
         with pytest.raises(OSError, match=r"Error reading dHdl"):
-            workflow.read()
+            workflow.read(n_jobs=1)
 
 
 class TestSubsample:
@@ -181,7 +193,7 @@ class TestSubsample:
         )
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
-        workflow.preprocess(threshold=50)
+        workflow.preprocess(threshold=50, n_jobs=1)
         assert all([len(u_nk) == 40 for u_nk in workflow.u_nk_sample_list])
         assert all([len(dHdl) == 40 for dHdl in workflow.dHdl_sample_list])
 
@@ -189,14 +201,14 @@ class TestSubsample:
         monkeypatch.setattr(workflow, "u_nk_list", [])
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
-        workflow.preprocess(threshold=50)
+        workflow.preprocess(threshold=50, n_jobs=1)
         assert len(workflow.u_nk_list) == 0
 
     def test_no_dHdl_preprocess(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "dHdl_list", [])
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
-        workflow.preprocess(threshold=50)
+        workflow.preprocess(threshold=50, n_jobs=1)
         assert len(workflow.dHdl_list) == 0
 
 
@@ -407,7 +419,7 @@ class Test_automatic_amber:
             T=298.0,
             outdirectory=str(outdir),
         )
-        workflow.read()
+        workflow.read(n_jobs=1)
         workflow.estimate(estimators="TI")
         return workflow
 
@@ -437,7 +449,7 @@ class Test_automatic_parquet:
             T=298.0,
             outdirectory=str(outdir),
         )
-        workflow.read()
+        workflow.read(n_jobs=1)
         workflow.estimate(estimators="BAR")
         return workflow
 
