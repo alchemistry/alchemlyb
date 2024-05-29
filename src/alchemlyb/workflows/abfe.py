@@ -306,11 +306,12 @@ class ABFE(WorkflowBase):
                     )
                     logger.error(msg)
                     raise ValueError(msg)
-
-            self.read(use_FEP, use_TI)
+            self.read(read_u_nk=use_FEP, read_dHdl=use_FEP, n_jobs=n_jobs)
 
         if uncorr is not None:
-            self.preprocess(skiptime=skiptime, uncorr=uncorr, threshold=threshold)
+            self.preprocess(
+                skiptime=skiptime, uncorr=uncorr, threshold=threshold, n_jobs=n_jobs
+            )
         if estimators is not None:
             self.estimate(estimators)
             self.generate_result()
