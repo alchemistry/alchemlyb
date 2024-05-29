@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pandas as pd
 import pytest
 from alchemtest.amber import load_bace_example
 from alchemtest.gmx import load_ABFE
@@ -474,6 +475,23 @@ class TestParallel:
             suffix="xvg",
             T=310,
         )
+        workflow.read(n_jobs=1)
+        workflow.preprocess(n_jobs=1)
+        return workflow
+
+    @pytest.fixture(scope="class")
+    def parallel_workflow(self, tmp_path_factory):
+        outdir = tmp_path_factory.mktemp("out")
+        (outdir / "dhdl_00.xvg").symlink_to(load_ABFE()["data"]["complex"][0])
+        (outdir / "dhdl_01.xvg").symlink_to(load_ABFE()["data"]["complex"][1])
+        workflow = ABFE(
+            units="kcal/mol",
+            software="GROMACS",
+            dir=str(outdir),
+            prefix="dhdl",
+            suffix="xvg",
+            T=310,
+        )
         with parallel_config(backend="threading"):
             # The default backend is "loky", which is more robust but somehow didn't
             # play well with pytest, but "loky" is perfectly fine outside pytest.
@@ -481,8 +499,18 @@ class TestParallel:
             workflow.preprocess(n_jobs=2)
         return workflow
 
-    def test_read(self, workflow):
-        assert len(workflow.u_nk_list) == 2
+    def test_read(self, workflow, parallel_workflow):
+        pd.testing.assert_frame_equal(
+            workflow.u_nk_list[0], parallel_workflow.u_nk_list[0]
+        )
+        pd.testing.assert_frame_equal(
+            workflow.u_nk_list[1], parallel_workflow.u_nk_list[1]
+        )
 
-    def test_preprocess(self, workflow):
-        assert len(workflow.u_nk_sample_list) == 2
+    def test_preprocess(self, workflow, parallel_workflow):
+        pd.testing.assert_frame_equal(
+            workflow.u_nk_sample_list[0], parallel_workflow.u_nk_sample_list[0]
+        )
+        pd.testing.assert_frame_equal(
+            workflow.u_nk_sample_list[1], parallel_workflow.u_nk_sample_list[1]
+        )
