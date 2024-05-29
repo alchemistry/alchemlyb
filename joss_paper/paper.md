@@ -143,7 +143,7 @@ The guiding design principles are summarized as:
 3. Aim for a consistent interface throughout, e.g. all parsers take similar inputs and yield a common set of outputs, using the `pandas.DataFrame` as the underlying data structure.
 4. Have *all* functionality tested.
 
-*alchemlyb* supports recent versions of Python 3 and follows the [NEP 29 (Recommend Python and NumPy version support as a community policy standard)](https://numpy.org/neps/nep-0029-deprecation_policy.html) standard (transitioning to the [SPEC 0 (Minimum Supported Dependencies)](https://scientific-python.org/specs/spec-0000/) Scientific Python Ecosystem Coordination community standard) for deciding on when to drop support for older versions of Python and dependencies.
+*alchemlyb* supports recent versions of Python 3 and follows the [SPEC 0 (Minimum Supported Dependencies)](https://scientific-python.org/specs/spec-0000/) Scientific Python Ecosystem Coordination community standard for deciding on when to drop support for older versions of Python and dependencies.
 Releases are numbered following the [Semantic Versioning 2.0.0](https://semver.org/) standard of MAJOR.MINOR.PATCHLEVEL, which ensures that users immediately understand if a release may break backwards compatibility (increase of the major version), adds new features (increase of minor version), or only contains bug fixes or other changes that do not directly affect users.
 All code is published under the open source BSD-3 clause license.
 
