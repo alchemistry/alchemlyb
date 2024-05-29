@@ -373,7 +373,7 @@ class ABFE(WorkflowBase):
                 return subsample
 
             self.u_nk_sample_list = Parallel(n_jobs=-1)(
-                delayed(_decorrelate_u_nk)(u_nk, skiptime, threshold)
+                delayed(_decorrelate_u_nk)(u_nk, skiptime, threshold, index)
                 for index, u_nk in enumerate(self.u_nk_list)
             )
         else:
