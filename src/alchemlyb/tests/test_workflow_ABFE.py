@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from alchemtest.amber import load_bace_example
 from alchemtest.gmx import load_ABFE
+from joblib import parallel_config
 
 import alchemlyb.parsing.amber
 from alchemlyb.workflows.abfe import ABFE
@@ -457,3 +458,31 @@ class Test_automatic_parquet:
         """Test if if the summary is right."""
         summary = workflow.generate_result()
         assert np.isclose(summary["BAR"]["Stages"]["TOTAL"], 1.40405980473, 0.1)
+
+
+class TestParallel:
+    @pytest.fixture(scope="class")
+    def workflow(self, tmp_path_factory):
+        outdir = tmp_path_factory.mktemp("out")
+        (outdir / "dhdl_00.xvg").symlink_to(load_ABFE()["data"]["complex"][0])
+        (outdir / "dhdl_01.xvg").symlink_to(load_ABFE()["data"]["complex"][1])
+        workflow = ABFE(
+            units="kcal/mol",
+            software="GROMACS",
+            dir=str(outdir),
+            prefix="dhdl",
+            suffix="xvg",
+            T=310,
+        )
+        with parallel_config(backend="threading"):
+            # The default backend is "loky", which is more robust but somehow didn't
+            # play well with pytest, but "loky" is perfectly fine outside pytest.
+            workflow.read(n_jobs=2)
+            workflow.preprocess(n_jobs=2)
+        return workflow
+
+    def test_read(self, workflow):
+        assert len(workflow.u_nk_list) == 2
+
+    def test_preprocess(self, workflow):
+        assert len(workflow.u_nk_sample_list) == 2
