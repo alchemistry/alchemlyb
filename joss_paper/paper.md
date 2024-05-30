@@ -14,6 +14,9 @@ authors:
     orcid: 0000-0001-5879-2942
     equal-contrib: true
     affiliation: "2, 3"
+  - name: Irfan Alibay
+    orcid: 0000-0001-5787-9130
+    affiliation: 13
   - name: Jérôme Hénin
     orcid: 0000-0003-2540-4098
     affiliation: 4
@@ -21,7 +24,7 @@ authors:
     orcid: 0000-0003-1323-3244
     affiliation: 5
   - name: Ian M. Kenney
-    orchid: 0000-0002-9749-8866
+    orcid: 0000-0002-9749-8866
     affiliation: 2
   - name: Hyungro Lee
     orcid: 0000-0002-4221-7094
@@ -70,6 +73,8 @@ affiliations:
    index: 11
  - name: Center for Biological Physics, Arizona State University, Tempe, AZ, USA
    index: 12
+ - name: Open Free Energy, Open Molecular Software Foundation, Davis, 95616 California, United States
+   index: 13
 
 date: 31 May 2024
 bibliography: paper.bib
@@ -187,11 +192,11 @@ It can directly estimate quantities such as solvation free energies and makes it
 Some work on alchemlyb was supported by grants from the  National Institutes of Health (Award No R01GM118772 to O.B., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). A.S. acknowledges funding by Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy - EXC 2075 – 390740016 and support by the Stuttgart Center for Simulation Science (SimTech).
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
 
-Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Mohammad S. Barhaghi, Irfan Alibay, and Pascal Merz contributed code to *alchemlyb*.
+Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Mohammad S. Barhaghi, and Pascal Merz contributed code to *alchemlyb*.
 
 # Author contributions
 
-D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., J.H., T.T.J., I.M.K., H.L., H.L., D.M., A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
+D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., I.A., J.H., T.T.J., I.M.K., H.L., H.L., D.M., A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
 
 # References
 
