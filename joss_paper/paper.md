@@ -65,7 +65,7 @@ affiliations:
    index: 7
  - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, 70569 Stuttgart, Germany 
    index: 8
- - name: University of California Irvine, Irvine, California, USA
+ - name: Departments of Pharmaceutical Sciences and Chemistr, University of California Irvine, Irvine, California, USA
    index: 9
  - name: University of Colorado Boulder, Boulder, Colorado, USA
    index: 10
@@ -189,7 +189,9 @@ It can directly estimate quantities such as solvation free energies and makes it
 
 # Acknowledgements
 
-Some work on alchemlyb was supported by grants from the  National Institutes of Health (Award No R01GM118772 to O.B., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). A.S. acknowledges funding by Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy - EXC 2075 – 390740016 and support by the Stuttgart Center for Simulation Science (SimTech).
+Some work on alchemlyb was supported by grants from the  National
+Institutes of Health (Award No R01GM118772 to O.B., R35GM148236 to
+D.M., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). A.S. acknowledges funding by Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy - EXC 2075 – 390740016 and support by the Stuttgart Center for Simulation Science (SimTech).
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
 
 Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Victoria Lim, Mohammad S. Barhaghi, and Pascal Merz contributed code to *alchemlyb*.
