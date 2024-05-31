@@ -65,7 +65,7 @@ affiliations:
    index: 7
  - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, 70569 Stuttgart, Germany 
    index: 8
- - name: Departments of Pharmaceutical Sciences and Chemistr, University of California Irvine, Irvine, California, USA
+ - name: Departments of Pharmaceutical Sciences and Chemistry, University of California Irvine, Irvine, California, USA
    index: 9
  - name: University of Colorado Boulder, Boulder, Colorado, USA
    index: 10
