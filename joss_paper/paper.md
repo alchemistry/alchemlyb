@@ -111,7 +111,7 @@ Statistical mechanical estimators are available to extract free energies and the
 *alchemlyb* implements modular building blocks to simplify the process of extracting crucial thermodynamic insights from molecular simulations in a uniform manner.
 
 *alchemlyb* succeeds the widely-used but now deprecated [`alchemical-analysis.py` tool](https://github.com/MobleyLab/alchemical-analysis) [@klimovich2015guidelines], which combined pre-processing, free energy estimation, and plotting in a single script.
-`alchemical-analysis.py` was not thoroughly tested and hard to integrate into modern workflows due to its monolithic design, and only supported outdated Python 2.
+`alchemical-analysis.py` was not thoroughly tested and hard to integrate into modern workflows due to its monolithic design, and only supported (now outdated) Python 2.
 *alchemlyb* improves over its predecessor with a modular, function based design and thorough testing of all components using continuous integration.
 Thus, *alchemlyb* is a library that enables users to easily use well-tested building blocks within their own tools while additionally providing examples of complete end-to-end workflows.
 This innovation enables consistent processing of free energy data from diverse simulation packages, facilitating streamlined comparison and combination of results.
