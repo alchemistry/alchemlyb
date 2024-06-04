@@ -134,7 +134,7 @@ This innovation enables consistent processing of free energy data from diverse s
 Notably, *alchemlyb*'s robust and user-friendly nature has led to its integration into other automated workflow libraries such as BioSimSpace [@Hedges2019aa] or MDPOW [@fan2020aa], demonstrating its accessibility and usability within broader scientific workflows and reinforcing its position as a versatile tool in the field of computational chemistry.
 
 
-# Implementation
+# Background: Alchemical free energy calculations
 
 Free energy differences are fundamental to understand many different processes at the molecular scale, ranging from the binding of drug molecules to their receptor proteins or nucleic acids through the partitioning of molecules into different solvents or phases to the stability of crystals and biomolecules.
 The calculation of such transfer free energies involves constructing two end states where a target molecule interacts with different environments.
@@ -149,6 +149,7 @@ The intermediate states are non-physical but required for converging the calcula
 At each $\vec{\lambda}$-value (or "window"), the system configurations are sampled in the relevant thermodynamic ensemble, typically using Molecular Dynamics (MD) or Monte Carlo (MC) simulations, while generating and accumulating free energy data discussed below.
 Estimators are then applied to these data to compute free energy differences between states, including the difference between the final and initial state, thus yielding the desired free energy difference of the physical process of interest.
 
+# Implementation
 ## Core design principles
 
 *alchemlyb* is a Python library that seeks to make doing alchemical free energy calculations easier and less error prone. 
