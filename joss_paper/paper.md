@@ -206,7 +206,7 @@ Shuai Liu, Travis Jensen, Dominik Wille, Mohammad S. Barhaghi, and Pascal Merz c
 
 # Author contributions
 
-D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., I.A., J.H., T.T.J., I.M.K., H.L., H.L., V.L., D.M., A.S., B.K.A. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
+D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., I.A., B.K.A., J.H., T.T.J., I.M.K., H.L., H.L., V.L., D.M., A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
 
 # References
 
