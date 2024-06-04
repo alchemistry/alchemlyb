@@ -212,7 +212,7 @@ Institutes of Health (Award No R01GM118772 to O.B., R35GM148236 to
 D.M., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). A.S. acknowledges funding by Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy - EXC 2075 – 390740016 and support by the Stuttgart Center for Simulation Science (SimTech).
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
 
-Travis Jensen and Dominik Wille contributed code to *alchemlyb*.
+Shuai Liu, Travis Jensen and Dominik Wille contributed code to *alchemlyb*.
 
 # Author contributions
 
