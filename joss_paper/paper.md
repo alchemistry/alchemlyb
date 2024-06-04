@@ -17,6 +17,9 @@ authors:
   - name: Irfan Alibay
     orcid: 0000-0001-5787-9130
     affiliation: 13
+  - name: Bryce K. Allen
+    orcid: 0000-0002-0804-8127
+    affiliation: 14
   - name: Jérôme Hénin
     orcid: 0000-0003-2540-4098
     affiliation: 4
@@ -78,6 +81,8 @@ affiliations:
    index: 12
  - name: Open Free Energy, Open Molecular Software Foundation, Davis, 95616 California, United States
    index: 13
+ - name: Differentiated Therapeutics, San Diego, CA
+   index: 14
 
 date: 31 May 2024
 bibliography: paper.bib
@@ -197,11 +202,11 @@ Institutes of Health (Award No R01GM118772 to O.B., R35GM148236 to
 D.M., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). A.S. acknowledges funding by Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy - EXC 2075 – 390740016 and support by the Stuttgart Center for Simulation Science (SimTech).
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
 
-Shuai Liu, Travis Jensen, Bryce Allen, Dominik Wille, Mohammad S. Barhaghi, and Pascal Merz contributed code to *alchemlyb*.
+Shuai Liu, Travis Jensen, Dominik Wille, Mohammad S. Barhaghi, and Pascal Merz contributed code to *alchemlyb*.
 
 # Author contributions
 
-D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., I.A., J.H., T.T.J., I.M.K., H.L., H.L., V.L., D.M., A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
+D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., I.A., B.K.A., J.H., T.T.J., I.M.K., H.L., H.L., V.L., D.M., A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
 
 # References
 
