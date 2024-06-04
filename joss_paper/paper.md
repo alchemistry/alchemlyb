@@ -20,6 +20,9 @@ authors:
   - name: Bryce K. Allen
     orcid: 0000-0002-0804-8127
     affiliation: 14
+  - name: Mohammad Soroush Barhaghi
+    orcid: 0000-0001-8226-7347
+    affiliation: 16
   - name: Jérôme Hénin
     orcid: 0000-0003-2540-4098
     affiliation: 4
@@ -88,7 +91,8 @@ affiliations:
    index: 14
  - name: PM Scientific Consulting, Basel, Switzerland
    index: 15
-
+ - name: Department of Chemical Engineering and Materials Science, Wayne State University, Detroit, Michigan, USA
+   index: 16
 
 date: 31 May 2024
 bibliography: paper.bib
@@ -208,11 +212,11 @@ Institutes of Health (Award No R01GM118772 to O.B., R35GM148236 to
 D.M., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). A.S. acknowledges funding by Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy - EXC 2075 – 390740016 and support by the Stuttgart Center for Simulation Science (SimTech).
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
 
-Shuai Liu, Travis Jensen, Dominik Wille, and Mohammad S. Barhaghi contributed code to *alchemlyb*.
+Shuai Liu, Travis Jensen and Dominik Wille contributed code to *alchemlyb*.
 
 # Author contributions
 
-D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., I.A., B.K.A., J.H., T.T.J., I.M.K., H.L., H.L., V.L., D.M., P.T.M, A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
+D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., I.A., B.K.A., M.S.B, J.H., T.T.J., I.M.K., H.L., H.L., V.L., D.M., P.T.M, A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
 
 # References
 
