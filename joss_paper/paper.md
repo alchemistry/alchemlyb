@@ -16,50 +16,50 @@ authors:
     affiliation: "2, 3"
   - name: Irfan Alibay
     orcid: 0000-0001-5787-9130
-    affiliation: 13
+    affiliation: 4
   - name: Bryce K. Allen
     orcid: 0000-0002-0804-8127
-    affiliation: 14
+    affiliation: 5
   - name: Mohammad Soroush Barhaghi
     orcid: 0000-0001-8226-7347
-    affiliation: 16
+    affiliation: 6
   - name: Jérôme Hénin
     orcid: 0000-0003-2540-4098
-    affiliation: 4
+    affiliation: 7
   - name: Thomas T. Joseph
     orcid: 0000-0003-1323-3244
-    affiliation: 5
+    affiliation: 8
   - name: Ian M. Kenney
     orcid: 0000-0002-9749-8866
     affiliation: 2
   - name: Hyungro Lee
     orcid: 0000-0002-4221-7094
-    affiliation: 11
+    affiliation: 9
   - name: Haoxi Li
     orcid: 0009-0004-8369-1042
-    affiliation: 6
+    affiliation: 10
   - name: Victoria Lim
     orcid: 0000-0003-4030-9312
-    affiliation: 9
+    affiliation: 11
   - name: Domenico Marson
     orcid: 0000-0003-1839-9868
-    affiliation: 7
+    affiliation: 12
   - name: Pascal T. Merz
     orcid: 0000-0002-7045-8725
-    affiliation: 15
+    affiliation: 13
   - name: Alexander Schlaich
     orcid: 0000-0002-4250-363X
-    affiliation: 8
+    affiliation: 14
   - name: David Mobley
     orcid: 0000-0002-1083-5533
-    affiliation: 9
+    affiliation: 11
   - name: Michael R. Shirts
     orcid: 0000-0003-3249-1097
-    affiliation: 10
+    affiliation: 15
   - name: Oliver Beckstein
     orcid: 0000-0003-1340-0831
     corresponding: true
-    affiliation: "2,12"
+    affiliation: "2,16"
 affiliations:
  - name: Exscientia, Oxford, UK
    index: 1
@@ -67,34 +67,34 @@ affiliations:
    index: 2
  - name: Datryllic LLC, Phoenix, Arizona, USA (present affiliation)
    index: 3
- - name: Université Paris Cité, CNRS, Laboratoire de Biochimie Théorique, Paris, France
-   index: 4
- - name: Department of Anesthesiology and Critical Care, Perelman School of Medicine, University of Pennsylvania, Philadelphia, Pennsylvania, USA
-   index: 5
- - name: UNC Eshelman School of Pharmacy, University of North Carolina, Chapel Hill, NC, USA.
-   index: 6
- - name: Molecular Biology and Nanotechnology Laboratory (MolBNL@UniTS), DEA, University of Trieste, Trieste, Italy
-   index: 7
- - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, 70569 Stuttgart, Germany 
-   index: 8
- - name: Departments of Pharmaceutical Sciences and Chemistry, University of California Irvine, Irvine, California, USA
-   index: 9
- - name: University of Colorado Boulder, Boulder, Colorado, USA
-   index: 10
- - name: Pacific Northwest National Laboratory, Richland, Washington, USA
-   index: 11
- - name: Center for Biological Physics, Arizona State University, Tempe, AZ, USA
-   index: 12
  - name: Open Free Energy, Open Molecular Software Foundation, Davis, 95616 California, United States
-   index: 13
+   index: 4
  - name: Differentiated Therapeutics, San Diego, CA
-   index: 14
- - name: PM Scientific Consulting, Basel, Switzerland
-   index: 15
+   index: 5
  - name: Department of Chemical Engineering and Materials Science, Wayne State University, Detroit, Michigan, USA
+   index: 6
+ - name: Université Paris Cité, CNRS, Laboratoire de Biochimie Théorique, Paris, France
+   index: 7
+ - name: Department of Anesthesiology and Critical Care, Perelman School of Medicine, University of Pennsylvania, Philadelphia, Pennsylvania, USA
+   index: 8
+ - name: Pacific Northwest National Laboratory, Richland, Washington, USA
+   index: 9
+- name: UNC Eshelman School of Pharmacy, University of North Carolina, Chapel Hill, NC, USA.
+   index: 10
+ - name: Departments of Pharmaceutical Sciences and Chemistry, University of California Irvine, Irvine, California, USA
+   index: 11 #9
+ - name: Molecular Biology and Nanotechnology Laboratory (MolBNL@UniTS), DEA, University of Trieste, Trieste, Italy
+   index: 12
+ - name: PM Scientific Consulting, Basel, Switzerland
+   index: 13
+ - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, 70569 Stuttgart, Germany 
+   index: 14
+ - name: University of Colorado Boulder, Boulder, Colorado, USA
+   index: 15
+ - name: Center for Biological Physics, Arizona State University, Tempe, AZ, USA
    index: 16
 
-date: 31 May 2024
+date: 4 June 2024
 bibliography: paper.bib
 
 ---
