@@ -79,7 +79,7 @@ affiliations:
    index: 8
  - name: Pacific Northwest National Laboratory, Richland, Washington, USA
    index: 9
-- name: UNC Eshelman School of Pharmacy, University of North Carolina, Chapel Hill, NC, USA.
+ - name: UNC Eshelman School of Pharmacy, University of North Carolina, Chapel Hill, NC, USA.
    index: 10
  - name: Departments of Pharmaceutical Sciences and Chemistry, University of California Irvine, Irvine, California, USA
    index: 11 #9
