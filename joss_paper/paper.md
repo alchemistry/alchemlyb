@@ -36,8 +36,10 @@ authors:
     orcid: 0000-0002-4221-7094
     affiliation: 9
   - name: Haoxi Li
-    orcid: 0009-0004-8369-1042
+    orcid: 0009-0004-8369-1042	
     affiliation: 10
+  - name: Shuai Li
+    affiliation: 17
   - name: Victoria Lim
     orcid: 0000-0003-4030-9312
     affiliation: 11
@@ -82,7 +84,7 @@ affiliations:
  - name: UNC Eshelman School of Pharmacy, University of North Carolina, Chapel Hill, NC, USA.
    index: 10
  - name: Departments of Pharmaceutical Sciences and Chemistry, University of California Irvine, Irvine, California, USA
-   index: 11 #9
+   index: 11
  - name: Molecular Biology and Nanotechnology Laboratory (MolBNL@UniTS), DEA, University of Trieste, Trieste, Italy
    index: 12
  - name: PM Scientific Consulting, Basel, Switzerland
@@ -93,6 +95,8 @@ affiliations:
    index: 15
  - name: Center for Biological Physics, Arizona State University, Tempe, AZ, USA
    index: 16
+ - name: Silicon Therapeutics LLC, Boston, USA
+   index: 17
 
 date: 4 June 2024
 bibliography: paper.bib
