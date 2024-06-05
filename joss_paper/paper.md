@@ -216,7 +216,7 @@ Shuai Liu, Travis Jensen and Dominik Wille contributed code to *alchemlyb*.
 
 # Author contributions
 
-D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., I.A., B.K.A., M.S.B, J.H., T.T.J., I.M.K., H.L., H.L., V.L., D.M., P.T.M, A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., O.B. wrote the manuscript.
+D.L.D., M.R.S., D.M., and O.B. designed the project. Z.W., D.L.D., I.A., B.K.A., M.S.B, J.H., T.T.J., I.M.K., H.L., H.L., V.L., D.M., P.T.M, A.S. contributed to new features. Z.W., D.L.D., O.B. maintained the code base. Z.W., D.L.D., M.R.S, A.S., P.T.M., O.B. wrote the manuscript.
 
 # References
 
