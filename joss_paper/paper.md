@@ -38,7 +38,7 @@ authors:
   - name: Haoxi Li
     orcid: 0009-0004-8369-1042	
     affiliation: 10
-  - name: Shuai Li
+  - name: Shuai Liu
     affiliation: 17
   - name: Victoria Lim
     orcid: 0000-0003-4030-9312
