@@ -42,26 +42,26 @@ authors:
     orcid: 0000-0003-4030-9312
     affiliation: 11
   - name: Shuai Liu
-    affiliation: 17 
+    affiliation: 12
   - name: Domenico Marson
     orcid: 0000-0003-1839-9868
-    affiliation: 12
+    affiliation: 13
   - name: Pascal T. Merz
     orcid: 0000-0002-7045-8725
-    affiliation: 13
+    affiliation: 14
   - name: Alexander Schlaich
     orcid: 0000-0002-4250-363X
-    affiliation: 14
+    affiliation: 15
   - name: David Mobley
     orcid: 0000-0002-1083-5533
     affiliation: 11
   - name: Michael R. Shirts
     orcid: 0000-0003-3249-1097
-    affiliation: 15
+    affiliation: 16
   - name: Oliver Beckstein
     orcid: 0000-0003-1340-0831
     corresponding: true
-    affiliation: "2,16"
+    affiliation: "2,17"
 affiliations:
  - name: Exscientia, Oxford, UK
    index: 1
@@ -85,17 +85,17 @@ affiliations:
    index: 10
  - name: Departments of Pharmaceutical Sciences and Chemistry, University of California Irvine, Irvine, California, USA
    index: 11
- - name: Molecular Biology and Nanotechnology Laboratory (MolBNL@UniTS), DEA, University of Trieste, Trieste, Italy
-   index: 12
- - name: PM Scientific Consulting, Basel, Switzerland
-   index: 13
- - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, 70569 Stuttgart, Germany 
-   index: 14
- - name: University of Colorado Boulder, Boulder, Colorado, USA
-   index: 15
- - name: Center for Biological Physics, Arizona State University, Tempe, AZ, USA
-   index: 16
  - name: Silicon Therapeutics LLC, Boston, USA
+   index: 12
+ - name: Molecular Biology and Nanotechnology Laboratory (MolBNL@UniTS), DEA, University of Trieste, Trieste, Italy
+   index: 13
+ - name: PM Scientific Consulting, Basel, Switzerland
+   index: 14
+ - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, 70569 Stuttgart, Germany 
+   index: 15
+ - name: University of Colorado Boulder, Boulder, Colorado, USA
+   index: 16
+ - name: Center for Biological Physics, Arizona State University, Tempe, AZ, USA
    index: 17
 
 date: 4 June 2024
