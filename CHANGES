@@ -13,13 +13,16 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
-??/??/2024 orbeckst
+??/??/2024 orbeckst, xiki-tempula
 
   * 2.3.1
 
 Changes:
   - alchemlyb adopts SPEC 0 (replaces NEP 29)
     https://scientific-python.org/specs/spec-0000/
+
+Enhancements
+  - Parallelise read and preprocess for ABFE workflow. (PR #371)
 
 
 21/05/2024 xiki-tempula
