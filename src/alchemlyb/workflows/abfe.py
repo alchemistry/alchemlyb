@@ -287,7 +287,7 @@ class ABFE(WorkflowBase):
                     )
                     logger.error(msg)
                     raise ValueError(msg)
-            self.read(read_u_nk=use_FEP, read_dHdl=use_FEP, n_jobs=n_jobs)
+            self.read(read_u_nk=use_FEP, read_dHdl=use_TI, n_jobs=n_jobs)
 
         if uncorr is not None:
             self.preprocess(
