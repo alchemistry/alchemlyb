@@ -336,6 +336,7 @@ def extract_u_nk_from_u_n(
     lambda_values = list(
         set([_lambda_from_filename(y, index=index, prec=prec) for y in files])
     )
+    lambda_values = sorted(lambda_values)
 
     u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
     lc = len(lambda_values)
@@ -653,9 +654,9 @@ def extract_dHdl_from_u_n(
     dependence=lambda x: (1 / x),
     units="real",
 ):
-    """Produce dHdl dataframe from sparated contributions of the potential energy.
+    """Produce dHdl dataframe from separated contributions of the potential energy.
 
-    Each file is imported as a data frame where the columns are::
+    Each file is imported as a dataframe where the columns are:
 
         [0, column_lambda, column_solvent, column_solute, column_cross]
 
@@ -669,7 +670,7 @@ def extract_dHdl_from_u_n(
     columns_lambda : int, default=None
         Indices for columns (file column number minus one) representing the lambda at which the system is equilibrated
     column_u : int, default=None
-        Index for the column (file column number minus one) representing the potential energy of the system
+        Index for the column (file column number minus one) representing the cross interaction potential energy of the system
     dependence : func, default=`lambda x : (1/x)`
         Transform of lambda needed to convert the potential energy into the derivative of the potential energy with respect to lambda, which must be separable.
         For example, for the LJ potential U = eps * f(sig, r), dU/deps = f(sig, r), so we need a dependence function of 1/eps to convert the
