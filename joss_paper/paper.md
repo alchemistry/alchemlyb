@@ -63,7 +63,7 @@ authors:
     corresponding: true
     affiliation: "2,17"
 affiliations:
- - name: Exscientia, Oxford, UK
+ - name: Exscientia plc, Schroedinger Building, Oxford, United Kingdom
    index: 1
  - name: Department of Physics, Arizona State University, Tempe, Arizona, USA
    index: 2
