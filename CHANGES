@@ -21,6 +21,9 @@ Changes:
   - alchemlyb adopts SPEC 0 (replaces NEP 29)
     https://scientific-python.org/specs/spec-0000/
 
+Fixes
+  - Support matplotlib 3.9.0 (issue #28, PR#319).
+
 
 21/05/2024 xiki-tempula
 
