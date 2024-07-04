@@ -51,7 +51,7 @@ setup(
         "pymbar>=4",
         "scipy",
         "scikit-learn",
-        "matplotlib",
+        "matplotlib>=3.7",
         "loguru",
         "pyarrow",
     ],

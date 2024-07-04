@@ -222,6 +222,6 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
         color="#151B54",
     )
     lege = ax.legend(prop=FP(size=14), frameon=False, loc=1)
-    for l in lege.legendHandles:
+    for l in lege.legend_handles:
         l.set_linewidth(10)
     return ax
