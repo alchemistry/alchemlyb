@@ -41,8 +41,8 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     license="BSD",
-    long_description=open("README.rst").read(),
-    long_description_content_type="text/x-rst",
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     python_requires=">=3.9",
     tests_require=["pytest", "alchemtest"],
     install_requires=[
