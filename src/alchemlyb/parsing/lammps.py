@@ -744,8 +744,8 @@ def extract_dHdl(
     column_dlambda1=2,
     column_lambda2=None,
     column_dlambda2=None,
-    columns_derivative1=[10, 11],
-    columns_derivative2=[12, 13],
+    columns_derivative1=[11, 10],
+    columns_derivative2=[13, 12],
     units="real",
 ):
     """This function will go into alchemlyb.parsing.lammps
@@ -778,9 +778,9 @@ def extract_dHdl(
         If this array is ``None`` then we do not expect two lambda values.
     column_dlambda2 : int, default=None
         Index for column (column number minus one) for the change in lambda2.
-    columns_derivative : list[int], default=[10,11]
+    columns_derivative : list[int], default=[11, 10]
         Indices for columns (column number minus one) representing the lambda at which to find the forward
-        and backward distance.
+        and backward distance respectively.
     units : str, default="real"
         Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
 
