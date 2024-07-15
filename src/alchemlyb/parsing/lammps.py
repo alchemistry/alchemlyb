@@ -654,6 +654,7 @@ def extract_dHdl_from_u_n(
     column_u_cross=None,
     dependence=lambda x: (1 / x),
     units="real",
+    prec=4,
 ):
     """Produce dHdl dataframe from separated contributions of the potential energy.
 
@@ -678,6 +679,8 @@ def extract_dHdl_from_u_n(
         potential energy to the derivative with respect to eps.
     units : str, default="real"
         Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
+    prec : int, default=4
+        Number of decimal places defined used in ``round()`` function.
 
     Results
     -------
@@ -726,6 +729,7 @@ def extract_dHdl_from_u_n(
         data = data.iloc[:, col_indices]
 
         data.columns = ["time", "fep-lambda", "U"]
+        data["fep-lambda"] = data["fep-lambda"].apply(lambda x: round(x, prec))
         data["fep"] = dependence(data.loc[:, "fep-lambda"]) * data.U
         data.drop(columns=["U"], inplace=True)
 
@@ -748,6 +752,7 @@ def extract_dHdl(
     columns_derivative1=[11, 10],
     columns_derivative2=[13, 12],
     units="real",
+    prec=4,
 ):
     """This function will go into alchemlyb.parsing.lammps
 
@@ -784,6 +789,8 @@ def extract_dHdl(
         and backward distance respectively.
     units : str, default="real"
         Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
+    prec : int, default=4
+        Number of decimal places defined used in ``round()`` function.
 
     Results
     -------
@@ -884,6 +891,7 @@ def extract_dHdl(
         if column_lambda2 is None:
             # dU_back: U(l-dl) - U(l); dU_forw: U(l+dl) - U(l)
             data.columns = ["time", "fep-lambda", "dlambda", "dU_back", "dU_forw"]
+            data["fep-lambda"] = data["fep-lambda"].apply(lambda x: round(x, prec))
             data["fep"] = (data.dU_forw - data.dU_back) / (2 * data.dlambda)
             data.drop(columns=["dlambda", "dU_back", "dU_forw"], inplace=True)
         else:
@@ -898,6 +906,7 @@ def extract_dHdl(
                 "dU_back_coul",
                 "dU_forw_coul",
             ]
+            data["vdw-lambda"] = data["vdw-lambda"].apply(lambda x: round(x, prec))
             data["coul"] = (data.dU_forw_coul - data.dU_back_coul) / (
                 2 * data.dlambda_coul
             )
