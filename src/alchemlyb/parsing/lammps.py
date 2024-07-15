@@ -592,7 +592,8 @@ def extract_u_nk(
                 if not column_list:
                     raise ValueError(
                         "Lambda values found in files do not align with those in the filenames. "
-                        "Check that 'columns_lambda' are defined correctly."
+                        "Check that 'columns_lambda' or 'prec' are defined correctly. lambda"
+                        " file: {}; lambda columns: {}".format(lambda12, lambda_values)
                     )
                 else:
                     column_name = lambda_values[column_list[0]]
