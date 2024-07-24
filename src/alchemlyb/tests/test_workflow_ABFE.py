@@ -35,10 +35,10 @@ def workflow(tmp_path_factory):
 
 
 class TestInit:
-    def test_nofilematch(self):
+    def test_nofilematch(self, tmp_path):
         with pytest.raises(ValueError, match="No file has been matched to"):
             ABFE(
-                dir="./",
+                dir=str(tmp_path),
                 prefix="dhdl",
                 suffix="xvg",
                 T=310,
@@ -367,6 +367,12 @@ class TestConvergence:
         monkeypatch.setattr(workflow, "convergence", None)
         workflow.check_convergence(10, estimator="TI")
         assert len(workflow.convergence) == 10
+
+    def test_preserve_unit(self, workflow, monkeypatch):
+        monkeypatch.setattr(workflow, "convergence", None)
+        monkeypatch.setattr(workflow, "units", "kcal/mol")
+        workflow.check_convergence(2, estimator="TI")
+        assert np.allclose(workflow.convergence["data_fraction"], [0.5, 1.0])
 
     def test_unprocessed_dhdl(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "dHdl_sample_list", None)

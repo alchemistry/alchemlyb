@@ -34,7 +34,13 @@ The :meth:`~alchemlyb.estimators.MBAR.fit` method is used to perform the free en
     >>> mbar_vdw = MBAR().fit(u_nk_vdw)
 
 The sum of the endpoint free energy differences will be the free energy of solvation for benzene in water.
-The free energy differences (in units of :math:`k_B T`) between each :math:`\lambda` window can be accessed via the ``delta_f_`` attribute::
+The free energy differences (in units of :math:`k_B T`) between each :math:`\lambda` window can be accessed via the ``delta_f_`` attribute.
+
+The elements of the resulting matrix ``delta_f_`` represent the free energy differences between different lambda windows. Specifically, ``delta_f_[i, j]`` represents the free energy difference between lambda window ``j`` and lambda window ``i``. This matrix can be utilized to obtain the desired free energy differences for various states.
+
+For instance, to obtain the free energy difference between the lambda values of 0 and 1, you can directly access ``delta_f_.loc[0.00, 1.00]``.
+
+Additionally, the errors on these differences are accessible via the ``d_delta_f_`` attribute.
 
     >>> mbar_coul.delta_f_
               0.00      0.25      0.50      0.75      1.00

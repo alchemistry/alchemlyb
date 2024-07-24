@@ -14,7 +14,35 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
-*/*/2023 hl2500, xiki-tempula, jaclark5
+08/07/2024 orbeckst, xiki-tempula, jaclark5
+
+  * 2.3.1
+
+Changes:
+  - alchemlyb adopts SPEC 0 (replaces NEP 29)
+    https://scientific-python.org/specs/spec-0000/
+  - Add support for LAMMPS FEP files (Issue #349, PR #348)
+
+Fixes
+  - Support matplotlib 3.9.0 (issue alchemistry/flamel#28, PR#319).
+
+
+21/05/2024 xiki-tempula
+
+  * 2.3.0
+
+Changes
+  - Default value for keyword argument `initial_nk` of the MBAR estimator was
+    changed to "BAR" (run an initial BAR calculation before MBAR) instead of 
+    `None` (start from all zeros) as this change provides a sizable speedup (PR #357)
+    
+Enhancements
+  - `forward_backward_convergence` uses the bootstrap error when the statistical error
+    is too large. (PR #358)
+  - `BAR` result is used as initial guess for `MBAR` estimator. (PR #357)
+  - `forward_backward_convergence` uses the result from the previous step as the initial guess for the next step. (PR #357)
+
+06/04/2024 hl2500, xiki-tempula
 
   * 2.2.0
 
@@ -22,7 +50,6 @@ Changes
   - Require pandas >= 2.1 (PR #340)
   - For pandas>=2.1, metadata will be loaded from the parquet file (issue #331, PR #340).
   - add support for Python 3.12, remove Python 3.8 support (issue #341, PR #304).
-  - Add support for LAMMPS FEP files (Issue #349, PR #348)
 
 Enhancements
   - Add a TI estimator using gaussian quadrature to calculate the free energy.
@@ -31,6 +58,10 @@ Enhancements
     (issue #337, PR #338)
   - ValueError issued when `df` and `series` for `statistical_inefficiency`
     doesn't have the same length (issue #337, PR #338)
+
+Fixes
+  - data_fraction column in workflow.convergence won't be affected by the
+    unit conversion (issue #350, PR#319).
   
 
 22/06/2023 xiki-tempula

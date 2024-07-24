@@ -36,6 +36,15 @@ def test_convergence_wrong_cases(gmx_benzene_Coulomb_u_nk):
         forward_backward_convergence(gmx_benzene_Coulomb_u_nk, "mbar")
 
 
+def test_convergence_bootstrap(gmx_benzene_Coulomb_u_nk, caplog):
+    normal_c = forward_backward_convergence(gmx_benzene_Coulomb_u_nk, "mbar", num=2)
+    bootstrap_c = forward_backward_convergence(
+        gmx_benzene_Coulomb_u_nk, "mbar", error_tol=0.01, num=2
+    )
+    assert "use bootstrap error instead." in caplog.text
+    assert (bootstrap_c["Forward_Error"] != normal_c["Forward_Error"]).all()
+
+
 def test_convergence_method(gmx_benzene_Coulomb_u_nk):
     convergence = forward_backward_convergence(
         gmx_benzene_Coulomb_u_nk, "MBAR", num=2, method="adaptive"
