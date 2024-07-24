@@ -14,7 +14,7 @@ approximation of the Hamiltonian) at specified values of :math:`\lambda` and :ma
 LAMMPS, `fix adapt/fep <https://docs.lammps.org/fix_adapt_fep.html>`_ changes :math:`\lambda` and 
 `compute fep <https://docs.lammps.org/compute_fep.html>`_ changes :math:`\lambda'`.
 
-.. versionadded:: 1.0.0
+.. versionadded:: 2.4.0
 
 """
 
@@ -40,6 +40,8 @@ def _isfloat(x):
 def beta_from_units(T, units):
     """Output value of beta from temperature and units.
 
+    Supported types are: cgs, electron, lj. metal, micro, nano, real, si
+
     Parameters
     ----------
     T : float
@@ -57,14 +59,14 @@ def beta_from_units(T, units):
     ValueError
         If unit string is not recognized.
 
-    .. versionadded:: 1.??
+    .. versionadded:: 2.4.0
     """
     if units == "real":  # E in kcal/mol, T in K
         beta = 1 / (R_kJmol * kJ2kcal * T)
     elif units == "lj":  # Nondimensional E and T scaled by epsilon
         beta = 1 / T
     elif units == "metal":  # E in eV, T in K
-        beta = 1 / (R_kJmol * kJ2kcal * T)  # NoteHere!!!!
+        beta = 1 / (R_kJmol * kJ2kcal * T)
     elif units == "si":  # E in J, T in K
         beta = 1 / (constants.R * T * constants.physical_constants["electron volt"][0])
     elif units == "cgs":  # E in ergs, T in K
@@ -77,7 +79,8 @@ def beta_from_units(T, units):
         beta = 1 / (constants.R * T * 1e-21)
     else:
         raise ValueError(
-            "LAMMPS unit type, {}, is not supported. Supported types are: real and lj".format(
+            "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
+            " lj. metal, micro, nano, real, si".format(
                 units
             )
         )
@@ -104,18 +107,23 @@ def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     tuple[float]
         Tuple of lambda values
 
-    .. versionadded:: 1.??
+    .. versionadded:: 2.4.0
     """
 
     name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
-    if not _isfloat(name_array[indices[0]]):
+    try:
+        float(name_array[indices[0]])
+    except ValueError:
         raise ValueError(
-            f"Entry, {indices[0]} in filename cannot be converted to float: {name_array[indices[0]]}"
-        )
-    if not _isfloat(name_array[indices[1]]):
+                f"Entry, {indices[0]} in filename cannot be converted to float: {name_array[indices[0]]}"
+        (
+    try:
+        float(name_array[indices[1]])
+    except ValueError:
         raise ValueError(
-            f"Entry, {indices[1]} in filename cannot be converted to float: {name_array[indices[1]]}"
+                f"Entry, {indices[1]} in filename cannot be converted to float: {name_array[indices[1]]}"
         )
+
     return (
         round(float(name_array[indices[0]]), prec),
         round(float(name_array[indices[1]]), prec),
@@ -144,10 +152,12 @@ def _lambda_from_filename(filename, separator="_", index=-1, prec=4):
     float
         Lambda prime value
 
-    .. versionadded:: 1.??
+    .. versionadded:: 2.4.0
     """
     name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
-    if not _isfloat(name_array[index]):
+    try:
+        float(name_array[index])
+    except:
         raise ValueError(
             f"Entry, {index} in filename cannot be converted to float: {name_array[index]}"
         )
@@ -176,7 +186,7 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
     lambda_pairs : list
         List of tuples containing two floats, lambda and lambda'.
 
-    .. versionadded:: 1.??
+    .. versionadded:: 2.4.0
     """
 
     lambda_pairs = [
@@ -275,22 +285,22 @@ def extract_u_nk_from_u_n(
     column_lambda,
     column_u_cross,
     dependence=lambda x: (x),
-    units="real",
     index=-1,
+    units="real",
     prec=4,
 ):
     """Produce u_nk from files containing u_n given a separable dependence on lambda.
 
     Parameters
     ----------
-    filenames : str
+    fep_files : str
         Path to fepout file(s) to extract data from. Filenames and paths are
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*.txt".
-    temperature : float
+    T : float
         Temperature in Kelvin at which the simulation was sampled.
     columns_lambda : int
         Indices for columns (file column number minus one) representing the lambda at which the system is equilibrated
-    column_cross : int
+    column_u_cross : int
         Index for the column (file column number minus one) representing the potential energy of the cross interactions
         between the solute and solvent.
     dependence : func, default=`lambda x : (x)`
@@ -300,7 +310,8 @@ def extract_u_nk_from_u_n(
         containing the lambda information for :func:`alchemlyb.parsing._get_bar_lambdas`. If ``column_lambda2 != None``
         this list should be of length three, where the last value represents the invariant lambda.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano", 
+        "real", "si"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
 
@@ -315,7 +326,7 @@ def extract_u_nk_from_u_n(
         - temperature in K
         - energy unit in kT
 
-    .. versionadded:: 1.??
+    .. versionadded:: 2.4.0
     """
     # Collect Files
     files = glob.glob(fep_files)
@@ -420,7 +431,7 @@ def extract_u_nk(
     prec=4,
     force=False,
 ):
-    """This function will go into alchemlyb.parsing.lammps
+    """Return reduced potentials `u_nk` from LAMMPS dump file(s).
 
     Each file is imported as a data frame where the columns kept are either::
 
@@ -432,10 +443,10 @@ def extract_u_nk(
 
     Parameters
     ----------
-    filenames : str
+    fep_files : str
         Path to fepout file(s) to extract data from. Filenames and paths are
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
-    temperature : float
+    T : float
         Temperature in Kelvin at which the simulation was sampled.
     columns_lambda1 : list[int], default=[1,2]
         Indices for columns (column number minus one) representing (1) the lambda at which the system is equilibrated and (2) the lambda used
@@ -450,7 +461,8 @@ def extract_u_nk(
         containing the lambda information for :func:`alchemlyb.parsing._get_bar_lambdas`. If ``column_lambda2 != None``
         this list should be of length three, where the last value represents the invariant lambda.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano", 
+        "real", "si"
     vdw_lambda : int, default=1
         In the case that ``column_lambda2 is not None``, this integer represents which lambda represents vdw interactions.
     prec : int, default=4
@@ -469,7 +481,7 @@ def extract_u_nk(
         - temperature in K
         - energy unit in kT
 
-    .. versionadded:: 1.??
+    .. versionadded:: 2.4.0
     """
 
     # Collect Files
@@ -664,21 +676,22 @@ def extract_dHdl_from_u_n(
 
     Parameters
     ----------
-    filenames : str
+    fep_files : str
         Path to fepout file(s) to extract data from. Filenames and paths are
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
     columns_lambda : int, default=None
         Indices for columns (file column number minus one) representing the lambda at which the system is equilibrated
-    column_u : int, default=None
+    column_u_cross : int, default=None
         Index for the column (file column number minus one) representing the cross interaction potential energy of the system
     dependence : func, default=`lambda x : (1/x)`
         Transform of lambda needed to convert the potential energy into the derivative of the potential energy with respect to lambda, which must be separable.
         For example, for the LJ potential U = eps * f(sig, r), dU/deps = f(sig, r), so we need a dependence function of 1/eps to convert the
         potential energy to the derivative with respect to eps.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano", 
+        "real", "si"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
 
@@ -693,7 +706,7 @@ def extract_dHdl_from_u_n(
         - temperature in K or dimensionless
         - energy unit in kT
 
-    .. versionadded:: 1.??
+    .. versionadded:: 2.4.0
     """
 
     # Collect Files
@@ -754,7 +767,7 @@ def extract_dHdl(
     units="real",
     prec=4,
 ):
-    """This function will go into alchemlyb.parsing.lammps
+    """Return reduced potentials `dHdl` from LAMMPS dump file(s).
 
     Each file is imported as a data frame where the columns kept are either::
 
@@ -770,10 +783,10 @@ def extract_dHdl(
 
     Parameters
     ----------
-    filenames : str
+    fep_files : str
         Path to fepout file(s) to extract data from. Filenames and paths are
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
-    temperature : float
+    T : float
         Temperature in Kelvin at which the simulation was sampled.
     column_lambda1 : int, default=2
         Index for column (column number minus one) representing the lambda at which the system is equilibrated.
@@ -784,11 +797,15 @@ def extract_dHdl(
         If this array is ``None`` then we do not expect two lambda values.
     column_dlambda2 : int, default=None
         Index for column (column number minus one) for the change in lambda2.
-    columns_derivative : list[int], default=[11, 10]
+    columns_derivative1 : list[int], default=[11, 10]
         Indices for columns (column number minus one) representing the lambda at which to find the forward
         and backward distance respectively.
+    columns_derivative2 : list[int], default=[13, 12]
+        Indices for columns (column number minus one) representing the second value of lambda at which to find the forward
+        and backward distance respectively.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano", 
+        "real", "si"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
 
@@ -803,7 +820,7 @@ def extract_dHdl(
         - temperature in K or dimensionless
         - energy unit in kT
 
-    .. versionadded:: 1.??
+    .. versionadded:: 2.4.0
     """
 
     # Collect Files
@@ -943,7 +960,7 @@ def extract_H(
     column_lambda2=None,
     units="real",
 ):
-    """This function will go into alchemlyb.parsing.lammps
+    """Return reduced potentials Hamiltonian from LAMMPS dump file(s).
 
     Each file is imported as a data frame where the columns kept are either::
 
@@ -958,10 +975,10 @@ def extract_H(
 
     Parameters
     ----------
-    filenames : str
+    fep_files : str
         Path to fepout file(s) to extract data from. Filenames and paths are
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
-    temperature : float
+    T : float
         Temperature in Kelvin at which the simulation was sampled.
     column_lambda1 : int, default=2
         Index for column (column number minus one) representing the lambda at which the system is equilibrated.
@@ -971,7 +988,8 @@ def extract_H(
         Index for column (column number minus one) for a second value of lambda.
         If this array is ``None`` then we do not expect two lambda values.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "real" and "lj"
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano", 
+        "real", "si"
 
     Results
     -------
@@ -984,7 +1002,7 @@ def extract_H(
         - temperature in K or dimensionless
         - energy unit in kT
 
-    .. versionadded:: 1.??
+    .. versionadded:: 2.4.0
     """
 
     # Collect Files
@@ -1048,3 +1066,4 @@ def extract_H(
     df_H.mul({"U": beta})
 
     return df_H
+
