@@ -144,6 +144,7 @@ def plot_convergence(dataframe, units=None, final_error=None, ax=None):
     ax.set_ylabel(r"$\Delta G$ ({})".format(units), fontsize=16, color="#151B54")
     plt.tick_params(axis="x", color="#D2B9D3")
     plt.tick_params(axis="y", color="#D2B9D3")
+    plt.tight_layout()
     return ax
 
 
@@ -174,8 +175,8 @@ def plot_moving_average(dataframe, units=None, final_error=None, ax=None):
          The unit of the estimate. The default is `None`, which is to use the
          unit in the input. Setting this will change the output unit.
      final_error : float
-         The error of the final value in ``units``. If not given, takes the overall
-         error of the time blocks, unless these were not provided, it which case it
+         The error (standard deviation) of the final value in ``units``. If not given, takes the
+         overall error of the time blocks, unless these were not provided, it which case it
          equals 1 kT.
      ax : matplotlib.axes.Axes
          Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
@@ -217,15 +218,15 @@ def plot_moving_average(dataframe, units=None, final_error=None, ax=None):
 
     if final_error is None:
         if np.sum(df_avg_error) != 0:
-            final_error = np.sqrt(np.sum(np.square(df_avg_error)))
+            final_error = np.std(df_avg)
         else:
             final_error = 1.0
 
     if np.isfinite(final_error):
         line0 = ax.fill_between(
             [0, 1],
-            df_avg[-1] - final_error,
-            df_avg[-1] + final_error,
+            np.mean(df_avg) - final_error,
+            np.mean(df_avg) + final_error,
             color="#D2B9D3",
             zorder=1,
         )
@@ -258,4 +259,5 @@ def plot_moving_average(dataframe, units=None, final_error=None, ax=None):
     ax.set_ylabel(r"$\Delta G$ ({})".format(units), fontsize=16, color="#151B54")
     plt.tick_params(axis="x", color="#D2B9D3")
     plt.tick_params(axis="y", color="#D2B9D3")
+    plt.tight_layout()
     return ax

@@ -124,7 +124,7 @@ def forward_backward_convergence(
                 and len(np.unique(np.array([x[1] for x in data.index.to_numpy()]))) > 1
             ):
                 raise ValueError(
-                    "Restrict to a single fep-lambda value for a meaningful result in df_list[]".format(
+                    "Restrict to a single fep-lambda value for a meaningful result in df_list[{}]".format(
                         ii
                     )
                 )
@@ -465,7 +465,7 @@ def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
             if estimator == "MBAR":
                 if len(fep_values) > 1:
                     raise ValueError(
-                        "Restrict to a single fep-lambda value for a meaningful result in df_list[]".format(
+                        "Restrict to a single fep-lambda value for a meaningful result in df_list[{}]".format(
                             ii
                         )
                     )
@@ -476,7 +476,7 @@ def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
             elif estimator == "BAR":
                 if len(fep_values) > 2:
                     raise ValueError(
-                        "Restrict to a fep-lambda value and its forward adjacent state for a meaningful result in df_list[]".format(
+                        "Restrict to a fep-lambda value and its forward adjacent state for a meaningful result in df_list[{}]".format(
                             ii
                         )
                     )
