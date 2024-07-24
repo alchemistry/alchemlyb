@@ -1,5 +1,5 @@
-Tutorial for Using alchemlyb with Test Data
-===========================================
+Tutorial
+========
 
 In this tutorial, we will demonstrate how to use **alchemlyb** with test data
 from `alchemtest`_. This guide provides a general introduction to the tool with
