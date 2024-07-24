@@ -22,7 +22,7 @@ Changes:
   - alchemlyb adopts SPEC 0 (replaces NEP 29)
     https://scientific-python.org/specs/spec-0000/
   - Addition of `moving_average` function in both `convergence` and 
-    `visualization`
+    `visualization` (Issue #380, PR #381)
 
 Fixes
   - Support matplotlib 3.9.0 (issue alchemistry/flamel#28, PR#319).
