@@ -80,9 +80,7 @@ def beta_from_units(T, units):
     else:
         raise ValueError(
             "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
-            " lj. metal, micro, nano, real, si".format(
-                units
-            )
+            " lj. metal, micro, nano, real, si".format(units)
         )
 
     return beta
@@ -115,13 +113,14 @@ def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
         float(name_array[indices[0]])
     except ValueError:
         raise ValueError(
-                f"Entry, {indices[0]} in filename cannot be converted to float: {name_array[indices[0]]}"
-        (
+            f"Entry, {indices[0]} in filename cannot be converted to float: {name_array[indices[0]]}"
+        )
+
     try:
         float(name_array[indices[1]])
     except ValueError:
         raise ValueError(
-                f"Entry, {indices[1]} in filename cannot be converted to float: {name_array[indices[1]]}"
+            f"Entry, {indices[1]} in filename cannot be converted to float: {name_array[indices[1]]}"
         )
 
     return (
@@ -310,7 +309,7 @@ def extract_u_nk_from_u_n(
         containing the lambda information for :func:`alchemlyb.parsing._get_bar_lambdas`. If ``column_lambda2 != None``
         this list should be of length three, where the last value represents the invariant lambda.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano", 
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
         "real", "si"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
@@ -461,7 +460,7 @@ def extract_u_nk(
         containing the lambda information for :func:`alchemlyb.parsing._get_bar_lambdas`. If ``column_lambda2 != None``
         this list should be of length three, where the last value represents the invariant lambda.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano", 
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
         "real", "si"
     vdw_lambda : int, default=1
         In the case that ``column_lambda2 is not None``, this integer represents which lambda represents vdw interactions.
@@ -690,7 +689,7 @@ def extract_dHdl_from_u_n(
         For example, for the LJ potential U = eps * f(sig, r), dU/deps = f(sig, r), so we need a dependence function of 1/eps to convert the
         potential energy to the derivative with respect to eps.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano", 
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
         "real", "si"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
@@ -804,7 +803,7 @@ def extract_dHdl(
         Indices for columns (column number minus one) representing the second value of lambda at which to find the forward
         and backward distance respectively.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano", 
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
         "real", "si"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
@@ -988,7 +987,7 @@ def extract_H(
         Index for column (column number minus one) for a second value of lambda.
         If this array is ``None`` then we do not expect two lambda values.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano", 
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
         "real", "si"
 
     Results
@@ -1066,4 +1065,3 @@ def extract_H(
     df_H.mul({"U": beta})
 
     return df_H
-
