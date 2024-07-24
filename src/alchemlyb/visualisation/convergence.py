@@ -146,6 +146,7 @@ def plot_convergence(dataframe, units=None, final_error=None, ax=None):
     plt.tick_params(axis="y", color="#D2B9D3")
     return ax
 
+
 def plot_moving_average(dataframe, units=None, final_error=None, ax=None):
     """Plot the forward and backward convergence.
 
@@ -240,7 +241,7 @@ def plot_moving_average(dataframe, units=None, final_error=None, ax=None):
         mew=2.5,
         mec="#736AFF",
         ms=12,
-        label="Avg FE"
+        label="Avg FE",
     )
 
     xticks_spacing = len(f_ts) // 10 or 1

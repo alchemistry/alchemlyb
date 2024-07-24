@@ -119,9 +119,14 @@ def forward_backward_convergence(
         logger.info("Backward analysis: {:.2f}%".format(100 * i / num))
         sample = []
         for ii, data in enumerate(df_list):
-            if estimator in ["MBAR", "BAR"] and len(np.unique(np.array([ x[1] for x in data.index.to_numpy()]))) > 1:
+            if (
+                estimator in ["MBAR", "BAR"]
+                and len(np.unique(np.array([x[1] for x in data.index.to_numpy()]))) > 1
+            ):
                 raise ValueError(
-                    "Restrict to a single fep-lambda value for a meaningful result in df_list[]".format(ii)
+                    "Restrict to a single fep-lambda value for a meaningful result in df_list[]".format(
+                        ii
+                    )
                 )
             sample.append(data[-len(data) // num * i :])
         mean, error = _forward_backward_convergence_estimate(
@@ -394,11 +399,12 @@ def A_c(series_list, precision=0.01, tol=2):
             result += d_R_c * sum(R_c_list <= element) / n_R_c
     return result
 
+
 def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
-    """ Free energy estimate for portions of the trajectory.
+    """Free energy estimate for portions of the trajectory.
 
     Generate the free energy estimate for a series of blocks in time,
-    with the specified number of equally spaced points. 
+    with the specified number of equally spaced points.
     For example, setting `num` to 10 would give the forward
     convergence which is the free energy estimate from the first 10%, then the
     next 10% ... of the data.
@@ -455,25 +461,35 @@ def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
         logger.info("Moving Average Analysis: {:.2f}%".format(100 * i / num))
         sample = []
         for ii, data in enumerate(df_list):
-            fep_values = np.unique(np.array([ x[1] for x in data.index.to_numpy()]))
+            fep_values = np.unique(np.array([x[1] for x in data.index.to_numpy()]))
             if estimator == "MBAR":
                 if len(fep_values) > 1:
                     raise ValueError(
-                        "Restrict to a single fep-lambda value for a meaningful result in df_list[]".format(ii)
+                        "Restrict to a single fep-lambda value for a meaningful result in df_list[]".format(
+                            ii
+                        )
                     )
                 else:
-                    sample.append(data[len(data) // num * (i - 1) : len(data) // num * i ])
+                    sample.append(
+                        data[len(data) // num * (i - 1) : len(data) // num * i]
+                    )
             elif estimator == "BAR":
                 if len(fep_values) > 2:
                     raise ValueError(
-                        "Restrict to a fep-lambda value and its forward adjacent state for a meaningful result in df_list[]".format(ii)
+                        "Restrict to a fep-lambda value and its forward adjacent state for a meaningful result in df_list[]".format(
+                            ii
+                        )
                     )
                 else:
-                    data1 = data.iloc[data.index.get_level_values('fep-lambda').isin([fep_values[0]])]
-                    data2 = data.iloc[data.index.get_level_values('fep-lambda').isin([fep_values[1]])]
+                    data1 = data.iloc[
+                        data.index.get_level_values("fep-lambda").isin([fep_values[0]])
+                    ]
+                    data2 = data.iloc[
+                        data.index.get_level_values("fep-lambda").isin([fep_values[1]])
+                    ]
                     lx = min(len(data1), len(data2))
-                    ind1, ind2 = lx // num * (i - 1), lx // num * i 
-                    sample.append(concat([ data1[ind1:ind2], data2[ind1:ind2]]))
+                    ind1, ind2 = lx // num * (i - 1), lx // num * i
+                    sample.append(concat([data1[ind1:ind2], data2[ind1:ind2]]))
         sample = concat(sample)
         result = estimator_fit(sample)
 
