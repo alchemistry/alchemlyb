@@ -410,9 +410,6 @@ def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
     estimator : {'MBAR', 'BAR', 'TI'}
         Name of the estimators.
         See the important note below on the use of "MBAR".
-
-        .. deprecated:: 1.0.0
-           Lower case input is also accepted until release 2.0.0.
     num : int
         The number of time points.
     kwargs : dict
@@ -436,20 +433,11 @@ def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
             9  3.044149       0.016405
 
 
-    .. versionadded:: 2.0.0
+    .. versionadded:: 2.4.0
 
     """
     logger.info("Start block averaging analysis.")
     logger.info("Check data availability.")
-    if estimator.upper() != estimator:
-        warn(
-            "Using lower-case strings for the 'estimator' kwarg in "
-            "convergence.forward_backward_convergence() is deprecated in "
-            "1.0.0 and only upper case will be accepted in 2.0.0",
-            DeprecationWarning,
-        )
-        estimator = estimator.upper()
-
     if estimator not in (FEP_ESTIMATORS + TI_ESTIMATORS):
         msg = f"Estimator {estimator} is not available in {FEP_ESTIMATORS + TI_ESTIMATORS}."
         logger.error(msg)
