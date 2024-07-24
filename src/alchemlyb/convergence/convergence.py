@@ -118,7 +118,11 @@ def forward_backward_convergence(
     for i in range(1, num + 1):
         logger.info("Backward analysis: {:.2f}%".format(100 * i / num))
         sample = []
-        for data in df_list:
+        for ii, data in enumerate(df_list):
+            if estimator in ["MBAR", "BAR"] and len(np.unique(np.array([ x[1] for x in data.index.to_numpy()]))) > 1:
+                raise ValueError(
+                    "Restrict to a single fep-lambda value for a meaningful result in df_list[]".format(ii)
+                )
             sample.append(data[-len(data) // num * i :])
         mean, error = _forward_backward_convergence_estimate(
             sample, estimator, my_estimator, error_tol, **kwargs
@@ -389,3 +393,124 @@ def A_c(series_list, precision=0.01, tol=2):
             d_R_c = sorted_array[-i] - sorted_array[-i - 1]
             result += d_R_c * sum(R_c_list <= element) / n_R_c
     return result
+
+def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
+    """ Free energy estimate for portions of the trajectory.
+
+    Generate the free energy estimate for a series of blocks in time,
+    with the specified number of equally spaced points. 
+    For example, setting `num` to 10 would give the forward
+    convergence which is the free energy estimate from the first 10%, then the
+    next 10% ... of the data.
+
+    Parameters
+    ----------
+    df_list : list
+        List of DataFrame of either dHdl or u_nk.
+    estimator : {'MBAR', 'BAR', 'TI'}
+        Name of the estimators.
+        See the important note below on the use of "MBAR".
+
+        .. deprecated:: 1.0.0
+           Lower case input is also accepted until release 2.0.0.
+    num : int
+        The number of time points.
+    kwargs : dict
+        Keyword arguments to be passed to the estimator.
+
+    Returns
+    -------
+    :class:`pandas.DataFrame`
+        The DataFrame with estimate data. ::
+
+               FE             FE_Error
+            0  3.016442       0.052748
+            1  3.078106       0.037170
+            2  3.072561       0.030186
+            3  3.048325       0.026070
+            4  3.049769       0.023359
+            5  3.034078       0.021260
+            6  3.043274       0.019642
+            7  3.035460       0.018340
+            8  3.042032       0.017319
+            9  3.044149       0.016405
+
+
+    .. versionadded:: 2.0.0
+
+    """
+    logger.info("Start block averaging analysis.")
+    logger.info("Check data availability.")
+    if estimator.upper() != estimator:
+        warn(
+            "Using lower-case strings for the 'estimator' kwarg in "
+            "convergence.forward_backward_convergence() is deprecated in "
+            "1.0.0 and only upper case will be accepted in 2.0.0",
+            DeprecationWarning,
+        )
+        estimator = estimator.upper()
+
+    if estimator not in (FEP_ESTIMATORS + TI_ESTIMATORS):
+        msg = f"Estimator {estimator} is not available in {FEP_ESTIMATORS + TI_ESTIMATORS}."
+        logger.error(msg)
+        raise ValueError(msg)
+    else:
+        # select estimator class by name
+        estimator_fit = estimators_dispatch[estimator](**kwargs).fit
+        logger.info(f"Use {estimator} estimator for convergence analysis.")
+
+    logger.info("Begin Moving Average Analysis")
+
+    average_list = []
+    average_error_list = []
+    for i in range(1, num):
+        logger.info("Moving Average Analysis: {:.2f}%".format(100 * i / num))
+        sample = []
+        for ii, data in enumerate(df_list):
+            fep_values = np.unique(np.array([ x[1] for x in data.index.to_numpy()]))
+            if estimator == "MBAR":
+                if len(fep_values) > 1:
+                    raise ValueError(
+                        "Restrict to a single fep-lambda value for a meaningful result in df_list[]".format(ii)
+                    )
+                else:
+                    sample.append(data[len(data) // num * (i - 1) : len(data) // num * i ])
+            elif estimator == "BAR":
+                if len(fep_values) > 2:
+                    raise ValueError(
+                        "Restrict to a fep-lambda value and its forward adjacent state for a meaningful result in df_list[]".format(ii)
+                    )
+                else:
+                    data1 = data.iloc[data.index.get_level_values('fep-lambda').isin([fep_values[0]])]
+                    data2 = data.iloc[data.index.get_level_values('fep-lambda').isin([fep_values[1]])]
+                    lx = min(len(data1), len(data2))
+                    ind1, ind2 = lx // num * (i - 1), lx // num * i 
+                    sample.append(concat([ data1[ind1:ind2], data2[ind1:ind2]]))
+        sample = concat(sample)
+        result = estimator_fit(sample)
+
+        average_list.append(result.delta_f_.iloc[0, -1])
+        if estimator.lower() == "bar":
+            error = np.sqrt(
+                sum(
+                    [
+                        result.d_delta_f_.iloc[i, i + 1] ** 2
+                        for i in range(len(result.d_delta_f_) - 1)
+                    ]
+                )
+            )
+            average_error_list.append(error)
+        else:
+            average_error_list.append(result.d_delta_f_.iloc[0, -1])
+        logger.info(
+            "{:.2f} +/- {:.2f} kT".format(average_list[-1], average_error_list[-1])
+        )
+
+    convergence = pd.DataFrame(
+        {
+            "FE": average_list,
+            "FE_Error": average_error_list,
+        }
+    )
+    convergence.attrs = df_list[0].attrs
+    return convergence

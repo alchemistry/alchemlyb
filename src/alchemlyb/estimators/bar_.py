@@ -88,27 +88,30 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         # sort by state so that rows from same state are in contiguous blocks
         u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
 
-        # get a list of the lambda states
-        self._states_ = u_nk.columns.values.tolist()
-
         # group u_nk by lambda states
         groups = u_nk.groupby(level=u_nk.index.names[1:])
         N_k = [
             (len(groups.get_group(i)) if i in groups.groups else 0)
             for i in u_nk.columns
         ]
+        
+        # get a list of the lambda states that are sampled
+        self._states_ = [x for i, x in enumerate(u_nk.columns.values.tolist()) if N_k[i] > 0]
 
         # Now get free energy differences and their uncertainties for each step
         deltas = np.array([])
         d_deltas = np.array([])
         for k in range(len(N_k) - 1):
             # get us from lambda step k
+            if N_k[k] == 0 or N_k[k+1] == 0:
+                continue
             uk = groups.get_group(self._states_[k])
             # get w_F
             w_f = uk.iloc[:, k + 1] - uk.iloc[:, k]
 
             # get us from lambda step k+1
             uk1 = groups.get_group(self._states_[k + 1])
+            
             # get w_R
             w_r = uk1.iloc[:, k] - uk1.iloc[:, k + 1]
 

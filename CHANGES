@@ -14,13 +14,15 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
-08/07/2024 orbeckst, xiki-tempula
+08/07/2024 orbeckst, xiki-tempula, jaclark5
 
   * 2.3.1
 
 Changes:
   - alchemlyb adopts SPEC 0 (replaces NEP 29)
     https://scientific-python.org/specs/spec-0000/
+  - Addition of `moving_average` function in both `convergence` and 
+    `visualization`
 
 Fixes
   - Support matplotlib 3.9.0 (issue alchemistry/flamel#28, PR#319).
