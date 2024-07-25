@@ -147,7 +147,7 @@ def test_plot_dF_state(
 
 
 def test_plot_convergence_dataframe(gmx_benzene_Coulomb_u_nk):
-    df = forward_backward_convergence(gmx_benzene_Coulomb_u_nk, "MBAR")
+    df = forward_backward_convergence([gmx_benzene_Coulomb_u_nk[0]], "MBAR")
     ax = plot_convergence(df)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
@@ -238,6 +238,23 @@ def test_plot_moving_average(gmx_benzene_Coulomb_u_nk):
     )
     df.attrs = estimate.delta_f_.attrs
     ax = plot_moving_average(df)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
+    ax = plot_moving_average(df, units="kJ/mol")
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
+    df = df.drop("FE_Error", axis=1)
+    ax = plot_moving_average(df)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
+    ax = plot_moving_average(df, final_error=1)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
+    ax = plot_moving_average(df, final_error=np.inf)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 

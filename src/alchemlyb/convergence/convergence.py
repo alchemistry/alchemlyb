@@ -118,16 +118,7 @@ def forward_backward_convergence(
     for i in range(1, num + 1):
         logger.info("Backward analysis: {:.2f}%".format(100 * i / num))
         sample = []
-        for ii, data in enumerate(df_list):
-            if (
-                estimator in ["MBAR", "BAR"]
-                and len(np.unique(np.array([x[1] for x in data.index.to_numpy()]))) > 1
-            ):
-                raise ValueError(
-                    "Restrict to a single fep-lambda value for a meaningful result in df_list[{}]".format(
-                        ii
-                    )
-                )
+        for data in df_list:
             sample.append(data[-len(data) // num * i :])
         mean, error = _forward_backward_convergence_estimate(
             sample, estimator, my_estimator, error_tol, **kwargs
@@ -453,44 +444,72 @@ def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
         estimator_fit = estimators_dispatch[estimator](**kwargs).fit
         logger.info(f"Use {estimator} estimator for convergence analysis.")
 
-    logger.info("Begin Moving Average Analysis")
+    logger.info("Check indices")
+    if estimator in ["MBAR"]:
+        index_1 = [
+            np.unique(np.array([x[1] for x in data.index.to_numpy()]))
+            for data in df_list
+        ]
+        if len(np.unique(index_1)) == 1 and len(df_list[0].index[0]) > 2:
+            index_2 = [
+                np.unique(np.array([x[2] for x in data.index.to_numpy()]))
+                for data in df_list
+            ]
+            if len(np.unique(index_2)) > 1:
+                raise ValueError(
+                    "Restrict to a single fep-lambda value for a meaningful result. index[2] for each file"
+                    " in df_list: {}".format(index_2)
+                )
+        elif len(np.unique(index_1)) != 1:
+            raise ValueError(
+                "Restrict to a single fep-lambda value for a meaningful result. index[1] for each file"
+                " in df_list: {}".format(index_1)
+            )
+    elif estimator in ["BAR"]:
+        index_1 = [
+            np.unique(np.array([x[1] for x in data.index.to_numpy()]))
+            for data in df_list
+        ]
+        if len(np.unique(index_1)) == 1 and len(df_list[0].index[0]) > 2:
+            index_2 = [
+                np.unique(np.array([x[2] for x in data.index.to_numpy()]))
+                for data in df_list
+            ]
+            if len(np.unique(index_2)) != 2:
+                raise ValueError(
+                    "Restrict to a fep-lambda value and its forward adjacent state for a meaningful "
+                    "result. index[2] for each file in df_list: {}".format(index_2)
+                )
+        elif len(np.unique(index_1)) != 2:
+            raise ValueError(
+                "Restrict to a fep-lambda value and its forward adjacent state for a meaningful "
+                "result. index[1] for each file in df_list: {}".format(index_1)
+            )
 
+    logger.info("Begin Moving Average Analysis")
     average_list = []
     average_error_list = []
+
+    # Concatenate dataframes
+    data = df_list[0]
+    for tmp_data in df_list[1:]:
+        data = concat([data, tmp_data])
+
     for i in range(1, num):
         logger.info("Moving Average Analysis: {:.2f}%".format(100 * i / num))
-        sample = []
-        for ii, data in enumerate(df_list):
-            fep_values = np.unique(np.array([x[1] for x in data.index.to_numpy()]))
-            if estimator == "MBAR":
-                if len(fep_values) > 1:
-                    raise ValueError(
-                        "Restrict to a single fep-lambda value for a meaningful result in df_list[{}]".format(
-                            ii
-                        )
-                    )
-                else:
-                    sample.append(
-                        data[len(data) // num * (i - 1) : len(data) // num * i]
-                    )
-            elif estimator == "BAR":
-                if len(fep_values) > 2:
-                    raise ValueError(
-                        "Restrict to a fep-lambda value and its forward adjacent state for a meaningful result in df_list[{}]".format(
-                            ii
-                        )
-                    )
-                else:
-                    data1 = data.iloc[
-                        data.index.get_level_values("fep-lambda").isin([fep_values[0]])
-                    ]
-                    data2 = data.iloc[
-                        data.index.get_level_values("fep-lambda").isin([fep_values[1]])
-                    ]
-                    lx = min(len(data1), len(data2))
-                    ind1, ind2 = lx // num * (i - 1), lx // num * i
-                    sample.append(concat([data1[ind1:ind2], data2[ind1:ind2]]))
-        sample = concat(sample)
+        if estimator == "BAR":
+            ind, indices = 1, np.unique(np.array([x[1] for x in data.index.to_numpy()]))
+            if len(indices) != 2 and len(df_list[0].index[0]) > 2:
+                ind, indices = 2, np.unique(
+                    np.array([x[2] for x in data.index.to_numpy()])
+                )
+            data1 = data.iloc[data.index.get_level_values(ind).isin([indices[0]])]
+            data2 = data.iloc[data.index.get_level_values(ind).isin([indices[1]])]
+            lx = min(len(data1), len(data2))
+            ind1, ind2 = lx // num * (i - 1), lx // num * i
+            sample = concat([data1[ind1:ind2], data2[ind1:ind2]])
+        else:
+            sample = data[len(data) // num * (i - 1) : len(data) // num * i]
         result = estimator_fit(sample)
 
         average_list.append(result.delta_f_.iloc[0, -1])

@@ -31,14 +31,81 @@ def test_convergence_fep(gmx_benzene_Coulomb_u_nk, estimator):
     assert convergence.loc[9, "Backward"] == pytest.approx(3.04, 0.01)
 
 
-@pytest.mark.parametrize("estimator", ["MBAR"])
-def test_moving_average_fep(gmx_benzene_Coulomb_u_nk, estimator):
-    df_avg = moving_average(gmx_benzene_Coulomb_u_nk, estimator)
+def test_moving_average_ti(gmx_benzene_Coulomb_dHdl):
+    print(type(gmx_benzene_Coulomb_dHdl), type(gmx_benzene_Coulomb_dHdl[0]))
+    df_avg = moving_average(gmx_benzene_Coulomb_dHdl, "TI")
     assert df_avg.shape == (9, 2)
-    assert df_avg.loc[0, "FE"] == pytest.approx(3.01, 0.01)
-    assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.067, 0.01)
-    assert df_avg.loc[8, "FE"] == pytest.approx(3.10, 0.01)
-    assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.066, 0.01)
+    assert df_avg.loc[1, "FE"] == pytest.approx(0.0, 0.01)
+    assert df_avg.loc[1, "FE_Error"] == pytest.approx(0.0, 0.1)
+    assert df_avg.loc[8, "FE"] == pytest.approx(0.157, 0.01)
+    assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.06, 0.1)
+
+
+@pytest.mark.parametrize("estimator", ["DUMMY"])
+def test_moving_average_error_1(gmx_ABFE_complex_u_nk, estimator):
+    with pytest.raises(ValueError, match=r"Estimator DUMMY is not available .*"):
+        _ = moving_average(gmx_ABFE_complex_u_nk, estimator)
+
+
+@pytest.mark.parametrize("estimator", ["MBAR"])
+def test_moving_average_error_2_mbar(gmx_ABFE_complex_u_nk, estimator):
+    df_list = gmx_ABFE_complex_u_nk[10:15]
+    with pytest.raises(
+        ValueError,
+        match=r"Restrict to a single fep-lambda value for a meaningful result. .*",
+    ):
+        _ = moving_average(df_list, estimator)
+
+    df_list = gmx_ABFE_complex_u_nk[14:17]
+    with pytest.raises(
+        ValueError,
+        match=r"Restrict to a single fep-lambda value for a meaningful result. .*",
+    ):
+        _ = moving_average(df_list, estimator)
+
+
+@pytest.mark.parametrize("estimator", ["BAR"])
+def test_moving_average_error_2_bar(gmx_ABFE_complex_u_nk, estimator):
+    df_list = gmx_ABFE_complex_u_nk[10:13]
+    with pytest.raises(
+        ValueError,
+        match=r"Restrict to a fep-lambda value and its forward adjacent state .*",
+    ):
+        _ = moving_average(df_list, estimator)
+
+    df_list = gmx_ABFE_complex_u_nk[14:17]
+    with pytest.raises(
+        ValueError,
+        match=r"Restrict to a fep-lambda value and its forward adjacent state .*",
+    ):
+        _ = moving_average(df_list, estimator)
+
+
+@pytest.mark.parametrize("estimator", ["BAR"])
+def test_moving_average_bar(gmx_ABFE_complex_u_nk, estimator):
+    df_avg = moving_average(gmx_ABFE_complex_u_nk[10:12], estimator)
+    assert df_avg.shape == (9, 2)
+    assert df_avg.loc[0, "FE"] == pytest.approx(3.701, 0.01)
+    assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.060, 0.1)
+    assert df_avg.loc[8, "FE"] == pytest.approx(3.603, 0.01)
+    assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.06, 0.1)
+
+    df_avg = moving_average(gmx_ABFE_complex_u_nk[14:16], estimator)
+    assert df_avg.shape == (9, 2)
+    assert df_avg.loc[0, "FE"] == pytest.approx(0.658, 0.01)
+    assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.054, 0.1)
+    assert df_avg.loc[8, "FE"] == pytest.approx(0.926, 0.01)
+    assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.05, 0.1)
+
+
+@pytest.mark.parametrize("estimator", ["MBAR"])
+def test_moving_average_mbar(gmx_benzene_Coulomb_u_nk, estimator):
+    df_avg = moving_average([gmx_benzene_Coulomb_u_nk[0]], estimator)
+    assert df_avg.shape == (9, 2)
+    assert df_avg.loc[0, "FE"] == pytest.approx(3.41, 0.01)
+    assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.22, 0.01)
+    assert df_avg.loc[8, "FE"] == pytest.approx(2.83, 0.01)
+    assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.33, 0.01)
 
 
 def test_convergence_wrong_estimator(gmx_benzene_Coulomb_dHdl):
