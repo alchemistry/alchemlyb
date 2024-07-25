@@ -1,7 +1,7 @@
 """Functions for Plotting the dF states.
 
 To assess the quality of the free energy estimation, The dF between adjacent
-lambda states can be ploted to assess the quality of the estimation.
+lambda states can be plotted to assess the quality of the estimation.
 
 The code for producing the dF states plot is modified based on
 `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
@@ -266,3 +266,4 @@ def plot_dF_state(
 
     leg.get_frame().set_alpha(0.5)
     return fig
+

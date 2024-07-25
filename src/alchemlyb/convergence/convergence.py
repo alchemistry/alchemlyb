@@ -389,3 +389,151 @@ def A_c(series_list, precision=0.01, tol=2):
             d_R_c = sorted_array[-i] - sorted_array[-i - 1]
             result += d_R_c * sum(R_c_list <= element) / n_R_c
     return result
+
+
+def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
+    """Free energy estimate for portions of the trajectory.
+
+    Generate the free energy estimate for a series of blocks in time,
+    with the specified number of equally spaced points.
+    For example, setting `num` to 10 would give the forward
+    convergence which is the free energy estimate from the first 10%, then the
+    next 10% ... of the data.
+
+    Parameters
+    ----------
+    df_list : list
+        List of DataFrame of either dHdl or u_nk.
+    estimator : {'MBAR', 'BAR', 'TI'}
+        Name of the estimators.
+        See the important note below on the use of "MBAR".
+    num : int
+        The number of time points.
+    kwargs : dict
+        Keyword arguments to be passed to the estimator.
+
+    Returns
+    -------
+    :class:`pandas.DataFrame`
+        The DataFrame with estimate data. ::
+
+               FE             FE_Error
+            0  3.016442       0.052748
+            1  3.078106       0.037170
+            2  3.072561       0.030186
+            3  3.048325       0.026070
+            4  3.049769       0.023359
+            5  3.034078       0.021260
+            6  3.043274       0.019642
+            7  3.035460       0.018340
+            8  3.042032       0.017319
+            9  3.044149       0.016405
+
+
+    .. versionadded:: 2.4.0
+
+    """
+    logger.info("Start block averaging analysis.")
+    logger.info("Check data availability.")
+    if estimator not in (FEP_ESTIMATORS + TI_ESTIMATORS):
+        msg = f"Estimator {estimator} is not available in {FEP_ESTIMATORS + TI_ESTIMATORS}."
+        logger.error(msg)
+        raise ValueError(msg)
+    else:
+        # select estimator class by name
+        estimator_fit = estimators_dispatch[estimator](**kwargs).fit
+        logger.info(f"Use {estimator} estimator for convergence analysis.")
+
+    logger.info("Check indices")
+    if estimator in ["MBAR"]:
+        index_1 = [
+            np.unique(np.array([x[1] for x in data.index.to_numpy()]))
+            for data in df_list
+        ]
+        if len(np.unique(index_1)) == 1 and len(df_list[0].index[0]) > 2:
+            index_2 = [
+                np.unique(np.array([x[2] for x in data.index.to_numpy()]))
+                for data in df_list
+            ]
+            if len(np.unique(index_2)) > 1:
+                raise ValueError(
+                    "Restrict to a single fep-lambda value for a meaningful result. index[2] for each file"
+                    " in df_list: {}".format(index_2)
+                )
+        elif len(np.unique(index_1)) != 1:
+            raise ValueError(
+                "Restrict to a single fep-lambda value for a meaningful result. index[1] for each file"
+                " in df_list: {}".format(index_1)
+            )
+    elif estimator in ["BAR"]:
+        index_1 = [
+            np.unique(np.array([x[1] for x in data.index.to_numpy()]))
+            for data in df_list
+        ]
+        if len(np.unique(index_1)) == 1 and len(df_list[0].index[0]) > 2:
+            index_2 = [
+                np.unique(np.array([x[2] for x in data.index.to_numpy()]))
+                for data in df_list
+            ]
+            if len(np.unique(index_2)) != 2:
+                raise ValueError(
+                    "Restrict to a fep-lambda value and its forward adjacent state for a meaningful "
+                    "result. index[2] for each file in df_list: {}".format(index_2)
+                )
+        elif len(np.unique(index_1)) != 2:
+            raise ValueError(
+                "Restrict to a fep-lambda value and its forward adjacent state for a meaningful "
+                "result. index[1] for each file in df_list: {}".format(index_1)
+            )
+
+    logger.info("Begin Moving Average Analysis")
+    average_list = []
+    average_error_list = []
+
+    # Concatenate dataframes
+    data = df_list[0]
+    for tmp_data in df_list[1:]:
+        data = concat([data, tmp_data])
+
+    for i in range(1, num):
+        logger.info("Moving Average Analysis: {:.2f}%".format(100 * i / num))
+        if estimator == "BAR":
+            ind, indices = 1, np.unique(np.array([x[1] for x in data.index.to_numpy()]))
+            if len(indices) != 2 and len(df_list[0].index[0]) > 2:
+                ind, indices = 2, np.unique(
+                    np.array([x[2] for x in data.index.to_numpy()])
+                )
+            data1 = data.iloc[data.index.get_level_values(ind).isin([indices[0]])]
+            data2 = data.iloc[data.index.get_level_values(ind).isin([indices[1]])]
+            lx = min(len(data1), len(data2))
+            ind1, ind2 = lx // num * (i - 1), lx // num * i
+            sample = concat([data1[ind1:ind2], data2[ind1:ind2]])
+        else:
+            sample = data[len(data) // num * (i - 1) : len(data) // num * i]
+        result = estimator_fit(sample)
+
+        average_list.append(result.delta_f_.iloc[0, -1])
+        if estimator.lower() == "bar":
+            error = np.sqrt(
+                sum(
+                    [
+                        result.d_delta_f_.iloc[i, i + 1] ** 2
+                        for i in range(len(result.d_delta_f_) - 1)
+                    ]
+                )
+            )
+            average_error_list.append(error)
+        else:
+            average_error_list.append(result.d_delta_f_.iloc[0, -1])
+        logger.info(
+            "{:.2f} +/- {:.2f} kT".format(average_list[-1], average_error_list[-1])
+        )
+
+    convergence = pd.DataFrame(
+        {
+            "FE": average_list,
+            "FE_Error": average_error_list,
+        }
+    )
+    convergence.attrs = df_list[0].attrs
+    return convergence
