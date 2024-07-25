@@ -12,7 +12,7 @@ Parsing the Free Energy Data
 **alchemlyb** requires free energy data obtained from alchemical simulations.
 In this example, we use free energy data from Gromacs. Instructions for
 reading data from other MD engines are available in the
-:ref:`documentation <parsing>`. We load the free energy data into a
+documentation on :ref:`parsing files <parsing>`. We load the free energy data into a
 :mod:`pandas.DataFrame`: ::
 
     >>> from alchemtest.gmx import load_benzene
@@ -42,7 +42,7 @@ Decorrelating the Data
 
 The :class:`~alchemlyb.estimators.MBAR` estimator requires decorrelated data.
 Various options for decorrelating the data are available in the relevant
-:ref:`documentation <subsampling>`. Here, we decorrelate the data using the
+documentation on :ref:`subsampling data <subsampling>`. Here, we decorrelate the data using the
 following code. ::
 
     >>> from alchemlyb.preprocessing.subsampling import decorrelate_u_nk
@@ -69,8 +69,8 @@ Estimating Free Energy
 ----------------------
 
 We estimate the free energy using the :class:`~alchemlyb.estimators.MBAR`
-method. More estimators are available in the estimator
-:ref:`section <estimators>`. ::
+method. More estimators are available in the section on
+:ref:`free energy estimators <estimators>`. ::
 
     >>> from alchemlyb.estimators import MBAR
     >>> import pandas as pd
@@ -96,7 +96,7 @@ Plotting the Diagnostics
 
 We can plot the diagnostics of the estimator to assess the
 :ref:`overlap metrics <plot_overlap_matrix>`. More information on diagnostics
-is available in the relevant :ref:`section <visualisation>`: ::
+is available in the relevant section on :ref:`visualisation <visualisation>`: ::
 
     >>> from alchemlyb.visualisation import plot_mbar_overlap_matrix
     >>> ax = plot_mbar_overlap_matrix(mbar.overlap_matrix)
@@ -109,7 +109,47 @@ This will generate a plot that looks like the one below:
 Automated workflow
 ------------------
 
-The above workflow can be automated using the :mod:`~alchemlyb.workflows.ABFE`
-which provides a good practice for using **alchemlyb** in a end-to-end fashion.
+The above manual workflow can be automated using the :mod:`~alchemlyb.workflows.ABFE`
+workflow class, which demonstrates a best practice implementation for using **alchemlyb** in a end-to-end fashion.
+
+.. SeeAlso::
+   See the :ref:`ABFE workflow <abfe-workflow>` section of the documentation for
+   more details on how to use :mod:`~alchemlyb.workflows.ABFE`.
+   
+*Absolute binding free energy* (ABFE) calculations can be analyzed with
+two lines of code in a fully automated manner.
+All parameters are set when invoking :class:`~alchemlyb.workflows.abfe.ABFE`
+and reasonable defaults are chosen for any parameters not set explicitly. The two steps are to
+
+1. initialize an instance of the :class:`~alchemlyb.workflows.abfe.ABFE` class
+2. invoke the :meth:`~alchemlyb.workflows.ABFE.run` method to execute the
+   complete workflow.
+   
+As an example, we again use data from a GROMACS ABFE simulation that is available
+in alchemtest_. In this case, executing the workflow would look similar
+to the following code ::
+
+    >>> from alchemtest.gmx import load_ABFE
+    >>> from alchemlyb.workflows import ABFE
+    >>> # Obtain the path of the data
+    >>> import os
+    >>> dir = os.path.dirname(load_ABFE()['data']['complex'][0])
+    >>> print(dir)
+    'alchemtest/gmx/ABFE/complex'
+    >>> workflow = ABFE(units='kcal/mol', software='GROMACS', dir=dir,
+    >>>                 prefix='dhdl', suffix='xvg', T=298, outdirectory='./')
+    >>> workflow.run(skiptime=10, uncorr='dhdl', threshold=50,
+    >>>              estimators=('MBAR', 'BAR', 'TI'), overlap='O_MBAR.pdf',
+    >>>              breakdown=True, forwrev=10)
+
+
+The workflow uses :mod:`~alchemlyb.parsing` to parse the data from the
+energy files, remove the initial un-equilibrated frames and decorrelate the data
+with :mod:`~alchemlyb.preprocessing.subsampling`. The decorrelated datasets
+:ref:`dHdl <dHdl>` and :ref:`u_nk <u_nk>` are then passed to
+:mod:`~alchemlyb.estimators` for free energy estimation. The workflow will
+also perform a set of analysis that allows the user to examine the quality of
+the estimation.
+   
 
 .. _alchemtest: https://github.com/alchemistry/alchemtest
