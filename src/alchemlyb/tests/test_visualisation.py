@@ -217,6 +217,7 @@ def test_plot_convergence_final_nan():
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 
+
 def test_plot_moving_average(gmx_benzene_Coulomb_u_nk):
     data_list = gmx_benzene_Coulomb_u_nk
     fe = []
@@ -239,6 +240,7 @@ def test_plot_moving_average(gmx_benzene_Coulomb_u_nk):
     ax = plot_moving_average(df)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
+
 
 class Test_Units:
     @staticmethod

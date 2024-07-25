@@ -2,7 +2,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from alchemlyb.convergence import forward_backward_convergence, fwdrev_cumavg_Rc, A_c, moving_average
+from alchemlyb.convergence import (
+    forward_backward_convergence,
+    fwdrev_cumavg_Rc,
+    A_c,
+    moving_average,
+)
 from alchemlyb.convergence.convergence import _cummean
 
 
@@ -25,6 +30,7 @@ def test_convergence_fep(gmx_benzene_Coulomb_u_nk, estimator):
     assert convergence.loc[9, "Forward"] == pytest.approx(3.05, 0.01)
     assert convergence.loc[9, "Backward"] == pytest.approx(3.04, 0.01)
 
+
 @pytest.mark.parametrize("estimator", ["MBAR"])
 def test_moving_average_fep(gmx_benzene_Coulomb_u_nk, estimator):
     df_avg = moving_average(gmx_benzene_Coulomb_u_nk, estimator)
@@ -33,6 +39,7 @@ def test_moving_average_fep(gmx_benzene_Coulomb_u_nk, estimator):
     assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.067, 0.01)
     assert df_avg.loc[8, "FE"] == pytest.approx(3.10, 0.01)
     assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.066, 0.01)
+
 
 def test_convergence_wrong_estimator(gmx_benzene_Coulomb_dHdl):
     with pytest.raises(ValueError, match="is not available in"):
