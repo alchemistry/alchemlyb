@@ -14,7 +14,13 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
+**/**/**** xiki-tempula
+
+
 08/07/2024 orbeckst, xiki-tempula
+
+Enhancements
+  - Add a tutorial section in the documentation (issue #382, PR #379).
 
   * 2.3.1
 

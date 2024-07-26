@@ -10,6 +10,10 @@
 
 3. Estimators for obtaining free energies directly from this data, using best-practices approaches for multistate Bennett acceptance ratio (MBAR) [Shirts2008](#shirts2008) and BAR (from [pymbar](http://pymbar.readthedocs.io/)) and thermodynamic integration (TI).
 
+## Documentation
+
+The documentation is hosted on [Read the Docs](https://alchemlyb.readthedocs.io/en/latest/).
+
 ## Installation
 
 **Install** via `pip` from [PyPi (alchemlyb)](https://pypi.org/project/alchemlyb):
