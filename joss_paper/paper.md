@@ -69,7 +69,7 @@ affiliations:
    index: 2
  - name: Datryllic LLC, Phoenix, Arizona, USA (present affiliation)
    index: 3
- - name: Open Free Energy, Open Molecular Software Foundation, Davis, 95616 California, United States
+ - name: Open Free Energy, Open Molecular Software Foundation, Davis, California, United States
    index: 4
  - name: Differentiated Therapeutics, San Diego, CA
    index: 5
@@ -91,7 +91,7 @@ affiliations:
    index: 13
  - name: PM Scientific Consulting, Basel, Switzerland
    index: 14
- - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, 70569 Stuttgart, Germany 
+ - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, Stuttgart, Germany 
    index: 15
  - name: University of Colorado Boulder, Boulder, Colorado, USA
    index: 16
@@ -105,7 +105,7 @@ bibliography: paper.bib
 
 # Summary
 
-*alchemlyb* is an open-source Python software package for the analysis of alchemical free energy calculations, an important method in computational chemistry and biology, most notably in the field of drug discovery.
+*alchemlyb* is an open-source Python software package for the analysis of alchemical free energy calculations, an important method in computational chemistry and biology, most notably in the field of drug discovery [@merz2010drug].
 Its functionality contains individual composable building blocks for all aspects of a full typical free energy analysis workflow, starting with the extraction of raw data from the output of diverse molecular simulation packages, moving on to data preprocessing tasks such as decorrelation of time series, using various estimators to derive free energy estimates from simulation samples, and finally providing quality analysis tools for data convergence checking and visualization.
 *alchemlyb* also contains high-level end-to-end workflows that combine multiple building blocks into a user-friendly analysis pipeline from the initial data input stage to the final results. This workflow functionality enhances accessibility by enabling researchers from diverse scientific backgrounds, and not solely computational chemistry specialists, to use *alchemlyb* effectively.
 
@@ -140,7 +140,7 @@ Notably, *alchemlyb*'s robust and user-friendly nature has led to its integratio
 
 # Background: Alchemical free energy calculations
 
-Free energy differences are fundamental to understand many different processes at the molecular scale, ranging from the binding of drug molecules to their receptor proteins or nucleic acids through the partitioning of molecules into different solvents or phases to the stability of crystals and biomolecules.
+Free energy differences are fundamental to understand many different processes at the molecular scale, ranging from the binding of drug molecules to their receptor proteins or nucleic acids through the partitioning of molecules into different solvents or phases to the stability of crystals and biomolecules [@deng2009computations].
 The calculation of such transfer free energies involves constructing two end states where a target molecule interacts with different environments.
 For example, in a solvation free energy calculation, in one state (the coupled state) the target molecule interacts with a solvent (in the case of hydration free energies, water), while in the other state (the decoupled state) the ligand has no intermolecular interactions, which mimics the transfer of a ligand from infinite dilution in the solvent to the gas phase.
 The solvation free energy is then obtained by calculating the free energy difference between these two end states, but it is crucial to ensure sufficient overlap in phase space between the coupled and decoupled states, a condition often challenging to achieve.
@@ -155,7 +155,7 @@ Estimators are then applied to these data to compute free energy differences bet
 # Implementation
 ## Core design principles
 
-*alchemlyb* is a Python library that seeks to make doing alchemical free energy calculations easier and less error prone. 
+*alchemlyb* is a Python library that seeks to make alchemical free energy calculations easier and less error prone. 
 It includes functionality for parsing data from file formats of widely used simulation packages, subsampling these data, and fitting these data with an estimator to obtain free energies. 
 Functions are simple in usage and pure in scope, and can be chained together to build customized analyses of data while estimators are implemented as classes that follow the tried-and-tested scikit-learn API [@sklearn2013api].
 General and robust workflows following best practices are also provided, which can be used as reference implementations and examples.
@@ -192,7 +192,7 @@ FEP category estimators (module `alchemlyb.estimators.FEP`) include Bennett Acce
 To evaluate the accuracy of the free energy estimate, *alchemlyb* offers a range of assessment tools.
 The error of the TI method is correlated with the average curvature [@pham2011identifying], while the error of FEP estimators depends on the overlap in sampled energy distributions [@pohorille2010good].
 *alchemlyb* creates visualizations of the smoothness of the integrand for TI estimators and the overlap matrix for FEP estimators, which can be qualitatively and quantitatively analyzed to determine the degree of overlap between simulated alchemical states, and suggest whether additional simulations should be run.
-For statistical validity, the accumulated samples should be collected from equilibrated simulations and *alchemlyb* contains tools for assessing (`alchemlyb.convergence`) and plotting (`alchemlyb.visualisation`) the convergence of the free energy estimate as a function of simulation time [@yang2004free] and means to compute the "fractional equilibration time" [@fan2020aa] to detect potentially un-equilibrated data.
+For statistical validity, the accumulated samples should be collected from equilibrated simulations and *alchemlyb* contains tools for assessing (`alchemlyb.convergence`) and plotting (`alchemlyb.visualisation`) the convergence of the free energy estimate as a function of simulation time [@yang2004free] and means to compute the "fractional equilibration time" [@fan2020aa] to detect potentially non-equilibrated data.
 
 *alchemlyb* offers all these tools as a library for users to customize each stage of the analysis (\autoref{fig:buildingblocks}).
 
@@ -211,7 +211,7 @@ It can directly estimate quantities such as solvation free energies and makes it
 
 # Acknowledgements
 
-Some work on alchemlyb was supported by grants from the  National
+Some work on *alchemlyb* was supported by grants from the  National
 Institutes of Health (Award No R01GM118772 to O.B., R35GM148236 to
 D.M., K08GM139031 to T.T.J.) and the National Science Foundation (award ACI-1443054 to O.B.). A.S. acknowledges funding by Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany's Excellence Strategy - EXC 2075 – 390740016 and support by the Stuttgart Center for Simulation Science (SimTech).
 The sponsors were not involved in any aspects of the research or the writing of the manuscript.
