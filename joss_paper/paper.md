@@ -42,6 +42,7 @@ authors:
     orcid: 0000-0003-4030-9312
     affiliation: 11
   - name: Shuai Liu
+    orcid: 0000-0002-8632-633X
     affiliation: 12
   - name: Domenico Marson
     orcid: 0000-0003-1839-9868
