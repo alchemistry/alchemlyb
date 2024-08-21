@@ -282,11 +282,15 @@ def extract_u_nk_from_u_n(
     fep_files,
     T,
     column_lambda,
-    column_u_cross,
+    column_U,
+    column_U_cross,
     dependence=lambda x: (x),
     index=-1,
     units="real",
     prec=4,
+    ensemble="nvt",
+    pressure=None,
+    column_volume=4,
 ):
     """Produce u_nk from files containing u_n given a separable dependence on lambda.
 
@@ -299,7 +303,9 @@ def extract_u_nk_from_u_n(
         Temperature in Kelvin at which the simulation was sampled.
     columns_lambda : int
         Indices for columns (file column number minus one) representing the lambda at which the system is equilibrated
-    column_u_cross : int
+    column_U : int
+        Index for the column (file column number minus one) representing the potential energy of the system.
+    column_U_cross : int
         Index for the column (file column number minus one) representing the potential energy of the cross interactions
         between the solute and solvent.
     dependence : func, default=`lambda x : (x)`
@@ -313,6 +319,14 @@ def extract_u_nk_from_u_n(
         "real", "si"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
+    ensemble : str, default="nvt"
+        Ensemble from which the given data was generated. Either "nvt" or "npt" is supported where values from NVT are
+        unaltered, while those from NPT are corrected 
+    pressure : float, default=None
+        The pressure of the system in the NPT ensemble in units of energy / volume, where the units of energy and volume
+        are as recorded in the LAMMPS dump file.
+    column_volume : int, default=4
+        The column for the volume in a LAMMPS dump file. 
 
     Returns
     -------
@@ -331,6 +345,15 @@ def extract_u_nk_from_u_n(
     files = glob.glob(fep_files)
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
+    
+    if ensemble == "npt":
+        if pressure is None or not isinstance(pressure, float) or pressure < 0:
+            raise ValueError("In the npt ensemble, a pressure must be provided in the form of a positive float")
+    elif ensemble != "nvt":
+        raise ValueError("Only ensembles of nvt or npt are supported.")
+    else:
+        if pressure is not None:
+            raise ValueError("There is no volume correction in the nvt ensemble, the pressure value will not be used.")
 
     beta = beta_from_units(T, units)
 
@@ -338,9 +361,13 @@ def extract_u_nk_from_u_n(
         raise ValueError(
             f"Provided column for lambda must be type int. column_u_lambda: {column_lambda}, type: {type(column_lambda)}"
         )
-    if not isinstance(column_u_cross, int):
+    if not isinstance(column_U_cross, int):
         raise ValueError(
-            f"Provided column for u_cross must be type int. column_u_cross: {column_u_cross}, type: {type(column_u_cross)}"
+            f"Provided column for `U_cross` must be type int. column_U_cross: {column_U_cross}, type: {type(column_U_cross)}"
+        )
+    if not isinstance(column_U, int):
+        raise ValueError(
+            f"Provided column for `U` must be type int. column_U: {column_U}, type: {type(column_U)}"
         )
 
     lambda_values = list(
@@ -350,25 +377,31 @@ def extract_u_nk_from_u_n(
 
     u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
     lc = len(lambda_values)
-    col_indices = [0, column_lambda, column_u_cross]
+    col_indices = [0, column_lambda, column_U, column_U_cross]
+    if ensemble == "npt":
+        col_indices.append(column_volume)
 
     for file in files:
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
-        data = pd.read_csv(file, sep=" ", comment="#", header=None)
-        lx = len(data.columns)
-        if [False for x in col_indices if x > lx]:
+        tmp_data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        lx = len(tmp_data.columns)
+        if [False for x in col_indices if x >= lx]:
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
-        data = data.iloc[:, col_indices]
-        data.columns = ["time", "fep-lambda", "u_cross"]
+        data = tmp_data.iloc[:, col_indices]
+        columns = ["time", "fep-lambda", "U", "U_cross"]
+        if ensemble == "npt":
+            columns.append("volume")
+        data.columns = columns
         lambda1_col = "fep-lambda"
-        data[[lambda1_col]] = data[[lambda1_col]].apply(lambda x: round(x, prec))
+        data.loc[:, [lambda1_col]] = data[[lambda1_col]].apply(lambda x: round(x, prec))    
 
         for lambda1 in list(data[lambda1_col].unique()):
             tmp_df = data.loc[data[lambda1_col] == lambda1]
+                
             lr = tmp_df.shape[0]
             for lambda12 in lambda_values:
                 if u_nk[u_nk[lambda1_col] == lambda1].shape[0] == 0:
@@ -396,21 +429,17 @@ def extract_u_nk_from_u_n(
                             lambda1, lambda12
                         )
                     )
-
+                
                 u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12] = (
-                    beta
-                    * tmp_df["u_cross"]
-                    * (dependence(lambda12) / dependence(lambda1) - 1)
-                )
-
-                if (
-                    lambda1 == lambda12
-                    and u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12][0] != 0
-                ):
-                    raise ValueError(
-                        f"The difference in PE should be zero when lambda = lambda', {lambda1} = {lambda12},"
-                        " Check that the 'column_u_n' was defined correctly."
+                    beta * (
+                        tmp_df["U_cross"]* (dependence(lambda12) / dependence(lambda1) - 1)
+                        + tmp_df["U"]
                     )
+                )    
+                if ensemble == "npt":
+                    u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12] += (
+                        beta * pressure * tmp_df["volume"]
+                    )               
 
     u_nk.set_index(["time", "fep-lambda"], inplace=True)
 
@@ -422,23 +451,31 @@ def extract_u_nk(
     fep_files,
     T,
     columns_lambda1=[1, 2],
-    column_u_nk=3,
+    column_dU=4,
+    column_U=3,
     column_lambda2=None,
     indices=[1, 2],
     units="real",
     vdw_lambda=1,
+    ensemble="nvt",
+    pressure=None,
+    column_volume=6,
     prec=4,
     force=False,
+
 ):
     """Return reduced potentials `u_nk` from LAMMPS dump file(s).
 
     Each file is imported as a data frame where the columns kept are either::
 
-        [0, columns_lambda1[0] columns_lambda1[1], column_u_nk]
+        [0, columns_lambda1[0] columns_lambda1[1], column_U, column_dU]
 
     or if columns_lambda2 is not None::
 
-        [0, columns_lambda1[0] columns_lambda1[1], column_lambda2, column_u_nk]
+        [0, columns_lambda1[0] columns_lambda1[1], column_lambda2, column_U, column_dU]
+        
+    If the simulation took place in the NPT ensemble, column_volume is appended to the end
+    of this list.
 
     Parameters
     ----------
@@ -450,7 +487,9 @@ def extract_u_nk(
     columns_lambda1 : list[int], default=[1,2]
         Indices for columns (column number minus one) representing (1) the lambda at which the system is equilibrated and (2) the lambda used
         in the computation of the potential energy.
-    column_u_nk : int, default=4
+    column_dU : int, default=4
+        Index for the column (column number minus one) representing the difference in potential energy between lambda states
+    column_U : int, default=4
         Index for the column (column number minus one) representing the potential energy
     column_lambda2 : int
         Index for column (column number minus one) for the unchanging value of lambda for another potential.
@@ -464,6 +503,14 @@ def extract_u_nk(
         "real", "si"
     vdw_lambda : int, default=1
         In the case that ``column_lambda2 is not None``, this integer represents which lambda represents vdw interactions.
+    ensemble : str, default="nvt"
+        Ensemble from which the given data was generated. Either "nvt" or "npt" is supported where values from NVT are
+        unaltered, while those from NPT are corrected 
+    pressure : float, default=None
+        The pressure of the system in the NPT ensemble in units of energy / volume, where the units of energy and volume
+        are as recorded in the LAMMPS dump file.
+    column_volume : int, default=4
+        The column for the volume in a LAMMPS dump file. 
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
     force : bool, default=False
@@ -487,6 +534,15 @@ def extract_u_nk(
     files = glob.glob(fep_files)
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
+    
+    if ensemble == "npt":
+        if pressure is None or not isinstance(pressure, float) or pressure < 0:
+            raise ValueError("In the npt ensemble, a pressure must be provided in the form of a positive float")
+    elif ensemble != "nvt":
+        raise ValueError("Only ensembles of nvt or npt are supported.")
+    else:
+        if pressure is not None:
+            raise ValueError("There is no volume correction in the nvt ensemble, the pressure value will not be used.")
 
     beta = beta_from_units(T, units)
 
@@ -502,9 +558,13 @@ def extract_u_nk(
         raise ValueError(
             f"Provided column for lambda must be type int. column_lambda2: {column_lambda2}, type: {type(column_lambda2)}"
         )
-    if not isinstance(column_u_nk, int):
+    if not isinstance(column_dU, int):
         raise ValueError(
-            f"Provided column for u_nk must be type int. column_u_nk: {column_u_nk}, type: {type(column_u_nk)}"
+            f"Provided column for dU_nk must be type int. column_dU: {column_dU}, type: {type(column_dU)}"
+        )
+    if not isinstance(column_U, int):
+        raise ValueError(
+            f"Provided column for U must be type int. column_U: {column_U}, type: {type(column_U)}"
         )
 
     lambda_values, _, lambda2 = _get_bar_lambdas(
@@ -514,61 +574,75 @@ def extract_u_nk(
     if column_lambda2 is None:
         u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
         lc = len(lambda_values)
-        col_indices = [0] + list(columns_lambda1) + [column_u_nk]
+        col_indices = [0] + list(columns_lambda1) + [column_U, column_dU]
     else:
         u_nk = pd.DataFrame(columns=["time", "coul-lambda", "vdw-lambda"])
         lc = len(lambda_values) ** 2
-        col_indices = [0] + list(columns_lambda1) + [column_lambda2, column_u_nk]
+        col_indices = [0] + list(columns_lambda1) + [column_lambda2, column_U, column_dU]
 
+    if ensemble == "npt":
+        col_indices.append(column_volume)
+         
     for file in files:
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
-        data = pd.read_csv(file, sep=" ", comment="#", header=None)
-        lx = len(data.columns)
-        if [False for x in col_indices if x > lx]:
+        tmp_data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        lx = len(tmp_data.columns)
+        if [False for x in col_indices if x >= lx]:
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
-        data = data.iloc[:, col_indices]
+        data = tmp_data.iloc[:, col_indices]
         if column_lambda2 is None:
-            data.columns = ["time", "fep-lambda", "fep-lambda2", "u_nk"]
+            columns = ["time", "fep-lambda", "fep-lambda2", "U", "dU_nk"]
+            if ensemble == "npt":
+                columns.append("volume")
+            data.columns = columns
             lambda1_col, lambda1_2_col = "fep-lambda", "fep-lambda2"
             columns_a = ["time", "fep-lambda"]
             columns_b = lambda_values
-            data[[lambda1_col, lambda1_2_col]] = data[
+            data.loc[:, [lambda1_col, lambda1_2_col]] = data[
                 [lambda1_col, lambda1_2_col]
             ].apply(lambda x: round(x, prec))
         else:
             columns_a = ["time", "coul-lambda", "vdw-lambda"]
             if vdw_lambda == 1:
-                data.columns = [
+                columns = [
                     "time",
                     "vdw-lambda",
                     "vdw-lambda2",
                     "coul-lambda",
-                    "u_nk",
+                    "U", 
+                    "dU_nk",
                 ]
+                if ensemble == "npt":
+                    columns.append("volume")
+                data.columns = columns
                 lambda1_col, lambda1_2_col = "vdw-lambda", "vdw-lambda2"
                 columns_b = [(lambda2, x) for x in lambda_values]
             elif vdw_lambda == 2:
-                data.columns = [
+                columns = [
                     "time",
                     "coul-lambda",
                     "coul-lambda2",
                     "vdw-lambda",
-                    "u_nk",
+                    "U", 
+                    "dU_nk",
                 ]
+                if ensemble == "npt":
+                    columns.append("volume")
+                data.columns = columns
                 lambda1_col, lambda1_2_col = "coul-lambda", "coul-lambda2"
                 columns_b = [(x, lambda2) for x in lambda_values]
             else:
                 raise ValueError(
                     f"'vdw_lambda must be either 1 or 2, not: {vdw_lambda}'"
                 )
-            data[columns_a[1:] + [lambda1_2_col]] = data[
+            data.loc[:, columns_a[1:] + [lambda1_2_col]] = data[
                 columns_a[1:] + [lambda1_2_col]
             ].apply(lambda x: round(x, prec))
-
+                
         for lambda1 in list(data[lambda1_col].unique()):
             tmp_df = data.loc[data[lambda1_col] == lambda1]
 
@@ -625,28 +699,32 @@ def extract_u_nk(
 
                 if (
                     u_nk.loc[u_nk[lambda1_col] == lambda1, column_name].shape[0]
-                    != tmp_df2["u_nk"].shape[0]
+                    != tmp_df2["dU_nk"].shape[0]
                 ):
                     raise ValueError(
                         "Number of energy values in file, {}, N={}, inconsistent with previous files of length, {}.".format(
                             file,
-                            tmp_df2["u_nk"].shape[0],
+                            tmp_df2["dU_nk"].shape[0],
                             u_nk.loc[u_nk[lambda1_col] == lambda1, column_name].shape[
                                 0
                             ],
                         )
                     )
-
-                u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] = (
-                    beta * tmp_df2["u_nk"]
-                )
                 if (
                     lambda1 == lambda12
-                    and u_nk.loc[u_nk[lambda1_col] == lambda1, column_name][0] != 0
+                    and not np.all(tmp_df2["dU_nk"][0] == 0)
                 ):
                     raise ValueError(
-                        f"The difference in PE should be zero when lambda = lambda', {lambda1} = {lambda12},"
-                        " Check that 'column_u_nk' was defined correctly."
+                        f"The difference in dU should be zero when lambda = lambda', {lambda1} = {lambda12},"
+                        " Check that 'column_dU' was defined correctly."
+                    )
+                # calculate reduced potential u_k = dH + pV + U
+                u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] = (
+                    beta * (tmp_df2["dU_nk"] + tmp_df2["U"])
+                )
+                if ensemble == "npt":
+                    u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] += (
+                        beta * pressure * tmp_df2["volume"]
                     )
 
     if column_lambda2 is None:
@@ -733,7 +811,7 @@ def extract_dHdl_from_u_n(
 
         data = pd.read_csv(file, sep=" ", comment="#", header=None)
         lx = len(data.columns)
-        if [False for x in col_indices if x > lx]:
+        if [False for x in col_indices if x >= lx]:
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
@@ -761,8 +839,7 @@ def extract_dHdl(
     column_dlambda1=2,
     column_lambda2=None,
     column_dlambda2=None,
-    columns_derivative1=[11, 10],
-    columns_derivative2=[13, 12],
+    columns_derivative=[8, 7],
     units="real",
     prec=4,
 ):
@@ -776,8 +853,7 @@ def extract_dHdl(
 
         [
             0, column_lambda, column_dlambda1, column_lambda2, column_dlambda2,
-            columns_derivative1[0], columns_derivative1[1], columns_derivative2[0],
-            columns_derivative2[1]
+            columns_derivative[0], columns_derivative[1],
         ]
 
     Parameters
@@ -796,12 +872,9 @@ def extract_dHdl(
         If this array is ``None`` then we do not expect two lambda values.
     column_dlambda2 : int, default=None
         Index for column (column number minus one) for the change in lambda2.
-    columns_derivative1 : list[int], default=[11, 10]
-        Indices for columns (column number minus one) representing the lambda at which to find the forward
-        and backward distance respectively.
-    columns_derivative2 : list[int], default=[13, 12]
-        Indices for columns (column number minus one) representing the second value of lambda at which to find the forward
-        and backward distance respectively.
+    columns_derivative : list[int], default=[8, 7]
+        Indices for columns (column number minus one) representing the the forward
+        and backward derivative respectively.
     units : str, default="real"
         Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
         "real", "si"
@@ -854,42 +927,29 @@ def extract_dHdl(
             )
         )
 
-    if len(columns_derivative1) != 2:
+    if len(columns_derivative) != 2:
         raise ValueError(
-            "Provided columns for derivative values must have a length of two, columns_derivative1: {}".format(
-                columns_derivative1
+            "Provided columns for derivative values must have a length of two, columns_derivative: {}".format(
+                columns_derivative
             )
         )
-    if not np.all([isinstance(x, int) for x in columns_derivative1]):
+    if not np.all([isinstance(x, int) for x in columns_derivative]):
         raise ValueError(
-            "Provided column for columns_derivative1 must be type int. columns_derivative1: {}, type: {}".format(
-                columns_derivative1, type([type(x) for x in columns_derivative1])
-            )
-        )
-    if len(columns_derivative2) != 2:
-        raise ValueError(
-            "Provided columns for derivative values must have a length of two, columns_derivative2: {}".format(
-                columns_derivative2
-            )
-        )
-    if not np.all([isinstance(x, int) for x in columns_derivative2]):
-        raise ValueError(
-            "Provided column for columns_derivative1 must be type int. columns_derivative1: {}, type: {}".format(
-                columns_derivative2, type([type(x) for x in columns_derivative2])
+            "Provided column for columns_derivative must be type int. columns_derivative: {}, type: {}".format(
+                columns_derivative, type([type(x) for x in columns_derivative])
             )
         )
 
     if column_lambda2 is None:
         dHdl = pd.DataFrame(columns=["time", "fep-lambda", "fep"])
-        col_indices = [0, column_lambda1, column_dlambda1] + list(columns_derivative1)
+        col_indices = [0, column_lambda1, column_dlambda1] + list(columns_derivative)
     else:
         dHdl = pd.DataFrame(
             columns=["time", "coul-lambda", "vdw-lambda", "coul", "vdw"]
         )
         col_indices = (
             [0, column_lambda2, column_lambda1, column_dlambda1, column_dlambda2]
-            + list(columns_derivative1)
-            + list(columns_derivative2)
+            + list(columns_derivative)
         )
 
     for file in files:
@@ -898,7 +958,7 @@ def extract_dHdl(
 
         data = pd.read_csv(file, sep=" ", comment="#", header=None)
         lx = len(data.columns)
-        if [False for x in col_indices if x > lx]:
+        if [False for x in col_indices if x >= lx]:
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
@@ -1041,7 +1101,7 @@ def extract_H(
 
         data = pd.read_csv(file, sep=" ", comment="#", header=None)
         lx = len(data.columns)
-        if [False for x in col_indices if x > lx]:
+        if [False for x in col_indices if x >= lx]:
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
