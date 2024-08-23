@@ -645,7 +645,7 @@ def extract_u_nk(
                 
         for lambda1 in list(data[lambda1_col].unique()):
             tmp_df = data.loc[data[lambda1_col] == lambda1]
-
+            
             for lambda12 in list(tmp_df[lambda1_2_col].unique()):
                 tmp_df2 = tmp_df.loc[tmp_df[lambda1_2_col] == lambda12]
 
@@ -1014,10 +1014,13 @@ def extract_dHdl(
 def extract_H(
     fep_files,
     T,
-    column_lambda1=2,
+    column_lambda1=1,
     column_pe=5,
     column_lambda2=None,
     units="real",
+    ensemble="nvt",
+    pressure=None,
+    column_volume=6,
 ):
     """Return reduced potentials Hamiltonian from LAMMPS dump file(s).
 
@@ -1029,7 +1032,7 @@ def extract_H(
 
         [
             0, column_lambda, column_dlambda1, column_lambda2, column_dlambda2,
-            columns_derivative1[0], columns_derivative1[1], columns_derivative2[0], columns_derivative2[1]
+            columns_derivative1[0], columns_derivative1[1]
         ]
 
     Parameters
@@ -1049,6 +1052,14 @@ def extract_H(
     units : str, default="real"
         Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
         "real", "si"
+    ensemble : str, default="nvt"
+        Ensemble from which the given data was generated. Either "nvt" or "npt" is supported where values from NVT are
+        unaltered, while those from NPT are corrected 
+    pressure : float, default=None
+        The pressure of the system in the NPT ensemble in units of energy / volume, where the units of energy and volume
+        are as recorded in the LAMMPS dump file.
+    column_volume : int, default=4
+        The column for the volume in a LAMMPS dump file. 
 
     Results
     -------
@@ -1069,6 +1080,15 @@ def extract_H(
     if not files:
         raise ValueError("No files have been found that match: {}".format(fep_files))
 
+    if ensemble == "npt":
+        if pressure is None or not isinstance(pressure, float) or pressure < 0:
+            raise ValueError("In the npt ensemble, a pressure must be provided in the form of a positive float")
+    elif ensemble != "nvt":
+        raise ValueError("Only ensembles of nvt or npt are supported.")
+    else:
+        if pressure is not None:
+            raise ValueError("There is no volume correction in the nvt ensemble, the pressure value will not be used.")
+        
     beta = beta_from_units(T, units)
 
     if not isinstance(column_lambda1, int):
@@ -1089,11 +1109,15 @@ def extract_H(
         )
 
     if column_lambda2 is None:
-        df_H = pd.DataFrame(columns=["time", "fep-lambda", "U"])
+        columns = ["time", "fep-lambda", "u_n"]
         col_indices = [0, column_lambda1, column_pe]
     else:
-        df_H = pd.DataFrame(columns=["time", "coul-lambda", "vdw-lambda", "U"])
+        columns = ["time", "coul-lambda", "vdw-lambda", "u_n"]
         col_indices = [0, column_lambda2, column_lambda1, column_pe]
+        
+    if ensemble == "npt":
+        col_indices.append(column_volume)
+    df_H = pd.DataFrame(columns=columns)
 
     for file in files:
         if not os.path.isfile(file):
@@ -1108,14 +1132,22 @@ def extract_H(
 
         data = data.iloc[:, col_indices]
         if column_lambda2 is None:
-            data.columns = ["time", "fep-lambda", "U"]
+            columns = ["time", "fep-lambda", "U"]
         else:
-            data.columns = [
+            columns = [
                 "time",
                 "coul-lambda",
                 "vdw-lambda",
                 "U",
             ]
+        if ensemble == "npt":
+            columns.append("volume")
+        data.columns = columns
+        data["u_n"] = beta * data["U"]
+        del data["U"]
+        if ensemble == "npt":
+            data["u_n"] += beta * pressure * data["volume"]
+            del data["volume"]
         df_H = pd.concat([df_H, data], axis=0, sort=False)
 
     if column_lambda2 is None:
