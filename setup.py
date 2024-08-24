@@ -40,7 +40,12 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     license="BSD",
-    long_description=open("README.md").read(),
+    long_description=open("README.md")
+    .read()
+    .replace(
+        "[![Zenodo DOI](https://zenodo.org/badge/68669096.svg)](https://zenodo.org/badge/latestdoi/68669096) [![Documentation](https://readthedocs.org/projects/alchemlyb/badge/?version=latest)](http://alchemlyb.readthedocs.io/en/latest/) [![Build Status](https://github.com/alchemistry/alchemlyb/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/alchemistry/alchemlyb/actions/workflows/ci.yaml) [![Code coverage](https://codecov.io/gh/alchemistry/alchemlyb/branch/master/graph/badge.svg)](https://codecov.io/gh/alchemistry/alchemlyb) [![anaconda package](https://anaconda.org/conda-forge/alchemlyb/badges/version.svg)](https://anaconda.org/conda-forge/alchemlyb)",
+        "\n",
+    ),
     long_description_content_type="text/markdown",
     python_requires=">=3.10",
     tests_require=["pytest", "alchemtest"],
