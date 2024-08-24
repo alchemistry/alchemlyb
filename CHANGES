@@ -19,7 +19,7 @@ The rules for this file:
   * 2.3.2
 
 Changes:
-  - Remove Python 3.9 support (issue #341, PR #304).
+  - Remove Python 3.9 support (issue #389, PR #390).
 
 Enhancements
   - Add a tutorial section in the documentation (issue #382, PR #379).
