@@ -40,6 +40,7 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     license="BSD",
+    # Remove the badges as pypi didn't like them. https://github.com/alchemistry/alchemlyb/pull/390
     long_description=open("README.md")
     .read()
     .replace(
