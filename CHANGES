@@ -14,13 +14,18 @@ The rules for this file:
 
 ------------------------------------------------------------------------------
 
-**/**/**** xiki-tempula
+08/24/2024 xiki-tempula
 
+  * 2.3.2
 
-08/07/2024 orbeckst, xiki-tempula
+Changes:
+  - Remove Python 3.9 support (issue #389, PR #390).
 
 Enhancements
   - Add a tutorial section in the documentation (issue #382, PR #379).
+
+
+07/08/2024 orbeckst, xiki-tempula
 
   * 2.3.1
 
@@ -32,7 +37,7 @@ Fixes
   - Support matplotlib 3.9.0 (issue alchemistry/flamel#28, PR#319).
 
 
-21/05/2024 xiki-tempula
+05/21/2024 xiki-tempula
 
   * 2.3.0
 
@@ -47,7 +52,7 @@ Enhancements
   - `BAR` result is used as initial guess for `MBAR` estimator. (PR #357)
   - `forward_backward_convergence` uses the result from the previous step as the initial guess for the next step. (PR #357)
 
-06/04/2024 hl2500, xiki-tempula
+04/06/2024 hl2500, xiki-tempula
 
   * 2.2.0
 
@@ -69,7 +74,7 @@ Fixes
     unit conversion (issue #350, PR#319).
   
 
-22/06/2023 xiki-tempula
+06/22/2023 xiki-tempula
 
   * 2.1.0
 
@@ -95,7 +100,7 @@ DeprecationWarning
     analytic to bootstrap=50 in 2.2.0 (issue #320, PR#322).
 
 
-06/04/2023 xiki-tempula
+04/06/2023 xiki-tempula
 
   * 2.0.1
 
@@ -127,7 +132,7 @@ Removals
     equivalent functionality. (issue #284)
 
 
-12/09/2022 DrDomenicoMarson, xiki-tempula, orbeckst
+09/12/2022 DrDomenicoMarson, xiki-tempula, orbeckst
 
   * 1.0.1
 
