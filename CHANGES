@@ -13,22 +13,39 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+??/??/2024 jaclark5
 
-08/07/2024 orbeckst, xiki-tempula, jaclark5
+  * 2.4.0
+
+Enhancements
+  - Addition of `moving_average` function in both `convergence` and 
+    `visualization` (Issue #380, PR #381)
+ 
+
+08/24/2024 xiki-tempula
+
+  * 2.3.2
+
+Changes:
+  - Remove Python 3.9 support (issue #389, PR #390).
+
+Enhancements
+  - Add a tutorial section in the documentation (issue #382, PR #379).
+
+
+07/08/2024 orbeckst, xiki-tempula
 
   * 2.3.1
 
 Changes:
   - alchemlyb adopts SPEC 0 (replaces NEP 29)
     https://scientific-python.org/specs/spec-0000/
-  - Addition of `moving_average` function in both `convergence` and 
-    `visualization` (Issue #380, PR #381)
 
 Fixes
   - Support matplotlib 3.9.0 (issue alchemistry/flamel#28, PR#319).
 
 
-21/05/2024 xiki-tempula
+05/21/2024 xiki-tempula
 
   * 2.3.0
 
@@ -43,7 +60,7 @@ Enhancements
   - `BAR` result is used as initial guess for `MBAR` estimator. (PR #357)
   - `forward_backward_convergence` uses the result from the previous step as the initial guess for the next step. (PR #357)
 
-06/04/2024 hl2500, xiki-tempula
+04/06/2024 hl2500, xiki-tempula
 
   * 2.2.0
 
@@ -65,7 +82,7 @@ Fixes
     unit conversion (issue #350, PR#319).
   
 
-22/06/2023 xiki-tempula
+06/22/2023 xiki-tempula
 
   * 2.1.0
 
@@ -91,7 +108,7 @@ DeprecationWarning
     analytic to bootstrap=50 in 2.2.0 (issue #320, PR#322).
 
 
-06/04/2023 xiki-tempula
+04/06/2023 xiki-tempula
 
   * 2.0.1
 
@@ -123,7 +140,7 @@ Removals
     equivalent functionality. (issue #284)
 
 
-12/09/2022 DrDomenicoMarson, xiki-tempula, orbeckst
+09/12/2022 DrDomenicoMarson, xiki-tempula, orbeckst
 
   * 1.0.1
 

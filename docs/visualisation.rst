@@ -1,5 +1,7 @@
 .. module:: alchemlyb.visualisation
 
+.. _visualisation:
+
 Visualisation of the results
 ============================
 It is quite often that the user want to visualise the results to gain
