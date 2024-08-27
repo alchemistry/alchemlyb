@@ -30,7 +30,8 @@ def forward_backward_convergence(
     Parameters
     ----------
     df_list : list
-        List of DataFrame of either dHdl or u_nk.
+        List of DataFrame of either dHdl or u_nk, where each represents a
+        different value of lambda.
     estimator : {'MBAR', 'BAR', 'TI'}
         Name of the estimators.
         See the important note below on the use of "MBAR".
@@ -94,7 +95,18 @@ def forward_backward_convergence(
         # select estimator class by name
         my_estimator = estimators_dispatch[estimator](**kwargs)
         logger.info(f"Use {estimator} estimator for convergence analysis.")
-
+    
+    # Check that each df in the list has only one value of lambda
+    for i, df in enumerate(df_list):
+        lambda_values = np.unique([x[1] for x in df.index.to_numpy()])
+        if len(lambda_values) > 1:
+            if len(df_list[0].index[0]) > 2:
+                lambda_values = np.unique([x[2] for x in df.index.to_numpy()])
+                if len(lambda_values) > 1:
+                    raise ValueError("Provided DataFrame, df_list[{}] has more than one lambda value".format(i))
+            else:
+                raise ValueError("Provided DataFrame, df_list[{}] has more than one lambda value".format(i))
+            
     logger.info("Begin forward analysis")
     forward_list = []
     forward_error_list = []
@@ -396,14 +408,15 @@ def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
 
     Generate the free energy estimate for a series of blocks in time,
     with the specified number of equally spaced points.
-    For example, setting `num` to 10 would give the forward
-    convergence which is the free energy estimate from the first 10%, then the
+    For example, setting `num` to 10 would give the moving average
+    which is the free energy estimate from the first 10% alone, then the
     next 10% ... of the data.
 
     Parameters
     ----------
     df_list : list
-        List of DataFrame of either dHdl or u_nk.
+        List of DataFrame of either dHdl or u_nk, where each represents a
+        different value of lambda.
     estimator : {'MBAR', 'BAR', 'TI'}
         Name of the estimators.
         See the important note below on the use of "MBAR".
@@ -444,72 +457,44 @@ def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
         estimator_fit = estimators_dispatch[estimator](**kwargs).fit
         logger.info(f"Use {estimator} estimator for convergence analysis.")
 
-    logger.info("Check indices")
-    if estimator in ["MBAR"]:
-        index_1 = [
-            np.unique(np.array([x[1] for x in data.index.to_numpy()]))
-            for data in df_list
-        ]
-        if len(np.unique(index_1)) == 1 and len(df_list[0].index[0]) > 2:
-            index_2 = [
-                np.unique(np.array([x[2] for x in data.index.to_numpy()]))
-                for data in df_list
-            ]
-            if len(np.unique(index_2)) > 1:
-                raise ValueError(
-                    "Restrict to a single fep-lambda value for a meaningful result. index[2] for each file"
-                    " in df_list: {}".format(index_2)
-                )
-        elif len(np.unique(index_1)) != 1:
-            raise ValueError(
-                "Restrict to a single fep-lambda value for a meaningful result. index[1] for each file"
-                " in df_list: {}".format(index_1)
-            )
-    elif estimator in ["BAR"]:
-        index_1 = [
-            np.unique(np.array([x[1] for x in data.index.to_numpy()]))
-            for data in df_list
-        ]
-        if len(np.unique(index_1)) == 1 and len(df_list[0].index[0]) > 2:
-            index_2 = [
-                np.unique(np.array([x[2] for x in data.index.to_numpy()]))
-                for data in df_list
-            ]
-            if len(np.unique(index_2)) != 2:
-                raise ValueError(
-                    "Restrict to a fep-lambda value and its forward adjacent state for a meaningful "
-                    "result. index[2] for each file in df_list: {}".format(index_2)
-                )
-        elif len(np.unique(index_1)) != 2:
-            raise ValueError(
-                "Restrict to a fep-lambda value and its forward adjacent state for a meaningful "
-                "result. index[1] for each file in df_list: {}".format(index_1)
-            )
+    # Check that each df in the list has only one value of lambda
+    for i, df in enumerate(df_list):
+        lambda_values = np.unique([x[1] for x in df.index.to_numpy()])
+        if len(lambda_values) > 1:
+            if len(df_list[0].index[0]) > 2:
+                lambda_values = np.unique([x[2] for x in df.index.to_numpy()])
+                if len(lambda_values) > 1:
+                    raise ValueError("Provided DataFrame, df_list[{}] has more than one lambda value in df.index[2]".format(i))
+            else:
+                raise ValueError("Provided DataFrame, df_list[{}] has more than one lambda value in df.index[1]".format(i))
 
+    if estimator in ["BAR"] and len(df_list) > 2:
+        raise ValueError(
+            "Restrict to two DataFrames, one with a fep-lambda value and one its forward adjacent state for a"
+            "meaningful result."
+        )
+        
+    # Choose length of comparison trajectory
+    lx_lambdas = [len(x) for x in df_list]
+    if len(set(lx_lambdas)) > 1:
+        lx = np.min( lx_lambdas)
+        warn(
+            "Not all trajectories for each lambda value are the same length, using minimum length for analysis: {}".format(
+                " ".join([f"len(df[{i}])={len(df_list[i])}" for i in range(len(df_list))])
+            ))
+    else:
+        lx = len(df_list[0])
+            
     logger.info("Begin Moving Average Analysis")
     average_list = []
     average_error_list = []
-
-    # Concatenate dataframes
-    data = df_list[0]
-    for tmp_data in df_list[1:]:
-        data = concat([data, tmp_data])
-
     for i in range(1, num):
         logger.info("Moving Average Analysis: {:.2f}%".format(100 * i / num))
-        if estimator == "BAR":
-            ind, indices = 1, np.unique(np.array([x[1] for x in data.index.to_numpy()]))
-            if len(indices) != 2 and len(df_list[0].index[0]) > 2:
-                ind, indices = 2, np.unique(
-                    np.array([x[2] for x in data.index.to_numpy()])
-                )
-            data1 = data.iloc[data.index.get_level_values(ind).isin([indices[0]])]
-            data2 = data.iloc[data.index.get_level_values(ind).isin([indices[1]])]
-            lx = min(len(data1), len(data2))
-            ind1, ind2 = lx // num * (i - 1), lx // num * i
-            sample = concat([data1[ind1:ind2], data2[ind1:ind2]])
-        else:
-            sample = data[len(data) // num * (i - 1) : len(data) // num * i]
+        ind1, ind2 = lx // num * (i - 1), lx // num * i
+        sample = []
+        for data in df_list:
+            sample.append(data[ind1:ind2])
+        sample = concat(sample)
         result = estimator_fit(sample)
 
         average_list.append(result.delta_f_.iloc[0, -1])
