@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from alchemlyb import concat
 from alchemlyb.convergence import (
     forward_backward_convergence,
     fwdrev_cumavg_Rc,
@@ -52,16 +53,16 @@ def test_moving_average_error_2_mbar(gmx_ABFE_complex_u_nk, estimator):
     df_list = gmx_ABFE_complex_u_nk[10:15]
     with pytest.raises(
         ValueError,
-        match=r"Restrict to a single fep-lambda value for a meaningful result. .*",
+        match=r"Provided DataFrame, df_list\[0\] has more than one lambda value in df.index\[0\]",
     ):
-        _ = moving_average(df_list, estimator)
+        _ = moving_average([concat(df_list)], estimator)
 
     df_list = gmx_ABFE_complex_u_nk[14:17]
     with pytest.raises(
         ValueError,
-        match=r"Restrict to a single fep-lambda value for a meaningful result. .*",
+        match=r"Provided DataFrame, df_list\[0\] has more than one lambda value in df.index\[1\]",
     ):
-        _ = moving_average(df_list, estimator)
+        _ = moving_average([concat(df_list)], estimator)
 
 
 @pytest.mark.parametrize("estimator", ["BAR"])
@@ -69,14 +70,14 @@ def test_moving_average_error_2_bar(gmx_ABFE_complex_u_nk, estimator):
     df_list = gmx_ABFE_complex_u_nk[10:13]
     with pytest.raises(
         ValueError,
-        match=r"Restrict to a fep-lambda value and its forward adjacent state .*",
+        match=r"Restrict to two DataFrames, one with a fep-lambda value .*",
     ):
         _ = moving_average(df_list, estimator)
 
     df_list = gmx_ABFE_complex_u_nk[14:17]
     with pytest.raises(
         ValueError,
-        match=r"Restrict to a fep-lambda value and its forward adjacent state .*",
+        match=r"Restrict to two DataFrames, one with a fep-lambda value .*",
     ):
         _ = moving_average(df_list, estimator)
 

@@ -98,14 +98,13 @@ def forward_backward_convergence(
     
     # Check that each df in the list has only one value of lambda
     for i, df in enumerate(df_list):
-        lambda_values = np.unique([x[1] for x in df.index.to_numpy()])
+        lambda_values = list(set([x[1:] for x in df.index.to_numpy()]))
         if len(lambda_values) > 1:
-            if len(df_list[0].index[0]) > 2:
-                lambda_values = np.unique([x[2] for x in df.index.to_numpy()])
-                if len(lambda_values) > 1:
-                    raise ValueError("Provided DataFrame, df_list[{}] has more than one lambda value".format(i))
-            else:
-                raise ValueError("Provided DataFrame, df_list[{}] has more than one lambda value".format(i))
+            for j in range(len(lambda_values[0])):
+                if len(list(set([x[j] for x in lambda_values]))) > 1:
+                    raise ValueError(
+                        "Provided DataFrame, df_list[{}] has more than one lambda value in df.index[{}]".format(i, j)
+                    )
             
     logger.info("Begin forward analysis")
     forward_list = []
@@ -459,18 +458,17 @@ def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
 
     # Check that each df in the list has only one value of lambda
     for i, df in enumerate(df_list):
-        lambda_values = np.unique([x[1] for x in df.index.to_numpy()])
+        lambda_values = list(set([x[1:] for x in df.index.to_numpy()]))
         if len(lambda_values) > 1:
-            if len(df_list[0].index[0]) > 2:
-                lambda_values = np.unique([x[2] for x in df.index.to_numpy()])
-                if len(lambda_values) > 1:
-                    raise ValueError("Provided DataFrame, df_list[{}] has more than one lambda value in df.index[2]".format(i))
-            else:
-                raise ValueError("Provided DataFrame, df_list[{}] has more than one lambda value in df.index[1]".format(i))
+            for j in range(len(lambda_values[0])):
+                if len(list(set([x[j] for x in lambda_values]))) > 1:
+                    raise ValueError(
+                        "Provided DataFrame, df_list[{}] has more than one lambda value in df.index[{}]".format(i, j)
+                    )
 
     if estimator in ["BAR"] and len(df_list) > 2:
         raise ValueError(
-            "Restrict to two DataFrames, one with a fep-lambda value and one its forward adjacent state for a"
+            "Restrict to two DataFrames, one with a fep-lambda value and one its forward adjacent state for a "
             "meaningful result."
         )
         
