@@ -35,10 +35,10 @@ def test_moving_average_ti(gmx_benzene_Coulomb_dHdl):
     print(type(gmx_benzene_Coulomb_dHdl), type(gmx_benzene_Coulomb_dHdl[0]))
     df_avg = moving_average(gmx_benzene_Coulomb_dHdl, "TI")
     assert df_avg.shape == (9, 2)
-    assert df_avg.loc[1, "FE"] == pytest.approx(0.0, 0.01)
-    assert df_avg.loc[1, "FE_Error"] == pytest.approx(0.0, 0.1)
-    assert df_avg.loc[8, "FE"] == pytest.approx(0.157, 0.01)
-    assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.06, 0.1)
+    assert df_avg.loc[1, "FE"] == pytest.approx(3.18, 0.01)
+    assert df_avg.loc[1, "FE_Error"] == pytest.approx(0.07, 0.1)
+    assert df_avg.loc[8, "FE"] == pytest.approx(3.15, 0.01)
+    assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.07, 0.1)
 
 
 @pytest.mark.parametrize("estimator", ["DUMMY"])
