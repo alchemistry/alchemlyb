@@ -100,11 +100,10 @@ def forward_backward_convergence(
     for i, df in enumerate(df_list):
         lambda_values = list(set([x[1:] for x in df.index.to_numpy()]))
         if len(lambda_values) > 1:
-            for j in range(len(lambda_values[0])):
-                if len(list(set([x[j] for x in lambda_values]))) > 1:
-                    raise ValueError(
-                        "Provided DataFrame, df_list[{}] has more than one lambda value in df.index[{}]".format(i, j)
-                    )
+            ind  = [j for j in range(len(lambda_values[0])) if len(list(set([x[j] for x in lambda_values]))) > 1][0]
+            raise ValueError(
+                "Provided DataFrame, df_list[{}] has more than one lambda value in df.index[{}]".format(i, ind)
+            )
             
     logger.info("Begin forward analysis")
     forward_list = []
@@ -460,11 +459,10 @@ def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
     for i, df in enumerate(df_list):
         lambda_values = list(set([x[1:] for x in df.index.to_numpy()]))
         if len(lambda_values) > 1:
-            for j in range(len(lambda_values[0])):
-                if len(list(set([x[j] for x in lambda_values]))) > 1:
-                    raise ValueError(
-                        "Provided DataFrame, df_list[{}] has more than one lambda value in df.index[{}]".format(i, j)
-                    )
+            ind  = [j for j in range(len(lambda_values[0])) if len(list(set([x[j] for x in lambda_values]))) > 1][0]
+            raise ValueError(
+                "Provided DataFrame, df_list[{}] has more than one lambda value in df.index[{}]".format(i, ind)
+            )
 
     if estimator in ["BAR"] and len(df_list) > 2:
         raise ValueError(

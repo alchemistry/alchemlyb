@@ -91,9 +91,11 @@ def test_moving_average_bar(gmx_ABFE_complex_u_nk, estimator):
     assert df_avg.loc[8, "FE"] == pytest.approx(3.603, 0.01)
     assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.06, 0.1)
 
-    df_avg = moving_average(gmx_ABFE_complex_u_nk[14:16], estimator)
+    df_list = gmx_ABFE_complex_u_nk[14:16]
+    df_list[-1] = df_list[-1].iloc[:-2]
+    df_avg = moving_average(df_list, estimator)
     assert df_avg.shape == (9, 2)
-    assert df_avg.loc[0, "FE"] == pytest.approx(0.658, 0.01)
+    assert df_avg.loc[0, "FE"] == pytest.approx(0.651, 0.01)
     assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.054, 0.1)
     assert df_avg.loc[8, "FE"] == pytest.approx(0.926, 0.01)
     assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.05, 0.1)
@@ -134,6 +136,21 @@ def test_convergence_method(gmx_benzene_Coulomb_u_nk):
     )
     assert len(convergence) == 2
 
+@pytest.mark.parametrize("estimator", ["MBAR"])
+def test_forward_backward_convergence_mbar(gmx_ABFE_complex_u_nk, estimator):
+    df_list = gmx_ABFE_complex_u_nk[10:15]
+    with pytest.raises(
+        ValueError,
+        match=r"Provided DataFrame, df_list\[0\] has more than one lambda value in df.index\[0\]",
+    ):
+        _ = forward_backward_convergence([concat(df_list)], estimator)
+
+    df_list = gmx_ABFE_complex_u_nk[14:17]
+    with pytest.raises(
+        ValueError,
+        match=r"Provided DataFrame, df_list\[0\] has more than one lambda value in df.index\[1\]",
+    ):
+        _ = forward_backward_convergence([concat(df_list)], estimator)
 
 def test_cummean_short():
     """Test the case where the input is shorter than the expected output"""
