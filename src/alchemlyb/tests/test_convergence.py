@@ -136,6 +136,7 @@ def test_convergence_method(gmx_benzene_Coulomb_u_nk):
     )
     assert len(convergence) == 2
 
+
 @pytest.mark.parametrize("estimator", ["MBAR"])
 def test_forward_backward_convergence_mbar(gmx_ABFE_complex_u_nk, estimator):
     df_list = gmx_ABFE_complex_u_nk[10:15]
@@ -151,6 +152,7 @@ def test_forward_backward_convergence_mbar(gmx_ABFE_complex_u_nk, estimator):
         match=r"Provided DataFrame, df_list\[0\] has more than one lambda value in df.index\[1\]",
     ):
         _ = forward_backward_convergence([concat(df_list)], estimator)
+
 
 def test_cummean_short():
     """Test the case where the input is shorter than the expected output"""
