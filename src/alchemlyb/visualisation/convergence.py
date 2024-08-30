@@ -148,7 +148,7 @@ def plot_convergence(dataframe, units=None, final_error=None, ax=None):
     return ax
 
 
-def plot_moving_average(dataframe, units=None, final_error=None, ax=None):
+def plot_block_average(dataframe, units=None, final_error=None, ax=None):
     """Plot the forward and backward convergence.
 
      The input could be the result from

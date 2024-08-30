@@ -272,7 +272,7 @@ def fwdrev_cumavg_Rc(series, precision=0.01, tol=2):
     float
         Convergence time fraction :math:`R_c` [Fan2021]_
     :class:`pandas.DataFrame`
-        The DataFrame with moving average. ::
+        The DataFrame with block average. ::
 
                 Forward  Backward  data_fraction
             0  3.016442  3.065176            0.1
@@ -401,12 +401,12 @@ def A_c(series_list, precision=0.01, tol=2):
     return result
 
 
-def moving_average(df_list, estimator="MBAR", num=10, **kwargs):
+def block_average(df_list, estimator="MBAR", num=10, **kwargs):
     """Free energy estimate for portions of the trajectory.
 
     Generate the free energy estimate for a series of blocks in time,
     with the specified number of equally spaced points.
-    For example, setting `num` to 10 would give the moving average
+    For example, setting `num` to 10 would give the block averages
     which is the free energy estimate from the first 10% alone, then the
     next 10% ... of the data.
 

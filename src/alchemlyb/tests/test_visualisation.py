@@ -8,7 +8,7 @@ from alchemtest.gmx import load_benzene
 import alchemlyb
 from alchemlyb.convergence import forward_backward_convergence
 from alchemlyb.estimators import MBAR, TI, BAR
-from alchemlyb.visualisation import plot_convergence, plot_moving_average
+from alchemlyb.visualisation import plot_convergence, plot_block_average
 from alchemlyb.visualisation.dF_state import plot_dF_state
 from alchemlyb.visualisation.mbar_matrix import plot_mbar_overlap_matrix
 from alchemlyb.visualisation.ti_dhdl import plot_ti_dhdl
@@ -218,7 +218,7 @@ def test_plot_convergence_final_nan():
     plt.close(ax.figure)
 
 
-def test_plot_moving_average(gmx_benzene_Coulomb_u_nk):
+def test_plot_block_average(gmx_benzene_Coulomb_u_nk):
     data_list = gmx_benzene_Coulomb_u_nk
     fe = []
     fe_error = []
@@ -237,24 +237,24 @@ def test_plot_moving_average(gmx_benzene_Coulomb_u_nk):
         }
     )
     df.attrs = estimate.delta_f_.attrs
-    ax = plot_moving_average(df)
+    ax = plot_block_average(df)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 
-    ax = plot_moving_average(df, units="kJ/mol")
+    ax = plot_block_average(df, units="kJ/mol")
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 
     df = df.drop("FE_Error", axis=1)
-    ax = plot_moving_average(df)
+    ax = plot_block_average(df)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 
-    ax = plot_moving_average(df, final_error=1)
+    ax = plot_block_average(df, final_error=1)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 
-    ax = plot_moving_average(df, final_error=np.inf)
+    ax = plot_block_average(df, final_error=np.inf)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 

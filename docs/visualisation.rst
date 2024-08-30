@@ -19,7 +19,7 @@ Plotting Functions
     plot_ti_dhdl
     plot_dF_state
     plot_convergence
-    plot_moving_average
+    plot_block_average
 
 .. _plot_overlap_matrix:
 

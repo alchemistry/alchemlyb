@@ -16,4 +16,4 @@ All convergence functions are located in this submodule but for convenience they
 
 .. autofunction:: alchemlyb.convergence.A_c		  
 
-.. autofunction:: alchemlyb.convergence.moving_average
+.. autofunction:: alchemlyb.convergence.block_average

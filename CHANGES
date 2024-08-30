@@ -18,7 +18,7 @@ The rules for this file:
   * 2.4.0
 
 Enhancements
-  - Addition of `moving_average` function in both `convergence` and 
+  - Addition of `block_average` function in both `convergence` and 
     `visualization` (Issue #380, PR #381)
  
 

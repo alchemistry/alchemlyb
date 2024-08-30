@@ -7,7 +7,7 @@ from alchemlyb.convergence import (
     forward_backward_convergence,
     fwdrev_cumavg_Rc,
     A_c,
-    moving_average,
+    block_average,
 )
 from alchemlyb.convergence.convergence import _cummean
 
@@ -32,9 +32,9 @@ def test_convergence_fep(gmx_benzene_Coulomb_u_nk, estimator):
     assert convergence.loc[9, "Backward"] == pytest.approx(3.04, 0.01)
 
 
-def test_moving_average_ti(gmx_benzene_Coulomb_dHdl):
+def test_block_average_ti(gmx_benzene_Coulomb_dHdl):
     print(type(gmx_benzene_Coulomb_dHdl), type(gmx_benzene_Coulomb_dHdl[0]))
-    df_avg = moving_average(gmx_benzene_Coulomb_dHdl, "TI")
+    df_avg = block_average(gmx_benzene_Coulomb_dHdl, "TI")
     assert df_avg.shape == (9, 2)
     assert df_avg.loc[1, "FE"] == pytest.approx(3.18, 0.01)
     assert df_avg.loc[1, "FE_Error"] == pytest.approx(0.07, 0.1)
@@ -43,48 +43,48 @@ def test_moving_average_ti(gmx_benzene_Coulomb_dHdl):
 
 
 @pytest.mark.parametrize("estimator", ["DUMMY"])
-def test_moving_average_error_1(gmx_ABFE_complex_u_nk, estimator):
+def test_block_average_error_1(gmx_ABFE_complex_u_nk, estimator):
     with pytest.raises(ValueError, match=r"Estimator DUMMY is not available .*"):
-        _ = moving_average(gmx_ABFE_complex_u_nk, estimator)
+        _ = block_average(gmx_ABFE_complex_u_nk, estimator)
 
 
 @pytest.mark.parametrize("estimator", ["MBAR"])
-def test_moving_average_error_2_mbar(gmx_ABFE_complex_u_nk, estimator):
+def test_block_average_error_2_mbar(gmx_ABFE_complex_u_nk, estimator):
     df_list = gmx_ABFE_complex_u_nk[10:15]
     with pytest.raises(
         ValueError,
         match=r"Provided DataFrame, df_list\[0\] has more than one lambda value in df.index\[0\]",
     ):
-        _ = moving_average([concat(df_list)], estimator)
+        _ = block_average([concat(df_list)], estimator)
 
     df_list = gmx_ABFE_complex_u_nk[14:17]
     with pytest.raises(
         ValueError,
         match=r"Provided DataFrame, df_list\[0\] has more than one lambda value in df.index\[1\]",
     ):
-        _ = moving_average([concat(df_list)], estimator)
+        _ = block_average([concat(df_list)], estimator)
 
 
 @pytest.mark.parametrize("estimator", ["BAR"])
-def test_moving_average_error_2_bar(gmx_ABFE_complex_u_nk, estimator):
+def test_block_average_error_2_bar(gmx_ABFE_complex_u_nk, estimator):
     df_list = gmx_ABFE_complex_u_nk[10:13]
     with pytest.raises(
         ValueError,
         match=r"Restrict to two DataFrames, one with a fep-lambda value .*",
     ):
-        _ = moving_average(df_list, estimator)
+        _ = block_average(df_list, estimator)
 
     df_list = gmx_ABFE_complex_u_nk[14:17]
     with pytest.raises(
         ValueError,
         match=r"Restrict to two DataFrames, one with a fep-lambda value .*",
     ):
-        _ = moving_average(df_list, estimator)
+        _ = block_average(df_list, estimator)
 
 
 @pytest.mark.parametrize("estimator", ["BAR"])
-def test_moving_average_bar(gmx_ABFE_complex_u_nk, estimator):
-    df_avg = moving_average(gmx_ABFE_complex_u_nk[10:12], estimator)
+def test_block_average_bar(gmx_ABFE_complex_u_nk, estimator):
+    df_avg = block_average(gmx_ABFE_complex_u_nk[10:12], estimator)
     assert df_avg.shape == (9, 2)
     assert df_avg.loc[0, "FE"] == pytest.approx(3.701, 0.01)
     assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.060, 0.1)
@@ -93,7 +93,7 @@ def test_moving_average_bar(gmx_ABFE_complex_u_nk, estimator):
 
     df_list = gmx_ABFE_complex_u_nk[14:16]
     df_list[-1] = df_list[-1].iloc[:-2]
-    df_avg = moving_average(df_list, estimator)
+    df_avg = block_average(df_list, estimator)
     assert df_avg.shape == (9, 2)
     assert df_avg.loc[0, "FE"] == pytest.approx(0.651, 0.01)
     assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.054, 0.1)
@@ -102,8 +102,8 @@ def test_moving_average_bar(gmx_ABFE_complex_u_nk, estimator):
 
 
 @pytest.mark.parametrize("estimator", ["MBAR"])
-def test_moving_average_mbar(gmx_benzene_Coulomb_u_nk, estimator):
-    df_avg = moving_average([gmx_benzene_Coulomb_u_nk[0]], estimator)
+def test_block_average_mbar(gmx_benzene_Coulomb_u_nk, estimator):
+    df_avg = block_average([gmx_benzene_Coulomb_u_nk[0]], estimator)
     assert df_avg.shape == (9, 2)
     assert df_avg.loc[0, "FE"] == pytest.approx(3.41, 0.01)
     assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.22, 0.01)
