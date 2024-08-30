@@ -874,7 +874,7 @@ def extract_dHdl_from_u_n(
         dHdl = pd.concat([dHdl, data], axis=0, sort=False)
 
     dHdl.set_index(["time", "fep-lambda"], inplace=True)
-    dHdl.mul({"fep": beta})
+    dHdl = dHdl.mul({"fep": beta})
 
     return dHdl
 
@@ -1050,10 +1050,10 @@ def extract_dHdl(
 
     if column_lambda2 is None:
         dHdl.set_index(["time", "fep-lambda"], inplace=True)
-        dHdl.mul({"fep": beta})
+        dHdl = dHdl.mul({"fep": beta})
     else:
         dHdl.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
-        dHdl.mul({"coul": beta, "vdw": beta})
+        dHdl = dHdl.mul({"coul": beta, "vdw": beta})
 
     return dHdl
 
@@ -1202,6 +1202,6 @@ def extract_H(
         df_H.set_index(["time", "fep-lambda"], inplace=True)
     else:
         df_H.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
-    df_H.mul({"U": beta})
+    df_H = df_H.mul({"U": beta})
 
     return df_H
