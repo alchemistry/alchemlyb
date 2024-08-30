@@ -85,6 +85,54 @@ def beta_from_units(T, units):
 
     return beta
 
+def energy_from_units(units):
+    """Output conversion factor for pressure * volume to LAMMPS energy units
+
+    Supported types are: cgs, electron, lj. metal, micro, nano, real, si
+
+    Parameters
+    ----------
+    units : str
+        LAMMPS style unit
+
+    Returns
+    -------
+    conversion_factor : float
+        Conversion factor for pressure * volume to LAMMPS energy units
+
+    Raises
+    ------
+    ValueError
+        If unit string is not recognized.
+
+    .. versionadded:: 2.4.0
+    """
+    if units == "real":  # E in kcal/mol, Vol in Å^3, pressure in atm 
+        beta = constants.atm * constants.angstrom**3 / 1e+3 * kJ2kcal * constants.N_A
+    elif units == "lj":  # Nondimensional E scaled by epsilon
+        beta = 1
+    elif units == "metal":  # E in eV, vol in Å^3, pressure in bar
+        beta = constants.bar * constants.angstrom**3 / constants.eV
+    elif units == "si":  # E in J, vol in m^3, pressure in Pa
+        beta = 1
+    elif units == "cgs":  # E in ergs, vol in cm^3, pressure in dyne/cm^2
+        beta = 1
+    elif units == "electron":  # E in Hartrees, vol in Bohr^3, pressure in Pa
+        Hartree2J = 4.3597447222060e-8
+        Bohr2m = 5.29177210544e+11
+        beta = 1 / Hartree2J / Bohr2m**3
+    elif units == "micro":  # E in picogram-micrometer^2/microsecond^2, vol in um^3, pressure in picogram/(micrometer-microsecond^2)
+        beta = 1
+    elif units == "nano":  # E in attogram-nanometer^2/nanosecond^2, vol in nm^3, pressure in attogram/(nanometer-nanosecond^2)
+        beta = 1
+    else:
+        raise ValueError(
+            "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
+            " lj. metal, micro, nano, real, si".format(units)
+        )
+
+    return beta
+
 
 def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     """Pull a tuple representing the lambda values used, as defined by the filenames.
@@ -218,12 +266,12 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
         raise ValueError("Lambda values must be positive: {}".format(lambda_values))
 
     # check that all needed lamba combinations are present
-    lamda_dict = {x: [y[1] for y in lambda_pairs if y[0] == x] for x in lambda_values}
+    lambda_dict = {x: [y[1] for y in lambda_pairs if y[0] == x] for x in lambda_values}
 
     # Check for MBAR content
     missing_combinations_mbar = []
     missing_combinations_bar = []
-    for lambda_value, lambda_array in lamda_dict.items():
+    for lambda_value, lambda_array in lambda_dict.items():
         missing_combinations_mbar.extend(
             [(lambda_value, x) for x in lambda_values if x not in lambda_array]
         )
@@ -241,10 +289,10 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
     missing_combinations_bar = []
     extra_combinations_bar = []
     lambda_values.sort()
-    for ind, (lambda_value, lambda_array) in enumerate(lamda_dict.items()):
+    for ind, (lambda_value, lambda_array) in enumerate(lambda_dict.items()):
         if ind == 0:
             tmp_array = [lambda_values[ind], lambda_values[ind + 1]]
-        elif ind == len(lamda_dict) - 1:
+        elif ind == len(lambda_dict) - 1:
             tmp_array = [lambda_values[ind - 1], lambda_values[ind]]
         else:
             tmp_array = [
@@ -438,7 +486,7 @@ def extract_u_nk_from_u_n(
                 )    
                 if ensemble == "npt":
                     u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12] += (
-                        beta * pressure * tmp_df["volume"]
+                        beta * pressure * tmp_df["volume"] * energy_from_units(units)
                     )               
 
     u_nk.set_index(["time", "fep-lambda"], inplace=True)
@@ -724,7 +772,7 @@ def extract_u_nk(
                 )
                 if ensemble == "npt":
                     u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] += (
-                        beta * pressure * tmp_df2["volume"]
+                        beta * pressure * tmp_df2["volume"] * energy_from_units(units)
                     )
 
     if column_lambda2 is None:
@@ -1146,7 +1194,7 @@ def extract_H(
         data["u_n"] = beta * data["U"]
         del data["U"]
         if ensemble == "npt":
-            data["u_n"] += beta * pressure * data["volume"]
+            data["u_n"] += beta * pressure * data["volume"] * energy_from_units(units)
             del data["volume"]
         df_H = pd.concat([df_H, data], axis=0, sort=False)
 
