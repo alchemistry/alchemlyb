@@ -33,7 +33,6 @@ def test_convergence_fep(gmx_benzene_Coulomb_u_nk, estimator):
 
 
 def test_block_average_ti(gmx_benzene_Coulomb_dHdl):
-    print(type(gmx_benzene_Coulomb_dHdl), type(gmx_benzene_Coulomb_dHdl[0]))
     df_avg = block_average(gmx_benzene_Coulomb_dHdl, "TI")
     assert df_avg.shape == (9, 2)
     assert df_avg.loc[1, "FE"] == pytest.approx(3.18, 0.01)

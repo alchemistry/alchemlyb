@@ -34,12 +34,13 @@ def forward_backward_convergence(
         different value of lambda.
     estimator : {'MBAR', 'BAR', 'TI'}
         Name of the estimators.
-        See the important note below on the use of "MBAR".
 
         .. deprecated:: 1.0.0
            Lower case input is also accepted until release 2.0.0.
     num : int
-        The number of time points.
+        The number of blocks used to divide *each* DataFrame and progressively add
+        to assess convergence. Note that if the DataFrames are different lengths, 
+        the number of samples contributed with each block will be different.
     error_tol : float
         The maximum error tolerated for analytic error. If the analytic error is
         bigger than the error tolerance, the bootstrap error will be used.
@@ -417,9 +418,10 @@ def block_average(df_list, estimator="MBAR", num=10, **kwargs):
         different value of lambda.
     estimator : {'MBAR', 'BAR', 'TI'}
         Name of the estimators.
-        See the important note below on the use of "MBAR".
     num : int
-        The number of time points.
+        The number of blocks used to divide *each* DataFrame. Note that
+        if the DataFrames are different lengths, the number of samples
+        contributed to each block will be different.
     kwargs : dict
         Keyword arguments to be passed to the estimator.
 
@@ -469,26 +471,15 @@ def block_average(df_list, estimator="MBAR", num=10, **kwargs):
             "Restrict to two DataFrames, one with a fep-lambda value and one its forward adjacent state for a "
             "meaningful result."
         )
-        
-    # Choose length of comparison trajectory
-    lx_lambdas = [len(x) for x in df_list]
-    if len(set(lx_lambdas)) > 1:
-        lx = np.min( lx_lambdas)
-        warn(
-            "Not all trajectories for each lambda value are the same length, using minimum length for analysis: {}".format(
-                " ".join([f"len(df[{i}])={len(df_list[i])}" for i in range(len(df_list))])
-            ))
-    else:
-        lx = len(df_list[0])
             
     logger.info("Begin Moving Average Analysis")
     average_list = []
     average_error_list = []
     for i in range(1, num):
         logger.info("Moving Average Analysis: {:.2f}%".format(100 * i / num))
-        ind1, ind2 = lx // num * (i - 1), lx // num * i
         sample = []
         for data in df_list:
+            ind1, ind2 = len(data) // num * (i - 1), len(data) // num * i
             sample.append(data[ind1:ind2])
         sample = concat(sample)
         result = estimator_fit(sample)

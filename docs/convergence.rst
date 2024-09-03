@@ -75,7 +75,7 @@ is, where 0 fully-unequilibrated and 1.0 is fully-equilibrated. ::
     >>> value = A_c(dhdl_list, tol=2)
     0.7085
 
-Moving Average
+Block Average
 --------------
 If one obtains suspicious results from the forward / backward convergence plot,
 it may be useful to view the block averages of the change in free energy using
@@ -98,8 +98,8 @@ Will give a plot looks like this
 
 .. figure:: images/dF_t_block_average.png
 
-   A convergence plot of showing that the forward and backward has converged
-   fully.
+   A plot of the free energy divided into block averages showing consistency/inconsistency 
+   across the trajectory.
 
 Convergence functions
 ---------------------
