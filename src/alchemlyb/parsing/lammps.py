@@ -699,23 +699,27 @@ def extract_u_nk(
 
                 lr = tmp_df2.shape[0]
                 if u_nk[u_nk[lambda1_col] == lambda1].shape[0] == 0:
-                    u_nk = pd.concat(
+                    tmp_df3 = pd.concat(
                         [
-                            u_nk,
-                            pd.concat(
-                                [
-                                    tmp_df2[columns_a],
-                                    pd.DataFrame(
-                                        np.zeros((lr, lc)),
-                                        columns=columns_b,
-                                    ),
-                                ],
-                                axis=1,
+                            tmp_df2[columns_a],
+                            pd.DataFrame(
+                                np.zeros((lr, lc)),
+                                columns=columns_b,
                             ),
                         ],
-                        axis=0,
-                        sort=False,
+                        axis=1,
                     )
+                    if len(u_nk) != 0:
+                        u_nk = pd.concat(
+                            [
+                                u_nk,
+                                tmp_df3,
+                            ],
+                            axis=0,
+                            sort=False,
+                        )
+                    else:
+                        u_nk = tmp_df3
 
                 column_list = [
                     ii
@@ -1046,7 +1050,10 @@ def extract_dHdl(
                 ],
                 inplace=True,
             )
-        dHdl = pd.concat([dHdl, data], axis=0, sort=False)
+        if len(dHdl) != 0:
+            dHdl = pd.concat([dHdl, data], axis=0, sort=False)
+        else:
+            dHdl = data
 
     if column_lambda2 is None:
         dHdl.set_index(["time", "fep-lambda"], inplace=True)
