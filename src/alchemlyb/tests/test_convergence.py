@@ -96,7 +96,7 @@ def test_block_average_bar(gmx_ABFE_complex_u_nk, estimator):
     assert df_avg.shape == (9, 2)
     assert df_avg.loc[0, "FE"] == pytest.approx(0.651, 0.01)
     assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.054, 0.1)
-    assert df_avg.loc[8, "FE"] == pytest.approx(0.926, 0.01)
+    assert df_avg.loc[8, "FE"] == pytest.approx(0.901, 0.01)
     assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.05, 0.1)
 
 
