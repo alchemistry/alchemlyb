@@ -122,7 +122,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 
         groups = u_nk.groupby(level=u_nk.index.names[1:])
         N_k = [
-            (len(groups.get_group(i)) if i in groups.groups else 0)
+            (len(groups.get_group((i,))) if i in groups.groups else 0)
             for i in u_nk.columns
         ]
         self._states_ = u_nk.columns.values.tolist()

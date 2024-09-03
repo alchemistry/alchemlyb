@@ -94,7 +94,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         # group u_nk by lambda states
         groups = u_nk.groupby(level=u_nk.index.names[1:])
         N_k = [
-            (len(groups.get_group(i)) if i in groups.groups else 0)
+            (len(groups.get_group((i,))) if i in groups.groups else 0)
             for i in u_nk.columns
         ]
 
@@ -103,12 +103,13 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         d_deltas = np.array([])
         for k in range(len(N_k) - 1):
             # get us from lambda step k
-            uk = groups.get_group(self._states_[k])
+            uk = groups.get_group((self._states_[k],))
             # get w_F
             w_f = uk.iloc[:, k + 1] - uk.iloc[:, k]
 
             # get us from lambda step k+1
-            uk1 = groups.get_group(self._states_[k + 1])
+            uk1 = groups.get_group((self._states_[k + 1],))
+
             # get w_R
             w_r = uk1.iloc[:, k] - uk1.iloc[:, k + 1]
 
