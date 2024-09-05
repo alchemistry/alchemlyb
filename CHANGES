@@ -7,24 +7,28 @@ The rules for this file:
   * entries are sorted newest-first.
   * summarize sets of changes - don't reproduce every git log comment here.
   * don't ever delete anything.
-  * keep the format consistent (79 char width, M/D/Y date format) and do not
-    use tabs but use spaces for formatting
+  * keep the format consistent (79 char width, MM/DD/YYYY date format) and do
+    not use tabs but use spaces for formatting
   * accompany each entry with github issue/PR number (Issue #xyz)
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+08/24/2024 xiki-tempula
 
-**/**/**** xiki-tempula
+  * 2.3.2
 
-
-08/07/2024 orbeckst, xiki-tempula
+Changes
+  - Remove Python 3.9 support (issue #389, PR #390).
 
 Enhancements
   - Add a tutorial section in the documentation (issue #382, PR #379).
 
+
+07/08/2024 orbeckst, xiki-tempula
+
   * 2.3.1
 
-Changes:
+Changes
   - alchemlyb adopts SPEC 0 (replaces NEP 29)
     https://scientific-python.org/specs/spec-0000/
 
@@ -32,29 +36,35 @@ Fixes
   - Support matplotlib 3.9.0 (issue alchemistry/flamel#28, PR#319).
 
 
-21/05/2024 xiki-tempula
+05/21/2024 xiki-tempula
 
   * 2.3.0
 
 Changes
   - Default value for keyword argument `initial_nk` of the MBAR estimator was
-    changed to "BAR" (run an initial BAR calculation before MBAR) instead of 
-    `None` (start from all zeros) as this change provides a sizable speedup (PR #357)
+    changed to "BAR" (run an initial BAR calculation before MBAR) instead of
+    `None` (start from all zeros) as this change provides a sizable speedup (PR
+    #357)
     
 Enhancements
-  - `forward_backward_convergence` uses the bootstrap error when the statistical error
-    is too large. (PR #358)
-  - `BAR` result is used as initial guess for `MBAR` estimator. (PR #357)
-  - `forward_backward_convergence` uses the result from the previous step as the initial guess for the next step. (PR #357)
 
-06/04/2024 hl2500, xiki-tempula
+  - `forward_backward_convergence` uses the bootstrap error when the
+    statistical error is too large. (PR #358)
+  - `BAR` result is used as initial guess for `MBAR` estimator. (PR #357)
+  - `forward_backward_convergence` uses the result from the previous step as
+    the initial guess for the next step. (PR #357)
+
+
+04/06/2024 hl2500, xiki-tempula
 
   * 2.2.0
 
 Changes
   - Require pandas >= 2.1 (PR #340)
-  - For pandas>=2.1, metadata will be loaded from the parquet file (issue #331, PR #340).
-  - add support for Python 3.12, remove Python 3.8 support (issue #341, PR #304).
+  - For pandas>=2.1, metadata will be loaded from the parquet file (issue #331,
+    PR #340).
+  - add support for Python 3.12, remove Python 3.8 support (issue #341, PR
+    #304).
 
 Enhancements
   - Add a TI estimator using gaussian quadrature to calculate the free energy.
@@ -65,26 +75,29 @@ Enhancements
     doesn't have the same length (issue #337, PR #338)
 
 Fixes
-  - data_fraction column in workflow.convergence won't be affected by the
-    unit conversion (issue #350, PR#319).
+  - data_fraction column in workflow.convergence won't be affected by the unit
+    conversion (issue #350, PR#319).
   
 
-22/06/2023 xiki-tempula
+06/22/2023 xiki-tempula
 
   * 2.1.0
 
 Changes
   - ValueError raised if concatenated amber output file is passed to amber
     parser (issue #315, PR #326).
-  - Change the % based string formatting to {} based string formatting (issue #323, PR #324).
+  - Change the % based string formatting to {} based string formatting (issue
+    #323, PR #324).
   - Use loguru instead of logging for log (issue #301, PR #303).
 
 Enhancements
-  - "Statistical inefficiency" is logged at debug level for equilibrium_detection
-    and statistical_inefficiency (issue #295, PR#325).
-  - Add a parser to read serialised pandas dataframe (parquet) (issue #316, PR#317).
+  - "Statistical inefficiency" is logged at debug level for
+    equilibrium_detection and statistical_inefficiency (issue #295, PR#325).
+  - Add a parser to read serialised pandas dataframe (parquet) (issue #316,
+    PR#317).
   - workflow.ABFE allow parquet as input (issue #316, PR#317).
-  - Allow MBAR estimator to use bootstrap to compute error (issue #320, PR#322).
+  - Allow MBAR estimator to use bootstrap to compute error (issue #320,
+    PR#322).
 
 Fixes
   - Fix the case where visualisation.plot_convergence would fail when the final
@@ -95,14 +108,14 @@ DeprecationWarning
     analytic to bootstrap=50 in 2.2.0 (issue #320, PR#322).
 
 
-06/04/2023 xiki-tempula
+04/06/2023 xiki-tempula
 
   * 2.0.1
 
 Fixes
-  - Fix the dE method in u_nk2series to use the difference between two
-    lambda columns instead of using the next lambda column or the previous
-    column for the last window (issue #299, PR #300).
+  - Fix the dE method in u_nk2series to use the difference between two lambda
+    columns instead of using the next lambda column or the previous column for
+    the last window (issue #299, PR #300).
   - work around hanging tests on Mac M1 by using Path.glob instead of glob.glob
     in ABFE workflow (issue #309, PR #310).
 
@@ -112,8 +125,8 @@ Fixes
   * 2.0.0
 
 Changes
-  - use pymbar 4 as backend; this release is incompatible with
-    pymbar 3.x (issue #207, PR #268, discussion #205).
+  - use pymbar 4 as backend; this release is incompatible with pymbar 3.x
+    (issue #207, PR #268, discussion #205).
   - The default for keyword argument `method` in estimators.MBAR was changed
     from "hybr" to "robust" (issue #207, PR #268).
 
@@ -132,15 +145,15 @@ Removals
   * 1.0.1
 
 Fixes
-  - make workflow.ABFE handle 0 as input to forwrev instead of crashing
-    (issue #276, PR #282).
+  - make workflow.ABFE handle 0 as input to forwrev instead of crashing (issue
+    #276, PR #282).
   - Remove most of the iloc in the tests (issue #202, PR #254).
-  - AMBER parser now raises ValueError when the initial simulation time
-    is not found (issue #272, PR #273).
+  - AMBER parser now raises ValueError when the initial simulation time is not
+    found (issue #272, PR #273).
   - The regex in the AMBER parser now reads also 'field=value' pairs where
     there are no spaces around the equal sign (issue #272, PR #273).    
-  - Pre-processing function slicing will not drop NaN rows (issue
-    #274, PR #275).
+  - Pre-processing function slicing will not drop NaN rows (issue #274, PR
+    #275).
     
 Deprecations
   - deprecate AutoMBAR for removal in 2.0 because pymbar 4 already contains
@@ -148,11 +161,11 @@ Deprecations
 
 Internal Enhancements (do not affect API)
   - Blackfy the codebase (PR #280).
-  - Refactor the test to make all the parsing done at conftest level
-    (issue #206, PR #278).
+  - Refactor the test to make all the parsing done at conftest level (issue
+    #206, PR #278).
 
 
-10/31/2022 orbeckst, xiki-tempula, DrDomenicoMarson 
+10/31/2022 orbeckst, xiki-tempula, DrDomenicoMarson
 
   * 1.0.0
 
@@ -212,15 +225,15 @@ Fixes
   * 0.7.0
 
 Changes
-  - Deployment to PyPI is now done automatically using github actions
-    (Issue #193)
-  - gmx parser now defaults to dropping NaN and corrupted lines (filter=True) 
+  - Deployment to PyPI is now done automatically using github actions (Issue
+    #193)
+  - gmx parser now defaults to dropping NaN and corrupted lines (filter=True)
     (#171, PR #183)
   - remove broken .zip support from util.anyopen() (PR #197)
 
 Enhancements
-  - Add filter function to gmx.extract to make it more robust (PR #183): can filter 
-    incomplete/corrupted lines (#126, #171) with filter=True.
+  - Add filter function to gmx.extract to make it more robust (PR #183): can
+    filter incomplete/corrupted lines (#126, #171) with filter=True.
   - Add support to util.anyopen() for taking filelike objects (PR #197)
 
 Fixes
@@ -243,15 +256,15 @@ Enhancements
     Various malformations of input files are detected, where lambdas do not
     monotonically increase or decrease, or are inconsistent or missing.
   - Convenience function for decorrelating u_nk and dHdl (PR #163).
-  - Time convergence function forward_backward_convergence
-    introduced and plot_convergence now takes dataframe from
-    forward_backward_convergence as input (PR #168).
+  - Time convergence function forward_backward_convergence introduced and
+    plot_convergence now takes dataframe from forward_backward_convergence as
+    input (PR #168).
   - Automatic MBAR solver with fall back (issue #170, PR #172)
 
 Fixes
   - Subsampling now works with bounds and step (PR #167, issue #166).
-  - AMBER parser logger now always logs to alchemlyb.parsers.Amber
-    instead of the root logger (PR #173)
+  - AMBER parser logger now always logs to alchemlyb.parsers.Amber instead of
+    the root logger (PR #173)
   - updated deprecated pandas aggregation, now using groupby(level).agg (#175)
 
 
@@ -264,10 +277,12 @@ Changes (not affecting code)
     #159, issue #160, PR #161)
 
 Fixes
-  - MBAR estimator now correctly passes max_iterations to pymbar.MBAR. (PR #162)
+  - MBAR estimator now correctly passes max_iterations to pymbar.MBAR. (PR
+    #162)
   - docs (PR #157)
-  - visualisation.df_state.plot_dF_state() now correctly raises ValueError instead
-    of NameError when incorrect orientation keyword argument is supplied
+  - visualisation.df_state.plot_dF_state() now correctly raises ValueError
+    instead of NameError when incorrect orientation keyword argument is
+    supplied
 
 
 08/01/2021 xiki-tempula, orbeckst
@@ -276,22 +291,20 @@ Fixes
 
 Changes
   - alchemlyb adopts NEP29
-    https://numpy.org/neps/nep-0029-deprecation_policy.html
-    to effectively only support the last 2-3 minor Python versions
-  - Removed support for Python 2.7 and 3.6 (issue #130, #140):
-    supported/tested Python versions are 3.7, 3.8, 3.9 on
-    Linux, macOS, and Windows
+    https://numpy.org/neps/nep-0029-deprecation_policy.html to effectively only
+    support the last 2-3 minor Python versions
+  - Removed support for Python 2.7 and 3.6 (issue #130, #140): supported/tested
+    Python versions are 3.7, 3.8, 3.9 on Linux, macOS, and Windows
   - The scipy constant for gas constant is used for parsers instead of the
-    constants used by the corresponding MD engine (issue #125, PR #129).
-    This leads to small changes in results from GROMACS simulations in kT
-    compared to the previous releases, with a relative difference on the order
-    of 1e-7.
-  - Added unit-awareness: the base unit remains kT but dataframes need to
-    carry the unit and temperature in a DataFrame.attrs so that dataframes
-    can be easily converted to different energy units (issue #125)
+    constants used by the corresponding MD engine (issue #125, PR #129).  This
+    leads to small changes in results from GROMACS simulations in kT compared
+    to the previous releases, with a relative difference on the order of 1e-7.
+  - Added unit-awareness: the base unit remains kT but dataframes need to carry
+    the unit and temperature in a DataFrame.attrs so that dataframes can be
+    easily converted to different energy units (issue #125)
   - The parser outputs dataframe with metadata (issue #125, PR #129).
-  - Visualisation module will change the data according to input unit
-    (issue #125, PR #129).
+  - Visualisation module will change the data according to input unit (issue
+    #125, PR #129).
   - Bump the minimum pandas version to 1.2 (issue #130, #140).
 
 Enhancements
@@ -336,11 +349,11 @@ Changes
   * 0.4.0
 
 Enhancements
-  - Allow the dhdl from TI estimator to be separated for multiple lambda
-    (PR #121).
+  - Allow the dhdl from TI estimator to be separated for multiple lambda (PR
+    #121).
   - Allow the convergence to be plotted. (PR #121)
-  - Allow automatic sorting and duplication removal during subsampling
-    (issue #118, PR #119).
+  - Allow automatic sorting and duplication removal during subsampling (issue
+    #118, PR #119).
   - Allow statistical_inefficiency to work on multiindex series. (issue #116,
     PR #117)
   - Allow the overlap matrix of the MBAR estimator to be plotted. (issue #73,
@@ -367,8 +380,9 @@ Enhancements
 Deprecations
 
 Fixes
-  - added explicit `return_theta=True` for call to pymbar.MBAR.getFreeEnergyDifferences,
-    as this was happening prior to changes in `pymbar` without the explicit call
+  - added explicit `return_theta=True` for call to
+    pymbar.MBAR.getFreeEnergyDifferences, as this was happening prior to
+    changes in `pymbar` without the explicit call
 
 Changes
 
@@ -406,8 +420,8 @@ Changes
 First release
 
 Features:
-
-    - Parsers for GROMACS, including reduced potentials and gradients.
-    - Subsampler functions for slicing, statitistical inefficiency, equilibration detection.
-    - Minimally functional estimators for MBAR, TI.
-    - high test coverage (works with data in alchemistry/alchemtests)
+  - Parsers for GROMACS, including reduced potentials and gradients.
+  - Subsampler functions for slicing, statitistical inefficiency, equilibration
+    detection.
+  - Minimally functional estimators for MBAR, TI.
+  - high test coverage (works with data in alchemistry/alchemtests)
