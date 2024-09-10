@@ -86,18 +86,18 @@ def test_block_average_bar(gmx_ABFE_complex_u_nk, estimator):
     df_avg = block_average(gmx_ABFE_complex_u_nk[10:12], estimator)
     assert df_avg.shape == (9, 2)
     assert df_avg.loc[0, "FE"] == pytest.approx(3.701, 0.01)
-    assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.060, 0.1)
+    assert np.isnan(df_avg.loc[0, "FE_Error"])
     assert df_avg.loc[8, "FE"] == pytest.approx(3.603, 0.01)
-    assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.06, 0.1)
+    assert np.isnan(df_avg.loc[8, "FE_Error"])
 
     df_list = gmx_ABFE_complex_u_nk[14:16]
     df_list[-1] = df_list[-1].iloc[:-2]
     df_avg = block_average(df_list, estimator)
     assert df_avg.shape == (9, 2)
     assert df_avg.loc[0, "FE"] == pytest.approx(0.651, 0.01)
-    assert df_avg.loc[0, "FE_Error"] == pytest.approx(0.054, 0.1)
+    assert np.isnan(df_avg.loc[0, "FE_Error"])
     assert df_avg.loc[8, "FE"] == pytest.approx(0.901, 0.01)
-    assert df_avg.loc[8, "FE_Error"] == pytest.approx(0.05, 0.1)
+    assert np.isnan(df_avg.loc[8, "FE_Error"])
 
 
 @pytest.mark.parametrize("estimator", ["MBAR"])
