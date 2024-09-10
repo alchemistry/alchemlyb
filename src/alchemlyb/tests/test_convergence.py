@@ -79,16 +79,16 @@ def test_block_average_error_2_bar(gmx_ABFE_complex_u_nk, estimator):
         match=r"Restrict to two DataFrames, one with a fep-lambda value .*",
     ):
         _ = block_average(df_list, estimator)
-        
-        
+
+
 @pytest.mark.parametrize("estimator", ["BAR"])
 def test_block_average_error_3_bar(gmx_ABFE_complex_u_nk, estimator):
     # Test if lambda state column representing one of the two lambda
     # states in the df indices is missing from *both* dfs.
     df_list = gmx_ABFE_complex_u_nk[10:12]
-    state1 = list(set( x[1:] for x in df_list[0].index))[0]
-    df_list[0] = df_list[0].drop( state1, axis=1)
-    df_list[1] = df_list[1].drop( state1, axis=1)
+    state1 = list(set(x[1:] for x in df_list[0].index))[0]
+    df_list[0] = df_list[0].drop(state1, axis=1)
+    df_list[1] = df_list[1].drop(state1, axis=1)
     with pytest.raises(
         ValueError,
         match=r"Indexed lambda state, .*",
@@ -101,8 +101,8 @@ def test_block_average_error_4_bar(gmx_ABFE_complex_u_nk, estimator):
     # Test if lambda state column representing one of the two lambda
     # states in the df indices is missing from *one* dfs.
     df_list = gmx_ABFE_complex_u_nk[10:12]
-    state1 = list(set( x[1:] for x in df_list[0].index))[0]
-    df_list[0] = df_list[0].drop( state1, axis=1)
+    state1 = list(set(x[1:] for x in df_list[0].index))[0]
+    df_list[0] = df_list[0].drop(state1, axis=1)
     with pytest.raises(
         ValueError,
         match=r"u_nk does not contain energies computed between any adjacent .*",
