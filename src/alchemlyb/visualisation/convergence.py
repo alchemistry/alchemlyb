@@ -56,11 +56,10 @@ def plot_convergence(dataframe, units=None, final_error=None, ax=None):
          Keyword arg final_error for plotting a horizontal error bar.
          The array input has been deprecated.
          The units default to `None` which uses the units in the input.
-
      .. versionchanged:: 0.6.0
          data now takes in dataframe
-
      .. versionadded:: 0.4.0
+     
     """
     if units is not None:
         dataframe = get_unit_converter(units)(dataframe)
@@ -193,6 +192,7 @@ def plot_block_average(dataframe, units=None, final_error=None, ax=None):
      `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
      .. versionadded:: 2.4.0
+     
     """
     if units is not None:
         dataframe = get_unit_converter(units)(dataframe)

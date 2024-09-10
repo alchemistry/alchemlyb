@@ -46,6 +46,10 @@ def forward_backward_convergence(
         bigger than the error tolerance, the bootstrap error will be used.
 
         .. versionadded:: 2.3.0
+        .. versionchanged:: 2.4.0
+           Clarified docstring, removed incorrect estimation of std for cumulative
+           result in bar and added check that only a single lambda state is 
+           represented in the indices of each df in df_list.
 
     kwargs : dict
         Keyword arguments to be passed to the estimator.

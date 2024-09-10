@@ -54,6 +54,9 @@ class BAR(BaseEstimator, _EstimatorMixOut):
 
     .. versionchanged:: 1.0.0
        `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
+    .. versionchanged:: 2.4.0
+       Added assessment of lambda states represented in the indices of u_nk
+       to provide meaningful errors to ensure proper use.
 
     """
 
