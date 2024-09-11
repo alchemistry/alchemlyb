@@ -12,6 +12,7 @@ The rules for this file:
   * accompany each entry with github issue/PR number (Issue #xyz)
   * release numbers follow "Semantic Versioning" https://semver.org
 
+--------------------------------------------------------------------------------
 
 ??/??/2024 jaclark5
 
@@ -29,6 +30,13 @@ Enhancements
     `visualization` (Issue #380, PR #381)
   - Add support for LAMMPS FEP files (Issue #349, PR #348)
  
+09/??/2024 orbeckst
+
+  * 2.3.3
+
+Enhancements:
+  - add CITATION.cff file with all authors from AUTHORS (issue #394, PR #395)
+
 
 08/24/2024 xiki-tempula
 
