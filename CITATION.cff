@@ -81,6 +81,14 @@ authors:
     family-names: Li
     orcid: 'https://orcid.org/0009-0004-8369-1042'
     affiliation: University of North Carolina
+  - given-names: David
+    family-names: Mobley
+    orcid: 'https://orcid.org/0000-0002-1083-5533'
+    affiliation: University of California Irvine    
+  - given-names: Michael R.
+    family-names: Shirts
+    orcid: 'https://orcid.org/0000-0003-3249-1097'
+    affiliation: University of Colorado Boulder
 identifiers:
   - type: swh
     value: 'swh:1:dir:4cd266754be413312ee7ef3f1f7fbe05b38192cf'
