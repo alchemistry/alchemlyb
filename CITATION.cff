@@ -6,7 +6,7 @@ cff-version: 1.2.0
 title: alchemlyb
 message: >-
   If you use this software, please cite it using the
-  metadata from this file.
+  preferred citation together with any other references.
 type: software
 authors:
   - email: david@datryllic.com
@@ -175,8 +175,8 @@ preferred-citation:
       family-names: Schlaich
       orcid: 'https://orcid.org/0000-0002-4250-363X'
       affiliation: University of Stuttgart
-    - given-name: David
-      family-name: Mobley
+    - given-names: David
+      family-names: Mobley
       orcid: 'https://orcid.org/0000-0002-1083-5533'
       affiliation: University of California Irvine
     - given-names: Michael R.
@@ -188,8 +188,29 @@ preferred-citation:
       email: obeckste@asu.edu
       affiliation: Arizona State University
       orcid: 'https://orcid.org/0000-0003-1340-0831'
-  type: "Article"
+  type: 'article'
   year: 2024
-  journal: "Journal of Open Source Software"
-  doi: 10.21105/joss.06934
-  
+  journal: 'Journal of Open Source Software'
+  doi: '10.21105/joss.06934'
+references:
+  - title: Statistically optimal analysis of samples from multiple equilibrium states
+    authors:
+      - family-names: Shirts
+        given-names: Michael R
+      - family-names: Chodera
+        given-names: John D
+    type: 'article'
+    pages: '124105'
+    year: '2008'
+    journal: Journal of Chemical Physics
+    doi: '10.1063/1.2978177'
+  - title: A Simple Method for Automated Equilibration Detection in Molecular Simulations
+    authors:
+      - family-names: Chodera
+        given-names: John D.
+    type: 'article'
+    pages: '1799–1805'
+    year: '2016'
+    journal: 'Journal of Chemical Theory and Computation'
+    doi: '10.1021/acs.jctc.5b00784'
+
