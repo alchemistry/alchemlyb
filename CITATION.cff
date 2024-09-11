@@ -1,0 +1,113 @@
+# -*- coding: utf-8 -*-
+# This CITATION.cff file was initially generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: alchemlyb
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - email: david@datryllic.com
+    given-names: David L.
+    family-names: Dotson
+    orcid: 'https://orcid.org/0000-0001-5879-2942'
+    affiliation: Datryllic LLC
+  - given-names: Ian M.
+    family-names: Kenney
+    orcid: 'https://orcid.org/0000-0002-9749-8866'
+    affiliation: Kenney Consulting, LLC    
+  - given-names: Oliver
+    family-names: Beckstein
+    email: obeckste@asu.edu
+    affiliation: Arizona State University
+    orcid: 'https://orcid.org/0000-0003-1340-0831'
+  - given-names: Shuai
+    family-names: Liu
+    orcid: 'https://orcid.org/0000-0002-8632-633X'
+    affiliation: Silicon Therapeutics LLC
+  - given-names: Travis
+    family-names: Jensen
+  - given-names: Bryce
+    family-names: Allen
+    orcid: 'https://orcid.org/0000-0002-0804-8127'
+    affiliation: Differentiated Therapeutics
+  - given-names: Dominik
+    family-names: Wille
+    affiliation: Freie Universität Berlin
+  - given-names: Victoria
+    family-names: Lim
+    orcid: 'https://orcid.org/0000-0003-4030-9312'
+    affiliation: University of California Irvine
+  - given-names: Hyungro
+    family-names: Lee
+    orcid: 'https://orcid.org/0000-0002-4221-7094'
+    affiliation: Pacific Northwest National Laboratory
+  - given-names: Mohammad Soroush
+    family-names: Barhaghi
+    orcid: 'https://orcid.org/0000-0001-8226-7347'
+    affiliation: Wayne State University
+  - given-names: Zhiyi
+    family-names: Wu
+    affiliation: Exscientia plc
+    orcid: 'https://orcid.org/0000-0002-7615-7851'
+    email: william@zhiyiwu.me
+  - given-names: Alexander
+    family-names: Schlaich
+    orcid: 'https://orcid.org/0000-0002-4250-363X'
+    affiliation: University of Stuttgart
+  - given-names: Jérôme
+    family-names: Hénin
+    orcid: 'https://orcid.org/0000-0003-2540-4098'
+    affiliation: CNRS
+  - given-names: Thomas T.
+    family-names: Joseph
+    orcid: 'https://orcid.org/0000-0003-1323-3244'
+    affiliation: University of Pennsylvania
+  - given-names: Irfan
+    family-names: Alibay
+    orcid: 'https://orcid.org/0000-0001-5787-9130'
+    affiliation: Open Molecular Software Foundation
+  - given-names: Pascal
+    family-names: Merz
+    affiliation: PM Scientific Consulting
+    orcid: 'https://orcid.org/0000-0002-7045-8725'
+  - given-names: Domenico
+    family-names: Marson
+    orcid: 'https://orcid.org/0000-0003-1839-9868'
+    affiliation: University of Trieste
+  - given-names: Haoxi
+    family-names: Li
+    orcid: 'https://orcid.org/0009-0004-8369-1042'
+    affiliation: University of North Carolina
+identifiers:
+  - type: swh
+    value: 'swh:1:dir:4cd266754be413312ee7ef3f1f7fbe05b38192cf'
+    description: >-
+      The Software Heritage identifier for the top level
+      directory of the repository.
+repository-code: 'https://github.com/alchemistry/alchemlyb'
+url: 'https://alchemlyb.readthedocs.io'
+abstract: >-
+  alchemlyb is an open-source Python software package for
+  the analysis of alchemical free energy calculations. Its
+  functionality contains individual composable building
+  blocks for all aspects of a full typical free energy
+  analysis workflow, starting with the extraction of raw
+  data from the output of diverse molecular simulation
+  packages, moving on to data preprocessing tasks such as
+  decorrelation of time series, using various estimators to
+  derive free energy estimates from simulation samples, and
+  finally providing quality analysis tools for data
+  convergence checking and visualization. alchemlyb also
+  contains high-level end-to-end workflows that combine
+  multiple building blocks into a user-friendly analysis
+  pipeline from the initial data input stage to the final
+  results.
+keywords:
+  - Python
+  - free energy
+  - molecular dynamics
+  - alchemistry
+license: BSD-3-Clause
