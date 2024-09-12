@@ -53,6 +53,10 @@ authors:
     affiliation: Exscientia plc
     orcid: 'https://orcid.org/0000-0002-7615-7851'
     email: william@zhiyiwu.me
+  - given-names: Wei-Tse
+    family-names: Hsu
+    orcid: https://orcid.org/0000-0001-6167-5480
+    affiliation: University of Colorado Boulder    
   - given-names: Alexander
     family-names: Schlaich
     orcid: 'https://orcid.org/0000-0002-4250-363X'
@@ -77,10 +81,22 @@ authors:
     family-names: Marson
     orcid: 'https://orcid.org/0000-0003-1839-9868'
     affiliation: University of Trieste
+  - given-names: Shujie
+    family-names: Fan
+    orcid: 'https://orcid.org/0000-0002-0271-2760'
+    affiliation: Arizona State University
+  - given-names: Jan
+    family-names: Janssen
+    affiliation: Max-Planck-Institut for Sustainable Materials
+    orcid: 'https://orcid.org/0000-0001-9948-7119'
   - given-names: Haoxi
     family-names: Li
     orcid: 'https://orcid.org/0009-0004-8369-1042'
     affiliation: University of North Carolina
+  - given-names: Helmut
+    family-names: Carter
+    orcid: https://orcid.org/0000-0003-0273-4107    
+    affiliation: City University of New York
   - given-names: David
     family-names: Mobley
     orcid: 'https://orcid.org/0000-0002-1083-5533'
