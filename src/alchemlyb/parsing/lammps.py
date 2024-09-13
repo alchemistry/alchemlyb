@@ -453,23 +453,20 @@ def extract_u_nk_from_u_n(
             lr = tmp_df.shape[0]
             for lambda12 in lambda_values:
                 if u_nk[u_nk[lambda1_col] == lambda1].shape[0] == 0:
-                    u_nk = pd.concat(
+                    tmp_u_nk = pd.concat(
                         [
-                            u_nk,
-                            pd.concat(
-                                [
-                                    tmp_df[["time", "fep-lambda"]],
-                                    pd.DataFrame(
-                                        np.zeros((lr, lc)),
-                                        columns=lambda_values,
-                                    ),
-                                ],
-                                axis=1,
+                            tmp_df[["time", "fep-lambda"]],
+                            pd.DataFrame(
+                                np.zeros((lr, lc)),
+                                columns=lambda_values,
                             ),
                         ],
-                        axis=0,
-                        sort=False,
+                        axis=1,
                     )
+                    if u_nk.shape[0] == 0:
+                        u_nk = tmp_u_nk
+                    else:
+                        u_nk = pd.concat( [u_nk, tmp_u_nk], axis=0, sort=False)
 
                 if u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12][0] != 0:
                     raise ValueError(
