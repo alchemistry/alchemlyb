@@ -13,6 +13,16 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 ------------------------------------------------------------------------------
+
+??/??/2024 jaclark5
+
+  * 2.4.0
+
+Enhancements
+  - Addition of `block_average` function in both `convergence` and 
+    `visualization` (Issue #380, PR #381)
+ 
+
 08/24/2024 xiki-tempula
 
   * 2.3.2

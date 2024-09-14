@@ -75,6 +75,31 @@ is, where 0 fully-unequilibrated and 1.0 is fully-equilibrated. ::
     >>> value = A_c(dhdl_list, tol=2)
     0.7085
 
+Block Average
+--------------
+If one obtains suspicious results from the forward / backward convergence plot,
+it may be useful to view the block averages of the change in free energy using
+:func:`~alchemlyb.convergence.block_average` and
+:func:`~alchemlyb.visualisation.plot_block_average` over the course of each 
+step in lambda individually, the following example is for :math:`\lambda` = 0
+
+    >>> from alchemtest.gmx import load_benzene
+    >>> from alchemlyb.parsing.gmx import extract_u_nk
+    >>> from alchemlyb.visualisation import plot_block_average
+    >>> from alchemlyb.convergence import block_average
+
+    >>> bz = load_benzene().data
+    >>> data_list = [extract_u_nk(xvg, T=300) for xvg in bz['Coulomb']]
+    >>> df = block_average(data_list, 'mbar')
+    >>> ax = plot_block_average(df)
+    >>> ax.figure.savefig('dF_t_block_average.png')
+
+Will give a plot looks like this
+
+.. figure:: images/dF_t_block_average.png
+
+   A plot of the free energy divided into block averages showing consistency/inconsistency 
+   across the trajectory.
 
 Convergence functions
 ---------------------
