@@ -8,7 +8,7 @@ from alchemtest.gmx import load_benzene
 import alchemlyb
 from alchemlyb.convergence import forward_backward_convergence
 from alchemlyb.estimators import MBAR, TI, BAR
-from alchemlyb.visualisation import plot_convergence
+from alchemlyb.visualisation import plot_convergence, plot_block_average
 from alchemlyb.visualisation.dF_state import plot_dF_state
 from alchemlyb.visualisation.mbar_matrix import plot_mbar_overlap_matrix
 from alchemlyb.visualisation.ti_dhdl import plot_ti_dhdl
@@ -147,7 +147,7 @@ def test_plot_dF_state(
 
 
 def test_plot_convergence_dataframe(gmx_benzene_Coulomb_u_nk):
-    df = forward_backward_convergence(gmx_benzene_Coulomb_u_nk, "MBAR")
+    df = forward_backward_convergence([gmx_benzene_Coulomb_u_nk[0]], "MBAR")
     ax = plot_convergence(df)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
@@ -214,6 +214,47 @@ def test_plot_convergence_final_nan():
     )
     df.attrs = {"temperature": 300, "energy_unit": "kT"}
     ax = plot_convergence(df)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
+
+def test_plot_block_average(gmx_benzene_Coulomb_u_nk):
+    data_list = gmx_benzene_Coulomb_u_nk
+    fe = []
+    fe_error = []
+    num_points = 10
+    for i in range(1, num_points + 1):
+        slice = int(len(data_list[0]) / num_points * i)
+        u_nk_coul = alchemlyb.concat([data[:slice] for data in data_list])
+        estimate = MBAR().fit(u_nk_coul)
+        fe.append(estimate.delta_f_.loc[0, 1])
+        fe_error.append(estimate.d_delta_f_.loc[0, 1])
+
+    df = pd.DataFrame(
+        data={
+            "FE": fe,
+            "FE_Error": fe_error,
+        }
+    )
+    df.attrs = estimate.delta_f_.attrs
+    ax = plot_block_average(df)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
+    ax = plot_block_average(df, units="kJ/mol")
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
+    df = df.drop("FE_Error", axis=1)
+    ax = plot_block_average(df)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
+    ax = plot_block_average(df, final_error=1)
+    assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(ax.figure)
+
+    ax = plot_block_average(df, final_error=np.inf)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(ax.figure)
 
