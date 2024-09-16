@@ -102,15 +102,14 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         ]
         
         # Pull lambda states from indices
-        states = list(set( x[1:] for x in u_nk.index))
+        states = list(set( x[1:] if len(x[1:]) > 1 else x[1] for x in u_nk.index))
         for state in states:
-            if len(state) == 1:
-                state = state[0]
             if state not in self._states_:
                 raise ValueError(
                     f"Indexed lambda state, {state}, is not represented in u_nk columns:"
                     f" {self._states_}"
                 )
+        states.sort(key=lambda x: self._states_.index(x))
         
         # Now get free energy differences and their uncertainties for each step
         deltas = np.array([])
