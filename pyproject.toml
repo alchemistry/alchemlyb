@@ -1,0 +1,84 @@
+# alchemlyb
+
+[build-system]
+requires = ["setuptools", "wheel", "versioningit"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alchemlyb"
+description = "the simple alchemistry library"
+authors = [
+    { name = "Zhiyi Wu", email = "william@zhiyiwu.me" },
+    { name = "David Dotson", email = "dotsdl@gmail.com" }
+]
+maintainers = [
+    { name = "Zhiyi Wu", email = "william@zhiyiwu.me" },
+    { name = "Oliver Beckstein", email = "orbeckst@gmail.com" }
+]
+dynamic = ["version"]
+
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { text = "BSD" }
+keywords = ["free energy", "MBAR", "thermodynamic integration",
+            "free energy perturbation", "FEP", "alchemistry", "analysis",
+	    "GROMACS", "NAMD", "AMBER", "molecular dynamics"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: POSIX",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+requires-python = ">=3.10"
+
+dependencies = [
+	     "numpy",
+	     "pandas>=2.1",
+	     "pymbar>=4",
+	     "scipy",
+	     "scikit-learn",
+	     "matplotlib>=3.7",
+	     "loguru",
+	     "pyarrow",
+]
+
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "alchemtest"
+]
+
+[project.urls]
+Homepage = "https://github.com/alchemistry/alchemlyb"
+Documentation = "https://alchemlyb.readthedocs.io/"
+Repository = "https://github.com/alchemistry/alchemlyb"
+Issues = "https://github.com/alchemistry/alchemlyb/issues"
+Changelog = "https://github.com/alchemistry/alchemlyb/blob/master/CHANGES"
+Discussions = "https://github.com/alchemistry/alchemlyb/discussions"
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+[tool.versioningit]
+
+[tool.versioningit.vcs]
+default-tag = "0.0.0"
+match = ["*"]
+
+[tool.versioningit.write]
+file = "src/alchemlyb/_version.py"
+
+
