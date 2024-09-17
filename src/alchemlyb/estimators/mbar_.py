@@ -33,7 +33,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         .. versionchanged:: 2.3.0
            The new default is now "BAR" as it provides a substantial speedup
            over the previous default `None`.
-           
+
 
     method : str, optional, default="robust"
         The optimization routine to use.  This can be any of the methods
@@ -79,6 +79,11 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         default value for `method` was changed from "hybr" to "robust"
     .. versionchanged:: 2.1.0
         `n_bootstraps` option added.
+    .. versionchanged:: 2.4.0
+       Handle initial estimate, initial_f_k, from bar in the instance
+       that not all lambda states represented as column headers are
+       represented in the indices of u_nk.
+
     """
 
     def __init__(
@@ -135,6 +140,20 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
             )
             bar.fit(u_nk)
             initial_f_k = bar.delta_f_.iloc[0, :]
+            if len(bar.delta_f_.iloc[0, :]) != len(self._states_):
+                states = [
+                    x
+                    for i, x in enumerate(self._states_[:-1])
+                    if N_k[i] > 0 and N_k[i + 1] > 0
+                ]
+                initial_f_k = pd.Series(
+                    [
+                        initial_f_k.loc(x) if x in states else np.nan
+                        for x in self._states_
+                    ],
+                    index=self._states_,
+                    dtype=float,
+                )
         else:
             initial_f_k = self.initial_f_k
 

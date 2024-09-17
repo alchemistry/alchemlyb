@@ -1,6 +1,7 @@
 """Parsers for extracting alchemical data from `GOMC <http://gomc.eng.wayne.edu/>`_ output files.
 
 """
+
 import pandas as pd
 
 from . import _init_attrs

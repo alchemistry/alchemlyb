@@ -10,3 +10,7 @@ __pycache__
 *~
 dist/
 
+# auto-generated files
+_version.py
+
+
