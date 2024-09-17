@@ -13,17 +13,17 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 
-??/??/2024 jaclark5, orbeckst
+09/17/2024 jaclark5, orbeckst
 
   * 2.4.0
 
 Enhancements
   - Addition of `block_average` function in both `convergence` and 
     `visualization` (Issue #380, PR #381)
-
-Enhancements:
   - add CITATION.cff file with all authors from AUTHORS (issue #394, PR #395)
- 
+
+Changes
+  - modernize build system: replaced setup.py,cfg with pyproject.toml (#385)
 
 08/24/2024 xiki-tempula
 
