@@ -1,6 +1,7 @@
 """Parsers for extracting alchemical data from `NAMD <http://www.ks.uiuc.edu/Research/namd/>`_ output files.
 
 """
+
 from os.path import basename
 from re import split
 
