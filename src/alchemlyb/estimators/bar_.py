@@ -54,6 +54,9 @@ class BAR(BaseEstimator, _EstimatorMixOut):
 
     .. versionchanged:: 1.0.0
        `delta_f_`, `d_delta_f_`, `states_` are view of the original object.
+    .. versionchanged:: 2.4.0
+       Added assessment of lambda states represented in the indices of u_nk
+       to provide meaningful errors to ensure proper use.
 
     """
 
@@ -88,7 +91,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         # sort by state so that rows from same state are in contiguous blocks
         u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
 
-        # get a list of the lambda states
+        # get a list of the lambda states that are sampled
         self._states_ = u_nk.columns.values.tolist()
 
         # group u_nk by lambda states
@@ -98,10 +101,23 @@ class BAR(BaseEstimator, _EstimatorMixOut):
             for i in u_nk.columns
         ]
 
+        # Pull lambda states from indices
+        states = list(set(x[1:] if len(x[1:]) > 1 else x[1] for x in u_nk.index))
+        for state in states:
+            if state not in self._states_:
+                raise ValueError(
+                    f"Indexed lambda state, {state}, is not represented in u_nk columns:"
+                    f" {self._states_}"
+                )
+        states.sort(key=lambda x: self._states_.index(x))
+
         # Now get free energy differences and their uncertainties for each step
         deltas = np.array([])
         d_deltas = np.array([])
         for k in range(len(N_k) - 1):
+            if N_k[k] == 0 or N_k[k + 1] == 0:
+                continue
+
             # get us from lambda step k
             uk = groups.get_group((self._states_[k],))
             # get w_F
@@ -127,6 +143,13 @@ class BAR(BaseEstimator, _EstimatorMixOut):
             deltas = np.append(deltas, df)
             d_deltas = np.append(d_deltas, ddf**2)
 
+        if len(deltas) == 0 and len(states) > 1:
+            raise ValueError(
+                "u_nk does not contain energies computed between any adjacent states.\n"
+                "To compute the free energy with BAR, ensure that values in u_nk exist"
+                f" for the columns:\n{states}."
+            )
+
         # build matrix of deltas between each state
         adelta = np.zeros((len(deltas) + 1, len(deltas) + 1))
         ad_delta = np.zeros_like(adelta)
@@ -151,13 +174,11 @@ class BAR(BaseEstimator, _EstimatorMixOut):
             ad_delta += np.diagflat(np.array(dout), k=j + 1)
 
         # yield standard delta_f_ free energies between each state
-        self._delta_f_ = pd.DataFrame(
-            adelta - adelta.T, columns=self._states_, index=self._states_
-        )
+        self._delta_f_ = pd.DataFrame(adelta - adelta.T, columns=states, index=states)
 
         # yield standard deviation d_delta_f_ between each state
         self._d_delta_f_ = pd.DataFrame(
-            np.sqrt(ad_delta + ad_delta.T), columns=self._states_, index=self._states_
+            np.sqrt(ad_delta + ad_delta.T), columns=states, index=states
         )
         self._delta_f_.attrs = u_nk.attrs
         self._d_delta_f_.attrs = u_nk.attrs
