@@ -10,9 +10,7 @@ def test_version():
     assert len(version) > 0
 
 
-def test_version_get_versions():
+def test_version__version__():
     import alchemlyb._version
 
-    version = alchemlyb._version.get_versions()
-
-    assert alchemlyb.__version__ == version["version"]
+    assert alchemlyb.__version__ == alchemlyb._version.__version__

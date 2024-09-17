@@ -67,12 +67,11 @@ copyright = f"2017-{now.year}, " + author
 # We always display the full release string; if something else is
 # desired, see the commented out code
 
-from alchemlyb._version import get_versions
+import alchemlyb
 
-release = get_versions()["version"]
-del get_versions
-
+release = alchemlyb.__version__
 version = release
+
 # version = release.split("+")[0]  # only major.minor.patch
 # version = "."join(release.split(".")[:2])  # only major.minor
 
