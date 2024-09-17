@@ -81,9 +81,9 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         `n_bootstraps` option added.
     .. versionchanged:: 2.4.0
        Handle initial estimate, initial_f_k, from bar in the instance
-       that not all lambda states represented as column headers are 
+       that not all lambda states represented as column headers are
        represented in the indices of u_nk.
-    
+
     """
 
     def __init__(
