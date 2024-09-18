@@ -57,6 +57,20 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         The estimated statistical uncertainty (one standard deviation) in
         dimensionless free energy differences.
 
+    delta_h_ : DataFrame
+        The estimated dimensionless enthalpy difference between each state.
+
+    d_delta_h_ : DataFrame
+        The estimated statistical uncertainty (one standard deviation) in
+        dimensionless enthalpy differences.
+
+    delta_s_ : DataFrame, optional
+        The estimated dimensionless entropy difference between each state.
+
+    d_delta_s_ : DataFrame
+        The estimated statistical uncertainty (one standard deviation) in
+        dimensionless entropy differences.
+
     theta_ : DataFrame
         The theta matrix.
 
@@ -83,6 +97,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
        Handle initial estimate, initial_f_k, from bar in the instance
        that not all lambda states represented as column headers are
        represented in the indices of u_nk.
+        Added computation of enthalpy and entropy
 
     """
 
@@ -110,7 +125,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         # handle for pymbar.MBAR object
         self._mbar = None
 
-    def fit(self, u_nk):
+    def fit(self, u_nk, compute_entropy_enthalpy=False):
         """
         Compute overlap matrix of reduced potentials using multi-state
         Bennett acceptance ratio.
@@ -120,6 +135,9 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         u_nk : DataFrame
             ``u_nk[n, k]`` is the reduced potential energy of uncorrelated
             configuration ``n`` evaluated at state ``k``.
+
+        compute_entropy_enthalpy : bool, optional, default=False
+            Compute entropy and enthalpy.
 
         """
         # sort by state so that rows from same state are in contiguous blocks
@@ -171,9 +189,15 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
             uncertainty_method = None
         else:
             uncertainty_method = "bootstrap"
-        out = self._mbar.compute_free_energy_differences(
-            return_theta=True, uncertainty_method=uncertainty_method
-        )
+
+        if compute_entropy_enthalpy:
+            out = self._mbar.compute_entropy_and_enthalpy(
+                return_theta=True, uncertainty_method=uncertainty_method
+            )
+        else:
+            out = self._mbar.compute_free_energy_differences(
+                return_theta=True, uncertainty_method=uncertainty_method
+            )
         self._delta_f_ = pd.DataFrame(
             out["Delta_f"], columns=self._states_, index=self._states_
         )
@@ -183,9 +207,27 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         self.theta_ = pd.DataFrame(
             out["Theta"], columns=self._states_, index=self._states_
         )
+        if compute_entropy_enthalpy:
+            self._delta_h_ = pd.DataFrame(
+                out["Delta_h"], columns=self._states_, index=self._states_
+            )
+            self._d_delta_h_ = pd.DataFrame(
+                out["dDelta_h"], columns=self._states_, index=self._states_
+            )
+            self._delta_s_ = pd.DataFrame(
+                out["Delta_s"], columns=self._states_, index=self._states_
+            )
+            self._d_delta_s_ = pd.DataFrame(
+                out["dDelta_s"], columns=self._states_, index=self._states_
+            )
 
         self._delta_f_.attrs = u_nk.attrs
         self._d_delta_f_.attrs = u_nk.attrs
+        if compute_entropy_enthalpy:
+            self._delta_h_.attrs = u_nk.attrs
+            self._d_delta_h_.attrs = u_nk.attrs
+            self._delta_s_.attrs = u_nk.attrs
+            self._d_delta_s_.attrs = u_nk.attrs
 
         return self
 

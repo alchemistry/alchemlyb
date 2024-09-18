@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pymbar
 from pymbar.other_estimators import bar as BAR_
 from sklearn.base import BaseEstimator
 
@@ -35,6 +36,20 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         The estimated statistical uncertainty (one standard deviation) in
         dimensionless free energy differences.
 
+    delta_h_ : DataFrame
+        The estimated dimensionless enthalpy difference between each state.
+
+    d_delta_h_ : DataFrame
+        The estimated statistical uncertainty (one standard deviation) in
+        dimensionless enthalpy differences.
+
+    delta_s_ : DataFrame, optional
+        The estimated dimensionless entropy difference between each state.
+
+    d_delta_s_ : DataFrame
+        The estimated statistical uncertainty (one standard deviation) in
+        dimensionless entropy differences.
+
     states_ : list
         Lambda states for which free energy differences were obtained.
 
@@ -57,6 +72,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
     .. versionchanged:: 2.4.0
        Added assessment of lambda states represented in the indices of u_nk
        to provide meaningful errors to ensure proper use.
+       Added computation of enthalpy and entropy with 2-state MBAR
 
     """
 
@@ -76,10 +92,12 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         # handle for pymbar.BAR object
         self._bar = None
 
-    def fit(self, u_nk):
+    def fit(self, u_nk, use_mbar=False, compute_entropy_enthalpy=False):
         """
         Compute overlap matrix of reduced potentials using
         Bennett acceptance ratio.
+
+        Sets the attributes: delta_f_ and d_delta_f_
 
         Parameters
         ----------
@@ -87,7 +105,21 @@ class BAR(BaseEstimator, _EstimatorMixOut):
             u_nk[n,k] is the reduced potential energy of uncorrelated
             configuration n evaluated at state k.
 
+        use_mbar : bool, optional, default=False
+            Use 2-state MBAR instead of BAR. This will allow for the
+            calculation of enthalpic and entropic contributions.
+
+        compute_entropy_enthalpy : bool, optional, default=False
+            Compute entropy and enthalpy from 2-state MBAR. Note
+            that ``use_mbar`` must be ``True``.
+
         """
+
+        if compute_entropy_enthalpy and not use_mbar:
+            raise ValueError(
+                "Cannot compute the enthalpy and entropy with BAR, set use_mbar=True."
+            )
+
         # sort by state so that rows from same state are in contiguous blocks
         u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
 
@@ -114,6 +146,11 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         # Now get free energy differences and their uncertainties for each step
         deltas = np.array([])
         d_deltas = np.array([])
+        if compute_entropy_enthalpy:
+            deltas_h = np.array([])
+            d_deltas_h = np.array([])
+            deltas_s = np.array([])
+            d_deltas_s = np.array([])
         for k in range(len(N_k) - 1):
             if N_k[k] == 0 or N_k[k + 1] == 0:
                 continue
@@ -137,10 +174,38 @@ class BAR(BaseEstimator, _EstimatorMixOut):
                 relative_tolerance=self.relative_tolerance,
                 verbose=self.verbose,
             )
+            if use_mbar:  # now determine df and ddf using pymbar.MBAR
+                tmp_u_nk = u_nk.iloc[
+                    u_nk.index.get_level_values("fep-lambda").isin(
+                        self._states_[k : k + 2]
+                    )
+                ]
+                mbar = pymbar.MBAR(
+                    tmp_u_nk.T,
+                    N_k,
+                    maximum_iterations=self.maximum_iterations,
+                    relative_tolerance=self.relative_tolerance,
+                    verbose=self.verbose,
+                    initial_f_k=[0, out["Delta_f"]],
+                    solver_protocol=self.method,
+                )
+                if compute_entropy_enthalpy:
+                    out = mbar.compute_entropy_and_enthalpy()
+                else:
+                    out = mbar.compute_free_energy_differences()
+                self._bar.append(mbar)
 
             df, ddf = out["Delta_f"], out["dDelta_f"]
             deltas = np.append(deltas, df)
             d_deltas = np.append(d_deltas, ddf**2)
+            if compute_entropy_enthalpy:
+                dh, ddh = out["Delta_h"], out["dDelta_h"]
+                deltas_h = np.append(deltas_h, dh)
+                d_deltas_h = np.append(d_deltas_h, ddh**2)
+
+                ds, dds = out["Delta_s"], out["dDelta_s"]
+                deltas_s = np.append(deltas_s, ds)
+                d_deltas_s = np.append(d_deltas_s, dds**2)
 
         if len(deltas) == 0 and len(states) > 1:
             raise ValueError(
@@ -150,36 +215,73 @@ class BAR(BaseEstimator, _EstimatorMixOut):
             )
 
         # build matrix of deltas between each state
-        adelta = np.zeros((len(deltas) + 1, len(deltas) + 1))
+        lx = len(deltas)
+        adelta = np.zeros((lx + 1, lx + 1))
         ad_delta = np.zeros_like(adelta)
+        if compute_entropy_enthalpy:
+            adelta_h, ad_delta_h = np.zeros_like(adelta), np.zeros_like(adelta)
+            adelta_s, ad_delta_s = np.zeros_like(adelta), np.zeros_like(adelta)
 
-        for j in range(len(deltas)):
-            out = []
-            dout = []
-            for i in range(len(deltas) - j):
-                out.append(deltas[i : i + j + 1].sum())
+        for j in range(lx):
+            out_f, dout_f = np.empty(lx - j), np.empty(lx - j)
+            if compute_entropy_enthalpy:
+                out_h, dout_h = np.empty(lx - j), np.empty(lx - j)
+                out_s, dout_s = np.empty(lx - j), np.empty(lx - j)
+            for i in range(lx - j):
+                out_f[i] = deltas[i : i + j + 1].sum()
 
                 # See https://github.com/alchemistry/alchemlyb/pull/60#issuecomment-430720742
                 # Error estimate generated by BAR ARE correlated
 
                 # Use the BAR uncertainties between two neighbour states
-                if j == 0:
-                    dout.append(d_deltas[i : i + j + 1].sum())
                 # Other uncertainties are unknown at this point
-                else:
-                    dout.append(np.nan)
+                dout_f[i] = d_deltas[i : i + j + 1].sum() if j == 0 else np.nan
 
-            adelta += np.diagflat(np.array(out), k=j + 1)
-            ad_delta += np.diagflat(np.array(dout), k=j + 1)
+                if compute_entropy_enthalpy:
+                    out_h[i] = deltas_h[i : i + j + 1].sum()
+                    out_s[i] = deltas_s[i : i + j + 1].sum()
+
+                    # Use the BAR uncertainties between two neighbour states
+                    # Other uncertainties are unknown at this point
+                    dout_h[i] = d_deltas_h[i : i + j + 1].sum() if j == 0 else np.nan
+                    dout_s[i] = d_deltas_s[i : i + j + 1].sum() if j == 0 else np.nan
+
+            adelta += np.diagflat(out_f, k=j + 1)
+            ad_delta += np.diagflat(dout_f, k=j + 1)
+            if compute_entropy_enthalpy:
+                adelta_h += np.diagflat(out_h, k=j + 1)
+                ad_delta_h += np.diagflat(dout_h, k=j + 1)
+                adelta_s += np.diagflat(out_s, k=j + 1)
+                ad_delta_s += np.diagflat(dout_s, k=j + 1)
 
         # yield standard delta_f_ free energies between each state
         self._delta_f_ = pd.DataFrame(adelta - adelta.T, columns=states, index=states)
+        if compute_entropy_enthalpy:
+            self._delta_h_ = pd.DataFrame(
+                adelta_h - adelta_h.T, columns=states, index=states
+            )
+            self._delta_s_ = pd.DataFrame(
+                adelta_s - adelta_s.T, columns=states, index=states
+            )
 
         # yield standard deviation d_delta_f_ between each state
         self._d_delta_f_ = pd.DataFrame(
             np.sqrt(ad_delta + ad_delta.T), columns=states, index=states
         )
+        if compute_entropy_enthalpy:
+            self._d_delta_h_ = pd.DataFrame(
+                np.sqrt(ad_delta_h + ad_delta_h.T), columns=states, index=states
+            )
+            self._d_delta_s_ = pd.DataFrame(
+                np.sqrt(ad_delta_s + ad_delta_s.T), columns=states, index=states
+            )
+
         self._delta_f_.attrs = u_nk.attrs
         self._d_delta_f_.attrs = u_nk.attrs
+        if compute_entropy_enthalpy:
+            self._delta_h_.attrs = u_nk.attrs
+            self._d_delta_h_.attrs = u_nk.attrs
+            self._delta_s_.attrs = u_nk.attrs
+            self._d_delta_s_.attrs = u_nk.attrs
 
         return self
