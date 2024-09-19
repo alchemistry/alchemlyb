@@ -12,6 +12,13 @@ The rules for this file:
   * accompany each entry with github issue/PR number (Issue #xyz)
   * release numbers follow "Semantic Versioning" https://semver.org
 
+09/19/2024 orbeckst
+
+  * 2.4.1
+
+Fixes
+  - [doc] tutorial: use alchemlyb.concat (PR #399)
+
 
 09/17/2024 jaclark5, orbeckst
 
