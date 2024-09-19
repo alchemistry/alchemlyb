@@ -12,6 +12,14 @@ The rules for this file:
   * accompany each entry with github issue/PR number (Issue #xyz)
   * release numbers follow "Semantic Versioning" https://semver.org
 
+09/19/2024 orbeckst, jaclark5
+
+  * 2.4.1
+
+Fixes
+  - [doc] tutorial: use alchemlyb.concat (PR #399)
+  - Resolve pandas FutureWarnings in bar_.py and mbar_.py (issue #408 PR #407)
+ 
 
 09/17/2024 jaclark5, orbeckst
 
@@ -24,6 +32,7 @@ Enhancements
 
 Changes
   - modernize build system: replaced setup.py,cfg with pyproject.toml (#385)
+
 
 08/24/2024 xiki-tempula
 
