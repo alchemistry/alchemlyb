@@ -12,6 +12,14 @@ The rules for this file:
   * accompany each entry with github issue/PR number (Issue #xyz)
   * release numbers follow "Semantic Versioning" https://semver.org
 
+??/??/2024 jaclark5
+
+  * 2.4.1
+
+Enhancements
+ - Added matrices for entropy and enthalpy for MBAR and BAR,
+   when BAR is substituted with a series of 2-state MBAR calculations.
+   (PR #406)
 
 09/17/2024 jaclark5, orbeckst
 
