@@ -94,9 +94,9 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
     .. versionchanged:: 2.1.0
         `n_bootstraps` option added.
     .. versionchanged:: 2.4.0
-       Handle initial estimate, initial_f_k, from bar in the instance
-       that not all lambda states represented as column headers are
-       represented in the indices of u_nk.
+        Handle initial estimate, initial_f_k, from bar in the instance
+        that not all lambda states represented as column headers are
+        represented in the indices of u_nk.
         Added computation of enthalpy and entropy
 
     """
@@ -185,11 +185,8 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
             solver_protocol=self.method,
             n_bootstraps=self.n_bootstraps,
         )
-        if self.n_bootstraps == 0:
-            uncertainty_method = None
-        else:
-            uncertainty_method = "bootstrap"
 
+        uncertainty_method = None if self.n_bootstraps == 0 else "bootstrap"
         out = self._mbar.compute_free_energy_differences(
             return_theta=True, uncertainty_method=uncertainty_method
         )

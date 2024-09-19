@@ -24,6 +24,11 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         choice of method to solve BAR nonlinear equations,
         one of 'self-consistent-iteration' or 'false-position' (default: 'false-position')
 
+    n_bootstraps : int, optional
+        Whether to use bootstrap to estimate uncertainty. `0` means use analytic error
+        estimation. 50~200 is a reasonable range to do bootstrap. Currently used when
+        ``use_mbar is True``.
+
     verbose : bool, optional
         Set to True if verbose debug output is desired.
 
@@ -82,12 +87,14 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         maximum_iterations=10000,
         relative_tolerance=1.0e-7,
         method="false-position",
+        n_bootstraps=0,
         verbose=False,
     ):
 
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
         self.method = method
+        self.n_bootstraps = n_bootstraps
         self.verbose = verbose
 
         # handle for pymbar.BAR object
@@ -194,11 +201,17 @@ class BAR(BaseEstimator, _EstimatorMixOut):
                     verbose=self.verbose,
                     initial_f_k=[0, out["Delta_f"]],
                     solver_protocol=self.method,
+                    n_bootstraps=self.n_bootstraps,
                 )
+                uncertainty_method = None if self.n_bootstraps == 0 else "bootstrap"
                 if compute_entropy_enthalpy:
-                    out = mbar.compute_entropy_and_enthalpy()
+                    out = mbar.compute_entropy_and_enthalpy(
+                        uncertainty_method=uncertainty_method
+                    )
                 else:
-                    out = mbar.compute_free_energy_differences()
+                    out = mbar.compute_free_energy_differences(
+                        uncertainty_method=uncertainty_method
+                    )
                 out = {key: val[0, 1] for key, val in out.items()}
 
             df, ddf = out["Delta_f"], out["dDelta_f"]
