@@ -185,8 +185,16 @@ class BAR(BaseEstimator, _EstimatorMixOut):
             if use_mbar:  # now determine df and ddf using pymbar.MBAR
                 tmp_u_nk = concat(
                     [
-                        groups.get_group(self._states_[k]),
-                        groups.get_group(self._states_[k + 1]),
+                        groups.get_group(
+                            self._states_[k]
+                            if isinstance(self._states_[k], tuple)
+                            else (self._states_[k],)
+                        ),
+                            groups.get_group(
+                                self._states_[k + 1]
+                                if isinstance(self._states_[k + 1], tuple)
+                                else (self._states_[k + 1],)
+                        ),
                     ]
                 )
                 columns = tmp_u_nk.columns.tolist()
