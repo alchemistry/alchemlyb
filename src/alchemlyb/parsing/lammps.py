@@ -86,6 +86,7 @@ def beta_from_units(T, units):
 
     return beta
 
+
 def energy_from_units(units):
     """Output conversion factor for pressure * volume to LAMMPS energy units
 
@@ -109,8 +110,8 @@ def energy_from_units(units):
     .. versionadded:: 2.4.1
 
     """
-    if units == "real":  # E in kcal/mol, Vol in Å^3, pressure in atm 
-        beta = constants.atm * constants.angstrom**3 / 1e+3 * kJ2kcal * constants.N_A
+    if units == "real":  # E in kcal/mol, Vol in Å^3, pressure in atm
+        beta = constants.atm * constants.angstrom**3 / 1e3 * kJ2kcal * constants.N_A
     elif units == "lj":  # Nondimensional E scaled by epsilon
         beta = 1
     elif units == "metal":  # E in eV, vol in Å^3, pressure in bar
@@ -121,11 +122,15 @@ def energy_from_units(units):
         beta = 1
     elif units == "electron":  # E in Hartrees, vol in Bohr^3, pressure in Pa
         Hartree2J = 4.3597447222060e-8
-        Bohr2m = 5.29177210544e+11
+        Bohr2m = 5.29177210544e11
         beta = 1 / Hartree2J / Bohr2m**3
-    elif units == "micro":  # E in picogram-micrometer^2/microsecond^2, vol in um^3, pressure in picogram/(micrometer-microsecond^2)
+    elif (
+        units == "micro"
+    ):  # E in picogram-micrometer^2/microsecond^2, vol in um^3, pressure in picogram/(micrometer-microsecond^2)
         beta = 1
-    elif units == "nano":  # E in attogram-nanometer^2/nanosecond^2, vol in nm^3, pressure in attogram/(nanometer-nanosecond^2)
+    elif (
+        units == "nano"
+    ):  # E in attogram-nanometer^2/nanosecond^2, vol in nm^3, pressure in attogram/(nanometer-nanosecond^2)
         beta = 1
     else:
         raise ValueError(
@@ -374,12 +379,12 @@ def extract_u_nk_from_u_n(
         Number of decimal places defined used in ``round()`` function.
     ensemble : str, default="nvt"
         Ensemble from which the given data was generated. Either "nvt" or "npt" is supported where values from NVT are
-        unaltered, while those from NPT are corrected 
+        unaltered, while those from NPT are corrected
     pressure : float, default=None
         The pressure of the system in the NPT ensemble in units of energy / volume, where the units of energy and volume
         are as recorded in the LAMMPS dump file.
     column_volume : int, default=4
-        The column for the volume in a LAMMPS dump file. 
+        The column for the volume in a LAMMPS dump file.
 
     Returns
     -------
@@ -399,15 +404,19 @@ def extract_u_nk_from_u_n(
     files = glob.glob(fep_files)
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
-    
+
     if ensemble == "npt":
         if pressure is None or not isinstance(pressure, float) or pressure < 0:
-            raise ValueError("In the npt ensemble, a pressure must be provided in the form of a positive float")
+            raise ValueError(
+                "In the npt ensemble, a pressure must be provided in the form of a positive float"
+            )
     elif ensemble != "nvt":
         raise ValueError("Only ensembles of nvt or npt are supported.")
     else:
         if pressure is not None:
-            raise ValueError("There is no volume correction in the nvt ensemble, the pressure value will not be used.")
+            raise ValueError(
+                "There is no volume correction in the nvt ensemble, the pressure value will not be used."
+            )
 
     beta = beta_from_units(T, units)
 
@@ -451,11 +460,11 @@ def extract_u_nk_from_u_n(
             columns.append("volume")
         data.columns = columns
         lambda1_col = "fep-lambda"
-        data.loc[:, [lambda1_col]] = data[[lambda1_col]].apply(lambda x: round(x, prec))    
+        data.loc[:, [lambda1_col]] = data[[lambda1_col]].apply(lambda x: round(x, prec))
 
         for lambda1 in list(data[lambda1_col].unique()):
             tmp_df = data.loc[data[lambda1_col] == lambda1]
-                
+
             lr = tmp_df.shape[0]
             for lambda12 in lambda_values:
                 if u_nk[u_nk[lambda1_col] == lambda1].shape[0] == 0:
@@ -469,10 +478,11 @@ def extract_u_nk_from_u_n(
                         ],
                         axis=1,
                     )
-                    if u_nk.shape[0] == 0:
-                        u_nk = tmp_u_nk
-                    else:
-                        u_nk = pd.concat( [u_nk, tmp_u_nk], axis=0, sort=False)
+                    u_nk = (
+                        pd.concat([u_nk, tmp_u_nk], axis=0, sort=False)
+                        if len(u_nk) != 0
+                        else tmp_u_nk
+                    )
 
                 if u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12][0] != 0:
                     raise ValueError(
@@ -480,17 +490,15 @@ def extract_u_nk_from_u_n(
                             lambda1, lambda12
                         )
                     )
-                
-                u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12] = (
-                    beta * (
-                        tmp_df["U_cross"]* (dependence(lambda12) / dependence(lambda1) - 1)
-                        + tmp_df["U"]
-                    )
-                )    
+
+                u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12] = beta * (
+                    tmp_df["U_cross"] * (dependence(lambda12) / dependence(lambda1) - 1)
+                    + tmp_df["U"]
+                )
                 if ensemble == "npt":
                     u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12] += (
                         beta * pressure * tmp_df["volume"] * energy_from_units(units)
-                    )               
+                    )
 
     u_nk.set_index(["time", "fep-lambda"], inplace=True)
 
@@ -513,7 +521,6 @@ def extract_u_nk(
     column_volume=6,
     prec=4,
     force=False,
-
 ):
     """Return reduced potentials `u_nk` from LAMMPS dump file(s).
 
@@ -524,7 +531,7 @@ def extract_u_nk(
     or if columns_lambda2 is not None::
 
         [0, columns_lambda1[0] columns_lambda1[1], column_lambda2, column_U, column_dU]
-        
+
     If the simulation took place in the NPT ensemble, column_volume is appended to the end
     of this list.
 
@@ -556,12 +563,12 @@ def extract_u_nk(
         In the case that ``column_lambda2 is not None``, this integer represents which lambda represents vdw interactions.
     ensemble : str, default="nvt"
         Ensemble from which the given data was generated. Either "nvt" or "npt" is supported where values from NVT are
-        unaltered, while those from NPT are corrected 
+        unaltered, while those from NPT are corrected
     pressure : float, default=None
         The pressure of the system in the NPT ensemble in units of energy / volume, where the units of energy and volume
         are as recorded in the LAMMPS dump file.
     column_volume : int, default=4
-        The column for the volume in a LAMMPS dump file. 
+        The column for the volume in a LAMMPS dump file.
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
     force : bool, default=False
@@ -586,15 +593,19 @@ def extract_u_nk(
     files = glob.glob(fep_files)
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
-    
+
     if ensemble == "npt":
         if pressure is None or not isinstance(pressure, float) or pressure < 0:
-            raise ValueError("In the npt ensemble, a pressure must be provided in the form of a positive float")
+            raise ValueError(
+                "In the npt ensemble, a pressure must be provided in the form of a positive float"
+            )
     elif ensemble != "nvt":
         raise ValueError("Only ensembles of nvt or npt are supported.")
     else:
         if pressure is not None:
-            raise ValueError("There is no volume correction in the nvt ensemble, the pressure value will not be used.")
+            raise ValueError(
+                "There is no volume correction in the nvt ensemble, the pressure value will not be used."
+            )
 
     beta = beta_from_units(T, units)
 
@@ -630,11 +641,13 @@ def extract_u_nk(
     else:
         u_nk = pd.DataFrame(columns=["time", "coul-lambda", "vdw-lambda"])
         lc = len(lambda_values) ** 2
-        col_indices = [0] + list(columns_lambda1) + [column_lambda2, column_U, column_dU]
+        col_indices = (
+            [0] + list(columns_lambda1) + [column_lambda2, column_U, column_dU]
+        )
 
     if ensemble == "npt":
         col_indices.append(column_volume)
-         
+
     for file in files:
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
@@ -665,7 +678,7 @@ def extract_u_nk(
                     "vdw-lambda",
                     "vdw-lambda2",
                     "coul-lambda",
-                    "U", 
+                    "U",
                     "dU_nk",
                 ]
                 if ensemble == "npt":
@@ -679,7 +692,7 @@ def extract_u_nk(
                     "coul-lambda",
                     "coul-lambda2",
                     "vdw-lambda",
-                    "U", 
+                    "U",
                     "dU_nk",
                 ]
                 if ensemble == "npt":
@@ -694,10 +707,10 @@ def extract_u_nk(
             data.loc[:, columns_a[1:] + [lambda1_2_col]] = data[
                 columns_a[1:] + [lambda1_2_col]
             ].apply(lambda x: round(x, prec))
-                
+
         for lambda1 in list(data[lambda1_col].unique()):
             tmp_df = data.loc[data[lambda1_col] == lambda1]
-            
+
             for lambda12 in list(tmp_df[lambda1_2_col].unique()):
                 tmp_df2 = tmp_df.loc[tmp_df[lambda1_2_col] == lambda12]
 
@@ -713,17 +726,11 @@ def extract_u_nk(
                         ],
                         axis=1,
                     )
-                    if len(u_nk) != 0:
-                        u_nk = pd.concat(
-                            [
-                                u_nk,
-                                tmp_df3,
-                            ],
-                            axis=0,
-                            sort=False,
-                        )
-                    else:
-                        u_nk = tmp_df3
+                    u_nk = (
+                        pd.concat([u_nk, tmp_df3], axis=0, sort=False)
+                        if len(u_nk) != 0
+                        else tmp_df3
+                    )
 
                 column_list = [
                     ii
@@ -766,17 +773,14 @@ def extract_u_nk(
                             ],
                         )
                     )
-                if (
-                    lambda1 == lambda12
-                    and not np.all(tmp_df2["dU_nk"][0] == 0)
-                ):
+                if lambda1 == lambda12 and not np.all(tmp_df2["dU_nk"][0] == 0):
                     raise ValueError(
                         f"The difference in dU should be zero when lambda = lambda', {lambda1} = {lambda12},"
                         " Check that 'column_dU' was defined correctly."
                     )
                 # calculate reduced potential u_k = dH + pV + U
-                u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] = (
-                    beta * (tmp_df2["dU_nk"] + tmp_df2["U"])
+                u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] = beta * (
+                    tmp_df2["dU_nk"] + tmp_df2["U"]
                 )
                 if ensemble == "npt":
                     u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] += (
@@ -880,7 +884,7 @@ def extract_dHdl_from_u_n(
         data["fep"] = dependence(data.loc[:, "fep-lambda"]) * data.U
         data.drop(columns=["U"], inplace=True)
 
-        dHdl = pd.concat([dHdl, data], axis=0, sort=False)
+        dHdl = pd.concat([dHdl, data], axis=0, sort=False) if len(dHdl) != 0 else data
 
     dHdl.set_index(["time", "fep-lambda"], inplace=True)
     dHdl = dHdl.mul({"fep": beta})
@@ -1005,10 +1009,13 @@ def extract_dHdl(
         dHdl = pd.DataFrame(
             columns=["time", "coul-lambda", "vdw-lambda", "coul", "vdw"]
         )
-        col_indices = (
-            [0, column_lambda2, column_lambda1, column_dlambda1, column_dlambda2]
-            + list(columns_derivative)
-        )
+        col_indices = [
+            0,
+            column_lambda2,
+            column_lambda1,
+            column_dlambda1,
+            column_dlambda2,
+        ] + list(columns_derivative)
 
     for file in files:
         if not os.path.isfile(file):
@@ -1056,10 +1063,7 @@ def extract_dHdl(
                 ],
                 inplace=True,
             )
-        if len(dHdl) != 0:
-            dHdl = pd.concat([dHdl, data], axis=0, sort=False)
-        else:
-            dHdl = data
+        dHdl = pd.concat([dHdl, data], axis=0, sort=False) if len(dHdl) != 0 else data
 
     if column_lambda2 is None:
         dHdl.set_index(["time", "fep-lambda"], inplace=True)
@@ -1115,12 +1119,12 @@ def extract_H(
         "real", "si"
     ensemble : str, default="nvt"
         Ensemble from which the given data was generated. Either "nvt" or "npt" is supported where values from NVT are
-        unaltered, while those from NPT are corrected 
+        unaltered, while those from NPT are corrected
     pressure : float, default=None
         The pressure of the system in the NPT ensemble in units of energy / volume, where the units of energy and volume
         are as recorded in the LAMMPS dump file.
     column_volume : int, default=4
-        The column for the volume in a LAMMPS dump file. 
+        The column for the volume in a LAMMPS dump file.
 
     Results
     -------
@@ -1144,13 +1148,17 @@ def extract_H(
 
     if ensemble == "npt":
         if pressure is None or not isinstance(pressure, float) or pressure < 0:
-            raise ValueError("In the npt ensemble, a pressure must be provided in the form of a positive float")
+            raise ValueError(
+                "In the npt ensemble, a pressure must be provided in the form of a positive float"
+            )
     elif ensemble != "nvt":
         raise ValueError("Only ensembles of nvt or npt are supported.")
     else:
         if pressure is not None:
-            raise ValueError("There is no volume correction in the nvt ensemble, the pressure value will not be used.")
-        
+            raise ValueError(
+                "There is no volume correction in the nvt ensemble, the pressure value will not be used."
+            )
+
     beta = beta_from_units(T, units)
 
     if not isinstance(column_lambda1, int):
@@ -1176,7 +1184,7 @@ def extract_H(
     else:
         columns = ["time", "coul-lambda", "vdw-lambda", "u_n"]
         col_indices = [0, column_lambda2, column_lambda1, column_pe]
-        
+
     if ensemble == "npt":
         col_indices.append(column_volume)
     df_H = pd.DataFrame(columns=columns)
@@ -1210,7 +1218,8 @@ def extract_H(
         if ensemble == "npt":
             data["u_n"] += beta * pressure * data["volume"] * energy_from_units(units)
             del data["volume"]
-        df_H = pd.concat([df_H, data], axis=0, sort=False)
+
+        df_H = pd.concat([df_H, data], axis=0, sort=False) if len(df_H) != 0 else data
 
     if column_lambda2 is None:
         df_H.set_index(["time", "fep-lambda"], inplace=True)
