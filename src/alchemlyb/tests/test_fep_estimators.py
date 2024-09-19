@@ -229,11 +229,11 @@ def test_enthalpy_entropy_bar(gmx_benzene_Coulomb_u_nk):
     bar.fit(u_nk)
     assert bar.delta_f_.iloc[0, :].to_numpy() == pytest.approx(
         np.array([0.0, 1.609778, 2.547866, 2.984183, 3.044385]), abs=1e-6
-    )   
+    )
     assert bar.d_delta_f_.iloc[0, :].to_numpy() == pytest.approx(
         np.array([0.0, 0.009879, np.nan, np.nan, np.nan]), abs=1e-6, nan_ok=True
-    ) 
-    
+    )
+
     bar.fit(u_nk, compute_entropy_enthalpy=True, use_mbar=True)
     assert bar.delta_f_.iloc[0, :].to_numpy() == pytest.approx(
         np.array([0.0, 1.609778, 2.547866, 2.984183, 3.044385]), abs=1e-6
@@ -259,7 +259,8 @@ def test_bar_contributions_no_mbar_error(gmx_benzene_Coulomb_u_nk):
     bar = BAR()
     u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
     with pytest.raises(
-        ValueError, match="Cannot compute the enthalpy and entropy with BAR, set use_mbar=True."
+        ValueError,
+        match="Cannot compute the enthalpy and entropy with BAR, set use_mbar=True.",
     ):
         bar.fit(u_nk, compute_entropy_enthalpy=True, use_mbar=False)
 
