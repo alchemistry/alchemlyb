@@ -14,7 +14,7 @@ approximation of the Hamiltonian) at specified values of :math:`\lambda` and :ma
 LAMMPS, `fix adapt/fep <https://docs.lammps.org/fix_adapt_fep.html>`_ changes :math:`\lambda` and 
 `compute fep <https://docs.lammps.org/compute_fep.html>`_ changes :math:`\lambda'`.
 
-.. versionadded:: 2.4.0
+.. versionadded:: 2.4.1
 
 """
 
@@ -59,7 +59,8 @@ def beta_from_units(T, units):
     ValueError
         If unit string is not recognized.
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.1
+
     """
     if units == "real":  # E in kcal/mol, T in K
         beta = 1 / (R_kJmol * kJ2kcal * T)
@@ -105,7 +106,8 @@ def energy_from_units(units):
     ValueError
         If unit string is not recognized.
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.1
+
     """
     if units == "real":  # E in kcal/mol, Vol in Å^3, pressure in atm 
         beta = constants.atm * constants.angstrom**3 / 1e+3 * kJ2kcal * constants.N_A
@@ -153,7 +155,8 @@ def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     tuple[float]
         Tuple of lambda values
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.1
+
     """
 
     name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
@@ -199,7 +202,8 @@ def _lambda_from_filename(filename, separator="_", index=-1, prec=4):
     float
         Lambda prime value
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.1
+
     """
     name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
     try:
@@ -233,7 +237,8 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
     lambda_pairs : list
         List of tuples containing two floats, lambda and lambda'.
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.1
+
     """
 
     lambda_pairs = [
@@ -387,7 +392,8 @@ def extract_u_nk_from_u_n(
         - temperature in K
         - energy unit in kT
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.1
+
     """
     # Collect Files
     files = glob.glob(fep_files)
@@ -572,7 +578,8 @@ def extract_u_nk(
         - temperature in K
         - energy unit in kT
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.1
+
     """
 
     # Collect Files
@@ -832,7 +839,8 @@ def extract_dHdl_from_u_n(
         - temperature in K or dimensionless
         - energy unit in kT
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.1
+
     """
 
     # Collect Files
@@ -941,7 +949,8 @@ def extract_dHdl(
         - temperature in K or dimensionless
         - energy unit in kT
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.1
+
     """
 
     # Collect Files
@@ -1124,7 +1133,8 @@ def extract_H(
         - temperature in K or dimensionless
         - energy unit in kT
 
-    .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.1
+
     """
 
     # Collect Files
