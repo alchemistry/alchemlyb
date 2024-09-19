@@ -13,7 +13,7 @@ The rules for this file:
   * release numbers follow "Semantic Versioning" https://semver.org
 
 
-??/??/2024 jaclark5, orbeckst
+09/17/2024 jaclark5, orbeckst
 
   * 2.4.0
 
@@ -25,6 +25,8 @@ Enhancements
 Fixes
   - Resolve pandas FutureWarnings in bar_.py and mbar_.py (issue #408 PR #407)
  
+Changes
+  - modernize build system: replaced setup.py,cfg with pyproject.toml (#385)
 
 08/24/2024 xiki-tempula
 

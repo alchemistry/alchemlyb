@@ -266,4 +266,3 @@ def plot_dF_state(
 
     leg.get_frame().set_alpha(0.5)
     return fig
-

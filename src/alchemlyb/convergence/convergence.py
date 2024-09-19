@@ -39,7 +39,7 @@ def forward_backward_convergence(
            Lower case input is also accepted until release 2.0.0.
     num : int
         The number of blocks used to divide *each* DataFrame and progressively add
-        to assess convergence. Note that if the DataFrames are different lengths, 
+        to assess convergence. Note that if the DataFrames are different lengths,
         the number of samples contributed with each block will be different.
     error_tol : float
         The maximum error tolerated for analytic error. If the analytic error is
@@ -48,7 +48,7 @@ def forward_backward_convergence(
         .. versionadded:: 2.3.0
         .. versionchanged:: 2.4.0
            Clarified docstring, removed incorrect estimation of std for cumulative
-           result in bar and added check that only a single lambda state is 
+           result in bar and added check that only a single lambda state is
            represented in the indices of each df in df_list.
 
     kwargs : dict
@@ -100,16 +100,22 @@ def forward_backward_convergence(
         # select estimator class by name
         my_estimator = estimators_dispatch[estimator](**kwargs)
         logger.info(f"Use {estimator} estimator for convergence analysis.")
-    
+
     # Check that each df in the list has only one value of lambda
     for i, df in enumerate(df_list):
         lambda_values = list(set([x[1:] for x in df.index.to_numpy()]))
         if len(lambda_values) > 1:
-            ind  = [j for j in range(len(lambda_values[0])) if len(list(set([x[j] for x in lambda_values]))) > 1][0]
+            ind = [
+                j
+                for j in range(len(lambda_values[0]))
+                if len(list(set([x[j] for x in lambda_values]))) > 1
+            ][0]
             raise ValueError(
-                "Provided DataFrame, df_list[{}] has more than one lambda value in df.index[{}]".format(i, ind)
+                "Provided DataFrame, df_list[{}] has more than one lambda value in df.index[{}]".format(
+                    i, ind
+                )
             )
-            
+
     logger.info("Begin forward analysis")
     forward_list = []
     forward_error_list = []
@@ -460,9 +466,15 @@ def block_average(df_list, estimator="MBAR", num=10, **kwargs):
     for i, df in enumerate(df_list):
         lambda_values = list(set([x[1:] for x in df.index.to_numpy()]))
         if len(lambda_values) > 1:
-            ind  = [j for j in range(len(lambda_values[0])) if len(list(set([x[j] for x in lambda_values]))) > 1][0]
+            ind = [
+                j
+                for j in range(len(lambda_values[0]))
+                if len(list(set([x[j] for x in lambda_values]))) > 1
+            ][0]
             raise ValueError(
-                "Provided DataFrame, df_list[{}] has more than one lambda value in df.index[{}]".format(i, ind)
+                "Provided DataFrame, df_list[{}] has more than one lambda value in df.index[{}]".format(
+                    i, ind
+                )
             )
 
     if estimator in ["BAR"] and len(df_list) > 2:
@@ -470,7 +482,7 @@ def block_average(df_list, estimator="MBAR", num=10, **kwargs):
             "Restrict to two DataFrames, one with a fep-lambda value and one its forward adjacent state for a "
             "meaningful result."
         )
-            
+
     logger.info("Begin Moving Average Analysis")
     average_list = []
     average_error_list = []
