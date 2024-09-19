@@ -76,7 +76,7 @@ method. More estimators are available in the section on
     >>> import pandas as pd
 
     >>> mbar = MBAR()
-    >>> mbar.fit(pd.concat(decorrelated_u_nk_list))
+    >>> mbar.fit(alchemlyb.concat(decorrelated_u_nk_list))
     >>> mbar.delta_f_
               0.00      0.25      0.50      0.75      1.00
     0.00  0.000000  1.613595  2.553407  2.983336  3.039517
