@@ -198,6 +198,56 @@ def test_bootstrap(gmx_benzene_Coulomb_u_nk):
     assert mbar_bootstrap_err != mbar_err
 
 
+def test_enthalpy_entropy_mbar(gmx_benzene_Coulomb_u_nk):
+    mbar = MBAR()
+    u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
+    mbar.fit(u_nk, compute_entropy_enthalpy=True)
+
+    assert mbar.delta_f_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, 1.619069, 2.557990, 2.986302, 3.041156]), abs=1e-6
+    )
+    assert mbar.delta_h_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, 1.241970, 1.695000, 1.706555, 1.388906]), abs=1e-6
+    )
+    assert mbar.delta_s_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, -0.377099, -0.862990, -1.279746, -1.652250]), abs=1e-6
+    )
+    assert mbar.d_delta_f_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, 0.008802, 0.014432, 0.018097, 0.020879]), abs=1e-6
+    )
+    assert mbar.d_delta_h_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, 0.011598, 0.016538, 0.018077, 0.018940]), abs=1e-6
+    )
+    assert mbar.d_delta_s_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, 0.012242, 0.019519, 0.023606, 0.026107]), abs=1e-6
+    )
+
+
+def test_enthalpy_entropy_bar(gmx_benzene_Coulomb_u_nk):
+    bar = BAR()
+    u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
+    bar.fit(u_nk, compute_entropy_enthalpy=True, use_mbar=True)
+
+    assert bar.delta_f_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, 1.609778, 2.547866, 2.984183, 3.044385]), abs=1e-6
+    )
+    assert bar.delta_h_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, 1.337356, 2.140400, 2.512384, 2.563935]), abs=1e-6
+    )
+    assert bar.delta_s_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, -0.272422, -0.407467, -0.471798, -0.480450]), abs=1e-6
+    )
+    assert bar.d_delta_f_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, 0.009879, np.nan, np.nan, np.nan]), abs=1e-6, nan_ok=True
+    )
+    assert bar.d_delta_h_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, 0.011062, np.nan, np.nan, np.nan]), abs=1e-6, nan_ok=True
+    )
+    assert bar.d_delta_s_.iloc[0, :].to_numpy() == pytest.approx(
+        np.array([0.0, 0.008931, np.nan, np.nan, np.nan]), abs=1e-6, nan_ok=True
+    )
+
+
 def test_wrong_initial_f_k():
     with pytest.raises(
         ValueError, match="Only `BAR` is supported as string input to `initial_f_k`"

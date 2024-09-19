@@ -4,6 +4,7 @@ import pymbar
 from pymbar.other_estimators import bar as BAR_
 from sklearn.base import BaseEstimator
 
+from .. import concat
 from .base import _EstimatorMixOut
 
 
@@ -175,14 +176,19 @@ class BAR(BaseEstimator, _EstimatorMixOut):
                 verbose=self.verbose,
             )
             if use_mbar:  # now determine df and ddf using pymbar.MBAR
-                tmp_u_nk = u_nk.iloc[
-                    u_nk.index.get_level_values("fep-lambda").isin(
-                        self._states_[k : k + 2]
-                    )
-                ]
+                tmp_u_nk = concat(
+                    [
+                        groups.get_group(self._states_[k]),
+                        groups.get_group(self._states_[k + 1]),
+                    ]
+                )
+                columns = tmp_u_nk.columns.tolist()
+                tmp_u_nk = tmp_u_nk.drop(
+                    [x for x in columns if x not in columns[k : k + 2]], axis=1
+                )
                 mbar = pymbar.MBAR(
                     tmp_u_nk.T,
-                    N_k,
+                    N_k[k : k + 2],
                     maximum_iterations=self.maximum_iterations,
                     relative_tolerance=self.relative_tolerance,
                     verbose=self.verbose,
@@ -193,13 +199,13 @@ class BAR(BaseEstimator, _EstimatorMixOut):
                     out = mbar.compute_entropy_and_enthalpy()
                 else:
                     out = mbar.compute_free_energy_differences()
-                self._bar.append(mbar)
+                out = {key: val[0, 1] for key, val in out.items()}
 
             df, ddf = out["Delta_f"], out["dDelta_f"]
             deltas = np.append(deltas, df)
             d_deltas = np.append(d_deltas, ddf**2)
             if compute_entropy_enthalpy:
-                dh, ddh = out["Delta_h"], out["dDelta_h"]
+                dh, ddh = out["Delta_u"], out["dDelta_u"]
                 deltas_h = np.append(deltas_h, dh)
                 d_deltas_h = np.append(d_deltas_h, ddh**2)
 

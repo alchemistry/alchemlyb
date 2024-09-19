@@ -190,14 +190,16 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         else:
             uncertainty_method = "bootstrap"
 
+        out = self._mbar.compute_free_energy_differences(
+            return_theta=True, uncertainty_method=uncertainty_method
+        )
         if compute_entropy_enthalpy:
-            out = self._mbar.compute_entropy_and_enthalpy(
-                return_theta=True, uncertainty_method=uncertainty_method
+            out.update(
+                self._mbar.compute_entropy_and_enthalpy(
+                    uncertainty_method=uncertainty_method
+                )
             )
-        else:
-            out = self._mbar.compute_free_energy_differences(
-                return_theta=True, uncertainty_method=uncertainty_method
-            )
+
         self._delta_f_ = pd.DataFrame(
             out["Delta_f"], columns=self._states_, index=self._states_
         )
@@ -209,10 +211,10 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         )
         if compute_entropy_enthalpy:
             self._delta_h_ = pd.DataFrame(
-                out["Delta_h"], columns=self._states_, index=self._states_
+                out["Delta_u"], columns=self._states_, index=self._states_
             )
             self._d_delta_h_ = pd.DataFrame(
-                out["dDelta_h"], columns=self._states_, index=self._states_
+                out["dDelta_u"], columns=self._states_, index=self._states_
             )
             self._delta_s_ = pd.DataFrame(
                 out["Delta_s"], columns=self._states_, index=self._states_
