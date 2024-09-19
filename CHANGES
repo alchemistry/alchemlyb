@@ -20,9 +20,10 @@ The rules for this file:
 Enhancements
   - Addition of `block_average` function in both `convergence` and 
     `visualization` (Issue #380, PR #381)
-
-Enhancements:
   - add CITATION.cff file with all authors from AUTHORS (issue #394, PR #395)
+
+Fixes
+  - Resolve pandas FutureWarnings in bar_.py and mbar_.py (issue #408 PR #407)
  
 
 08/24/2024 xiki-tempula
