@@ -20,9 +20,11 @@ class BAR(BaseEstimator, _EstimatorMixOut):
     relative_tolerance : float, optional
         Set to determine the relative tolerance convergence criteria.
 
-    method : str, optional, default='false-position'
-        choice of method to solve BAR nonlinear equations,
-        one of 'self-consistent-iteration' or 'false-position' (default: 'false-position')
+    method : str, optional, default='false-position' or 'robust'
+        Choice of method to solve BAR nonlinear equations,
+        one of 'self-consistent-iteration' or 'false-position' (default: 'false-position').
+        If ``use_mbar == True`` the default is 'robust', see 
+        :class:`~alchemlyb.estimators.mbar_.MBAR` for options.
 
     n_bootstraps : int, optional
         Whether to use bootstrap to estimate uncertainty. `0` means use analytic error
@@ -174,10 +176,11 @@ class BAR(BaseEstimator, _EstimatorMixOut):
             w_r = uk1.iloc[:, k] - uk1.iloc[:, k + 1]
 
             # now determine df and ddf using pymbar.BAR
+            bar_method = self.method if not use_mbar else 'false-position'
             out = BAR_(
                 w_f,
                 w_r,
-                method=self.method,
+                method=bar_method,
                 maximum_iterations=self.maximum_iterations,
                 relative_tolerance=self.relative_tolerance,
                 verbose=self.verbose,
@@ -201,6 +204,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
                 tmp_u_nk = tmp_u_nk.drop(
                     [x for x in columns if x not in columns[k : k + 2]], axis=1
                 )
+                mbar_method = self.method if self.method != "false-position" else "robust"
                 mbar = pymbar.MBAR(
                     tmp_u_nk.T,
                     N_k[k : k + 2],
@@ -208,7 +212,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
                     relative_tolerance=self.relative_tolerance,
                     verbose=self.verbose,
                     initial_f_k=[0, out["Delta_f"]],
-                    solver_protocol=self.method,
+                    solver_protocol=mbar_method,
                     n_bootstraps=self.n_bootstraps,
                 )
                 uncertainty_method = None if self.n_bootstraps == 0 else "bootstrap"
