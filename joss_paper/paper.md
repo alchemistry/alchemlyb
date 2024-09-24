@@ -66,27 +66,27 @@ authors:
 affiliations:
  - name: Exscientia plc, Schroedinger Building, Oxford, United Kingdom
    index: 1
- - name: Department of Physics, Arizona State University, Tempe, Arizona, USA
+ - name: Department of Physics, Arizona State University, Tempe, Arizona, United States of America
    index: 2
- - name: Datryllic LLC, Phoenix, Arizona, USA (present affiliation)
+ - name: Datryllic LLC, Phoenix, Arizona, United States of America (present affiliation)
    index: 3
  - name: Open Free Energy, Open Molecular Software Foundation, Davis, California, United States
    index: 4
  - name: Differentiated Therapeutics, San Diego, CA
    index: 5
- - name: Department of Chemical Engineering and Materials Science, Wayne State University, Detroit, Michigan, USA
+ - name: Department of Chemical Engineering and Materials Science, Wayne State University, Detroit, Michigan, United States of America
    index: 6
  - name: Université Paris Cité, CNRS, Laboratoire de Biochimie Théorique, Paris, France
    index: 7
- - name: Department of Anesthesiology and Critical Care, Perelman School of Medicine, University of Pennsylvania, Philadelphia, Pennsylvania, USA
+ - name: Department of Anesthesiology and Critical Care, Perelman School of Medicine, University of Pennsylvania, Philadelphia, Pennsylvania, United States of America
    index: 8
- - name: Pacific Northwest National Laboratory, Richland, Washington, USA
+ - name: Pacific Northwest National Laboratory, Richland, Washington, United States of America
    index: 9
- - name: UNC Eshelman School of Pharmacy, University of North Carolina, Chapel Hill, NC, USA.
+ - name: UNC Eshelman School of Pharmacy, University of North Carolina, Chapel Hill, NC, United States of America
    index: 10
- - name: Departments of Pharmaceutical Sciences and Chemistry, University of California Irvine, Irvine, California, USA
+ - name: Departments of Pharmaceutical Sciences and Chemistry, University of California Irvine, Irvine, California, United States of America
    index: 11
- - name: Silicon Therapeutics LLC, Boston, USA
+ - name: Silicon Therapeutics LLC, Boston, United States of America
    index: 12
  - name: Molecular Biology and Nanotechnology Laboratory (MolBNL@UniTS), DEA, University of Trieste, Trieste, Italy
    index: 13
@@ -94,9 +94,9 @@ affiliations:
    index: 14
  - name: Stuttgart Center for Simulation Science (SC SimTech) & Institute for Computational Physics, University of Stuttgart, Stuttgart, Germany 
    index: 15
- - name: University of Colorado Boulder, Boulder, Colorado, USA
+ - name: University of Colorado Boulder, Boulder, Colorado, United States of America
    index: 16
- - name: Center for Biological Physics, Arizona State University, Tempe, AZ, USA
+ - name: Center for Biological Physics, Arizona State University, Tempe, AZ, United States of America
    index: 17
 
 date: 4 June 2024
