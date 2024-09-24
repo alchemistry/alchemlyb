@@ -112,7 +112,9 @@ def energy_from_units(units):
     """
     if units == "real":  # E in kcal/mol, Vol in Å^3, pressure in atm
         beta = constants.atm * constants.angstrom**3 / 1e3 * kJ2kcal * constants.N_A
-    elif units == "lj":  # Nondimensional E scaled by epsilon
+    elif (
+        units == "lj"
+    ):  # Nondimensional E scaled by epsilon, vol in sigma^3, pressure in epsilon / sigma^3
         beta = 1
     elif units == "metal":  # E in eV, vol in Å^3, pressure in bar
         beta = constants.bar * constants.angstrom**3 / constants.eV
@@ -124,13 +126,11 @@ def energy_from_units(units):
         Hartree2J = 4.3597447222060e-8
         Bohr2m = 5.29177210544e11
         beta = 1 / Hartree2J / Bohr2m**3
-    elif (
-        units == "micro"
-    ):  # E in picogram-micrometer^2/microsecond^2, vol in um^3, pressure in picogram/(micrometer-microsecond^2)
+    elif units == "micro":
+        # E in picogram-micrometer^2/microsecond^2, vol in um^3, pressure in picogram/(micrometer-microsecond^2)
         beta = 1
-    elif (
-        units == "nano"
-    ):  # E in attogram-nanometer^2/nanosecond^2, vol in nm^3, pressure in attogram/(nanometer-nanosecond^2)
+    elif units == "nano":
+        # E in attogram-nanometer^2/nanosecond^2, vol in nm^3, pressure in attogram/(nanometer-nanosecond^2)
         beta = 1
     else:
         raise ValueError(
@@ -441,23 +441,24 @@ def extract_u_nk_from_u_n(
     u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
     lc = len(lambda_values)
     col_indices = [0, column_lambda, column_U, column_U_cross]
+    columns = ["time", "fep-lambda", "U", "U_cross"]
     if ensemble == "npt":
         col_indices.append(column_volume)
+        columns.append("volume")
 
     for file in files:
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
         tmp_data = pd.read_csv(file, sep=" ", comment="#", header=None)
-        lx = len(tmp_data.columns)
-        if [False for x in col_indices if x >= lx]:
+        ind = [x for x in col_indices if x > len(tmp_data.columns)]
+        if len(ind) > 0:
             raise ValueError(
-                "Number of columns, {}, is less than index: {}".format(lx, col_indices)
+                "Number of columns, {}, is less than indices: {}".format(
+                    len(tmp_data.columns), ind
+                )
             )
         data = tmp_data.iloc[:, col_indices]
-        columns = ["time", "fep-lambda", "U", "U_cross"]
-        if ensemble == "npt":
-            columns.append("volume")
         data.columns = columns
         lambda1_col = "fep-lambda"
         data.loc[:, [lambda1_col]] = data[[lambda1_col]].apply(lambda x: round(x, prec))
@@ -634,88 +635,93 @@ def extract_u_nk(
         files, indices=indices, prec=prec, force=force
     )
 
-    if column_lambda2 is None:
+    if column_lambda2 is None:  # No second lambda state value
         u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
         lc = len(lambda_values)
+        # columns to pull from lammps dump file
         col_indices = [0] + list(columns_lambda1) + [column_U, column_dU]
-    else:
+        # column names from lammps dump file
+        columns = ["time", "fep-lambda", "fep-lambda2", "U", "dU_nk"]
+        columns_a = ["time", "fep-lambda"]  # u_nk cols 0, 1
+        lambda1_col, lambda1_2_col = (
+            "fep-lambda",
+            "fep-lambda2",
+        )  # cols for lambda, lambda'
+        columns_b = lambda_values  # u_nk cols > 1
+    else:  # There is a frozen, second lambda state
         u_nk = pd.DataFrame(columns=["time", "coul-lambda", "vdw-lambda"])
         lc = len(lambda_values) ** 2
         col_indices = (
             [0] + list(columns_lambda1) + [column_lambda2, column_U, column_dU]
-        )
+        )  # columns to pull from lammps dump file
+        if vdw_lambda == 1:
+            # column names from lammps dump file
+            columns = ["time", "vdw-lambda", "vdw-lambda2", "coul-lambda", "U", "dU_nk"]
+            lambda1_col, lambda1_2_col = (
+                "vdw-lambda",
+                "vdw-lambda2",
+            )  # cols for lambda, lambda'
+            columns_b = [(lambda2, x) for x in lambda_values]  # u_nk cols > 2
+        elif vdw_lambda == 2:
+            # column names from lammps dump file
+            columns = [
+                "time",
+                "coul-lambda",
+                "coul-lambda2",
+                "vdw-lambda",
+                "U",
+                "dU_nk",
+            ]
+            lambda1_col, lambda1_2_col = (
+                "coul-lambda",
+                "coul-lambda2",
+            )  # cols for lambda, lambda'
+            columns_b = [(x, lambda2) for x in lambda_values]  # u_nk cols > 2
+        else:
+            raise ValueError(f"'vdw_lambda must be either 1 or 2, not: {vdw_lambda}'")
+        columns_a = ["time", "coul-lambda", "vdw-lambda"]  # u_nk cols 0, 1, 2
 
     if ensemble == "npt":
         col_indices.append(column_volume)
+        columns.append("volume")
 
     for file in files:
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
         tmp_data = pd.read_csv(file, sep=" ", comment="#", header=None)
-        lx = len(tmp_data.columns)
-        if [False for x in col_indices if x >= lx]:
+        ind = [x for x in col_indices if x > len(tmp_data.columns)]
+        if len(ind) > 0:
             raise ValueError(
-                "Number of columns, {}, is less than index: {}".format(lx, col_indices)
+                "Number of columns, {}, is less than indices: {}".format(
+                    len(tmp_data.columns), ind
+                )
             )
         data = tmp_data.iloc[:, col_indices]
+        data.columns = columns
+
+        # Round values of lambda according to ``prec`` variable
         if column_lambda2 is None:
-            columns = ["time", "fep-lambda", "fep-lambda2", "U", "dU_nk"]
-            if ensemble == "npt":
-                columns.append("volume")
-            data.columns = columns
-            lambda1_col, lambda1_2_col = "fep-lambda", "fep-lambda2"
-            columns_a = ["time", "fep-lambda"]
-            columns_b = lambda_values
             data.loc[:, [lambda1_col, lambda1_2_col]] = data[
                 [lambda1_col, lambda1_2_col]
             ].apply(lambda x: round(x, prec))
         else:
-            columns_a = ["time", "coul-lambda", "vdw-lambda"]
-            if vdw_lambda == 1:
-                columns = [
-                    "time",
-                    "vdw-lambda",
-                    "vdw-lambda2",
-                    "coul-lambda",
-                    "U",
-                    "dU_nk",
-                ]
-                if ensemble == "npt":
-                    columns.append("volume")
-                data.columns = columns
-                lambda1_col, lambda1_2_col = "vdw-lambda", "vdw-lambda2"
-                columns_b = [(lambda2, x) for x in lambda_values]
-            elif vdw_lambda == 2:
-                columns = [
-                    "time",
-                    "coul-lambda",
-                    "coul-lambda2",
-                    "vdw-lambda",
-                    "U",
-                    "dU_nk",
-                ]
-                if ensemble == "npt":
-                    columns.append("volume")
-                data.columns = columns
-                lambda1_col, lambda1_2_col = "coul-lambda", "coul-lambda2"
-                columns_b = [(x, lambda2) for x in lambda_values]
-            else:
-                raise ValueError(
-                    f"'vdw_lambda must be either 1 or 2, not: {vdw_lambda}'"
-                )
             data.loc[:, columns_a[1:] + [lambda1_2_col]] = data[
                 columns_a[1:] + [lambda1_2_col]
             ].apply(lambda x: round(x, prec))
 
+        # Iterate over lambda states (configurations equilibrated at certain lambda value)
         for lambda1 in list(data[lambda1_col].unique()):
             tmp_df = data.loc[data[lambda1_col] == lambda1]
-
+            # Iterate over evaluated lambda' values at specific lambda state
             for lambda12 in list(tmp_df[lambda1_2_col].unique()):
                 tmp_df2 = tmp_df.loc[tmp_df[lambda1_2_col] == lambda12]
 
                 lr = tmp_df2.shape[0]
                 if u_nk[u_nk[lambda1_col] == lambda1].shape[0] == 0:
+                    # If u_nk doesn't contain rows for this lambda state,
+                    # Create rows with values of zero to populate energies
+                    # from lambda' values
                     tmp_df3 = pd.concat(
                         [
                             tmp_df2[columns_a],
@@ -726,7 +732,7 @@ def extract_u_nk(
                         ],
                         axis=1,
                     )
-                    u_nk = (
+                    u_nk = (  # If u_nk is empty, use this df, else concat
                         pd.concat([u_nk, tmp_df3], axis=0, sort=False)
                         if len(u_nk) != 0
                         else tmp_df3
@@ -759,7 +765,6 @@ def extract_u_nk(
                             lambda1, lambda12
                         )
                     )
-
                 if (
                     u_nk.loc[u_nk[lambda1_col] == lambda1, column_name].shape[0]
                     != tmp_df2["dU_nk"].shape[0]
@@ -778,6 +783,7 @@ def extract_u_nk(
                         f"The difference in dU should be zero when lambda = lambda', {lambda1} = {lambda12},"
                         " Check that 'column_dU' was defined correctly."
                     )
+
                 # calculate reduced potential u_k = dH + pV + U
                 u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] = beta * (
                     tmp_df2["dU_nk"] + tmp_df2["U"]
