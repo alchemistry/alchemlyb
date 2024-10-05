@@ -6,7 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from joblib import Parallel, delayed
+import joblib
 from loguru import logger
 
 from .base import WorkflowBase
@@ -116,7 +116,7 @@ class ABFE(WorkflowBase):
         else:
             raise NotImplementedError(f"{software} parser not found.")
 
-    def read(self, read_u_nk=True, read_dHdl=True, n_jobs=-1):
+    def read(self, read_u_nk=True, read_dHdl=True, n_jobs=1):
         """Read the u_nk and dHdL data from the
         :attr:`~alchemlyb.workflows.ABFE.file_list`
 
@@ -128,6 +128,7 @@ class ABFE(WorkflowBase):
             Whether to read the dHdl.
         n_jobs : int
             Number of parallel workers to use for reading the data.
+            (-1 means using all the threads)
 
         Attributes
         ----------
@@ -140,7 +141,6 @@ class ABFE(WorkflowBase):
         self.dHdl_sample_list = None
 
         if read_u_nk:
-
             def extract_u_nk(_extract_u_nk, file, T):
                 try:
                     u_nk = _extract_u_nk(file, T)
@@ -151,8 +151,8 @@ class ABFE(WorkflowBase):
                     logger.error(msg)
                     raise OSError(msg) from exc
 
-            u_nk_list = Parallel(n_jobs=n_jobs)(
-                delayed(extract_u_nk)(self._extract_u_nk, file, self.T)
+            u_nk_list = joblib.Parallel(n_jobs=n_jobs)(
+                joblib.delayed(extract_u_nk)(self._extract_u_nk, file, self.T)
                 for file in self.file_list
             )
         else:
@@ -170,8 +170,8 @@ class ABFE(WorkflowBase):
                     logger.error(msg)
                     raise OSError(msg) from exc
 
-            dHdl_list = Parallel(n_jobs=n_jobs)(
-                delayed(extract_dHdl)(self._extract_dHdl, file, self.T)
+            dHdl_list = joblib.Parallel(n_jobs=n_jobs)(
+                joblib.delayed(extract_dHdl)(self._extract_dHdl, file, self.T)
                 for file in self.file_list
             )
         else:
@@ -219,7 +219,7 @@ class ABFE(WorkflowBase):
         overlap="O_MBAR.pdf",
         breakdown=True,
         forwrev=None,
-        n_jobs=-1,
+        n_jobs=1,
         *args,
         **kwargs,
     ):
@@ -257,6 +257,7 @@ class ABFE(WorkflowBase):
             with estimator='TI'.
         n_jobs : int
             Number of parallel workers to use for reading and decorrelating the data.
+            (-1 means using all the threads)
 
         Attributes
         ----------
@@ -329,7 +330,7 @@ class ABFE(WorkflowBase):
             logger.info(f"Set unit to {units}.")
             self.units = units or None
 
-    def preprocess(self, skiptime=0, uncorr="dE", threshold=50, n_jobs=-1):
+    def preprocess(self, skiptime=0, uncorr="dE", threshold=50, n_jobs=1):
         """Preprocess the data by removing the equilibration time and
         decorrelate the date.
 
@@ -346,6 +347,7 @@ class ABFE(WorkflowBase):
             time series analysis will not be performed at all. Default: 50.
         n_jobs : int
             Number of parallel workers to use for decorrelating the data.
+            (-1 means using all the threads)
 
         Attributes
         ----------
@@ -380,8 +382,8 @@ class ABFE(WorkflowBase):
                     )
                 return subsample
 
-            self.u_nk_sample_list = Parallel(n_jobs=n_jobs)(
-                delayed(_decorrelate_u_nk)(u_nk, skiptime, threshold, index)
+            self.u_nk_sample_list = joblib.Parallel(n_jobs=n_jobs)(
+                joblib.delayed(_decorrelate_u_nk)(u_nk, skiptime, threshold, index)
                 for index, u_nk in enumerate(self.u_nk_list)
             )
         else:
@@ -407,8 +409,8 @@ class ABFE(WorkflowBase):
                     )
                 return subsample
 
-            self.dHdl_sample_list = Parallel(n_jobs=n_jobs)(
-                delayed(_decorrelate_dhdl)(dHdl, skiptime, threshold, index)
+            self.dHdl_sample_list = joblib.Parallel(n_jobs=n_jobs)(
+                joblib.delayed(_decorrelate_dhdl)(dHdl, skiptime, threshold, index)
                 for index, dHdl in enumerate(self.dHdl_list)
             )
         else:

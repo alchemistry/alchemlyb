@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from alchemtest.amber import load_bace_example
 from alchemtest.gmx import load_ABFE
-from joblib import parallel_config
+import joblib
 
 import alchemlyb.parsing.amber
 from alchemlyb.workflows.abfe import ABFE
@@ -32,7 +32,6 @@ def workflow(tmp_path_factory):
         overlap="O_MBAR.pdf",
         breakdown=True,
         forwrev=10,
-        n_jobs=1,
     )
     return workflow
 
@@ -82,7 +81,6 @@ class TestRun:
                 overlap=None,
                 breakdown=None,
                 forwrev=None,
-                n_jobs=1,
             )
 
     def test_single_estimator(self, workflow, monkeypatch):
@@ -97,7 +95,6 @@ class TestRun:
             overlap=None,
             breakdown=True,
             forwrev=None,
-            n_jobs=1,
         )
         assert "MBAR" in workflow.estimator
 
@@ -110,7 +107,6 @@ class TestRun:
             overlap=None,
             breakdown=None,
             forwrev=forwrev,
-            n_jobs=1,
         )
         assert workflow.convergence is None
 
@@ -142,7 +138,7 @@ class TestRead:
         monkeypatch.setattr(workflow, "dHdl_list", [])
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
-        workflow.read(read_u_nk, read_dHdl, n_jobs=1)
+        workflow.read(read_u_nk, read_dHdl)
         if read_u_nk:
             assert len(workflow.u_nk_list) == 30
         else:
@@ -162,7 +158,7 @@ class TestRead:
 
         monkeypatch.setattr(workflow, "_extract_u_nk", extract_u_nk)
         with pytest.raises(OSError, match=r"Error reading u_nk"):
-            workflow.read(n_jobs=1)
+            workflow.read()
 
     def test_read_invalid_dHdl(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
@@ -173,7 +169,7 @@ class TestRead:
 
         monkeypatch.setattr(workflow, "_extract_dHdl", extract_dHdl)
         with pytest.raises(OSError, match=r"Error reading dHdl"):
-            workflow.read(n_jobs=1)
+            workflow.read()
 
 
 class TestSubsample:
@@ -195,7 +191,7 @@ class TestSubsample:
         )
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
-        workflow.preprocess(threshold=50, n_jobs=1)
+        workflow.preprocess(threshold=50)
         assert all([len(u_nk) == 40 for u_nk in workflow.u_nk_sample_list])
         assert all([len(dHdl) == 40 for dHdl in workflow.dHdl_sample_list])
 
@@ -203,14 +199,14 @@ class TestSubsample:
         monkeypatch.setattr(workflow, "u_nk_list", [])
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
-        workflow.preprocess(threshold=50, n_jobs=1)
+        workflow.preprocess(threshold=50)
         assert len(workflow.u_nk_list) == 0
 
     def test_no_dHdl_preprocess(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "dHdl_list", [])
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
-        workflow.preprocess(threshold=50, n_jobs=1)
+        workflow.preprocess(threshold=50)
         assert len(workflow.dHdl_list) == 0
 
 
@@ -421,7 +417,7 @@ class Test_automatic_amber:
             T=298.0,
             outdirectory=str(outdir),
         )
-        workflow.read(n_jobs=1)
+        workflow.read()
         workflow.estimate(estimators="TI")
         return workflow
 
@@ -451,7 +447,7 @@ class Test_automatic_parquet:
             T=298.0,
             outdirectory=str(outdir),
         )
-        workflow.read(n_jobs=1)
+        workflow.read()
         workflow.estimate(estimators="BAR")
         return workflow
 
@@ -475,8 +471,8 @@ class TestParallel:
             suffix="xvg",
             T=310,
         )
-        workflow.read(n_jobs=1)
-        workflow.preprocess(n_jobs=1)
+        workflow.read()
+        workflow.preprocess()
         return workflow
 
     @pytest.fixture(scope="class")
@@ -492,7 +488,7 @@ class TestParallel:
             suffix="xvg",
             T=310,
         )
-        with parallel_config(backend="threading"):
+        with joblib.parallel_config(backend="threading"):
             # The default backend is "loky", which is more robust but somehow didn't
             # play well with pytest, but "loky" is perfectly fine outside pytest.
             workflow.read(n_jobs=2)
