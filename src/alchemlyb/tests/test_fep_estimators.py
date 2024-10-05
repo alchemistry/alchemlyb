@@ -138,6 +138,50 @@ class TestEstimatorMixOut:
             _estimator.states_ = 1
 
 
+def test_delta_f_columns(
+    gmx_benzene_Coulomb_u_nk,
+    gmx_expanded_ensemble_case_1,
+):
+    """Ensure columns are tuples when appropriate."""
+
+    bar_1lambda = BAR().fit(alchemlyb.concat(gmx_benzene_Coulomb_u_nk))
+    assert set(bar_1lambda.delta_f_.columns) == set([0.0, 0.25, 0.5, 0.75, 1.0])
+
+    bar_4lambda = BAR().fit(alchemlyb.concat(gmx_expanded_ensemble_case_1))
+    assert set(bar_4lambda.delta_f_.columns) == set(
+        [
+            (0.0, 0.1, 0.0, 0.0),
+            (0.0, 0.4, 0.0, 0.0),
+            (0.0, 1.0, 0.4, 0.002),
+            (0.0, 1.0, 0.0, 0.0001),
+            (0.0, 1.0, 0.1, 0.0002),
+            (0.0, 0.84, 0.0, 0.0),
+            (0.0, 0.68, 0.0, 0.0),
+            (0.0, 1.0, 0.84, 0.2),
+            (0.0, 1.0, 0.3, 0.001),
+            (0.0, 1.0, 0.2, 0.0004),
+            (0.0, 0.16, 0.0, 0.0),
+            (0.0, 1.0, 0.52, 0.01),
+            (0.0, 1.0, 0.92, 0.4),
+            (0.0, 0.76, 0.0, 0.0),
+            (0.0, 0.46, 0.0, 0.0),
+            (0.0, 1.0, 0.6, 0.02),
+            (0.0, 0.92, 0.0, 0.0),
+            (0.0, 0.6, 0.0, 0.0),
+            (0.0, 0.34, 0.0, 0.0),
+            (0.0, 1.0, 0.76, 0.1),
+            (0.0, 1.0, 1.0, 1.0),
+            (0.0, 0.05, 0.0, 0.0),
+            (0.0, 1.0, 0.48, 0.004),
+            (0.0, 0.0, 0.0, 0.0),
+            (0.0, 0.22, 0.0, 0.0),
+            (0.0, 0.52, 0.0, 0.0),
+            (0.0, 1.0, 0.68, 0.04),
+            (0.0, 0.28, 0.0, 0.0),
+        ]
+    )
+
+
 def test_bootstrap(gmx_benzene_Coulomb_u_nk):
     u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
     mbar = MBAR(n_bootstraps=2)

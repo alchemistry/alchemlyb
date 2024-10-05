@@ -9,6 +9,6 @@ dependencies:
 - scipy
 - scikit-learn
 - pyarrow
-- matplotlib
+- matplotlib>=3.7
 - loguru
 - joblib

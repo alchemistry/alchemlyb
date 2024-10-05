@@ -1,5 +1,7 @@
 .. module:: alchemlyb.visualisation
 
+.. _visualisation:
+
 Visualisation of the results
 ============================
 It is quite often that the user want to visualise the results to gain
@@ -17,6 +19,7 @@ Plotting Functions
     plot_ti_dhdl
     plot_dF_state
     plot_convergence
+    plot_block_average
 
 .. _plot_overlap_matrix:
 

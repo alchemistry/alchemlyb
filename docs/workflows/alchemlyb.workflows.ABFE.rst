@@ -1,3 +1,5 @@
+.. _abfe-workflow:
+
 The ABFE workflow
 ==================
 The *Absolute binding free energy* (ABFE) workflow provides a complete workflow

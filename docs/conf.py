@@ -20,6 +20,7 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import datetime
 
 # -- General configuration ------------------------------------------------
 
@@ -39,7 +40,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+templates_path = [".templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -51,12 +52,10 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
+now = datetime.datetime.now()
 project = "alchemlyb"
-author = """Irfan Alibay, Bryce Allen, Mohammad S. Barhaghi, Oliver
-Beckstein, David Dotson, Jérôme Hénin, Travis Jensen, Thomas
-T. Joseph, Ian Kenney, Hyungro Lee, Victoria Lim, Shuai Liu, Domenico
-Marson, Pascal Merz, Alexander Schlaich, Dominik Wille, Zhiyi Wu"""
-copyright = "2017-2022, " + author
+author = 'The alchemlyb development team (see <a href="https://raw.githubusercontent.com/alchemistry/alchemlyb/master/AUTHORS">AUTHORS</a>)'
+copyright = f"2017-{now.year}, " + author
 
 
 # The version info for the project you're documenting, acts as replacement for
@@ -68,12 +67,11 @@ copyright = "2017-2022, " + author
 # We always display the full release string; if something else is
 # desired, see the commented out code
 
-from alchemlyb._version import get_versions
+import alchemlyb
 
-release = get_versions()["version"]
-del get_versions
-
+release = alchemlyb.__version__
 version = release
+
 # version = release.split("+")[0]  # only major.minor.patch
 # version = "."join(release.split(".")[:2])  # only major.minor
 
@@ -176,7 +174,7 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    "https://docs.python.org/": None,
+    "python": ("https://docs.python.org/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
     "pymbar": ("https://pymbar.readthedocs.io/en/latest/", None),
     "alchemtest": ("https://alchemtest.readthedocs.io/en/latest/", None),

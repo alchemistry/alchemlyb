@@ -83,6 +83,7 @@ We also welcome code contributions: have a look at our `Developer Guide`_. Open 
     :caption: User Documentation
 
     install
+    tutorial
     parsing
     preprocessing
     estimators

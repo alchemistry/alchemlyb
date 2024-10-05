@@ -15,3 +15,5 @@ All convergence functions are located in this submodule but for convenience they
 .. autofunction:: alchemlyb.convergence.fwdrev_cumavg_Rc
 
 .. autofunction:: alchemlyb.convergence.A_c		  
+
+.. autofunction:: alchemlyb.convergence.block_average
