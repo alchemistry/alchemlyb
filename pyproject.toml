@@ -50,6 +50,7 @@ dependencies = [
 	     "matplotlib>=3.7",
 	     "loguru",
 	     "pyarrow",
+         "joblib",
 ]
 
 
