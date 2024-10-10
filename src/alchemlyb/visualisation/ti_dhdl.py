@@ -56,97 +56,25 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
 
     .. versionadded:: 0.4.0
     """
-    # Make it into a list
-    # separate_dhdl method is used so that the input for the actual plotting
-    # Function are a uniformed list of series object which only contains one
-    # lambda.
-    if not isinstance(dhdl_data, list):
-        dhdl_list = dhdl_data.separate_dhdl()
-    else:
-        dhdl_list = []
-        for dhdl in dhdl_data:
-            dhdl_list.extend(dhdl.separate_dhdl())
+    dhdl_list = build_dhdl_list(dhdl_data)
 
     # Convert unit
     if units is None:
         units = dhdl_list[0].attrs["energy_unit"]
 
-    new_unit = []
-    convert = get_unit_converter(units)
-    for dhdl in dhdl_list:
-        new_unit.append(convert(dhdl))
+    new_unit = compute_new_unit(dhdl_list, units)
 
     dhdl_list = new_unit
     if ax is None:
         fig, ax = plt.subplots(figsize=(8, 6))
 
-    ax.spines["bottom"].set_position("zero")
-    ax.spines["top"].set_color("none")
-    ax.spines["right"].set_color("none")
-    ax.xaxis.set_ticks_position("bottom")
-    ax.yaxis.set_ticks_position("left")
+    set_spines(ax)
 
-    for k, spine in ax.spines.items():
-        spine.set_zorder(12.2)
+    lv_names2 = make_level_names(dhdl_list, labels)
 
-    # Make level names
-    if labels is None:
-        lv_names2 = []
-        for dhdl in dhdl_list:
-            # Assume that the dhdl has only one columns
-            lv_names2.append(dhdl.name.capitalize())
-    else:
-        if len(labels) == len(dhdl_list):
-            lv_names2 = labels
-        else:  # pragma: no cover
-            raise ValueError(
-                "Length of labels ({}) should be the same as the number of data ({})".format(
-                    len(labels), len(dhdl_list)
-                )
-            )
+    colors = handle_colors(colors, dhdl_list, labels)
 
-    if colors is None:
-        colors = ["r", "g", "#7F38EC", "#9F000F", "b", "y"]
-    else:
-        if len(colors) >= len(dhdl_list):
-            pass
-        else:  # pragma: no cover
-            raise ValueError(
-                "Number of colors ({}) should be larger than the number of data ({})".format(
-                    len(labels), len(dhdl_list)
-                )
-            )
-
-    # Get the real data out
-    xs, ndx, dx = [0], 0, 0.001
-    min_y, max_y = 0, 0
-    for dhdl in dhdl_list:
-        x = dhdl.index.values
-        y = dhdl.values.ravel()
-
-        min_y = min(y.min(), min_y)
-        max_y = max(y.max(), max_y)
-
-        for i in range(len(x) - 1):
-            if i % 2 == 0:
-                ax.fill_between(
-                    x[i : i + 2] + ndx, 0, y[i : i + 2], color=colors[ndx], alpha=1.0
-                )
-            else:
-                ax.fill_between(
-                    x[i : i + 2] + ndx, 0, y[i : i + 2], color=colors[ndx], alpha=0.5
-                )
-
-        xlegend = [-100 * wnum for wnum in range(len(lv_names2))]
-        ax.plot(
-            xlegend,
-            [0 * wnum for wnum in xlegend],
-            ls="-",
-            color=colors[ndx],
-            label=lv_names2[ndx],
-        )
-        xs += (x + ndx).tolist()[1:]
-        ndx += 1
+    max_y, min_y, ndx, xs = get_real_data_out(ax, colors, dhdl_list, lv_names2)
 
     # Make sure the tick labels are not overcrowded.
     xs = np.array(xs)
@@ -225,3 +153,103 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
     for l in lege.legend_handles:
         l.set_linewidth(10)
     return ax
+
+
+def set_spines(ax):
+    ax.spines["bottom"].set_position("zero")
+    ax.spines["top"].set_color("none")
+    ax.spines["right"].set_color("none")
+    ax.xaxis.set_ticks_position("bottom")
+    ax.yaxis.set_ticks_position("left")
+    for k, spine in ax.spines.items():
+        spine.set_zorder(12.2)
+
+
+def compute_new_unit(dhdl_list, units):
+    new_unit = []
+    convert = get_unit_converter(units)
+    for dhdl in dhdl_list:
+        new_unit.append(convert(dhdl))
+    return new_unit
+
+
+def build_dhdl_list(dhdl_data):
+    # Make it into a list
+    # separate_dhdl method is used so that the input for the actual plotting
+    # Function are a uniformed list of series object which only contains one
+    # lambda.
+    if not isinstance(dhdl_data, list):
+        dhdl_list = dhdl_data.separate_dhdl()
+    else:
+        dhdl_list = []
+        for dhdl in dhdl_data:
+            dhdl_list.extend(dhdl.separate_dhdl())
+    return dhdl_list
+
+
+def get_real_data_out(ax, colors, dhdl_list, lv_names2):
+    # Get the real data out
+    xs, ndx, dx = [0], 0, 0.001
+    min_y, max_y = 0, 0
+    for dhdl in dhdl_list:
+        x = dhdl.index.values
+        y = dhdl.values.ravel()
+
+        min_y = min(y.min(), min_y)
+        max_y = max(y.max(), max_y)
+
+        for i in range(len(x) - 1):
+            if i % 2 == 0:
+                ax.fill_between(
+                    x[i: i + 2] + ndx, 0, y[i: i + 2], color=colors[ndx], alpha=1.0
+                )
+            else:
+                ax.fill_between(
+                    x[i: i + 2] + ndx, 0, y[i: i + 2], color=colors[ndx], alpha=0.5
+                )
+
+        xlegend = [-100 * wnum for wnum in range(len(lv_names2))]
+        ax.plot(
+            xlegend,
+            [0 * wnum for wnum in xlegend],
+            ls="-",
+            color=colors[ndx],
+            label=lv_names2[ndx],
+        )
+        xs += (x + ndx).tolist()[1:]
+        ndx += 1
+    return max_y, min_y, ndx, xs
+
+
+def handle_colors(colors, dhdl_list, labels):
+    if colors is None:
+        colors = ["r", "g", "#7F38EC", "#9F000F", "b", "y"]
+    else:
+        if len(colors) >= len(dhdl_list):
+            pass
+        else:  # pragma: no cover
+            raise ValueError(
+                "Number of colors ({}) should be larger than the number of data ({})".format(
+                    len(labels), len(dhdl_list)
+                )
+            )
+    return colors
+
+
+def make_level_names(dhdl_list, labels):
+    # Make level names
+    if labels is None:
+        lv_names2 = []
+        for dhdl in dhdl_list:
+            # Assume that the dhdl has only one columns
+            lv_names2.append(dhdl.name.capitalize())
+    else:
+        if len(labels) == len(dhdl_list):
+            lv_names2 = labels
+        else:  # pragma: no cover
+            raise ValueError(
+                "Length of labels ({}) should be the same as the number of data ({})".format(
+                    len(labels), len(dhdl_list)
+                )
+            )
+    return lv_names2
