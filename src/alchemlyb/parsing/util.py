@@ -78,7 +78,8 @@ def anyopen(datafile: Union[PathLike, IO], mode="r", compression=None):
             return compressor(datafile, mode=mode)
         else:
             raise ValueError(
-                "`datafile` is a stream, but specified `compression` '{compression}' is not supported"
+                "`datafile` is a stream"
+                + ", but specified `compression` '{compression}' is not supported"
             )
 
     # otherwise, treat as a file
