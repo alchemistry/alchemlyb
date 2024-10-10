@@ -83,14 +83,7 @@ def _get_lambdas(fep_files):
                         f"Lambda values change direction in {fep_file}, relative to the other files: {lambda1} -> {lambda2} (IDWS: {lambda_idws})"
                     )
 
-                # Make sure the lambda2 values are consistent
-                if lambda1 in lambda_fwd_map and lambda_fwd_map[lambda1] != lambda2:
-                    logger.error(
-                        f"fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} in {fep_file} but it has already been {lambda2}"
-                    )
-                    raise ValueError(
-                        "More than one lambda2 value for a particular lambda1"
-                    )
+                check_lambda2_consistency(fep_file, lambda1, lambda2, lambda_fwd_map)
 
                 lambda_fwd_map[lambda1] = lambda2
 
@@ -116,6 +109,17 @@ def _get_lambdas(fep_files):
     all_lambdas.update(lambda_bwd_map.keys())
     all_lambdas.update(lambda_bwd_map.values())
     return list(sorted(all_lambdas, reverse=not is_ascending))
+
+
+def check_lambda2_consistency(fep_file, lambda1, lambda2, lambda_fwd_map):
+    # Make sure the lambda2 values are consistent
+    if lambda1 in lambda_fwd_map and lambda_fwd_map[lambda1] != lambda2:
+        logger.error(
+            f"fwd: lambda1 {lambda1} has lambda2 {lambda_fwd_map[lambda1]} in {fep_file} but it has already been {lambda2}"
+        )
+        raise ValueError(
+            "More than one lambda2 value for a particular lambda1"
+        )
 
 
 @_init_attrs
@@ -193,11 +197,7 @@ def extract_u_nk(fep_files, T):
             has_idws = False
             for line in f:
                 l = line.strip().split()
-                # We don't know if IDWS was enabled just from the #Free line, and we might not have
-                # a #NEW line in this file, so we have to check for the existence of FepE_back lines
-                # We rely on short-circuit evaluation to avoid the string comparison most of the time
-                if has_idws is False and l[0] == "FepE_back:":
-                    has_idws = True
+                has_idws = check_idws(has_idws, l)
 
                 # New window, get IDWS lambda if any
                 # We keep track of lambdas from the #NEW line and if they disagree with the #Free line
@@ -318,24 +318,11 @@ def extract_u_nk(fep_files, T):
                         None,
                     )
 
-                # append work value from 'dE' column of fepout file
-                if parsing:
-                    if l[0] == "FepEnergy:":
-                        win_de.append(float(l[6]))
-                        win_ts.append(float(l[1]))
-                    elif l[0] == "FepE_back:":
-                        win_de_back.append(float(l[6]))
-                        win_ts_back.append(float(l[1]))
+                append_work(l, parsing, win_de, win_de_back, win_ts, win_ts_back)
 
-                # Turn parsing on after line 'STARTING COLLECTION OF ENSEMBLE AVERAGE'
-                if "#STARTING" in l:
-                    parsing = True
+                parsing = handle_starting(l, parsing)
 
-    if len(win_de) != 0 or len(win_de_back) != 0:  # pragma: no cover
-        logger.warning(
-            'Trailing data without footer line ("#Free energy..."). Interrupted run?'
-        )
-        raise ValueError("Last window is truncated")
+    validate_no_trailing_data(win_de, win_de_back)
 
     if lambda2 in (0.0, 1.0):
         # this excludes the IDWS case where a dataframe already exists for both endpoints
@@ -346,6 +333,41 @@ def extract_u_nk(fep_files, T):
     u_nk.set_index(["time", "fep-lambda"], inplace=True)
 
     return u_nk
+
+
+def validate_no_trailing_data(win_de, win_de_back):
+    if len(win_de) != 0 or len(win_de_back) != 0:  # pragma: no cover
+        logger.warning(
+            'Trailing data without footer line ("#Free energy..."). Interrupted run?'
+        )
+        raise ValueError("Last window is truncated")
+
+
+def handle_starting(l, parsing):
+    # Turn parsing on after line 'STARTING COLLECTION OF ENSEMBLE AVERAGE'
+    if "#STARTING" in l:
+        parsing = True
+    return parsing
+
+
+def append_work(l, parsing, win_de, win_de_back, win_ts, win_ts_back):
+    # append work value from 'dE' column of fepout file
+    if parsing:
+        if l[0] == "FepEnergy:":
+            win_de.append(float(l[6]))
+            win_ts.append(float(l[1]))
+        elif l[0] == "FepE_back:":
+            win_de_back.append(float(l[6]))
+            win_ts_back.append(float(l[1]))
+
+
+def check_idws(has_idws, l):
+    # We don't know if IDWS was enabled just from the #Free line, and we might not have
+    # a #NEW line in this file, so we have to check for the existence of FepE_back lines
+    # We rely on short-circuit evaluation to avoid the string comparison most of the time
+    if has_idws is False and l[0] == "FepE_back:":
+        has_idws = True
+    return has_idws
 
 
 def extract(fep_files, T):
