@@ -153,6 +153,43 @@ to the data generated at each stage of the analysis. ::
     >>> # Convergence analysis
     >>> workflow.check_convergence(10, dF_t='dF_t.pdf')
 
+Parallelisation of Data Reading and Decorrelation
+-------------------------------------------------
+
+The estimation step of the workflow is parallelized using JAX. However, the
+reading and decorrelation stages can be parallelized using `joblib`. This is
+achieved by passing the number of jobs to run in parallel via the `n_jobs`
+parameter to the following methods:
+
+- :meth:`~alchemlyb.workflows.ABFE.read`
+- :meth:`~alchemlyb.workflows.ABFE.preprocess`
+
+To enable parallel execution, specify the `n_jobs` parameter. Setting
+`n_jobs=-1` allows the use of all available resources. ::
+
+    >>> workflow = ABFE(units='kcal/mol', software='GROMACS', dir=dir,
+    >>>                 prefix='dhdl', suffix='xvg', T=298, outdirectory='./')
+    >>> workflow.read(n_jobs=-1)
+    >>> workflow.preprocess(n_jobs=-1)
+
+In a fully automated mode, the `n_jobs=-1` parameter can be passed directly to
+the :meth:`~alchemlyb.workflows.ABFE.run` method. This will implicitly
+parallelise the reading and decorrelation stages. ::
+
+    >>> workflow = ABFE(units='kcal/mol', software='GROMACS', dir=dir,
+    >>>                 prefix='dhdl', suffix='xvg', T=298, outdirectory='./')
+    >>> workflow.run(n_jobs=-1)
+
+While the default `joblib` settings are suitable for most environments, you
+can customize the parallelisation backend depending on the infrastructure. For
+example, using the threading backend can be specified as follows. ::
+
+    >>> import joblib
+    >>> workflow = ABFE(units='kcal/mol', software='GROMACS', dir=dir,
+    >>>                 prefix='dhdl', suffix='xvg', T=298, outdirectory='./')
+    >>> with joblib.parallel_config(backend="threading"):
+    >>>     workflow.run(n_jobs=-1)
+
 API Reference
 -------------
 .. autoclass:: alchemlyb.workflows.ABFE

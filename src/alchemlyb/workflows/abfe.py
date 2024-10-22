@@ -6,6 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import joblib
 from loguru import logger
 
 from .base import WorkflowBase
@@ -115,7 +116,7 @@ class ABFE(WorkflowBase):
         else:
             raise NotImplementedError(f"{software} parser not found.")
 
-    def read(self, read_u_nk=True, read_dHdl=True):
+    def read(self, read_u_nk=True, read_dHdl=True, n_jobs=1):
         """Read the u_nk and dHdL data from the
         :attr:`~alchemlyb.workflows.ABFE.file_list`
 
@@ -125,6 +126,9 @@ class ABFE(WorkflowBase):
             Whether to read the u_nk.
         read_dHdl : bool
             Whether to read the dHdl.
+        n_jobs : int
+            Number of parallel workers to use for reading the data.
+            (-1 means using all the threads)
 
         Attributes
         ----------
@@ -136,28 +140,42 @@ class ABFE(WorkflowBase):
         self.u_nk_sample_list = None
         self.dHdl_sample_list = None
 
-        u_nk_list = []
-        dHdl_list = []
-        for file in self.file_list:
-            if read_u_nk:
+        if read_u_nk:
+            def extract_u_nk(_extract_u_nk, file, T):
                 try:
-                    u_nk = self._extract_u_nk(file, T=self.T)
+                    u_nk = _extract_u_nk(file, T)
                     logger.info(f"Reading {len(u_nk)} lines of u_nk from {file}")
-                    u_nk_list.append(u_nk)
+                    return u_nk
                 except Exception as exc:
                     msg = f"Error reading u_nk from {file}."
                     logger.error(msg)
                     raise OSError(msg) from exc
 
-            if read_dHdl:
+            u_nk_list = joblib.Parallel(n_jobs=n_jobs)(
+                joblib.delayed(extract_u_nk)(self._extract_u_nk, file, self.T)
+                for file in self.file_list
+            )
+        else:
+            u_nk_list = []
+
+        if read_dHdl:
+
+            def extract_dHdl(_extract_dHdl, file, T):
                 try:
-                    dhdl = self._extract_dHdl(file, T=self.T)
+                    dhdl = _extract_dHdl(file, T)
                     logger.info(f"Reading {len(dhdl)} lines of dhdl from {file}")
-                    dHdl_list.append(dhdl)
+                    return dhdl
                 except Exception as exc:
                     msg = f"Error reading dHdl from {file}."
                     logger.error(msg)
                     raise OSError(msg) from exc
+
+            dHdl_list = joblib.Parallel(n_jobs=n_jobs)(
+                joblib.delayed(extract_dHdl)(self._extract_dHdl, file, self.T)
+                for file in self.file_list
+            )
+        else:
+            dHdl_list = []
 
         # Sort the files according to the state
         if read_u_nk:
@@ -201,6 +219,7 @@ class ABFE(WorkflowBase):
         overlap="O_MBAR.pdf",
         breakdown=True,
         forwrev=None,
+        n_jobs=1,
         *args,
         **kwargs,
     ):
@@ -236,6 +255,9 @@ class ABFE(WorkflowBase):
             contain u_nk, please run
             meth:`~alchemlyb.workflows.ABFE.check_convergence` manually
             with estimator='TI'.
+        n_jobs : int
+            Number of parallel workers to use for reading and decorrelating the data.
+            (-1 means using all the threads)
 
         Attributes
         ----------
@@ -266,11 +288,12 @@ class ABFE(WorkflowBase):
                     )
                     logger.error(msg)
                     raise ValueError(msg)
-
-            self.read(use_FEP, use_TI)
+            self.read(read_u_nk=use_FEP, read_dHdl=use_TI, n_jobs=n_jobs)
 
         if uncorr is not None:
-            self.preprocess(skiptime=skiptime, uncorr=uncorr, threshold=threshold)
+            self.preprocess(
+                skiptime=skiptime, uncorr=uncorr, threshold=threshold, n_jobs=n_jobs
+            )
         if estimators is not None:
             self.estimate(estimators)
             self.generate_result()
@@ -307,7 +330,7 @@ class ABFE(WorkflowBase):
             logger.info(f"Set unit to {units}.")
             self.units = units or None
 
-    def preprocess(self, skiptime=0, uncorr="dE", threshold=50):
+    def preprocess(self, skiptime=0, uncorr="dE", threshold=50, n_jobs=1):
         """Preprocess the data by removing the equilibration time and
         decorrelate the date.
 
@@ -322,6 +345,9 @@ class ABFE(WorkflowBase):
             Proceed with correlated samples if the number of uncorrelated
             samples is found to be less than this number. If 0 is given, the
             time series analysis will not be performed at all. Default: 50.
+        n_jobs : int
+            Number of parallel workers to use for decorrelating the data.
+            (-1 means using all the threads)
 
         Attributes
         ----------
@@ -338,13 +364,9 @@ class ABFE(WorkflowBase):
         if len(self.u_nk_list) > 0:
             logger.info(f"Processing the u_nk data set with skiptime of {skiptime}.")
 
-            self.u_nk_sample_list = []
-            for index, u_nk in enumerate(self.u_nk_list):
-                # Find the starting frame
-
+            def _decorrelate_u_nk(u_nk, skiptime, threshold, index):
                 u_nk = u_nk[u_nk.index.get_level_values("time") >= skiptime]
                 subsample = decorrelate_u_nk(u_nk, uncorr, remove_burnin=True)
-
                 if len(subsample) < threshold:
                     logger.warning(
                         f"Number of u_nk {len(subsample)} "
@@ -352,19 +374,24 @@ class ABFE(WorkflowBase):
                         f"threshold {threshold}."
                     )
                     logger.info(f"Take all the u_nk for state {index}.")
-                    self.u_nk_sample_list.append(u_nk)
+                    subsample = u_nk
                 else:
                     logger.info(
                         f"Take {len(subsample)} uncorrelated "
                         f"u_nk for state {index}."
                     )
-                    self.u_nk_sample_list.append(subsample)
+                return subsample
+
+            self.u_nk_sample_list = joblib.Parallel(n_jobs=n_jobs)(
+                joblib.delayed(_decorrelate_u_nk)(u_nk, skiptime, threshold, index)
+                for index, u_nk in enumerate(self.u_nk_list)
+            )
         else:
             logger.info("No u_nk data being subsampled")
 
         if len(self.dHdl_list) > 0:
-            self.dHdl_sample_list = []
-            for index, dHdl in enumerate(self.dHdl_list):
+
+            def _decorrelate_dhdl(dHdl, skiptime, threshold, index):
                 dHdl = dHdl[dHdl.index.get_level_values("time") >= skiptime]
                 subsample = decorrelate_dhdl(dHdl, remove_burnin=True)
                 if len(subsample) < threshold:
@@ -374,13 +401,18 @@ class ABFE(WorkflowBase):
                         f"threshold {threshold}."
                     )
                     logger.info(f"Take all the dHdl for state {index}.")
-                    self.dHdl_sample_list.append(dHdl)
+                    subsample = dHdl
                 else:
                     logger.info(
                         f"Take {len(subsample)} uncorrelated "
                         f"dHdl for state {index}."
                     )
-                    self.dHdl_sample_list.append(subsample)
+                return subsample
+
+            self.dHdl_sample_list = joblib.Parallel(n_jobs=n_jobs)(
+                joblib.delayed(_decorrelate_dhdl)(dHdl, skiptime, threshold, index)
+                for index, dHdl in enumerate(self.dHdl_list)
+            )
         else:
             logger.info("No dHdl data being subsampled")
 

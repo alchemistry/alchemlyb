@@ -1,9 +1,11 @@
 import os
 
 import numpy as np
+import pandas as pd
 import pytest
 from alchemtest.amber import load_bace_example
 from alchemtest.gmx import load_ABFE
+import joblib
 
 import alchemlyb.parsing.amber
 from alchemlyb.workflows.abfe import ABFE
@@ -88,7 +90,11 @@ class TestRun:
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
         monkeypatch.setattr(workflow, "estimator", dict())
         workflow.run(
-            uncorr=None, estimators="MBAR", overlap=None, breakdown=True, forwrev=None
+            uncorr=None,
+            estimators="MBAR",
+            overlap=None,
+            breakdown=True,
+            forwrev=None,
         )
         assert "MBAR" in workflow.estimator
 
@@ -96,7 +102,11 @@ class TestRun:
     def test_no_forwrev(self, workflow, monkeypatch, forwrev):
         monkeypatch.setattr(workflow, "convergence", None)
         workflow.run(
-            uncorr=None, estimators=None, overlap=None, breakdown=None, forwrev=forwrev
+            uncorr=None,
+            estimators=None,
+            overlap=None,
+            breakdown=None,
+            forwrev=forwrev,
         )
         assert workflow.convergence is None
 
@@ -445,3 +455,58 @@ class Test_automatic_parquet:
         """Test if if the summary is right."""
         summary = workflow.generate_result()
         assert np.isclose(summary["BAR"]["Stages"]["TOTAL"], 1.40405980473, 0.1)
+
+
+class TestParallel:
+    @pytest.fixture(scope="class")
+    def workflow(self, tmp_path_factory):
+        outdir = tmp_path_factory.mktemp("out")
+        (outdir / "dhdl_00.xvg").symlink_to(load_ABFE()["data"]["complex"][0])
+        (outdir / "dhdl_01.xvg").symlink_to(load_ABFE()["data"]["complex"][1])
+        workflow = ABFE(
+            units="kcal/mol",
+            software="GROMACS",
+            dir=str(outdir),
+            prefix="dhdl",
+            suffix="xvg",
+            T=310,
+        )
+        workflow.read()
+        workflow.preprocess()
+        return workflow
+
+    @pytest.fixture(scope="class")
+    def parallel_workflow(self, tmp_path_factory):
+        outdir = tmp_path_factory.mktemp("out")
+        (outdir / "dhdl_00.xvg").symlink_to(load_ABFE()["data"]["complex"][0])
+        (outdir / "dhdl_01.xvg").symlink_to(load_ABFE()["data"]["complex"][1])
+        workflow = ABFE(
+            units="kcal/mol",
+            software="GROMACS",
+            dir=str(outdir),
+            prefix="dhdl",
+            suffix="xvg",
+            T=310,
+        )
+        with joblib.parallel_config(backend="threading"):
+            # The default backend is "loky", which is more robust but somehow didn't
+            # play well with pytest, but "loky" is perfectly fine outside pytest.
+            workflow.read(n_jobs=2)
+            workflow.preprocess(n_jobs=2)
+        return workflow
+
+    def test_read(self, workflow, parallel_workflow):
+        pd.testing.assert_frame_equal(
+            workflow.u_nk_list[0], parallel_workflow.u_nk_list[0]
+        )
+        pd.testing.assert_frame_equal(
+            workflow.u_nk_list[1], parallel_workflow.u_nk_list[1]
+        )
+
+    def test_preprocess(self, workflow, parallel_workflow):
+        pd.testing.assert_frame_equal(
+            workflow.u_nk_sample_list[0], parallel_workflow.u_nk_sample_list[0]
+        )
+        pd.testing.assert_frame_equal(
+            workflow.u_nk_sample_list[1], parallel_workflow.u_nk_sample_list[1]
+        )

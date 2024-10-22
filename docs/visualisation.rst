@@ -177,7 +177,8 @@ and the corresponding error. ::
     >>>     backward_error.append(estimate.d_delta_f_.iloc[0,-1])
 
     >>> from alchemlyb.visualisation import plot_convergence
-    >>> ax = plot_convergence(forward, forward_error, backward, backward_error)
+    >>> df = pd.DataFrame({'Forward':forward, 'Backward':backward, 'Forward_Error':forward_error, 'Backward_Error':backward_error})
+    >>> ax = plot_convergence(df)
     >>> ax.figure.savefig('dF_t.pdf')
 
 Will give a plot looks like this
