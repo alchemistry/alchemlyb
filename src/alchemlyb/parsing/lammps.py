@@ -502,6 +502,7 @@ def extract_u_nk_from_u_n(
                     )
 
     u_nk.set_index(["time", "fep-lambda"], inplace=True)
+    u_nk.name = "u_nk"
 
     return u_nk
 
@@ -548,7 +549,7 @@ def extract_u_nk(
         in the computation of the potential energy.
     column_dU : int, default=4
         Index for the column (column number minus one) representing the difference in potential energy between lambda states
-    column_U : int, default=4
+    column_U : int, default=3
         Index for the column (column number minus one) representing the potential energy
     column_lambda2 : int
         Index for column (column number minus one) for the unchanging value of lambda for another potential.
@@ -635,6 +636,7 @@ def extract_u_nk(
         files, indices=indices, prec=prec, force=force
     )
 
+    # Set-up u_nk and column names / indices
     if column_lambda2 is None:  # No second lambda state value
         u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
         lc = len(lambda_values)
@@ -685,6 +687,7 @@ def extract_u_nk(
         col_indices.append(column_volume)
         columns.append("volume")
 
+    # Parse Files
     for file in files:
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
@@ -797,6 +800,7 @@ def extract_u_nk(
         u_nk.set_index(["time", "fep-lambda"], inplace=True)
     else:
         u_nk.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
+    u_nk.name = "u_nk"
 
     return u_nk
 
@@ -894,6 +898,7 @@ def extract_dHdl_from_u_n(
 
     dHdl.set_index(["time", "fep-lambda"], inplace=True)
     dHdl = dHdl.mul({"fep": beta})
+    dHdl.name = "dH_dl"
 
     return dHdl
 
@@ -1037,7 +1042,7 @@ def extract_dHdl(
         data = data.iloc[:, col_indices]
         if column_lambda2 is None:
             # dU_back: U(l-dl) - U(l); dU_forw: U(l+dl) - U(l)
-            data.columns = ["time", "fep-lambda", "dlambda", "dU_back", "dU_forw"]
+            data.columns = ["time", "fep-lambda", "dlambda", "dU_forw", "dU_back"]
             data["fep-lambda"] = data["fep-lambda"].apply(lambda x: round(x, prec))
             data["fep"] = (data.dU_forw - data.dU_back) / (2 * data.dlambda)
             data.drop(columns=["dlambda", "dU_back", "dU_forw"], inplace=True)
@@ -1050,8 +1055,8 @@ def extract_dHdl(
                 "dlambda_coul",
                 "dU_back_vdw",
                 "dU_forw_vdw",
-                "dU_back_coul",
                 "dU_forw_coul",
+                "dU_back_coul",
             ]
             data["vdw-lambda"] = data["vdw-lambda"].apply(lambda x: round(x, prec))
             data["coul"] = (data.dU_forw_coul - data.dU_back_coul) / (
@@ -1077,6 +1082,7 @@ def extract_dHdl(
     else:
         dHdl.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
         dHdl = dHdl.mul({"coul": beta, "vdw": beta})
+    dHdl.name = "dH_dl"
 
     return dHdl
 
