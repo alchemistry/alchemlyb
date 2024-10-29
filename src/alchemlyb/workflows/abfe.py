@@ -444,7 +444,11 @@ class ABFE(WorkflowBase):
         if isinstance(estimators, str):
             estimators = (estimators,)
 
-        self.check_estimators_availability(estimators)
+        for estimator in estimators:
+            if estimator not in (FEP_ESTIMATORS + TI_ESTIMATORS):
+                msg = f"Estimator {estimator} is not available in {FEP_ESTIMATORS + TI_ESTIMATORS}."
+                logger.error(msg)
+                raise ValueError(msg)
 
         logger.info(f"Start running estimator: {','.join(estimators)}.")
         self.estimator = {}
@@ -465,6 +469,9 @@ class ABFE(WorkflowBase):
                 logger.warning("u_nk has not been preprocessed.")
             logger.info(f"A total {len(u_nk)} lines of u_nk is used.")
 
+        self._fit_estimators(dHdl, estimators, kwargs, u_nk)
+
+    def _fit_estimators(self, dHdl, estimators, kwargs, u_nk):
         for estimator in estimators:
             if estimator == "MBAR":
                 logger.info("Run MBAR estimator.")
@@ -479,13 +486,6 @@ class ABFE(WorkflowBase):
             elif estimator == "TI":
                 logger.info("Run TI estimator.")
                 self.estimator[estimator] = TI(**kwargs).fit(dHdl)
-
-    def check_estimators_availability(self, estimators):
-        for estimator in estimators:
-            if estimator not in (FEP_ESTIMATORS + TI_ESTIMATORS):
-                msg = f"Estimator {estimator} is not available in {FEP_ESTIMATORS + TI_ESTIMATORS}."
-                logger.error(msg)
-                raise ValueError(msg)
 
     def generate_result(self):
         """Summarise the result into a dataframe.
