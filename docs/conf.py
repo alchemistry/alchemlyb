@@ -54,7 +54,8 @@ master_doc = "index"
 # General information about the project.
 now = datetime.datetime.now()
 project = "alchemlyb"
-author = 'The alchemlyb development team (see <a href="https://raw.githubusercontent.com/alchemistry/alchemlyb/master/AUTHORS">AUTHORS</a>)'
+author = 'The alchemlyb development team ' \
+    + '(see <a href="https://raw.githubusercontent.com/alchemistry/alchemlyb/master/AUTHORS">AUTHORS</a>)'
 copyright = f"2017-{now.year}, " + author
 
 
