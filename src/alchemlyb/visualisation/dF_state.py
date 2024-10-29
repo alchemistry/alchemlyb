@@ -226,9 +226,6 @@ def sort_colors(colors, estimators):
 
 
 def get_determine_orientation(max_length, nb, orientation):
-
-    mnb = None # A default value for landscape orientation
-
     # Get the determine orientation
     if orientation == "landscape":
         if max_length < 8:
