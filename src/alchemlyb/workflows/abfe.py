@@ -469,9 +469,6 @@ class ABFE(WorkflowBase):
                 logger.warning("u_nk has not been preprocessed.")
             logger.info(f"A total {len(u_nk)} lines of u_nk is used.")
 
-        self._fit_estimators(dHdl, estimators, kwargs, u_nk)
-
-    def _fit_estimators(self, dHdl, estimators, kwargs, u_nk):
         for estimator in estimators:
             if estimator == "MBAR":
                 logger.info("Run MBAR estimator.")
@@ -556,7 +553,11 @@ class ABFE(WorkflowBase):
             stages = dHdl.reset_index("time").index.names
             logger.info("use the stage name from dHdl")
 
-        self.handle_stages(data_dict, stages)
+        for stage in stages:
+            data_dict["name"].append(stage.split("-")[0])
+            data_dict["state"].append("Stages")
+        data_dict["name"].append("TOTAL")
+        data_dict["state"].append("Stages")
 
         col_names = []
         for estimator_name, estimator in self.estimator.items():
@@ -571,7 +572,11 @@ class ABFE(WorkflowBase):
             col_names.append(estimator_name + "_Error")
             data_dict[estimator_name] = []
             data_dict[estimator_name + "_Error"] = []
-            self.handle_states(d_delta_f_, data_dict, delta_f_, estimator_name, num_states)
+            for index in range(1, num_states):
+                data_dict[estimator_name].append(delta_f_.iloc[index - 1, index])
+                data_dict[estimator_name + "_Error"].append(
+                    d_delta_f_.iloc[index - 1, index]
+                )
 
             logger.info(f"Generate the staged result from estimator {estimator_name}")
             for index, stage in enumerate(stages):
@@ -636,20 +641,6 @@ class ABFE(WorkflowBase):
         self.summary = summary
         logger.info(f"Write results:\n{summary.to_string()}")
         return summary
-
-    def handle_states(self, d_delta_f_, data_dict, delta_f_, estimator_name, num_states):
-        for index in range(1, num_states):
-            data_dict[estimator_name].append(delta_f_.iloc[index - 1, index])
-            data_dict[estimator_name + "_Error"].append(
-                d_delta_f_.iloc[index - 1, index]
-            )
-
-    def handle_stages(self, data_dict, stages):
-        for stage in stages:
-            data_dict["name"].append(stage.split("-")[0])
-            data_dict["state"].append("Stages")
-        data_dict["name"].append("TOTAL")
-        data_dict["state"].append("Stages")
 
     def plot_overlap_matrix(self, overlap="O_MBAR.pdf", ax=None):
         """Plot the overlap matrix for MBAR estimator using
