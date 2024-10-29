@@ -67,20 +67,127 @@ def plot_dF_state(
             estimators,
         ]
 
-    formatted_data = build_formated_data(estimators)
+    formatted_data = []
+    for dhdl in estimators:
+        try:
+            len(dhdl)
+            formatted_data.append(dhdl)
+        except TypeError:
+            formatted_data.append(
+                [
+                    dhdl,
+                ]
+            )
 
     if units is None:
         units = formatted_data[0][0].delta_f_.attrs["energy_unit"]
 
     estimators = formatted_data
 
-    dF_list, error_list, max_length = build_dF(estimators, units)
+    # Get the dF
+    dF_list = []
+    error_list = []
+    max_length = 0
+    convert = get_unit_converter(units)
+    for dhdl_list in estimators:
+        len_dF = sum([len(dhdl.delta_f_) - 1 for dhdl in dhdl_list])
+        if len_dF > max_length:
+            max_length = len_dF
+        dF = []
+        error = []
+        for dhdl in dhdl_list:
+            for i in range(len(dhdl.delta_f_) - 1):
+                dF.append(convert(dhdl.delta_f_).iloc[i, i + 1])
+                error.append(convert(dhdl.d_delta_f_).iloc[i, i + 1])
 
-    axs, fig, mnb, xs = get_determine_orientation(max_length, nb, orientation)
+        dF_list.append(dF)
+        error_list.append(error)
 
-    colors = sort_colors(colors, estimators)
+    # Get the determine orientation
+    if orientation == "landscape":
+        if max_length < 8:
+            fig, ax = plt.subplots(figsize=(8, 6))
+        else:
+            fig, ax = plt.subplots(figsize=(max_length, 6))
+        axs = [
+            ax,
+        ]
+        xs = [
+            np.arange(max_length),
+        ]
+    elif orientation == "portrait":
+        if max_length < nb:
+            xs = [
+                np.arange(max_length),
+            ]
+            fig, ax = plt.subplots(figsize=(8, 6))
+            axs = [
+                ax,
+            ]
+        else:
+            xs = np.array_split(np.arange(max_length), max_length / nb + 1)
+            fig, axs = plt.subplots(nrows=len(xs), figsize=(8, 6))
+        mnb = max([len(i) for i in xs])
+    else:
+        raise ValueError(
+            "Not recognising {}, only supports 'landscape' or 'portrait'.".format(
+                orientation
+            )
+        )
 
-    labels = sort_labels(estimators, labels)
+    # Sort out the colors
+    if colors is None:
+        colors_dict = {
+            "TI": "#C45AEC",
+            "TI-CUBIC": "#33CC33",
+            "DEXP": "#F87431",
+            "IEXP": "#FF3030",
+            "GINS": "#EAC117",
+            "GDEL": "#347235",
+            "BAR": "#6698FF",
+            "UBAR": "#817339",
+            "RBAR": "#C11B17",
+            "MBAR": "#F9B7FF",
+        }
+        colors = []
+        for dhdl in estimators:
+            dhdl = dhdl[0]
+            if isinstance(dhdl, TI):
+                colors.append(colors_dict["TI"])
+            elif isinstance(dhdl, BAR):
+                colors.append(colors_dict["BAR"])
+            elif isinstance(dhdl, MBAR):
+                colors.append(colors_dict["MBAR"])
+    else:
+        if len(colors) >= len(estimators):
+            pass
+        else:
+            raise ValueError(
+                "Number of colors ({}) should be larger than the number of data ({})".format(
+                    len(colors), len(estimators)
+                )
+            )
+
+    # Sort out the labels
+    if labels is None:
+        labels = []
+        for dhdl in estimators:
+            dhdl = dhdl[0]
+            if isinstance(dhdl, TI):
+                labels.append("TI")
+            elif isinstance(dhdl, BAR):
+                labels.append("BAR")
+            elif isinstance(dhdl, MBAR):
+                labels.append("MBAR")
+    else:
+        if len(labels) == len(estimators):
+            pass
+        else:
+            raise ValueError(
+                "Length of labels ({}) should be the same as the number of data ({})".format(
+                    len(labels), len(estimators)
+                )
+            )
 
     # Plot the figure
     width = 1.0 / (len(estimators) + 1)
@@ -105,7 +212,11 @@ def plot_dF_state(
                 error_kw=dict(elinewidth=elw, ecolor="black", capsize=0.5 * elw),
             )
             lines += (line[0],)
-        handle_directions(ax)
+        for dir in ["left", "right", "top", "bottom"]:
+            if dir == "left":
+                ax.yaxis.set_ticks_position(dir)
+            else:
+                ax.spines[dir].set_color("none")
 
         if orientation == "landscape":
             plt.yticks(fontsize=8)
@@ -155,143 +266,3 @@ def plot_dF_state(
 
     leg.get_frame().set_alpha(0.5)
     return fig
-
-
-def handle_directions(ax):
-    for dir in ["left", "right", "top", "bottom"]:
-        if dir == "left":
-            ax.yaxis.set_ticks_position(dir)
-        else:
-            ax.spines[dir].set_color("none")
-
-
-def sort_labels(estimators, labels):
-    # Sort out the labels
-    if labels is None:
-        labels = []
-        for dhdl in estimators:
-            dhdl = dhdl[0]
-            if isinstance(dhdl, TI):
-                labels.append("TI")
-            elif isinstance(dhdl, BAR):
-                labels.append("BAR")
-            elif isinstance(dhdl, MBAR):
-                labels.append("MBAR")
-    else:
-        if len(labels) == len(estimators):
-            pass
-        else:
-            raise ValueError(
-                "Length of labels ({}) should be the same as the number of data ({})".format(
-                    len(labels), len(estimators)
-                )
-            )
-    return labels
-
-
-def sort_colors(colors, estimators):
-    # Sort out the colors
-    if colors is None:
-        colors_dict = {
-            "TI": "#C45AEC",
-            "TI-CUBIC": "#33CC33",
-            "DEXP": "#F87431",
-            "IEXP": "#FF3030",
-            "GINS": "#EAC117",
-            "GDEL": "#347235",
-            "BAR": "#6698FF",
-            "UBAR": "#817339",
-            "RBAR": "#C11B17",
-            "MBAR": "#F9B7FF",
-        }
-        colors = []
-        for dhdl in estimators:
-            dhdl = dhdl[0]
-            if isinstance(dhdl, TI):
-                colors.append(colors_dict["TI"])
-            elif isinstance(dhdl, BAR):
-                colors.append(colors_dict["BAR"])
-            elif isinstance(dhdl, MBAR):
-                colors.append(colors_dict["MBAR"])
-    else:
-        if len(colors) >= len(estimators):
-            pass
-        else:
-            raise ValueError(
-                "Number of colors ({}) should be larger than the number of data ({})".format(
-                    len(colors), len(estimators)
-                )
-            )
-    return colors
-
-
-def get_determine_orientation(max_length, nb, orientation):
-    # Get the determine orientation
-    if orientation == "landscape":
-        if max_length < 8:
-            fig, ax = plt.subplots(figsize=(8, 6))
-        else:
-            fig, ax = plt.subplots(figsize=(max_length, 6))
-        axs = [
-            ax,
-        ]
-        xs = [
-            np.arange(max_length),
-        ]
-    elif orientation == "portrait":
-        if max_length < nb:
-            xs = [
-                np.arange(max_length),
-            ]
-            fig, ax = plt.subplots(figsize=(8, 6))
-            axs = [
-                ax,
-            ]
-        else:
-            xs = np.array_split(np.arange(max_length), max_length / nb + 1)
-            fig, axs = plt.subplots(nrows=len(xs), figsize=(8, 6))
-        mnb = max([len(i) for i in xs])
-    else:
-        raise ValueError(
-            "Not recognising {}, only supports 'landscape' or 'portrait'.".format(
-                orientation
-            )
-        )
-    return axs, fig, mnb, xs
-
-
-def build_dF(estimators, units):
-    # Get the dF
-    dF_list = []
-    error_list = []
-    max_length = 0
-    convert = get_unit_converter(units)
-    for dhdl_list in estimators:
-        len_dF = sum([len(dhdl.delta_f_) - 1 for dhdl in dhdl_list])
-        if len_dF > max_length:
-            max_length = len_dF
-        dF = []
-        error = []
-        for dhdl in dhdl_list:
-            for i in range(len(dhdl.delta_f_) - 1):
-                dF.append(convert(dhdl.delta_f_).iloc[i, i + 1])
-                error.append(convert(dhdl.d_delta_f_).iloc[i, i + 1])
-
-        dF_list.append(dF)
-        error_list.append(error)
-    return dF_list, error_list, max_length
-
-
-def build_formated_data(estimators):
-    formatted_data = []
-    for dhdl in estimators:
-        try:
-            len(dhdl)
-            formatted_data.append(dhdl)
-        except TypeError:
-            formatted_data.append(
-                [
-                    dhdl,
-                ]
-            )
-    return formatted_data
