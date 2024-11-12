@@ -11,3 +11,4 @@ dependencies:
 - pyarrow
 - matplotlib>=3.7
 - loguru
+- joblib
