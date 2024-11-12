@@ -223,47 +223,6 @@ def test_enthalpy_entropy_mbar(gmx_benzene_Coulomb_u_nk):
     )
 
 
-def test_enthalpy_entropy_bar(gmx_benzene_Coulomb_u_nk):
-    bar = BAR(n_bootstraps=2)
-    u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
-    bar.fit(u_nk, use_mbar=True)
-    lx = len(bar.d_delta_f_) - 1
-    assert bar.delta_f_.iloc[0, :].to_numpy() == pytest.approx(
-        np.array([0.0, 1.609778, 2.547866, 2.984183, 3.044385]), abs=1e-6
-    )
-
-    bar = BAR()
-    bar.fit(u_nk, compute_entropy_enthalpy=True, use_mbar=True)
-    assert bar.delta_f_.iloc[0, :].to_numpy() == pytest.approx(
-        np.array([0.0, 1.609778, 2.547866, 2.984183, 3.044385]), abs=1e-6
-    )
-    assert bar.delta_h_.iloc[0, :].to_numpy() == pytest.approx(
-        np.array([0.0, 1.337356, 2.140400, 2.512384, 2.563935]), abs=1e-6
-    )
-    assert bar.delta_s_.iloc[0, :].to_numpy() == pytest.approx(
-        np.array([0.0, -0.272422, -0.407467, -0.471798, -0.480450]), abs=1e-6
-    )
-    assert np.array(
-        [bar.d_delta_f_.to_numpy()[i + 1, i] for i in range(lx)]
-    ) == pytest.approx(np.array([0.009879, 0.008740, 0.007372, 0.006381]), abs=1e-6)
-    assert np.array(
-        [bar.d_delta_h_.to_numpy()[i + 1, i] for i in range(lx)]
-    ) == pytest.approx(np.array([0.011062, 0.008801, 0.007036, 0.006106]), abs=1e-6)
-    assert np.array(
-        [bar.d_delta_s_.to_numpy()[i + 1, i] for i in range(lx)]
-    ) == pytest.approx(np.array([0.008932, 0.006298, 0.004190, 0.002941]), abs=1e-6)
-
-
-def test_bar_contributions_no_mbar_error(gmx_benzene_Coulomb_u_nk):
-    bar = BAR()
-    u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
-    with pytest.raises(
-        ValueError,
-        match="Cannot compute the enthalpy and entropy with BAR, set use_mbar=True.",
-    ):
-        bar.fit(u_nk, compute_entropy_enthalpy=True, use_mbar=False)
-
-
 def test_wrong_initial_f_k():
     with pytest.raises(
         ValueError, match="Only `BAR` is supported as string input to `initial_f_k`"

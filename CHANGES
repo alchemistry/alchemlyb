@@ -18,9 +18,7 @@ The rules for this file:
 
 Enhancements
   - Parallelise read and preprocess for ABFE workflow. (PR #371)
-  - Added matrices for entropy and enthalpy for MBAR and BAR,
-    when BAR is substituted with a series of 2-state MBAR calculations.
-    (PR #406)
+  - Added matrices for entropy and enthalpy for MBAR (PR #406)
 
 
 09/19/2024 orbeckst, jaclark5
