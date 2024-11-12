@@ -768,23 +768,41 @@ def extract_u_nk(
                             lambda1, lambda12
                         )
                     )
-                if (
-                    u_nk.loc[u_nk[lambda1_col] == lambda1, column_name].shape[0]
-                    != tmp_df2["dU_nk"].shape[0]
-                ):
-                    raise ValueError(
-                        "Number of energy values in file, {}, N={}, inconsistent with previous files of length, {}.".format(
-                            file,
-                            tmp_df2["dU_nk"].shape[0],
-                            u_nk.loc[u_nk[lambda1_col] == lambda1, column_name].shape[
-                                0
-                            ],
-                        )
-                    )
                 if lambda1 == lambda12 and not np.all(tmp_df2["dU_nk"][0] == 0):
                     raise ValueError(
                         f"The difference in dU should be zero when lambda = lambda', {lambda1} = {lambda12},"
                         " Check that 'column_dU' was defined correctly."
+                    )
+                                        
+                if (
+                    u_nk.loc[u_nk[lambda1_col] == lambda1, column_name].shape[0]
+                    != tmp_df2["dU_nk"].shape[0]
+                ):
+                    old_length = tmp_df2["dU_nk"].shape[0]
+                    start = u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[0]
+                    stop = u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[-1]
+                    stepsize = (
+                        u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[1] 
+                        - u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[0]
+                    )
+                    # Fill in gaps where 'time' is NaN
+                    nan_index = np.unique(np.where(tmp_df2['time'].isnull())[0])
+                    for index in nan_index:
+                        tmp_df2.loc[index, "time"] = tmp_df2.loc[index-1, "time"] + stepsize
+                    # Add rows of NaN for timesteps that are missing
+                    new_index = pd.Index(np.arange(start, stop+stepsize, stepsize), name="time")
+                    tmp_df2 = tmp_df2.set_index("time").reindex(new_index).reset_index()
+                    warnings.warn(
+                        "Number of energy values in file, {}, N={}, inconsistent with previous".format(
+                            file,
+                            old_length,
+                        )
+                        + " files of length, {}. Adding NaN to row: {}".format(
+                            u_nk.loc[u_nk[lambda1_col] == lambda1, column_name].shape[
+                                0
+                            ],
+                            np.unique(np.where(tmp_df2.isna())[0]),
+                        )
                     )
 
                 # calculate reduced potential u_k = dH + pV + U
@@ -802,6 +820,8 @@ def extract_u_nk(
         u_nk.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
     u_nk.name = "u_nk"
 
+    u_nk = u_nk.dropna()
+    
     return u_nk
 
 
