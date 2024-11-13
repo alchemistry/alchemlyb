@@ -97,6 +97,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         Handle initial estimate, initial_f_k, from bar in the instance
         that not all lambda states represented as column headers are
         represented in the indices of u_nk.
+    .. versionchanged:: 2.5.0
         Added computation of enthalpy and entropy
 
     """
@@ -231,6 +232,8 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
             self._d_delta_h_.attrs = u_nk.attrs
             self._delta_s_.attrs = u_nk.attrs
             self._d_delta_s_.attrs = u_nk.attrs
+            self._delta_s_.attrs["energy_unit"] = "k"
+            self._d_delta_s_.attrs["energy_unit"] = "k"
 
         return self
 
