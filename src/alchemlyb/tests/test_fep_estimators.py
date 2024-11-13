@@ -209,7 +209,7 @@ def test_enthalpy_entropy_mbar(gmx_benzene_Coulomb_u_nk):
     assert mbar.delta_h_.iloc[0, :].to_numpy() == pytest.approx(
         np.array([0.0, 1.241970, 1.695000, 1.706555, 1.388906]), abs=1e-6
     )
-    assert mbar.delta_s_.iloc[0, :].to_numpy() == pytest.approx(
+    assert mbar.delta_sT_.iloc[0, :].to_numpy() == pytest.approx(
         np.array([0.0, -0.377099, -0.862990, -1.279746, -1.652250]), abs=1e-6
     )
     assert mbar.d_delta_f_.iloc[0, :].to_numpy() == pytest.approx(
@@ -218,7 +218,7 @@ def test_enthalpy_entropy_mbar(gmx_benzene_Coulomb_u_nk):
     assert mbar.d_delta_h_.iloc[0, :].to_numpy() == pytest.approx(
         np.array([0.0, 0.011598, 0.016538, 0.018077, 0.018940]), abs=1e-6
     )
-    assert mbar.d_delta_s_.iloc[0, :].to_numpy() == pytest.approx(
+    assert mbar.d_delta_sT_.iloc[0, :].to_numpy() == pytest.approx(
         np.array([0.0, 0.012242, 0.019519, 0.023606, 0.026107]), abs=1e-6
     )
 

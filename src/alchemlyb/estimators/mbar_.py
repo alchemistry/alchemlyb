@@ -64,10 +64,10 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         The estimated statistical uncertainty (one standard deviation) in
         dimensionless enthalpy differences.
 
-    delta_s_ : DataFrame, optional
+    delta_sT_ : DataFrame, optional
         The estimated dimensionless entropy difference between each state.
 
-    d_delta_s_ : DataFrame
+    d_delta_sT_ : DataFrame
         The estimated statistical uncertainty (one standard deviation) in
         dimensionless entropy differences.
 
@@ -218,10 +218,10 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
             self._d_delta_h_ = pd.DataFrame(
                 out["dDelta_u"], columns=self._states_, index=self._states_
             )
-            self._delta_s_ = pd.DataFrame(
+            self._delta_sT_ = pd.DataFrame(
                 out["Delta_s"], columns=self._states_, index=self._states_
             )
-            self._d_delta_s_ = pd.DataFrame(
+            self._d_delta_sT_ = pd.DataFrame(
                 out["dDelta_s"], columns=self._states_, index=self._states_
             )
 
@@ -230,8 +230,8 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         if compute_entropy_enthalpy:
             self._delta_h_.attrs = u_nk.attrs
             self._d_delta_h_.attrs = u_nk.attrs
-            self._delta_s_.attrs = u_nk.attrs
-            self._d_delta_s_.attrs = u_nk.attrs
+            self._delta_sT_.attrs = u_nk.attrs
+            self._d_delta_sT_.attrs = u_nk.attrs
 
         return self
 

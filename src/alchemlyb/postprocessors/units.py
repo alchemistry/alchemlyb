@@ -18,7 +18,7 @@ def to_kT(df, T=None):
 
     Note that if entropy values are passed it is assumed that they are
     multiplied by the temperature, S * T.
-    
+
     If temperature `T` is not provided, the DataFrame need to have attribute
     `temperature` and `energy_unit`. Otherwise, the temperature of the output
     dateframe will be set accordingly.
@@ -68,7 +68,7 @@ def to_kcalmol(df, T=None):
 
     Note that if entropy values are passed, the result is S * T in units
     of kcal/mol.
-    
+
     If temperature `T` is not provided, the DataFrame need to have attribute
     `temperature` and `energy_unit`. Otherwise, the temperature of the output
     dateframe will be set accordingly.
@@ -96,7 +96,7 @@ def to_kJmol(df, T=None):
 
     Note that if entropy values are passed, the result is S * T in units
     of kJ/mol.
-    
+
     If temperature `T` is not provided, the DataFrame need to have attribute
     `temperature` and `energy_unit`. Otherwise, the temperature of the output
     dateframe will be set accordingly.
