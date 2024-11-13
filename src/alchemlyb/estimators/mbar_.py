@@ -232,8 +232,6 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
             self._d_delta_h_.attrs = u_nk.attrs
             self._delta_s_.attrs = u_nk.attrs
             self._d_delta_s_.attrs = u_nk.attrs
-            self._delta_s_.attrs["energy_unit"] = "k"
-            self._d_delta_s_.attrs["energy_unit"] = "k"
 
         return self
 

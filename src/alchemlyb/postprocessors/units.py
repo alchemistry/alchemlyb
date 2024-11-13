@@ -16,6 +16,9 @@ R_kJmol = R / 1000
 def to_kT(df, T=None):
     """Convert the unit of a DataFrame to `kT`.
 
+    Note that if entropy values are passed it is assumed that they are
+    multiplied by the temperature, S * T.
+    
     If temperature `T` is not provided, the DataFrame need to have attribute
     `temperature` and `energy_unit`. Otherwise, the temperature of the output
     dateframe will be set accordingly.
@@ -25,7 +28,7 @@ def to_kT(df, T=None):
     df : DataFrame
         DataFrame to convert unit.
     T : float
-        Temperature (default: None).
+        Temperature (default: None) in Kelvin.
 
     Returns
     -------
@@ -34,6 +37,8 @@ def to_kT(df, T=None):
     """
     new_df = df.copy()
     if T is not None:
+        if T < 273:
+            raise ValueError("Temperature must be in Kelvin.")
         new_df.attrs["temperature"] = T
     elif "temperature" not in df.attrs:
         raise TypeError("Attribute temperature not found in the input " "Dataframe.")
@@ -61,6 +66,9 @@ def to_kT(df, T=None):
 def to_kcalmol(df, T=None):
     """Convert the unit of a DataFrame to kcal/mol.
 
+    Note that if entropy values are passed, the result is S * T in units
+    of kcal/mol.
+    
     If temperature `T` is not provided, the DataFrame need to have attribute
     `temperature` and `energy_unit`. Otherwise, the temperature of the output
     dateframe will be set accordingly.
@@ -86,6 +94,9 @@ def to_kcalmol(df, T=None):
 def to_kJmol(df, T=None):
     """Convert the unit of a DataFrame to kJ/mol.
 
+    Note that if entropy values are passed, the result is S * T in units
+    of kJ/mol.
+    
     If temperature `T` is not provided, the DataFrame need to have attribute
     `temperature` and `energy_unit`. Otherwise, the temperature of the output
     dateframe will be set accordingly.
