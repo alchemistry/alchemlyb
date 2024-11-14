@@ -31,13 +31,7 @@ def _init_attrs_dict(func):
         dict_with_df = func(outfile, T, *args, **kwargs)
         for k in dict_with_df.keys():
             if dict_with_df[k] is not None:
-
-                if T < 273:
-                    raise ValueError("Temperature must be in Kelvin.")
-
                 dict_with_df[k].attrs["temperature"] = T
                 dict_with_df[k].attrs["energy_unit"] = "kT"
-
         return dict_with_df
-
     return wrapper

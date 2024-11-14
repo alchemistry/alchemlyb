@@ -37,8 +37,6 @@ def to_kT(df, T=None):
     """
     new_df = df.copy()
     if T is not None:
-        if T < 273:
-            raise ValueError("Temperature must be in Kelvin.")
         new_df.attrs["temperature"] = T
     elif "temperature" not in df.attrs:
         raise TypeError("Attribute temperature not found in the input " "Dataframe.")
