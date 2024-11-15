@@ -17,6 +17,7 @@ The rules for this file:
   * 2.5.0
 
 Enhancements
+  - Added matrices for entropy and enthalpy for MBAR (PR #406)
   - Parallelise read and preprocess for ABFE workflow. (PR #371)
   - Add support for LAMMPS FEP files (Issue #349, PR #348)
 
@@ -28,7 +29,7 @@ Enhancements
 Fixes
   - [doc] tutorial: use alchemlyb.concat (PR #399)
   - Resolve pandas FutureWarnings in bar_.py and mbar_.py (issue #408 PR #407)
- 
+
 
 09/17/2024 jaclark5, orbeckst
 

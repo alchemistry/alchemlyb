@@ -34,5 +34,4 @@ def _init_attrs_dict(func):
                 dict_with_df[k].attrs["temperature"] = T
                 dict_with_df[k].attrs["energy_unit"] = "kT"
         return dict_with_df
-
     return wrapper
