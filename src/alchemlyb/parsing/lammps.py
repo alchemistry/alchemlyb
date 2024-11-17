@@ -67,17 +67,17 @@ def beta_from_units(T, units):
     elif units == "lj":  # Nondimensional E and T scaled by epsilon
         beta = 1 / T
     elif units == "metal":  # E in eV, T in K
-        beta = 1 / (R_kJmol * kJ2kcal * T)
+        beta = 1 / (constants.R * T / constants.eV / constants.Avogadro)
     elif units == "si":  # E in J, T in K
-        beta = 1 / (constants.R * T * constants.physical_constants["electron volt"][0])
+        beta = 1 / (constants.R * T / constants.Avogadro)
     elif units == "cgs":  # E in ergs, T in K
-        beta = 1 / (constants.R * T * 1e-7)
+        beta = 1 / (constants.R * T / constants.Avogadro * 1e+7)
     elif units == "electron":  # E in Hartrees, T in K
-        beta = 1 / (constants.R * T * constants.physical_constants["Hartree energy"][0])
-    elif units == "micro":  # E in epicogram-micrometer^2/microsecond^2, T in K
-        beta = 1 / (constants.R * T * 1e-15)
+        beta = 1 / (constants.R * T / constants.Avogadro / constants.physical_constants["Hartree energy"][0])
+    elif units == "micro":  # E in picogram-micrometer^2/microsecond^2, T in K
+        beta = 1 / (constants.R * T / constants.Avogadro * 1e+15)
     elif units == "nano":  # E in attogram-nanometer^2/nanosecond^2, T in K
-        beta = 1 / (constants.R * T * 1e-21)
+        beta = 1 / (constants.R * T  / constants.Avogadro * 1e+21)
     else:
         raise ValueError(
             "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
@@ -111,34 +111,34 @@ def energy_from_units(units):
 
     """
     if units == "real":  # E in kcal/mol, Vol in Å^3, pressure in atm
-        beta = constants.atm * constants.angstrom**3 / 1e3 * kJ2kcal * constants.N_A
+        scaling_factor = constants.atm * constants.angstrom**3 / 1e3 * kJ2kcal * constants.N_A
     elif (
         units == "lj"
     ):  # Nondimensional E scaled by epsilon, vol in sigma^3, pressure in epsilon / sigma^3
-        beta = 1
+        scaling_factor = 1
     elif units == "metal":  # E in eV, vol in Å^3, pressure in bar
-        beta = constants.bar * constants.angstrom**3 / constants.eV
+        scaling_factor = constants.bar * constants.angstrom**3 / constants.eV
     elif units == "si":  # E in J, vol in m^3, pressure in Pa
-        beta = 1
+        scaling_factor = 1
     elif units == "cgs":  # E in ergs, vol in cm^3, pressure in dyne/cm^2
-        beta = 1
+        scaling_factor = 1
     elif units == "electron":  # E in Hartrees, vol in Bohr^3, pressure in Pa
-        Hartree2J = 4.3597447222060e-8
-        Bohr2m = 5.29177210544e11
-        beta = 1 / Hartree2J / Bohr2m**3
+        Hartree2J = constants.physical_constants["Hartree energy"][0]
+        Bohr2m = constants.physical_constants["Bohr radius"][0]
+        scaling_factor = Bohr2m**3 / Hartree2J
     elif units == "micro":
         # E in picogram-micrometer^2/microsecond^2, vol in um^3, pressure in picogram/(micrometer-microsecond^2)
-        beta = 1
+        scaling_factor = 1
     elif units == "nano":
         # E in attogram-nanometer^2/nanosecond^2, vol in nm^3, pressure in attogram/(nanometer-nanosecond^2)
-        beta = 1
+        scaling_factor= 1
     else:
         raise ValueError(
             "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
             " lj. metal, micro, nano, real, si".format(units)
         )
 
-    return beta
+    return scaling_factor
 
 
 def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
@@ -229,7 +229,7 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
         Path(s) to fepout files to extract data from.
     indices : list[int], default=[1,2]
         In provided file names, using underscore as a separator, these indices mark the part of the filename
-        containing the lambda information.
+        containing the lambda information. If three values, implies a value of lambda2 is present.
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
     force : bool, default=False
@@ -241,8 +241,10 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
         List of tuples lambda values contained in the file.
     lambda_pairs : list
         List of tuples containing two floats, lambda and lambda'.
+    lambda2 : float
+        Value of lambda2 that is held constant.
 
-    .. versionadded:: 2.4.1
+    .. versionadded:: 2.5.0
 
     """
 
@@ -263,15 +265,13 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
                 "More than one value of lambda2 is present in the provided files."
                 f" Restrict filename input to one of: {lambda2}"
             )
+        else:
+            lambda2 = lambda2[0]
     else:
         lambda2 = None
 
     lambda_values = sorted(list(set([x for y in lambda_pairs for x in y])))
-    check_float = [x for x in lambda_values if not _isfloat(x)]
-    if check_float:
-        raise ValueError(
-            "Lambda values must be convertible to floats: {}".format(check_float)
-        )
+
     if [x for x in lambda_values if round(float(x), prec) < 0]:
         raise ValueError("Lambda values must be positive: {}".format(lambda_values))
 
@@ -354,8 +354,8 @@ def extract_u_nk_from_u_n(
 
     Parameters
     ----------
-    fep_files : str
-        Path to fepout file(s) to extract data from. Filenames and paths are
+    fep_files : str or list
+        If not a list, a str representing the path to fepout file(s) to extract data from. Filenames and paths are
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
@@ -370,7 +370,7 @@ def extract_u_nk_from_u_n(
         Dependence of changing variable on the potential energy, which must be separable.
     index : int, default=-1
         In provided file names, using underscore as a separator, these indices mark the part of the filename
-        containing the lambda information for :func:`alchemlyb.parsing._get_bar_lambdas`. If ``column_lambda2 != None``
+        containing the lambda information for :func:`alchemlyb.parsing._lambda_from_filename`. If ``column_lambda2 != None``
         this list should be of length three, where the last value represents the invariant lambda.
     units : str, default="real"
         Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
@@ -401,7 +401,10 @@ def extract_u_nk_from_u_n(
 
     """
     # Collect Files
-    files = glob.glob(fep_files)
+    if isinstance(fep_files, list):
+        files = fep_files
+    else:
+        files = glob.glob(fep_files)
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
 
@@ -539,8 +542,8 @@ def extract_u_nk(
 
     Parameters
     ----------
-    fep_files : str
-        Path to fepout file(s) to extract data from. Filenames and paths are
+    fep_files : str or list
+        If not a list of filenames, represents the path to fepout file(s) to extract data from. Filenames and paths are
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
@@ -592,7 +595,11 @@ def extract_u_nk(
     """
 
     # Collect Files
-    files = glob.glob(fep_files)
+    if isinstance(fep_files, list):
+        files = fep_files
+    else:
+        files = glob.glob(fep_files)
+        
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
 
@@ -603,11 +610,10 @@ def extract_u_nk(
             )
     elif ensemble != "nvt":
         raise ValueError("Only ensembles of nvt or npt are supported.")
-    else:
-        if pressure is not None:
-            raise ValueError(
-                "There is no volume correction in the nvt ensemble, the pressure value will not be used."
-            )
+    elif pressure is not None:
+        raise ValueError(
+            "There is no volume correction in the nvt ensemble, the pressure value will not be used."
+        )
 
     beta = beta_from_units(T, units)
 
@@ -635,7 +641,11 @@ def extract_u_nk(
     lambda_values, _, lambda2 = _get_bar_lambdas(
         files, indices=indices, prec=prec, force=force
     )
-
+    
+    if column_lambda2 is not None and lambda2 is None:
+        raise ValueError("If column_lambda2 is defined, the length of `indices` should be 3 indicating the value of the "
+                         "second value of lambda held constant.")
+        
     # Set-up u_nk and column names / indices
     if column_lambda2 is None:  # No second lambda state value
         u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
@@ -652,7 +662,7 @@ def extract_u_nk(
         columns_b = lambda_values  # u_nk cols > 1
     else:  # There is a frozen, second lambda state
         u_nk = pd.DataFrame(columns=["time", "coul-lambda", "vdw-lambda"])
-        lc = len(lambda_values) ** 2
+        lc = len(lambda_values)
         col_indices = (
             [0] + list(columns_lambda1) + [column_lambda2, column_U, column_dU]
         )  # columns to pull from lammps dump file
@@ -693,10 +703,10 @@ def extract_u_nk(
             raise ValueError("File not found: {}".format(file))
 
         tmp_data = pd.read_csv(file, sep=" ", comment="#", header=None)
-        ind = [x for x in col_indices if x > len(tmp_data.columns)]
+        ind = [x for x in col_indices if x >= len(tmp_data.columns)]
         if len(ind) > 0:
             raise ValueError(
-                "Number of columns, {}, is less than indices: {}".format(
+                "Number of columns, {}, is less than necessary for indices: {}".format(
                     len(tmp_data.columns), ind
                 )
             )
@@ -715,9 +725,29 @@ def extract_u_nk(
 
         # Iterate over lambda states (configurations equilibrated at certain lambda value)
         for lambda1 in list(data[lambda1_col].unique()):
+            if not np.isnan(lambda1) and lambda1 not in lambda_values:
+                raise ValueError(
+                    "Lambda value found in a file does not align with those in the filenames."
+                    " Check that 'columns_lambda1[0]' or 'prec' are defined correctly. lambda"
+                    " file: {}; lambda columns: {}".format(lambda1, lambda_values)
+            )
             tmp_df = data.loc[data[lambda1_col] == lambda1]
             # Iterate over evaluated lambda' values at specific lambda state
             for lambda12 in list(tmp_df[lambda1_2_col].unique()):
+                column_list = [
+                    ii
+                    for ii, x in enumerate(lambda_values)
+                    if round(float(x), prec) == lambda12
+                ]
+                if not column_list:
+                    raise ValueError(
+                        "Lambda value found in a file does not align with those in the filenames. "
+                        "Check that 'columns_lambda1[1]' or 'prec' are defined correctly. lambda"
+                        " file: {}; lambda columns: {}".format(lambda12, lambda_values)
+                    )
+                else:
+                    column_name = lambda_values[column_list[0]]
+                    
                 tmp_df2 = tmp_df.loc[tmp_df[lambda1_2_col] == lambda12]
 
                 lr = tmp_df2.shape[0]
@@ -741,20 +771,6 @@ def extract_u_nk(
                         else tmp_df3
                     )
 
-                column_list = [
-                    ii
-                    for ii, x in enumerate(lambda_values)
-                    if round(float(x), prec) == lambda12
-                ]
-                if not column_list:
-                    raise ValueError(
-                        "Lambda values found in files do not align with those in the filenames. "
-                        "Check that 'columns_lambda' or 'prec' are defined correctly. lambda"
-                        " file: {}; lambda columns: {}".format(lambda12, lambda_values)
-                    )
-                else:
-                    column_name = lambda_values[column_list[0]]
-
                 if column_lambda2 is not None:
                     column_name = (
                         (lambda2, column_name)
@@ -762,7 +778,10 @@ def extract_u_nk(
                         else (column_name, lambda2)
                     )
 
-                if u_nk.loc[u_nk[lambda1_col] == lambda1, column_name][0] != abs(0):
+                column_index = list(u_nk.columns).index(column_name)
+                row_indices = np.where(u_nk[lambda1_col] == lambda1)[0]
+                
+                if u_nk.iloc[row_indices, column_index][0] != 0:
                     raise ValueError(
                         "Energy values already available for lambda, {}, lambda', {}. Check for a duplicate file.".format(
                             lambda1, lambda12
@@ -773,14 +792,12 @@ def extract_u_nk(
                         f"The difference in dU should be zero when lambda = lambda', {lambda1} = {lambda12},"
                         " Check that 'column_dU' was defined correctly."
                     )
-                                        
+                    
                 if (
-                    u_nk.loc[u_nk[lambda1_col] == lambda1, column_name].shape[0]
+                    u_nk.iloc[row_indices, column_index].shape[0]
                     != tmp_df2["dU_nk"].shape[0]
                 ):
                     old_length = tmp_df2["dU_nk"].shape[0]
-                    start = u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[0]
-                    stop = u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[-1]
                     stepsize = (
                         u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[1] 
                         - u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[0]
@@ -789,16 +806,18 @@ def extract_u_nk(
                     nan_index = np.unique(np.where(tmp_df2['time'].isnull())[0])
                     for index in nan_index:
                         tmp_df2.loc[index, "time"] = tmp_df2.loc[index-1, "time"] + stepsize
+                        
                     # Add rows of NaN for timesteps that are missing
-                    new_index = pd.Index(np.arange(start, stop+stepsize, stepsize), name="time")
+                    new_index = pd.Index(list(u_nk["time"].iloc[row_indices]), name="time")
                     tmp_df2 = tmp_df2.set_index("time").reindex(new_index).reset_index()
+                    
                     warnings.warn(
                         "Number of energy values in file, {}, N={}, inconsistent with previous".format(
                             file,
                             old_length,
                         )
                         + " files of length, {}. Adding NaN to row: {}".format(
-                            u_nk.loc[u_nk[lambda1_col] == lambda1, column_name].shape[
+                            u_nk.iloc[row_indices, column_index].shape[
                                 0
                             ],
                             np.unique(np.where(tmp_df2.isna())[0]),
@@ -806,11 +825,11 @@ def extract_u_nk(
                     )
 
                 # calculate reduced potential u_k = dH + pV + U
-                u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] = beta * (
+                u_nk.iloc[row_indices, column_index] = beta * (
                     tmp_df2["dU_nk"] + tmp_df2["U"]
                 )
                 if ensemble == "npt":
-                    u_nk.loc[u_nk[lambda1_col] == lambda1, column_name] += (
+                    u_nk.iloc[row_indices, column_index] += (
                         beta * pressure * tmp_df2["volume"] * energy_from_units(units)
                     )
 
@@ -843,8 +862,8 @@ def extract_dHdl_from_u_n(
 
     Parameters
     ----------
-    fep_files : str
-        Path to fepout file(s) to extract data from. Filenames and paths are
+    fep_files : str or list
+        If not a list, represents a path to fepout file(s) to extract data from. Filenames and paths are
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
@@ -878,7 +897,10 @@ def extract_dHdl_from_u_n(
     """
 
     # Collect Files
-    files = glob.glob(fep_files)
+    if isinstance(fep_files, list):
+        files = fep_files
+    else:
+        files = glob.glob(fep_files)
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
 
@@ -930,8 +952,8 @@ def extract_dHdl(
     column_lambda1=1,
     column_dlambda1=2,
     column_lambda2=None,
-    column_dlambda2=None,
     columns_derivative=[8, 7],
+    vdw_lambda=1,
     units="real",
     prec=4,
 ):
@@ -950,8 +972,8 @@ def extract_dHdl(
 
     Parameters
     ----------
-    fep_files : str
-        Path to fepout file(s) to extract data from. Filenames and paths are
+    fep_files : str or list
+        If not a list, represents the path to fepout file(s) to extract data from. Filenames and paths are
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
@@ -962,11 +984,11 @@ def extract_dHdl(
     column_lambda2 : int, default=None
         Index for column (column number minus one) for a second value of lambda.
         If this array is ``None`` then we do not expect two lambda values.
-    column_dlambda2 : int, default=None
-        Index for column (column number minus one) for the change in lambda2.
     columns_derivative : list[int], default=[8, 7]
         Indices for columns (column number minus one) representing the the forward
         and backward derivative respectively.
+    vdw_lambda : int, default=1
+        In the case that ``column_lambda2 is not None``, this integer represents which lambda represents vdw interactions.
     units : str, default="real"
         Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
         "real", "si"
@@ -989,7 +1011,10 @@ def extract_dHdl(
     """
 
     # Collect Files
-    files = glob.glob(fep_files)
+    if isinstance(fep_files, list):
+        files = fep_files
+    else:
+        files = glob.glob(fep_files)
     if not files:
         raise ValueError("No files have been found that match: {}".format(fep_files))
 
@@ -997,26 +1022,20 @@ def extract_dHdl(
 
     if not isinstance(column_lambda1, int):
         raise ValueError(
-            "Provided column_lambda1 must be type 'int', instead: {}".format(
+            "Provided column_lambda1 must be type 'int', instead of {}".format(
                 type(column_lambda1)
             )
         )
     if column_lambda2 is not None and not isinstance(column_lambda2, int):
         raise ValueError(
-            "Provided column_lambda2 must be type 'int', instead: {}".format(
+            "Provided column_lambda2 must be type 'int', instead of {}".format(
                 type(column_lambda2)
             )
         )
     if not isinstance(column_dlambda1, int):
         raise ValueError(
-            "Provided column_dlambda1 must be type 'int', instead: {}".format(
+            "Provided column_dlambda1 must be type 'int', instead of {}".format(
                 type(column_dlambda1)
-            )
-        )
-    if column_dlambda2 is not None and not isinstance(column_dlambda2, int):
-        raise ValueError(
-            "Provided column_dlambda2 must be type 'int', instead: {}".format(
-                type(column_dlambda2)
             )
         )
 
@@ -1037,15 +1056,19 @@ def extract_dHdl(
         dHdl = pd.DataFrame(columns=["time", "fep-lambda", "fep"])
         col_indices = [0, column_lambda1, column_dlambda1] + list(columns_derivative)
     else:
-        dHdl = pd.DataFrame(
-            columns=["time", "coul-lambda", "vdw-lambda", "coul", "vdw"]
-        )
+        if vdw_lambda == 1:
+            dHdl = pd.DataFrame(
+                columns=["time", "vdw-lambda", "coul-lambda", "vdw"]
+            )
+        else:
+            dHdl = pd.DataFrame(
+                columns=["time", "coul-lambda", "vdw-lambda", "coul"]
+            )
         col_indices = [
             0,
-            column_lambda2,
             column_lambda1,
+            column_lambda2,
             column_dlambda1,
-            column_dlambda2,
         ] + list(columns_derivative)
 
     for file in files:
@@ -1067,31 +1090,35 @@ def extract_dHdl(
             data["fep"] = (data.dU_forw - data.dU_back) / (2 * data.dlambda)
             data.drop(columns=["dlambda", "dU_back", "dU_forw"], inplace=True)
         else:
-            data.columns = [
-                "time",
-                "coul-lambda",
-                "vdw-lambda",
-                "dlambda_vdw",
-                "dlambda_coul",
-                "dU_back_vdw",
-                "dU_forw_vdw",
-                "dU_forw_coul",
-                "dU_back_coul",
-            ]
-            data["vdw-lambda"] = data["vdw-lambda"].apply(lambda x: round(x, prec))
-            data["coul"] = (data.dU_forw_coul - data.dU_back_coul) / (
-                2 * data.dlambda_coul
-            )
-            data["vdw"] = (data.dU_forw_vdw - data.dU_back_vdw) / (2 * data.dlambda_vdw)
-            data.drop(
-                columns=[
+            if vdw_lambda == 1:
+                columns = [
+                    "time",
+                    "vdw-lambda",
+                    "coul-lambda",
                     "dlambda_vdw",
+                    "dU_back_vdw",
+                    "dU_forw_vdw",
+                ]
+                data.columns = columns
+                data["vdw"] = (data.dU_forw_vdw - data.dU_back_vdw) / (2 * data.dlambda_vdw)
+            elif vdw_lambda == 2:
+                columns = [
+                    "time",
+                    "coul-lambda",
+                    "vdw-lambda",
                     "dlambda_coul",
                     "dU_back_coul",
                     "dU_forw_coul",
-                    "dU_back_vdw",
-                    "dU_forw_vdw",
-                ],
+                ]
+                data.columns = columns
+                data["coul"] = (data.dU_forw_coul - data.dU_back_coul) / (
+                    2 * data.dlambda_coul
+                )
+            data["vdw-lambda"] = data["vdw-lambda"].apply(lambda x: round(x, prec))
+            data["coul-lambda"] = data["coul-lambda"].apply(lambda x: round(x, prec))
+
+            data.drop(
+                columns=columns[3:],
                 inplace=True,
             )
         dHdl = pd.concat([dHdl, data], axis=0, sort=False) if len(dHdl) != 0 else data
@@ -1101,7 +1128,11 @@ def extract_dHdl(
         dHdl = dHdl.mul({"fep": beta})
     else:
         dHdl.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
-        dHdl = dHdl.mul({"coul": beta, "vdw": beta})
+        if vdw_lambda == 1:
+            dHdl = dHdl.mul({"vdw": beta})
+        elif vdw_lambda == 2:
+            dHdl = dHdl.mul({"coul": beta})
+
     dHdl.name = "dH_dl"
 
     return dHdl
@@ -1134,12 +1165,12 @@ def extract_H(
 
     Parameters
     ----------
-    fep_files : str
-        Path to fepout file(s) to extract data from. Filenames and paths are
+    fep_files : str or list
+        If not a list, represents the path to fepout file(s) to extract data from. Filenames and paths are
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
-    column_lambda1 : int, default=2
+    column_lambda1 : int, default=1
         Index for column (column number minus one) representing the lambda at which the system is equilibrated.
     column_pe : int, default=5
         Index for column (column number minus one) representing the potential energy of the system.
@@ -1174,7 +1205,10 @@ def extract_H(
     """
 
     # Collect Files
-    files = glob.glob(fep_files)
+    if isinstance(fep_files, list):
+        files = fep_files
+    else:
+        files = glob.glob(fep_files)
     if not files:
         raise ValueError("No files have been found that match: {}".format(fep_files))
 
@@ -1195,17 +1229,17 @@ def extract_H(
 
     if not isinstance(column_lambda1, int):
         raise ValueError(
-            "Provided column_lambda1 must be type 'int', instead: {}".format(
+            "Provided column_lambda1 must be type 'int', instead of {}".format(
                 type(column_lambda1)
             )
         )
     if not isinstance(column_pe, int):
         raise ValueError(
-            "Provided column_pe must be type 'int', instead: {}".format(type(column_pe))
+            "Provided column_pe must be type 'int', instead of {}".format(type(column_pe))
         )
     if column_lambda2 is not None and not isinstance(column_lambda2, int):
         raise ValueError(
-            "Provided column_lambda2 must be type 'int', instead: {}".format(
+            "Provided column_lambda2 must be type 'int', instead of {}".format(
                 type(column_lambda2)
             )
         )
@@ -1219,6 +1253,7 @@ def extract_H(
 
     if ensemble == "npt":
         col_indices.append(column_volume)
+
     df_H = pd.DataFrame(columns=columns)
 
     for file in files:
