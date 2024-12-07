@@ -10,6 +10,17 @@
 
 3. Estimators for obtaining free energies directly from this data, using best-practices approaches for multistate Bennett acceptance ratio (MBAR) [Shirts2008](#shirts2008) and BAR (from [pymbar](http://pymbar.readthedocs.io/)) and thermodynamic integration (TI).
 
+## How to Cite
+
+If you use this software in your research, please cite it as follows:
+
+Wu, Z., Dotson, D. L., Alibay, I., Allen, B. K., Barhaghi, M. S., Hénin, J., Joseph, T. T.,  
+Kenney, I. M., Lee, H., Li, H., Lim, V., Liu, S., Marson, D., Merz, P. T., Schlaich, A.,  
+Mobley, D., Shirts, M. R., Beckstein, O. (2024).  
+**alchemlyb: the simple alchemistry library.**  
+*Journal of Open Source Software, 9*(101), 6934.  
+[https://doi.org/10.21105/joss.06934](https://doi.org/10.21105/joss.06934)
+
 ## Documentation
 
 The documentation is hosted on [Read the Docs](https://alchemlyb.readthedocs.io/en/latest/).
