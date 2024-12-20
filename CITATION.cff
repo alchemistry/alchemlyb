@@ -221,6 +221,9 @@ preferred-citation:
   year: 2024
   journal: 'Journal of Open Source Software'
   doi: '10.21105/joss.06934'
+  pages: '6934'
+  volume: '9'
+  number: '101'
 references:
   - title: Statistically optimal analysis of samples from multiple equilibrium states
     authors:
