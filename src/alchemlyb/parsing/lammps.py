@@ -1,4 +1,4 @@
-""" Parsers for extracting alchemical data from `LAMMPS <https://docs.lammps.org/Manual.html>`_ output files.
+r""" Parsers for extracting alchemical data from `LAMMPS <https://docs.lammps.org/Manual.html>`_ output files.
 
 For clarity, we would like to distinguish the difference between :math:`\lambda` and :math:`\lambda'`. We refer to :math:`\lambda` as 
 the potential scaling of the equilibrated system, so that when this value is changed, the system undergoes another equilibration 
@@ -71,13 +71,18 @@ def beta_from_units(T, units):
     elif units == "si":  # E in J, T in K
         beta = 1 / (constants.R * T / constants.Avogadro)
     elif units == "cgs":  # E in ergs, T in K
-        beta = 1 / (constants.R * T / constants.Avogadro * 1e+7)
+        beta = 1 / (constants.R * T / constants.Avogadro * 1e7)
     elif units == "electron":  # E in Hartrees, T in K
-        beta = 1 / (constants.R * T / constants.Avogadro / constants.physical_constants["Hartree energy"][0])
+        beta = 1 / (
+            constants.R
+            * T
+            / constants.Avogadro
+            / constants.physical_constants["Hartree energy"][0]
+        )
     elif units == "micro":  # E in picogram-micrometer^2/microsecond^2, T in K
-        beta = 1 / (constants.R * T / constants.Avogadro * 1e+15)
+        beta = 1 / (constants.R * T / constants.Avogadro * 1e15)
     elif units == "nano":  # E in attogram-nanometer^2/nanosecond^2, T in K
-        beta = 1 / (constants.R * T  / constants.Avogadro * 1e+21)
+        beta = 1 / (constants.R * T / constants.Avogadro * 1e21)
     else:
         raise ValueError(
             "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
@@ -111,7 +116,9 @@ def energy_from_units(units):
 
     """
     if units == "real":  # E in kcal/mol, Vol in Å^3, pressure in atm
-        scaling_factor = constants.atm * constants.angstrom**3 / 1e3 * kJ2kcal * constants.N_A
+        scaling_factor = (
+            constants.atm * constants.angstrom**3 / 1e3 * kJ2kcal * constants.N_A
+        )
     elif (
         units == "lj"
     ):  # Nondimensional E scaled by epsilon, vol in sigma^3, pressure in epsilon / sigma^3
@@ -131,7 +138,7 @@ def energy_from_units(units):
         scaling_factor = 1
     elif units == "nano":
         # E in attogram-nanometer^2/nanosecond^2, vol in nm^3, pressure in attogram/(nanometer-nanosecond^2)
-        scaling_factor= 1
+        scaling_factor = 1
     else:
         raise ValueError(
             "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
@@ -142,7 +149,7 @@ def energy_from_units(units):
 
 
 def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
-    """Pull a tuple representing the lambda values used, as defined by the filenames.
+    r"""Pull a tuple representing the lambda values used, as defined by the filenames.
 
     Parameters
     ----------
@@ -163,30 +170,30 @@ def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     .. versionadded:: 2.4.1
 
     """
-
+    filename = filename.replace(".bz2", "").replace(".gz", "")
     name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
     try:
-        float(name_array[indices[0]])
+        value1 = float(name_array[indices[0]])
     except ValueError:
         raise ValueError(
             f"Entry, {indices[0]} in filename cannot be converted to float: {name_array[indices[0]]}"
         )
 
     try:
-        float(name_array[indices[1]])
+        value2 = float(name_array[indices[1]])
     except ValueError:
         raise ValueError(
             f"Entry, {indices[1]} in filename cannot be converted to float: {name_array[indices[1]]}"
         )
 
     return (
-        round(float(name_array[indices[0]]), prec),
-        round(float(name_array[indices[1]]), prec),
+        round(value1, prec),
+        round(value2, prec),
     )
 
 
 def _lambda_from_filename(filename, separator="_", index=-1, prec=4):
-    """Pull the :math:`\lambda'` value, as defined by the filenames.
+    r"""Pull the :math:`\lambda'` value, as defined by the filenames.
 
     Here :math:`\lambda'` is the scaling value applied to a configuration that is equilibrated to
     a different value of :math:`\lambda`.
@@ -210,14 +217,15 @@ def _lambda_from_filename(filename, separator="_", index=-1, prec=4):
     .. versionadded:: 2.4.1
 
     """
+    filename = filename.replace(".bz2", "").replace(".gz", "")
     name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
     try:
-        float(name_array[index])
+        value = float(name_array[index])
     except:
         raise ValueError(
             f"Entry, {index} in filename cannot be converted to float: {name_array[index]}"
         )
-    return round(float(name_array[index]), prec)
+    return round(value, prec)
 
 
 def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
@@ -599,7 +607,7 @@ def extract_u_nk(
         files = fep_files
     else:
         files = glob.glob(fep_files)
-        
+
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
 
@@ -641,11 +649,13 @@ def extract_u_nk(
     lambda_values, _, lambda2 = _get_bar_lambdas(
         files, indices=indices, prec=prec, force=force
     )
-    
+
     if column_lambda2 is not None and lambda2 is None:
-        raise ValueError("If column_lambda2 is defined, the length of `indices` should be 3 indicating the value of the "
-                         "second value of lambda held constant.")
-        
+        raise ValueError(
+            "If column_lambda2 is defined, the length of `indices` should be 3 indicating the value of the "
+            "second value of lambda held constant."
+        )
+
     # Set-up u_nk and column names / indices
     if column_lambda2 is None:  # No second lambda state value
         u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
@@ -730,7 +740,7 @@ def extract_u_nk(
                     "Lambda value found in a file does not align with those in the filenames."
                     " Check that 'columns_lambda1[0]' or 'prec' are defined correctly. lambda"
                     " file: {}; lambda columns: {}".format(lambda1, lambda_values)
-            )
+                )
             tmp_df = data.loc[data[lambda1_col] == lambda1]
             # Iterate over evaluated lambda' values at specific lambda state
             for lambda12 in list(tmp_df[lambda1_2_col].unique()):
@@ -747,7 +757,7 @@ def extract_u_nk(
                     )
                 else:
                     column_name = lambda_values[column_list[0]]
-                    
+
                 tmp_df2 = tmp_df.loc[tmp_df[lambda1_2_col] == lambda12]
 
                 lr = tmp_df2.shape[0]
@@ -780,7 +790,7 @@ def extract_u_nk(
 
                 column_index = list(u_nk.columns).index(column_name)
                 row_indices = np.where(u_nk[lambda1_col] == lambda1)[0]
-                
+
                 if u_nk.iloc[row_indices, column_index][0] != 0:
                     raise ValueError(
                         "Energy values already available for lambda, {}, lambda', {}. Check for a duplicate file.".format(
@@ -792,34 +802,36 @@ def extract_u_nk(
                         f"The difference in dU should be zero when lambda = lambda', {lambda1} = {lambda12},"
                         " Check that 'column_dU' was defined correctly."
                     )
-                    
+
                 if (
                     u_nk.iloc[row_indices, column_index].shape[0]
                     != tmp_df2["dU_nk"].shape[0]
                 ):
                     old_length = tmp_df2["dU_nk"].shape[0]
                     stepsize = (
-                        u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[1] 
+                        u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[1]
                         - u_nk.loc[u_nk[lambda1_col] == lambda1, "time"].iloc[0]
                     )
                     # Fill in gaps where 'time' is NaN
-                    nan_index = np.unique(np.where(tmp_df2['time'].isnull())[0])
+                    nan_index = np.unique(np.where(tmp_df2["time"].isnull())[0])
                     for index in nan_index:
-                        tmp_df2.loc[index, "time"] = tmp_df2.loc[index-1, "time"] + stepsize
-                        
+                        tmp_df2.loc[index, "time"] = (
+                            tmp_df2.loc[index - 1, "time"] + stepsize
+                        )
+
                     # Add rows of NaN for timesteps that are missing
-                    new_index = pd.Index(list(u_nk["time"].iloc[row_indices]), name="time")
+                    new_index = pd.Index(
+                        list(u_nk["time"].iloc[row_indices]), name="time"
+                    )
                     tmp_df2 = tmp_df2.set_index("time").reindex(new_index).reset_index()
-                    
+
                     warnings.warn(
                         "Number of energy values in file, {}, N={}, inconsistent with previous".format(
                             file,
                             old_length,
                         )
                         + " files of length, {}. Adding NaN to row: {}".format(
-                            u_nk.iloc[row_indices, column_index].shape[
-                                0
-                            ],
+                            u_nk.iloc[row_indices, column_index].shape[0],
                             np.unique(np.where(tmp_df2.isna())[0]),
                         )
                     )
@@ -840,7 +852,7 @@ def extract_u_nk(
     u_nk.name = "u_nk"
 
     u_nk = u_nk.dropna()
-    
+
     return u_nk
 
 
@@ -1057,13 +1069,9 @@ def extract_dHdl(
         col_indices = [0, column_lambda1, column_dlambda1] + list(columns_derivative)
     else:
         if vdw_lambda == 1:
-            dHdl = pd.DataFrame(
-                columns=["time", "vdw-lambda", "coul-lambda", "vdw"]
-            )
+            dHdl = pd.DataFrame(columns=["time", "vdw-lambda", "coul-lambda", "vdw"])
         else:
-            dHdl = pd.DataFrame(
-                columns=["time", "coul-lambda", "vdw-lambda", "coul"]
-            )
+            dHdl = pd.DataFrame(columns=["time", "coul-lambda", "vdw-lambda", "coul"])
         col_indices = [
             0,
             column_lambda1,
@@ -1100,7 +1108,9 @@ def extract_dHdl(
                     "dU_forw_vdw",
                 ]
                 data.columns = columns
-                data["vdw"] = (data.dU_forw_vdw - data.dU_back_vdw) / (2 * data.dlambda_vdw)
+                data["vdw"] = (data.dU_forw_vdw - data.dU_back_vdw) / (
+                    2 * data.dlambda_vdw
+                )
             elif vdw_lambda == 2:
                 columns = [
                     "time",
@@ -1235,7 +1245,9 @@ def extract_H(
         )
     if not isinstance(column_pe, int):
         raise ValueError(
-            "Provided column_pe must be type 'int', instead of {}".format(type(column_pe))
+            "Provided column_pe must be type 'int', instead of {}".format(
+                type(column_pe)
+            )
         )
     if column_lambda2 is not None and not isinstance(column_lambda2, int):
         raise ValueError(
