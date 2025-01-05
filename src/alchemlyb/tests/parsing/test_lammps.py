@@ -59,8 +59,12 @@ def test_beta_from_units():
     assert_almost_equal(lmp.beta_from_units(T_K, "real"), 1.6774, decimal=4)
     assert_almost_equal(lmp.beta_from_units(T_lj, "lj"), 1.4286, decimal=4)
     assert_almost_equal(lmp.beta_from_units(T_K, "metal"), 38.6817, decimal=4)
-    assert_almost_equal(lmp.beta_from_units(T_K, "si"), 2.414323505391137e20, decimal=4)
-    assert_approx_equal(lmp.beta_from_units(T_K, "cgs"), 24143235053911.37, significant=7)
+    assert_approx_equal(
+        lmp.beta_from_units(T_K, "si"), 2.414323505391137e20, significant=7
+    )
+    assert_approx_equal(
+        lmp.beta_from_units(T_K, "cgs"), 24143235053911.37, significant=7
+    )
     assert_almost_equal(lmp.beta_from_units(T_K, "electron"), 1052.5834, decimal=4)
     assert_almost_equal(lmp.beta_from_units(T_K, "micro"), 241432.3505, decimal=4)
     assert_almost_equal(lmp.beta_from_units(T_K, "nano"), 0.24143, decimal=4)
