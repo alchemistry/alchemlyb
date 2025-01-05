@@ -329,11 +329,12 @@ class TestLammpsMbar:
         """Test error inconsistent lambda values in filenames"""
 
         filenames, kwargs, filenames2 = copy.deepcopy(data)
-        filenames = filenames[:244]
+        filenames.sort()
+        filenames = filenames[:-1]
 
         with pytest.raises(
             ValueError,
-            match=r"BAR calculation cannot be performed without the following lambda-lambda prime combinations: \[\(0.75, 0.7\)\]",
+            match=r"BAR calculation cannot be performed without the following lambda-lambda prime combinations: \[\(1.0, 1.0\)\]",
         ):
             u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
 
