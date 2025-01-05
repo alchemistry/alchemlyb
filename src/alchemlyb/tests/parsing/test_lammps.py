@@ -64,6 +64,11 @@ def test_beta_from_units():
     assert_almost_equal(lmp.beta_from_units(T_K, "electron"), 1052.5834, decimal=4)
     assert_almost_equal(lmp.beta_from_units(T_K, "micro"), 241432.3505, decimal=4)
     assert_almost_equal(lmp.beta_from_units(T_K, "nano"), 0.24143, decimal=4)
+    with pytest.raises(
+        ValueError,
+        match=r"Supported types are: cgs, electron,",
+    ):
+        _ = lmp.beta_from_units(T_K, "not a unit")
 
 
 def test_energy_from_units():
@@ -79,6 +84,11 @@ def test_energy_from_units():
     )
     assert_almost_equal(lmp.energy_from_units("micro"), 1, decimal=4)
     assert_almost_equal(lmp.energy_from_units("nano"), 1, decimal=4)
+    with pytest.raises(
+        ValueError,
+        match=r"Supported types are: cgs, electron,",
+    ):
+        _ = lmp.energy_from_units("not a unit")
 
 
 def test_u_nk():
@@ -297,8 +307,22 @@ class TestLammpsMbar:
         ):
             u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
 
-    def test_u_nk_inconsistent_lambda(self, data):
-        """Test error no file"""
+    def test_u_nk_error_neg_lambda(
+        self,
+        data,
+    ):
+        """Test error lambda is negative"""
+        filenames, kwargs, _ = copy.deepcopy(data)
+        filenames.append("test_test_-1_1_test_1.txt")
+
+        with pytest.raises(
+            ValueError,
+            match=r"Lambda values must be positive:",
+        ):
+            _ = lmp.extract_u_nk(filenames, 300, **kwargs)
+
+    def test_u_nk_error_inconsistent_lambda(self, data):
+        """Test error inconsistent lambda values in filenames"""
 
         filenames, kwargs, filenames2 = copy.deepcopy(data)
         filenames[:4] = filenames2[:4]
@@ -308,6 +332,18 @@ class TestLammpsMbar:
             match=r"BAR calculation cannot be performed without the following lambda-lambda prime combinations: \[\(0.95, 1.0\)\]",
         ):
             u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+
+    def test_u_nk_force_inconsistent_lambda_missing(self, data):
+        """Test warning force inconsistent lambda values in filenames"""
+
+        filenames, kwargs, _ = copy.deepcopy(data)
+        filenames = filenames[:4]
+
+        with pytest.warns(
+            UserWarning,
+            match="The following combinations of lambda and lambda prime are missing",
+        ):
+            _ = lmp.extract_u_nk(filenames, 300, force=True, **kwargs)
 
     def test_u_nk_error_nonfloat_lambda(self, data):
         """Test nonfloat lambda"""
@@ -487,6 +523,19 @@ class TestLammpsTI:
         dHdl = lmp.extract_dHdl(filenames, 300, **kwargs)
         assert dHdl.index.names == ["time", "coul-lambda", "vdw-lambda"]
 
+    def test_vdw_lambda_over_2(self, data):
+        """Test when vdw_lambda is not a valid input"""
+
+        filenames, kwargs = copy.deepcopy(data)
+        kwargs = copy.deepcopy(kwargs)
+        kwargs["column_lambda2"] = 3
+        kwargs["vdw_lambda"] = 3
+        with pytest.raises(
+            ValueError,
+            match=r"vdw_lambda must be either 1 or 2, not: 3",
+        ):
+            _ = lmp.extract_dHdl(filenames, 300, **kwargs)
+
     def test_dHdl_error_no_file(
         self,
         data,
@@ -620,7 +669,7 @@ class TestLammpsH:
         ):
             H = lmp.extract_H(filenames, 300, **kwargs)
 
-    def test_u_nk_error_col_lam2(self, data):
+    def test_H_error_col_lam2(self, data):
         """Test error type col lambda 2"""
 
         filenames, kwargs = copy.deepcopy(data)
@@ -631,6 +680,24 @@ class TestLammpsH:
             match=r"Provided column_lambda2 must be type 'int', instead of <class 'str'>",
         ):
             H = lmp.extract_H(filenames, 300, **kwargs)
+
+    def test_H(self, data):
+        """Test error type col lambda 2"""
+
+        filenames, kwargs = copy.deepcopy(data)
+        kwargs = copy.deepcopy(kwargs)
+
+        H = lmp.extract_H(filenames, 300, **kwargs)
+
+    def test_H_lam2(self, data):
+        """Test two lambda values"""
+
+        filenames, kwargs = copy.deepcopy(data)
+        kwargs = copy.deepcopy(kwargs)
+        kwargs["column_lambda2"] = 3
+
+        dHdl = lmp.extract_H(filenames, 300, **kwargs)
+        assert dHdl.index.names == ["time", "coul-lambda", "vdw-lambda"]
 
     def test_H_error_col_pe(self, data):
         """Test error col pe"""
@@ -738,6 +805,17 @@ class TestLammpsLJDimer_TI:
         ):
             H = lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
 
+    def test_H(
+        self,
+        data,
+    ):
+        """Test full run through"""
+        filenames, kwargs = copy.deepcopy(data)
+
+        H = lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
+
+        assert H.shape == (11011, 1)
+
 
 class TestLammpsLJDimer_MBAR:
 
@@ -788,7 +866,7 @@ class TestLammpsLJDimer_MBAR:
         self,
         data,
     ):
-        """Test that initializing u_nk that only known ensembles are accepted"""
+        """Test that initializing u_nk with nvt and pressure"""
         filenames, kwargs = copy.deepcopy(data)
         kwargs["ensemble"] = "nvt"
         with pytest.raises(
@@ -796,6 +874,19 @@ class TestLammpsLJDimer_MBAR:
             match=r"There is no volume correction in the nvt ensemble, the pressure value will not be used.",
         ):
             u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+
+    def test_u_nk_nvt(
+        self,
+        data,
+    ):
+        """Test that initializing u_nk"""
+        filenames, kwargs = copy.deepcopy(data)
+        kwargs["ensemble"] = "nvt"
+        del kwargs["pressure"]
+
+        u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+
+        assert u_nk.shape == (11011, 11)
 
     def test_u_nk_error_no_file(
         self,

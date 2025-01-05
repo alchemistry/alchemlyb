@@ -29,14 +29,6 @@ from . import _init_attrs
 from ..postprocessors.units import R_kJmol, kJ2kcal
 
 
-def _isfloat(x):
-    try:
-        float(x)
-        return True
-    except ValueError:
-        return False
-
-
 def beta_from_units(T, units):
     """Output value of beta from temperature and units.
 
@@ -86,7 +78,7 @@ def beta_from_units(T, units):
     else:
         raise ValueError(
             "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
-            " lj. metal, micro, nano, real, si".format(units)
+            " lj, metal, micro, nano, real, si".format(units)
         )
 
     return beta
@@ -142,7 +134,7 @@ def energy_from_units(units):
     else:
         raise ValueError(
             "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
-            " lj. metal, micro, nano, real, si".format(units)
+            " lj, metal, micro, nano, real, si".format(units)
         )
 
     return scaling_factor
@@ -288,7 +280,6 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
 
     # Check for MBAR content
     missing_combinations_mbar = []
-    missing_combinations_bar = []
     for lambda_value, lambda_array in lambda_dict.items():
         missing_combinations_mbar.extend(
             [(lambda_value, x) for x in lambda_values if x not in lambda_array]
@@ -305,7 +296,6 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
 
     # Check for BAR content
     missing_combinations_bar = []
-    extra_combinations_bar = []
     lambda_values.sort()
     for ind, (lambda_value, lambda_array) in enumerate(lambda_dict.items()):
         if ind == 0:
@@ -322,9 +312,6 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
         missing_combinations_bar.extend(
             [(lambda_value, x) for x in tmp_array if x not in lambda_array]
         )
-        extra_combinations_bar.extend(
-            [(lambda_value, x) for x in lambda_array if x not in tmp_array]
-        )
 
     if missing_combinations_bar and not force:
         raise ValueError(
@@ -332,13 +319,6 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
                 missing_combinations_bar
             )
         )
-    if extra_combinations_bar and not force:
-        warnings.warn(
-            "The following combinations of lambda and lambda prime are extra and being discarded for BAR analysis: {}".format(
-                extra_combinations_bar
-            )
-        )
-        lambda_pairs = [x for x in lambda_pairs if x not in extra_combinations_bar]
 
     return lambda_values, lambda_pairs, lambda2
 
@@ -618,10 +598,11 @@ def extract_u_nk(
             )
     elif ensemble != "nvt":
         raise ValueError("Only ensembles of nvt or npt are supported.")
-    elif pressure is not None:
-        raise ValueError(
-            "There is no volume correction in the nvt ensemble, the pressure value will not be used."
-        )
+    else:
+        if pressure is not None:
+            raise ValueError(
+                "There is no volume correction in the nvt ensemble, the pressure value will not be used."
+            )
 
     beta = beta_from_units(T, units)
 
@@ -1124,6 +1105,11 @@ def extract_dHdl(
                 data["coul"] = (data.dU_forw_coul - data.dU_back_coul) / (
                     2 * data.dlambda_coul
                 )
+            else:
+                raise ValueError(
+                    f"'vdw_lambda must be either 1 or 2, not: {vdw_lambda}'"
+                )
+
             data["vdw-lambda"] = data["vdw-lambda"].apply(lambda x: round(x, prec))
             data["coul-lambda"] = data["coul-lambda"].apply(lambda x: round(x, prec))
 
@@ -1140,7 +1126,7 @@ def extract_dHdl(
         dHdl.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
         if vdw_lambda == 1:
             dHdl = dHdl.mul({"vdw": beta})
-        elif vdw_lambda == 2:
+        else:
             dHdl = dHdl.mul({"coul": beta})
 
     dHdl.name = "dH_dl"
