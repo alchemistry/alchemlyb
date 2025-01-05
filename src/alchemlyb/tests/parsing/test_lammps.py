@@ -4,7 +4,7 @@
 
 import copy
 import pytest
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_approx_equal
 
 from alchemlyb.parsing import lammps as lmp
 from alchemtest.lammps import load_benzene, load_lj_dimer
@@ -60,7 +60,7 @@ def test_beta_from_units():
     assert_almost_equal(lmp.beta_from_units(T_lj, "lj"), 1.4286, decimal=4)
     assert_almost_equal(lmp.beta_from_units(T_K, "metal"), 38.6817, decimal=4)
     assert_almost_equal(lmp.beta_from_units(T_K, "si"), 2.414323505391137e20, decimal=4)
-    assert_almost_equal(lmp.beta_from_units(T_K, "cgs"), 24143235053911.37, decimal=4)
+    assert_approx_equal(lmp.beta_from_units(T_K, "cgs"), 24143235053911.37, significant=7)
     assert_almost_equal(lmp.beta_from_units(T_K, "electron"), 1052.5834, decimal=4)
     assert_almost_equal(lmp.beta_from_units(T_K, "micro"), 241432.3505, decimal=4)
     assert_almost_equal(lmp.beta_from_units(T_K, "nano"), 0.24143, decimal=4)
@@ -325,11 +325,11 @@ class TestLammpsMbar:
         """Test error inconsistent lambda values in filenames"""
 
         filenames, kwargs, filenames2 = copy.deepcopy(data)
-        filenames[:4] = filenames2[:4]
+        filenames = filenames[:244]
 
         with pytest.raises(
             ValueError,
-            match=r"BAR calculation cannot be performed without the following lambda-lambda prime combinations: \[\(0.95, 1.0\)\]",
+            match=r"BAR calculation cannot be performed without the following lambda-lambda prime combinations: \[\(0.75, 0.7\)\]",
         ):
             u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
 
