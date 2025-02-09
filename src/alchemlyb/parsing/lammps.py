@@ -514,6 +514,7 @@ def extract_u_nk(
     column_volume=6,
     prec=4,
     force=False,
+    tol=None,
 ):
     """Return reduced potentials `u_nk` from LAMMPS dump file(s).
 
@@ -566,6 +567,10 @@ def extract_u_nk(
         Number of decimal places defined used in ``round()`` function.
     force : bool, default=False
         If ``True`` the dataframe will be created, even if not all lambda and lambda prime combinations are available.
+    tol : float, default=None
+        Tolerance in checking that the difference between lambda and lambda' states is zero. If None, this tolerance is set
+        to ``np.finfo(float).eps``. Take care in increasing this value! It's more likely that something is wrong with your
+        column indexing.
 
     Results
     -------
@@ -581,6 +586,9 @@ def extract_u_nk(
     .. versionadded:: 2.4.1
 
     """
+
+    if tol is None:
+        tol = np.finfo(float).eps
 
     # Collect Files
     if isinstance(fep_files, list):
@@ -778,10 +786,10 @@ def extract_u_nk(
                             lambda1, lambda12
                         )
                     )
-                if lambda1 == lambda12 and not np.all(tmp_df2["dU_nk"][0] == 0):
+                if lambda1 == lambda12 and not np.all(tmp_df2["dU_nk"][0] <= tol):
                     raise ValueError(
-                        f"The difference in dU should be zero when lambda = lambda', {lambda1} = {lambda12},"
-                        " Check that 'column_dU' was defined correctly."
+                        f"The difference in dU should be zero when lambda = lambda', {lambda1} = {lambda12}, not "
+                        f"{np.max(tmp_df2['dU_nk'][0])}. Check that 'column_dU' was defined correctly or increase `tol`"
                     )
 
                 if (
