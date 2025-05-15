@@ -1,6 +1,4 @@
-"""GOMC parser tests.
-
-"""
+"""GOMC parser tests."""
 
 from alchemtest.gomc import load_benzene
 

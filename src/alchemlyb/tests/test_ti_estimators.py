@@ -1,6 +1,4 @@
-"""Tests for all TI-based estimators in ``alchemlyb``.
-
-"""
+"""Tests for all TI-based estimators in ``alchemlyb``."""
 
 import pandas as pd
 import pytest
