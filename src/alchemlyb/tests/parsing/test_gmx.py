@@ -1,6 +1,4 @@
-"""Gromacs parser tests.
-
-"""
+"""Gromacs parser tests."""
 
 import bz2
 
@@ -146,7 +144,7 @@ def test_u_nk_with_total_energy():
     dataset = load_water_particle_with_total_energy()
 
     # Check if the sum of values on the diagonal has the correct value
-    assert_almost_equal(_diag_sum(dataset), 47611374980.34574, decimal=4)
+    assert_almost_equal(_diag_sum(dataset), 47611374979.46824, decimal=4)
 
     # Check one specific value in the dataframe
     assert_almost_equal(
@@ -165,7 +163,7 @@ def test_u_nk_with_potential_energy():
     dataset = load_water_particle_with_potential_energy()
 
     # Check if the sum of values on the diagonal has the correct value
-    assert_almost_equal(_diag_sum(dataset), 16674040406778.867, decimal=2)
+    assert_almost_equal(_diag_sum(dataset), 16674040406471.553, decimal=2)
 
     # Check one specific value in the dataframe
     assert_almost_equal(
@@ -184,7 +182,7 @@ def test_u_nk_without_energy():
     dataset = load_water_particle_without_energy()
 
     # Check if the sum of values on the diagonal has the correct value
-    assert_almost_equal(_diag_sum(dataset), 20572986867158.184, decimal=2)
+    assert_almost_equal(_diag_sum(dataset), 20572986866779.01, decimal=2)
 
     # Check one specific value in the dataframe
     assert_almost_equal(

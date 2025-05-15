@@ -1,6 +1,4 @@
-"""NAMD parser tests.
-
-"""
+"""NAMD parser tests."""
 
 import bz2
 from os.path import basename
