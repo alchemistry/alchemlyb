@@ -1,6 +1,4 @@
-"""Tests for all FEP-based estimators in ``alchemlyb``.
-
-"""
+"""Tests for all FEP-based estimators in ``alchemlyb``."""
 
 import numpy as np
 import pytest
