@@ -1,6 +1,4 @@
-"""Tests for preprocessing functions.
-
-"""
+"""Tests for preprocessing functions."""
 
 import logging
 
