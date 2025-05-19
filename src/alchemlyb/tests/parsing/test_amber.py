@@ -282,3 +282,13 @@ def test_concatenated_amber_dhdl(tmp_path):
         match="TI Energy detected after the TIMINGS section.",
     ):
         extract(tmp_path / "amber.out", 298)
+
+
+def test_correct_timestamp_u_nk(testfiles):
+    """Test if the timestamp is correct when extracting u_nk"""
+    # The file have different value for bar_intervall and ntpr
+    filename = testfiles["correct_timestamp_u_nk"][0]
+    u_nk = extract_u_nk(filename, T=298.0)
+    assert_allclose(u_nk.index.values[0][0], 40.508)
+    assert_allclose(u_nk.index.values[-1][0], 40.596)
+    
