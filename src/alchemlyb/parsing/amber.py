@@ -156,6 +156,7 @@ class FEData:
         "dt",
         "T",
         "ntpr",
+        "bar_intervall",
         "gradients",
         "mbar_energies",
         "have_mbar",
@@ -169,6 +170,7 @@ class FEData:
         self.dt = -1.0
         self.T = -1.0
         self.ntpr = -1
+        self.bar_intervall = -1
         self.gradients = []
         self.mbar_energies = []
         self.have_mbar = False
@@ -222,14 +224,14 @@ def file_validation(outfile):
             raise ValueError(f"no free energy section found in file {outfile}")
 
         mbar_ndata = 0
-        have_mbar, mbar_ndata, mbar_states = secp.extract_section(
+        have_mbar, bar_intervall, mbar_states = secp.extract_section(
             "^FEP MBAR options:",
             "^$",
             ["ifmbar", "bar_intervall", "mbar_states"],
             "^---",
         )
         if have_mbar:
-            mbar_ndata = int(nstlim / mbar_ndata)
+            mbar_ndata = int(nstlim / bar_intervall)
             mbar_lambdas = _process_mbar_lambdas(secp)
             file_datum.mbar_lambdas = mbar_lambdas
             clambda_str = f"{clambda:6.4f}"
@@ -278,6 +280,7 @@ def file_validation(outfile):
     file_datum.t0 = t0
     file_datum.dt = dt
     file_datum.ntpr = ntpr
+    file_datum.bar_intervall = bar_intervall
     file_datum.T = T
     file_datum.have_mbar = have_mbar
 
@@ -379,7 +382,7 @@ def extract(outfile, T):
 
     if file_datum.have_mbar:
         mbar_time = [
-            file_datum.t0 + (frame_index + 1) * file_datum.dt * file_datum.ntpr
+            file_datum.t0 + (frame_index + 1) * file_datum.dt * file_datum.bar_intervall
             for frame_index in range(len(file_datum.mbar_energies[0]))
         ]
 
