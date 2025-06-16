@@ -16,6 +16,9 @@ The rules for this file:
 
   * 2.5.0
 
+Changes
+  - Drop support for py3.10 (PR #431)
+
 Enhancements
   - Added matrices for entropy and enthalpy for MBAR (PR #406)
   - Parallelise read and preprocess for ABFE workflow. (PR #371)
