@@ -197,18 +197,21 @@ def test_bootstrap(gmx_benzene_Coulomb_u_nk):
 
 
 def test_enthalpy_entropy_mbar(gmx_benzene_Coulomb_u_nk):
+    """For the time being, only numpy <2.3 is supported due to potential changes in
+    output of up to 0.1 kT (see PR Fix test #431 and issue numpy 2.3.0 madness
+    choderalab/pymbar#556 )"""
     mbar = MBAR()
     u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
     mbar.fit(u_nk, compute_entropy_enthalpy=True)
 
     assert mbar.delta_f_.iloc[0, :].to_numpy() == pytest.approx(
-        np.array([0.0, 1.619069, 2.557990, 2.986302, 3.041156]), abs=0.1
+        np.array([0.0, 1.619069, 2.557990, 2.986302, 3.041156]), abs=1e-6
     )
     assert mbar.delta_h_.iloc[0, :].to_numpy() == pytest.approx(
-        np.array([0.0, 1.241970, 1.695000, 1.706555, 1.388906]), abs=0.1
+        np.array([0.0, 1.241970, 1.695000, 1.706555, 1.388906]), abs=1e-6
     )
     assert mbar.delta_sT_.iloc[0, :].to_numpy() == pytest.approx(
-        np.array([0.0, -0.377099, -0.862990, -1.279746, -1.652250]), abs=0.1
+        np.array([0.0, -0.377099, -0.862990, -1.279746, -1.652250]), abs=1e-6
     )
     assert mbar.d_delta_f_.iloc[0, :].to_numpy() == pytest.approx(
         np.array([0.0, 0.008802, 0.014432, 0.018097, 0.020879]), abs=1e-6

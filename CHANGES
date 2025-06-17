@@ -18,6 +18,7 @@ The rules for this file:
 
 Changes
   - Drop support for py3.10 (PR #431)
+  - Only numpy <2.3 is supported due to potential changes in output of up to 0.1 kT (see PR Fix test #431 and issue numpy 2.3.0 madness choderalab/pymbar#556) (PR #431)
 
 Enhancements
   - Added matrices for entropy and enthalpy for MBAR (PR #406)

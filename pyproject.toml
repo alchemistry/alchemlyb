@@ -41,7 +41,7 @@ classifiers = [
 requires-python = ">=3.11"
 
 dependencies = [
-	     "numpy",
+	     "numpy<2.3",
 	     "pandas>=2.1",
 	     "pymbar>=4",
 	     "scipy",
