@@ -197,6 +197,9 @@ def test_bootstrap(gmx_benzene_Coulomb_u_nk):
 
 
 def test_enthalpy_entropy_mbar(gmx_benzene_Coulomb_u_nk):
+    """For the time being, only numpy <2.3 is supported due to potential changes in
+    output of up to 0.1 kT (see PR Fix test #431 and issue numpy 2.3.0 madness
+    choderalab/pymbar#556 )"""
     mbar = MBAR()
     u_nk = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
     mbar.fit(u_nk, compute_entropy_enthalpy=True)
