@@ -1,4 +1,5 @@
 from functools import wraps
+from typing import Any, Callable, Sequence, Union
 
 import pandas as pd
 
@@ -9,7 +10,7 @@ __all__ = [
 ]
 
 
-def pass_attrs(func):
+def pass_attrs(func: Callable[..., pd.DataFrame| pd.Series]) -> Callable[..., pd.DataFrame | pd.Series]:
     """Pass the attrs from the first positional argument to the output
     dataframe.
 
@@ -18,7 +19,7 @@ def pass_attrs(func):
     """
 
     @wraps(func)
-    def wrapper(input_dataframe, *args, **kwargs):
+    def wrapper(input_dataframe: pd.DataFrame| pd.Series, *args: Any, **kwargs: Any) -> pd.DataFrame| pd.Series:
         dataframe = func(input_dataframe, *args, **kwargs)
         dataframe.attrs = input_dataframe.attrs
         return dataframe
@@ -26,7 +27,7 @@ def pass_attrs(func):
     return wrapper
 
 
-def concat(objs, *args, **kwargs):
+def concat(objs: pd.DataFrame | pd.Series | Sequence[pd.DataFrame|pd.Series], *args: Any, **kwargs: Any) -> pd.DataFrame| pd.Series:
     """Concatenate pandas objects while persevering the attrs.
 
     Concatenate pandas objects along a particular axis with optional set
