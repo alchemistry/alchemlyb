@@ -509,7 +509,7 @@ def block_average(
         for data in df_list:
             ind1, ind2 = len(data) // num * (i - 1), len(data) // num * i
             sample.append(data[ind1:ind2])
-        sample = concat(sample)
+        sample = concat(sample) # type: ignore[assignment]
         result = estimator_fit(sample)
 
         average_list.append(result.delta_f_.iloc[0, -1])

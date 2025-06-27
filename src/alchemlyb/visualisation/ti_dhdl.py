@@ -155,7 +155,7 @@ def plot_ti_dhdl(dhdl_data: Any, labels: None | list[str] = None, colors: None |
     dl_mat = np.array([xs - i for i in xs])  # type: ignore[operator]
     ri = range(len(xs)) 
 
-    def getInd(r=ri, z=[0]):
+    def getInd(r: range = ri, z: list[int] = [0]) -> list[int]:     # type: ignore[return]
         primo = r[0]
         min_dl = ndx * 0.02 * 2 ** (primo > 10)
         if dl_mat[primo].max() < min_dl:

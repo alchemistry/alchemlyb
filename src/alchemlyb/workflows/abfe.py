@@ -9,7 +9,7 @@ import pandas as pd
 import joblib
 from loguru import logger
 from matplotlib.axes import Axes
-from typing import Any
+from typing import Any, Callable
 
 from .base import WorkflowBase
 from .. import concat
@@ -97,13 +97,13 @@ class ABFE(WorkflowBase):
             )
         if not Path(dir).is_dir():
             raise ValueError(f"The input directory `dir`={dir} is not a directory.")
-        self.file_list = list(map(str, Path(dir).glob(reg_exp)))  # type: ignore[arg-type]
+        self.file_list = list(map(str, Path(dir).glob(reg_exp))) 
 
         if len(self.file_list) == 0:
             raise ValueError(f"No file has been matched to {reg_exp}.")
 
         logger.info(f"Found {len(self.file_list)} {suffix} files.")
-        logger.info("Unsorted file list: \n {}", "\n".join(self.file_list))  # type: ignore[arg-type]
+        logger.info("Unsorted file list: \n {}", "\n".join(self.file_list)) 
 
         if software == "GROMACS":
             logger.info(f"Using {software} parser to read the data.")
@@ -144,11 +144,11 @@ class ABFE(WorkflowBase):
 
         if read_u_nk:
 
-            def extract_u_nk(_extract_u_nk, file, T):
+            def extract_u_nk(_extract_u_nk: Callable, file: str, T: float) -> pd.DataFrame:
                 try:
                     u_nk = _extract_u_nk(file, T)
                     logger.info(f"Reading {len(u_nk)} lines of u_nk from {file}")
-                    return u_nk
+                    return u_nk # type: ignore[no-any-return]
                 except Exception as exc:
                     msg = f"Error reading u_nk from {file}."
                     logger.error(msg)
@@ -163,11 +163,11 @@ class ABFE(WorkflowBase):
 
         if read_dHdl:
 
-            def extract_dHdl(_extract_dHdl, file, T):
+            def extract_dHdl(_extract_dHdl: Callable, file: str, T: float) -> pd.DataFrame:
                 try:
                     dhdl = _extract_dHdl(file, T)
                     logger.info(f"Reading {len(dhdl)} lines of dhdl from {file}")
-                    return dhdl
+                    return dhdl # type: ignore[no-any-return]
                 except Exception as exc:
                     msg = f"Error reading dHdl from {file}."
                     logger.error(msg)
@@ -202,7 +202,7 @@ class ABFE(WorkflowBase):
             return
 
         self.file_list = [self.file_list[i] for i in index_list]
-        logger.info("Sorted file list: \n{}", "\n".join(self.file_list))  # type: ignore[arg-type]
+        logger.info("Sorted file list: \n{}", "\n".join(self.file_list)) 
         if read_u_nk:
             self.u_nk_list = [u_nk_list[i] for i in index_list]
         else:
@@ -218,13 +218,13 @@ class ABFE(WorkflowBase):
         skiptime: float = 0,
         uncorr: str = "dE",
         threshold: int = 50,
-        estimators: tuple[str] = ("MBAR", "BAR", "TI"),  # type: ignore[assignment]
+        estimators: tuple[str, ...] = ("MBAR", "BAR", "TI"),
         overlap: str = "O_MBAR.pdf",
         breakdown: bool = True,
         forwrev: None | int = None,
         n_jobs: int = 1,
-        *args,
-        **kwargs,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         """The method for running the automatic analysis.
 
@@ -275,7 +275,7 @@ class ABFE(WorkflowBase):
         use_TI = False
 
         if estimators is not None:
-            if isinstance(estimators, str):
+            if isinstance(estimators, str):     # type: ignore[unreachable]
                 estimators = [ # type: ignore[unreachable]
                     estimators
                 ]
@@ -298,7 +298,7 @@ class ABFE(WorkflowBase):
                 skiptime=skiptime, uncorr=uncorr, threshold=threshold, n_jobs=n_jobs
             )
         if estimators is not None:
-            self.estimate(estimators)
+            self.estimate(estimators) # type: ignore[arg-type]
             self.generate_result()
 
         if overlap is not None and use_FEP:
@@ -367,7 +367,7 @@ class ABFE(WorkflowBase):
         if len(self.u_nk_list) > 0:
             logger.info(f"Processing the u_nk data set with skiptime of {skiptime}.")
 
-            def _decorrelate_u_nk(u_nk, skiptime, threshold, index):
+            def _decorrelate_u_nk(u_nk: pd.DataFrame, skiptime: float, threshold: int, index: int) -> pd.DataFrame:
                 u_nk = u_nk[u_nk.index.get_level_values("time") >= skiptime]
                 subsample = decorrelate_u_nk(u_nk, uncorr, remove_burnin=True)
                 if len(subsample) < threshold:
@@ -393,7 +393,7 @@ class ABFE(WorkflowBase):
 
         if len(self.dHdl_list) > 0:
 
-            def _decorrelate_dhdl(dHdl, skiptime, threshold, index):
+            def _decorrelate_dhdl(dHdl: pd.DataFrame, skiptime: float, threshold: int, index: int) -> pd.DataFrame:
                 dHdl = dHdl[dHdl.index.get_level_values("time") >= skiptime]
                 subsample = decorrelate_dhdl(dHdl, remove_burnin=True)
                 if len(subsample) < threshold:
@@ -417,7 +417,7 @@ class ABFE(WorkflowBase):
         else:
             logger.info("No dHdl data being subsampled")
 
-    def estimate(self, estimators: tuple[str] = ("MBAR", "BAR", "TI"), **kwargs) -> None:  # type: ignore[assignment]
+    def estimate(self, estimators: tuple[str] = ("MBAR", "BAR", "TI"), **kwargs:Any) -> None:  # type: ignore[assignment]
         """Estimate the free energy using the selected estimator.
 
         Parameters
@@ -477,13 +477,13 @@ class ABFE(WorkflowBase):
                     "From 2.2.0, n_bootstraps=50 will be the default for estimating MBAR error.",
                     DeprecationWarning,
                 )
-                self.estimator[estimator] = MBAR(**kwargs).fit(u_nk)
+                self.estimator[estimator] = MBAR(**kwargs).fit(u_nk) # type: ignore[arg-type]
             elif estimator == "BAR":
                 logger.info("Run BAR estimator.")
-                self.estimator[estimator] = BAR(**kwargs).fit(u_nk)
+                self.estimator[estimator] = BAR(**kwargs).fit(u_nk) # type: ignore[arg-type]
             elif estimator == "TI":
                 logger.info("Run TI estimator.")
-                self.estimator[estimator] = TI(**kwargs).fit(dHdl)
+                self.estimator[estimator] = TI(**kwargs).fit(dHdl) # type: ignore[arg-type]
 
     def generate_result(self) -> pd.DataFrame:
         """Summarise the result into a dataframe.
@@ -750,7 +750,7 @@ class ABFE(WorkflowBase):
         return fig
 
     def check_convergence( # type: ignore[override]
-        self, forwrev: int, estimator: str = "MBAR", dF_t: str = "dF_t.pdf", ax: None | Axes = None, **kwargs
+        self, forwrev: int, estimator: str = "MBAR", dF_t: str = "dF_t.pdf", ax: None | Axes = None, **kwargs:Any
     ) -> None | Axes:
         """Compute the forward and backward convergence using
         :func:`~alchemlyb.convergence.forward_backward_convergence`and

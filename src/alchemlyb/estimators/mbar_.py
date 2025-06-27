@@ -4,6 +4,7 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 import pymbar
+import numpy.typing as npt
 from sklearn.base import BaseEstimator
 
 from . import BAR
@@ -236,7 +237,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         return self
 
     @property
-    def overlap_matrix(self):
+    def overlap_matrix(self) -> npt.NDArray:
         r"""MBAR overlap matrix.
 
         The estimated state overlap matrix :math:`O_{ij}` is an estimate of the probability
@@ -249,4 +250,4 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         ---------
         pymbar.mbar.MBAR.computeOverlap
         """
-        return self._mbar.compute_overlap()["matrix"] # type: ignore[attr-defined]
+        return self._mbar.compute_overlap()["matrix"] # type: ignore[attr-defined, no-any-return]
