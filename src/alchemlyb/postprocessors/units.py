@@ -39,10 +39,10 @@ def to_kT(df, T=None):
     if T is not None:
         new_df.attrs["temperature"] = T
     elif "temperature" not in df.attrs:
-        raise TypeError("Attribute temperature not found in the input " "Dataframe.")
+        raise TypeError("Attribute temperature not found in the input Dataframe.")
 
     if "energy_unit" not in df.attrs:
-        raise TypeError("Attribute energy_unit not found in the input " "Dataframe.")
+        raise TypeError("Attribute energy_unit not found in the input Dataframe.")
 
     if df.attrs["energy_unit"] == "kT":
         return new_df
@@ -56,8 +56,9 @@ def to_kT(df, T=None):
         return new_df
     else:
         raise ValueError(
-            "energy_unit {} can only be kT, kJ/mol or "
-            "kcal/mol.".format(df.attrs["energy_unit"])
+            "energy_unit {} can only be kT, kJ/mol or kcal/mol.".format(
+                df.attrs["energy_unit"]
+            )
         )
 
 

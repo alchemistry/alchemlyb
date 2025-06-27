@@ -71,11 +71,6 @@ def gmx_benzene_VDW_u_nk(gmx_benzene):
 
 
 @pytest.fixture
-def gmx_benzene_VDW_dHdl(gmx_benzene):
-    return [gmx.extract_dHdl(file, T=300) for file in gmx_benzene["VDW"]]
-
-
-@pytest.fixture
 def gmx_ABFE():
     dataset = load_ABFE()
     return dataset["data"]

@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from alchemtest.gmx import load_benzene
 
 import alchemlyb
 from alchemlyb.convergence import forward_backward_convergence
@@ -80,7 +79,6 @@ def test_plot_dF_state(
     gmx_benzene_VDW_dHdl,
 ):
     """Just test if the plot runs"""
-    bz = load_benzene().data
     u_nk_coul = alchemlyb.concat(gmx_benzene_Coulomb_u_nk)
     dHdl_coul = alchemlyb.concat(gmx_benzene_Coulomb_dHdl)
     u_nk_vdw = alchemlyb.concat(gmx_benzene_VDW_u_nk)
@@ -292,7 +290,7 @@ class Test_Units:
 
     def test_plot_dF_state_unknown(self, estimaters):
         with pytest.raises(ValueError):
-            fig = plot_dF_state(estimaters, units="ddd")
+            plot_dF_state(estimaters, units="ddd")
 
     @pytest.mark.parametrize("units", [None, "kT", "kJ/mol", "kcal/mol"])
     def test_plot_ti_dhdl(self, estimaters, units):
@@ -304,7 +302,7 @@ class Test_Units:
     def test_plot_ti_dhdl_unknown(self, estimaters):
         ti, mbar = estimaters
         with pytest.raises(ValueError):
-            fig = plot_ti_dhdl(ti, units="ddd")
+            plot_ti_dhdl(ti, units="ddd")
 
     @pytest.mark.parametrize("units", [None, "kT", "kJ/mol", "kcal/mol"])
     def test_plot_convergence(self, convergence, units):

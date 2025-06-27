@@ -82,7 +82,7 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
             )
 
     if skip_lambda_index:
-        ks = [int(l) for l in skip_lambda_index]
+        ks = [int(skip_index) for skip_index in skip_lambda_index]
         ks = np.delete(np.arange(size + len(ks)), ks)
     else:
         ks = range(size)

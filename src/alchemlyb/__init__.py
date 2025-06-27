@@ -4,6 +4,10 @@ import pandas as pd
 
 from ._version import __version__
 
+__all__ = [
+    "__version__",
+]
+
 
 def pass_attrs(func):
     """Pass the attrs from the first positional argument to the output

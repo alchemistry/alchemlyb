@@ -1,6 +1,4 @@
-"""Parsers for extracting alchemical data from `Gromacs <http://www.gromacs.org/>`_ output files.
-
-"""
+"""Parsers for extracting alchemical data from `Gromacs <http://www.gromacs.org/>`_ output files."""
 
 import numpy as np
 import pandas as pd
@@ -118,21 +116,21 @@ def extract_u_nk(xvg, T, filter=True):
         if "Thermodynamic state" in df:
             ts_index = df.columns.get_loc("Thermodynamic state")
             thermo_state = df[df.columns[ts_index]]
-            for i, l in enumerate(lambdas):
+            for i, lambda_value in enumerate(lambdas):
                 v = []
                 for t in thermo_state:
                     v.append(statevec[int(t)][i])
-                u_k[l] = v
+                u_k[lambda_value] = v
         else:
             state_legend = _extract_legend(xvg)
-            for i, l in enumerate(state_legend):
-                u_k[l] = state_legend[l]
+            for i, state_legend_item in enumerate(state_legend):
+                u_k[state_legend_item] = state_legend[state_legend_item]
     else:
-        for i, l in enumerate(lambdas):
+        for i, lambda_value in enumerate(lambdas):
             try:
-                u_k[l] = statevec[i]
+                u_k[lambda_value] = statevec[i]
             except TypeError:
-                u_k[l] = statevec
+                u_k[lambda_value] = statevec
 
     # set up new multi-index
     newind = ["time"] + lambdas
@@ -202,8 +200,8 @@ def extract_dHdl(xvg, T, filter=True):
 
     # want to grab only dH/dl columns
     dHcols = []
-    for l in lambdas:
-        dHcols.extend([col for col in df.columns if (l in col)])
+    for lambda_value in lambdas:
+        dHcols.extend([col for col in df.columns if (lambda_value in col)])
 
     dHdl = df[dHcols]
 
@@ -212,7 +210,7 @@ def extract_dHdl(xvg, T, filter=True):
 
     # rename columns to not include the word 'lambda', since we use this for
     # index below
-    cols = [l.split("-")[0] for l in lambdas]
+    cols = [lambda_value.split("-")[0] for lambda_value in lambdas]
 
     dHdl = pd.DataFrame(
         dHdl.values,
@@ -229,21 +227,21 @@ def extract_dHdl(xvg, T, filter=True):
         if "Thermodynamic state" in df:
             ts_index = df.columns.get_loc("Thermodynamic state")
             thermo_state = df[df.columns[ts_index]]
-            for i, l in enumerate(lambdas):
+            for i, lambda_value in enumerate(lambdas):
                 v = []
                 for t in thermo_state:
                     v.append(statevec[int(t)][i])
-                dHdl[l] = v
+                dHdl[lambda_value] = v
         else:
             state_legend = _extract_legend(xvg)
-            for i, l in enumerate(state_legend):
-                dHdl[l] = state_legend[l]
+            for i, state_legend_item in enumerate(state_legend):
+                dHdl[state_legend_item] = state_legend[state_legend_item]
     else:
-        for i, l in enumerate(lambdas):
+        for i, lambda_value in enumerate(lambdas):
             try:
-                dHdl[l] = statevec[i]
+                dHdl[lambda_value] = statevec[i]
             except TypeError:
-                dHdl[l] = statevec
+                dHdl[lambda_value] = statevec
 
     # set up new multi-index
     newind = ["time"] + lambdas
@@ -376,7 +374,7 @@ def _extract_dataframe(xvg, headers=None, filter=filter):
     # march through column names, mark duplicates when found
     cols = [
         col + "{}[duplicated]".format(i) if col in cols[:i] else col
-        for i, col, in enumerate(cols)
+        for i, col in enumerate(cols)
     ]
 
     header_cnt = len(headers["_raw_lines"])

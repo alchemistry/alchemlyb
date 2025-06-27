@@ -223,7 +223,7 @@ def plot_dF_state(
             ax.set_xlim(x[0] - width, x[-1] + len(lines) * width)
             plt.xticks(
                 x + 0.5 * width * len(estimators),
-                tuple([f"{i}--{i+1}" for i in x]),
+                tuple([f"{i}--{i + 1}" for i in x]),
                 fontsize=8,
             )
         elif orientation == "portrait":

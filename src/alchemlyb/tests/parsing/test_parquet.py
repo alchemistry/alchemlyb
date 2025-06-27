@@ -17,7 +17,7 @@ def test_extract_dHdl(dHdl_list, request, tmp_path):
 
 
 @pytest.mark.parametrize("u_nk_list", ["gmx_benzene_VDW_u_nk", "gmx_ABFE_complex_u_nk"])
-def test_extract_dHdl(u_nk_list, request, tmp_path):
+def test_extract_u_nk(u_nk_list, request, tmp_path):
     u_nk = request.getfixturevalue(u_nk_list)[0]
     u_nk.to_parquet(path=str(tmp_path / "u_nk.parquet"), index=True)
     new_u_nk = extract_u_nk(str(tmp_path / "u_nk.parquet"), T=300)
