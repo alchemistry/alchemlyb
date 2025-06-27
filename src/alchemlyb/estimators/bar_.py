@@ -67,7 +67,6 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         method="false-position",
         verbose=False,
     ):
-
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
         self.method = method

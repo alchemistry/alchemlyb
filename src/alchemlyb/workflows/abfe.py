@@ -141,6 +141,7 @@ class ABFE(WorkflowBase):
         self.dHdl_sample_list = None
 
         if read_u_nk:
+
             def extract_u_nk(_extract_u_nk, file, T):
                 try:
                     u_nk = _extract_u_nk(file, T)
@@ -377,8 +378,7 @@ class ABFE(WorkflowBase):
                     subsample = u_nk
                 else:
                     logger.info(
-                        f"Take {len(subsample)} uncorrelated "
-                        f"u_nk for state {index}."
+                        f"Take {len(subsample)} uncorrelated u_nk for state {index}."
                     )
                 return subsample
 
@@ -404,8 +404,7 @@ class ABFE(WorkflowBase):
                     subsample = dHdl
                 else:
                     logger.info(
-                        f"Take {len(subsample)} uncorrelated "
-                        f"dHdl for state {index}."
+                        f"Take {len(subsample)} uncorrelated dHdl for state {index}."
                     )
                 return subsample
 
@@ -548,7 +547,7 @@ class ABFE(WorkflowBase):
             u_nk = self.u_nk_list[0]
             stages = u_nk.reset_index("time").index.names
             logger.info("use the stage name from u_nk")
-        except:
+        except Exception:
             dHdl = self.dHdl_list[0]
             stages = dHdl.reset_index("time").index.names
             logger.info("use the stage name from dHdl")
@@ -666,7 +665,7 @@ class ABFE(WorkflowBase):
             logger.info(f"Plot overlap matrix to {self.out} under {overlap}.")
             return ax
         else:
-            logger.warning("MBAR estimator not found. " "Overlap matrix not plotted.")
+            logger.warning("MBAR estimator not found. Overlap matrix not plotted.")
 
     def plot_ti_dhdl(self, dhdl_TI="dhdl_TI.pdf", labels=None, colors=None, ax=None):
         """Plot the dHdl for TI estimator using
@@ -792,7 +791,7 @@ class ABFE(WorkflowBase):
                 if self.u_nk_list is not None:
                     u_nk_list = self.u_nk_list
                     logger.info(
-                        "Subsampled u_nk not available, " "use original data instead."
+                        "Subsampled u_nk not available, use original data instead."
                     )
                 else:
                     msg = (
@@ -807,9 +806,7 @@ class ABFE(WorkflowBase):
                 u_nk_list, estimator=estimator, num=forwrev, **kwargs
             )
         elif estimator in TI_ESTIMATORS:
-            logger.warning(
-                "No valid FEP estimator or dataset found. " "Fallback to TI."
-            )
+            logger.warning("No valid FEP estimator or dataset found. Fallback to TI.")
             if self.dHdl_sample_list is not None:
                 dHdl_list = self.dHdl_sample_list
                 logger.info("Subsampled dHdl is available.")
@@ -817,7 +814,7 @@ class ABFE(WorkflowBase):
                 if self.dHdl_list is not None:
                     dHdl_list = self.dHdl_list
                     logger.info(
-                        "Subsampled dHdl not available, " "use original data instead."
+                        "Subsampled dHdl not available, use original data instead."
                     )
                 else:
                     logger.error(f"dHdl is needed for the f{estimator} estimator.")

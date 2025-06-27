@@ -70,7 +70,7 @@ class SectionParser:
         self.filename = filename
         try:
             self.fileh = anyopen(self.filename, "r")
-        except:
+        except Exception:
             logger.exception("Cannot open file {}", filename)
             raise
         self.lineno = 0
@@ -223,7 +223,6 @@ def file_validation(outfile):
             )
             raise ValueError(f"no free energy section found in file {outfile}")
 
-        mbar_ndata = 0
         have_mbar, bar_intervall, mbar_states = secp.extract_section(
             "^FEP MBAR options:",
             "^$",
@@ -231,7 +230,6 @@ def file_validation(outfile):
             "^---",
         )
         if have_mbar:
-            mbar_ndata = int(nstlim / bar_intervall)
             mbar_lambdas = _process_mbar_lambdas(secp)
             file_datum.mbar_lambdas = mbar_lambdas
             clambda_str = f"{clambda:6.4f}"

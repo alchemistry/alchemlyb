@@ -1,6 +1,4 @@
-"""Collection of utilities used by many parsers.
-
-"""
+"""Collection of utilities used by many parsers."""
 
 import bz2
 import gzip

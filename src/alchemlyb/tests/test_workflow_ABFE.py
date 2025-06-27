@@ -122,7 +122,7 @@ class TestRead:
     def test_no_parser(self):
         dir = os.path.dirname(load_ABFE()["data"]["complex"][0])
         with pytest.raises(NotImplementedError):
-            workflow = ABFE(
+            ABFE(
                 units="kcal/mol",
                 software="aaa",
                 dir=dir,
@@ -224,13 +224,6 @@ class TestEstimator:
         workflow.estimate(estimators="MBAR", method="adaptive")
         assert "MBAR" in workflow.estimator
 
-    def test_single_estimator_ti(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, "estimator", dict())
-        monkeypatch.setattr(workflow, "summary", None)
-        workflow.estimate(estimators="TI")
-        summary = workflow.generate_result()
-        assert np.isclose(summary["TI"]["Stages"]["TOTAL"], 2.946, 0.1)
-
     def test_summary(self, workflow):
         """Test if if the summary is right."""
         summary = workflow.generate_result()
@@ -266,7 +259,7 @@ class TestEstimator:
         monkeypatch.setattr(workflow, "summary", None)
         workflow.estimate(estimators="TI")
         summary = workflow.generate_result()
-        assert np.isclose(summary["TI"]["Stages"]["TOTAL"], 21.51472826028906, 0.1)
+        assert np.isclose(summary["TI"]["Stages"]["TOTAL"], 21.65, 0.1)
 
     def test_unprocessed_u_nk(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "u_nk_sample_list", None)

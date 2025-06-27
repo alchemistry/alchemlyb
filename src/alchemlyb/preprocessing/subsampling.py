@@ -1,6 +1,4 @@
-"""Functions for subsampling datasets.
-
-"""
+"""Functions for subsampling datasets."""
 
 import warnings
 

@@ -93,7 +93,7 @@ def plot_convergence(dataframe, units=None, final_error=None, ax=None):
         final_error = backward_error[-1]
 
     if np.isfinite(backward[-1]) and np.isfinite(final_error):
-        line0 = ax.fill_between(
+        ax.fill_between(
             [0, 1],
             backward[-1] - final_error,
             backward[-1] + final_error,
@@ -223,14 +223,14 @@ def plot_block_average(dataframe, units=None, final_error=None, ax=None):
             final_error = 1.0
 
     if np.isfinite(final_error):
-        line0 = ax.fill_between(
+        ax.fill_between(
             [0, 1],
             np.mean(df_avg) - final_error,
             np.mean(df_avg) + final_error,
             color="#D2B9D3",
             zorder=1,
         )
-    line1 = ax.errorbar(
+    ax.errorbar(
         f_ts,
         df_avg,
         yerr=df_avg_error,

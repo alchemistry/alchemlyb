@@ -1,6 +1,4 @@
-"""Parsers for extracting alchemical data from `NAMD <http://www.ks.uiuc.edu/Research/namd/>`_ output files.
-
-"""
+"""Parsers for extracting alchemical data from `NAMD <http://www.ks.uiuc.edu/Research/namd/>`_ output files."""
 
 from os.path import basename
 from re import split
@@ -51,14 +49,20 @@ def _get_lambdas(fep_files):
     for fep_file in sorted(fep_files, key=_filename_sort_key):
         with anyopen(fep_file, "r") as f:
             for line in f:
-                l = line.strip().split()
+                line_split = line.strip().split()
 
                 # We might not have a #NEW line so make the best guess
-                if l[0] == "#NEW":
-                    lambda1, lambda2 = float(l[6]), float(l[8])
-                    lambda_idws = float(l[10]) if "LAMBDA_IDWS" in l else None
-                elif l[0] == "#Free":
-                    lambda1, lambda2, lambda_idws = float(l[7]), float(l[8]), None
+                if line_split[0] == "#NEW":
+                    lambda1, lambda2 = float(line_split[6]), float(line_split[8])
+                    lambda_idws = (
+                        float(line_split[10]) if "LAMBDA_IDWS" in line_split else None
+                    )
+                elif line_split[0] == "#Free":
+                    lambda1, lambda2, lambda_idws = (
+                        float(line_split[7]),
+                        float(line_split[8]),
+                        None,
+                    )
                 else:
                     # We only care about lines with lambda values. No need to
                     # do all that other processing below for every line
@@ -192,18 +196,18 @@ def extract_u_nk(fep_files, T):
         with anyopen(fep_file, "r") as f:
             has_idws = False
             for line in f:
-                l = line.strip().split()
+                line_split = line.strip().split()
                 # We don't know if IDWS was enabled just from the #Free line, and we might not have
                 # a #NEW line in this file, so we have to check for the existence of FepE_back lines
                 # We rely on short-circuit evaluation to avoid the string comparison most of the time
-                if has_idws is False and l[0] == "FepE_back:":
+                if has_idws is False and line_split[0] == "FepE_back:":
                     has_idws = True
 
                 # New window, get IDWS lambda if any
                 # We keep track of lambdas from the #NEW line and if they disagree with the #Free line
                 # within the same file, then complain. This can happen if truncated fepout files
                 # are presented in the wrong order.
-                if l[0] == "#NEW":
+                if line_split[0] == "#NEW":
                     if parsing:
                         logger.error(
                             f"Window with lambda1: {lambda1_at_start} lambda2: {lambda2_at_start} lambda_idws: {lambda_idws_at_start} appears truncated"
@@ -213,16 +217,21 @@ def extract_u_nk(fep_files, T):
                         )
                         raise ValueError("New window begun after truncated window")
 
-                    lambda1_at_start, lambda2_at_start = float(l[6]), float(l[8])
-                    lambda_idws_at_start = float(l[10]) if "LAMBDA_IDWS" in l else None
+                    lambda1_at_start, lambda2_at_start = (
+                        float(line_split[6]),
+                        float(line_split[8]),
+                    )
+                    lambda_idws_at_start = (
+                        float(line_split[10]) if "LAMBDA_IDWS" in line_split else None
+                    )
                     has_idws = True if lambda_idws_at_start is not None else False
 
                 # this line marks end of window; dump data into dataframe
-                if l[0] == "#Free":
+                if line_split[0] == "#Free":
                     # extract lambda values for finished window
                     # lambda1 = sampling lambda (row), lambda2 = comparison lambda (col)
-                    lambda1 = float(l[7])
-                    lambda2 = float(l[8])
+                    lambda1 = float(line_split[7])
+                    lambda2 = float(line_split[8])
 
                     # If the lambdas are not what we thought they would be, raise an exception to ensure the calculation
                     # fails. This can happen if fepouts where one window spans multiple fepouts are processed out of order
@@ -262,7 +271,7 @@ def extract_u_nk(fep_files, T):
                         # data but no lambda_idws value.
                         if l1_idx == 0:
                             raise ValueError(
-                                f"IDWS data present in first window but lambda_idws not included; no way to infer the correct lambda_idws"
+                                "IDWS data present in first window but lambda_idws not included; no way to infer the correct lambda_idws"
                             )
                         lambda_idws_at_start = all_lambdas[l1_idx - 1]
                         logger.warning(
@@ -320,15 +329,15 @@ def extract_u_nk(fep_files, T):
 
                 # append work value from 'dE' column of fepout file
                 if parsing:
-                    if l[0] == "FepEnergy:":
-                        win_de.append(float(l[6]))
-                        win_ts.append(float(l[1]))
-                    elif l[0] == "FepE_back:":
-                        win_de_back.append(float(l[6]))
-                        win_ts_back.append(float(l[1]))
+                    if line_split[0] == "FepEnergy:":
+                        win_de.append(float(line_split[6]))
+                        win_ts.append(float(line_split[1]))
+                    elif line_split[0] == "FepE_back:":
+                        win_de_back.append(float(line_split[6]))
+                        win_ts_back.append(float(line_split[1]))
 
                 # Turn parsing on after line 'STARTING COLLECTION OF ENSEMBLE AVERAGE'
-                if "#STARTING" in l:
+                if "#STARTING" in line_split:
                     parsing = True
 
     if len(win_de) != 0 or len(win_de_back) != 0:  # pragma: no cover

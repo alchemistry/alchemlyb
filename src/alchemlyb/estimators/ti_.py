@@ -160,9 +160,9 @@ class TI(BaseEstimator, _EstimatorMixOut):
             if any(diff[:, i]):
                 new = self.dhdl.iloc[diff[:, i], i]
                 # drop all other index
-                for l in l_types:
-                    if l != l_types[i]:
-                        new = new.reset_index(l, drop=True)
+                for l_type in l_types:
+                    if l_type != l_types[i]:
+                        new = new.reset_index(l_type, drop=True)
                 new.attrs = self.dhdl.attrs
                 dhdl_list.append(new)
         return dhdl_list

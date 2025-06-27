@@ -129,4 +129,4 @@ def test_stream_unsupported_compression():
         # read from stream
         with pytest.raises(ValueError):
             with anyopen(stream, "r", compression=compression) as f:
-                data_out = f.read()
+                f.read()

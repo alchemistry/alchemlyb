@@ -20,6 +20,7 @@ Fixes
   - Get correct timestamp based on bar_intervall (Issue #428, PR #429)
 
 Changes
+  - Use Ruff to do format and lint check and rename some variables, drop black (PR #432)
   - Add support for py3.13 (PR #431)
   - Drop support for py3.10 (PR #431)
   - Only numpy <2.3 is supported due to potential changes in output of up to 0.1 kT

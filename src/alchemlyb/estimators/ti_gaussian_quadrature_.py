@@ -475,10 +475,10 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             new_variances = variances.iloc[l_masks, i]
             index_list.extend(new_means.index)
             # for multi-lambda case, extract the relevant column
-            for l in l_types:
-                if l != l_types[i]:
-                    new_means = new_means.reset_index(l, drop=True)
-                    new_variances = new_variances.reset_index(l, drop=True)
+            for l_type in l_types:
+                if l_type != l_types[i]:
+                    new_means = new_means.reset_index(l_type, drop=True)
+                    new_variances = new_variances.reset_index(l_type, drop=True)
             new_means.attrs = means.attrs
             new_variances.attrs = variances.attrs
             lambda_list.append(new_means.index)

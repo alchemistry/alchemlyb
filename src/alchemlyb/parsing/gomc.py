@@ -1,6 +1,4 @@
-"""Parsers for extracting alchemical data from `GOMC <http://gomc.eng.wayne.edu/>`_ output files.
-
-"""
+"""Parsers for extracting alchemical data from `GOMC <http://gomc.eng.wayne.edu/>`_ output files."""
 
 import pandas as pd
 
@@ -34,7 +32,6 @@ def extract_u_nk(filename, T):
 
     """
 
-    dh_col_match = "dU/dL"
     h_col_match = "DelE"
     pv_col_match = "PV"
     u_col_match = ["Total_En"]
@@ -84,10 +81,10 @@ def extract_u_nk(filename, T):
     )
 
     # Need to modify the lambda name
-    cols = [l + "-lambda" for l in lambdas]
+    cols = [lambda_value + "-lambda" for lambda_value in lambdas]
     # create columns for each lambda, indicating state each row sampled from
-    for i, l in enumerate(cols):
-        u_k[l] = statevec[i]
+    for i, lambda_value in enumerate(cols):
+        u_k[lambda_value] = statevec[i]
 
     # set up new multi-index
     newind = ["time"] + cols
@@ -131,8 +128,8 @@ def extract_dHdl(filename, T):
 
     # want to grab only dH/dl columns
     dHcols = []
-    for l in lambdas:
-        dHcols.extend([col for col in df.columns if (l in col)])
+    for lambda_value in lambdas:
+        dHcols.extend([col for col in df.columns if (lambda_value in col)])
 
     dHdl = df[dHcols]
 
@@ -146,10 +143,10 @@ def extract_dHdl(filename, T):
     )
 
     # Need to modify the lambda name
-    cols = [l + "-lambda" for l in lambdas]
+    cols = [lambda_value + "-lambda" for lambda_value in lambdas]
     # create columns for each lambda, indicating state each row sampled from
-    for i, l in enumerate(cols):
-        dHdl[l] = statevec[i]
+    for i, lambda_value in enumerate(cols):
+        dHdl[lambda_value] = statevec[i]
 
     # set up new multi-index
     newind = ["time"] + cols

@@ -118,7 +118,7 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
             )
 
     # Get the real data out
-    xs, ndx, dx = [0], 0, 0.001
+    xs, ndx, _dx = [0], 0, 0.001
     min_y, max_y = 0, 0
     for dhdl in dhdl_list:
         x = dhdl.index.values
@@ -222,6 +222,6 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
         color="#151B54",
     )
     lege = ax.legend(prop=FP(size=14), frameon=False, loc=1)
-    for l in lege.legend_handles:
-        l.set_linewidth(10)
+    for legend_handle in lege.legend_handles:
+        legend_handle.set_linewidth(10)
     return ax
