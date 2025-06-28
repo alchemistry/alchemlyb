@@ -58,7 +58,7 @@ def _pre_gen(it: Iterator[Any], first: None | Any) -> Iterator[Any]:
         try:
             yield next(it)
         except StopIteration:
-            return  
+            return
 
 
 class SectionParser:
@@ -95,7 +95,14 @@ class SectionParser:
                 break
         return Found_pattern
 
-    def extract_section(self, start: str, end: str, fields: list[str], limit: None | str = None, extra: str = "") -> list[float]:
+    def extract_section(
+        self,
+        start: str,
+        end: str,
+        fields: list[str],
+        limit: None | str = None,
+        extra: str = "",
+    ) -> list[float]:
         """
         Extract data values (int, float) in fields from a section
         marked with start and end regexes.  Do not read further than
@@ -141,7 +148,7 @@ class SectionParser:
         """Close the filehandle."""
         self.fileh.close()
 
-    def __enter__(self) -> 'SectionParser':
+    def __enter__(self) -> "SectionParser":
         return self
 
     def __exit__(self, typ: Any, value: Any, traceback: Any) -> None:
@@ -219,7 +226,7 @@ def file_validation(outfile: str) -> FEData:
             "^Free energy options:", "^$", ["clambda"], "^---"
         )
         if clambda is None:
-            logger.error( # type: ignore[unreachable]
+            logger.error(  # type: ignore[unreachable]
                 'No free energy section found in file {}, "clambda" was None.', outfile
             )
             raise ValueError(f"no free energy section found in file {outfile}")
@@ -268,7 +275,7 @@ def file_validation(outfile: str) -> FEData:
 
         (t0,) = secp.extract_section("^ begin time", "^$", ["coords"])
         if t0 is None:
-            logger.error("No starting simulation time in file {}.", outfile) # type: ignore[unreachable]
+            logger.error("No starting simulation time in file {}.", outfile)  # type: ignore[unreachable]
             raise ValueError(f"No starting simulation time in file {outfile}")
 
         if not secp.skip_after("^   4.  RESULTS"):
@@ -338,10 +345,10 @@ def extract(outfile: str, T: float) -> dict[str, None | pd.DataFrame]:
                         raise ValueError(
                             "TI Energy detected after the TIMINGS section."
                             + " Did you concatenate the output file?"
-                        ) 
+                        )
                     file_datum.gradients.append(dvdl)
-                    nensec += 1  
-                    old_nstep = nstep # type: ignore[assignment]
+                    nensec += 1
+                    old_nstep = nstep  # type: ignore[assignment]
             elif line.startswith("MBAR Energy analysis") and file_datum.have_mbar:
                 if finished:
                     raise ValueError(
@@ -397,7 +404,7 @@ def extract(outfile: str, T: float) -> dict[str, None | pd.DataFrame]:
         logger.info('WARNING: No MBAR energies found! "u_nk" entry will be None')
         mbar_df = None
 
-    if not nensec: 
+    if not nensec:
         logger.warning("WARNING: File {} does not contain any dV/dl data", outfile)
         dHdl_df = None
     else:
@@ -430,7 +437,7 @@ def extract_dHdl(outfile: str, T: float) -> None | pd.DataFrame:
 
     """
     extracted = extract(outfile, T)
-    return extracted["dHdl"]  
+    return extracted["dHdl"]
 
 
 def extract_u_nk(outfile: str, T: float) -> None | pd.DataFrame:
@@ -456,7 +463,7 @@ def extract_u_nk(outfile: str, T: float) -> None | pd.DataFrame:
 
     """
     extracted = extract(outfile, T)
-    return extracted["u_nk"]  
+    return extracted["u_nk"]
 
 
 def _process_mbar_lambdas(secp: SectionParser) -> list[str]:

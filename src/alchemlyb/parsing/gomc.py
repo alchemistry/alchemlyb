@@ -157,7 +157,7 @@ def extract_dHdl(filename: str, T: float) -> pd.DataFrame:
     return dHdl
 
 
-def extract(filename: str, T: float) -> dict[str, pd.DataFrame| None]:
+def extract(filename: str, T: float) -> dict[str, pd.DataFrame | None]:
     r"""Return reduced potentials `u_nk` and gradients `dH/dl`
     from a Hamiltonian differences free energy file.
 

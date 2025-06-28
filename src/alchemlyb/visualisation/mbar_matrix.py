@@ -15,7 +15,9 @@ import numpy as np
 from matplotlib.axes import Axes
 
 
-def plot_mbar_overlap_matrix(matrix: np.ndarray, skip_lambda_index: list[int] = [], ax: None | Axes = None) -> Axes:
+def plot_mbar_overlap_matrix(
+    matrix: np.ndarray, skip_lambda_index: list[int] = [], ax: None | Axes = None
+) -> Axes:
     """Plot the MBAR overlap matrix.
 
     Parameters

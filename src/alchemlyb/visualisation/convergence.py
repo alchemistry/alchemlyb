@@ -7,7 +7,12 @@ import pandas as pd
 from ..postprocessors.units import get_unit_converter
 
 
-def plot_convergence(dataframe: pd.DataFrame, units: None | str = None, final_error: None | float = None, ax: None | Axes = None) -> Axes:
+def plot_convergence(
+    dataframe: pd.DataFrame,
+    units: None | str = None,
+    final_error: None | float = None,
+    ax: None | Axes = None,
+) -> Axes:
     """Plot the forward and backward convergence.
 
      The input could be the result from
@@ -149,7 +154,12 @@ def plot_convergence(dataframe: pd.DataFrame, units: None | str = None, final_er
     return ax
 
 
-def plot_block_average(dataframe: pd.DataFrame, units: None | str = None, final_error: None | float = None, ax: None | Axes = None) -> Axes:
+def plot_block_average(
+    dataframe: pd.DataFrame,
+    units: None | str = None,
+    final_error: None | float = None,
+    ax: None | Axes = None,
+) -> Axes:
     """Plot the forward and backward convergence.
 
      The input could be the result from

@@ -2,7 +2,6 @@
 
 from os.path import basename
 from re import split
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -359,7 +358,7 @@ def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
     return u_nk
 
 
-def extract(fep_files: str | list[str], T: float) -> dict[str, pd.DataFrame| None]:
+def extract(fep_files: str | list[str], T: float) -> dict[str, pd.DataFrame | None]:
     r"""Return reduced potentials `u_nk` and gradients `dH/dl`
     from NAMD fepout file(s).
 

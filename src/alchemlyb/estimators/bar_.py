@@ -97,7 +97,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         groups = u_nk.groupby(level=u_nk.index.names[1:])
         N_k = [
             (
-                len(groups.get_group(i if isinstance(i, tuple) else (i,))) # type: ignore[unreachable]
+                len(groups.get_group(i if isinstance(i, tuple) else (i,)))  # type: ignore[unreachable]
                 if i in groups.groups
                 else 0
             )

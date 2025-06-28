@@ -18,7 +18,13 @@ from typing import Any
 from ..postprocessors.units import get_unit_converter
 
 
-def plot_ti_dhdl(dhdl_data: Any, labels: None | list[str] = None, colors: None | list[str] = None, units: None | str = None, ax: None | Axes = None) -> Axes:
+def plot_ti_dhdl(
+    dhdl_data: Any,
+    labels: None | list[str] = None,
+    colors: None | list[str] = None,
+    units: None | str = None,
+    ax: None | Axes = None,
+) -> Axes:
     """Plot the dhdl of TI.
 
     Parameters
@@ -115,7 +121,8 @@ def plot_ti_dhdl(dhdl_data: Any, labels: None | list[str] = None, colors: None |
         else:  # pragma: no cover
             raise ValueError(
                 "Number of colors ({}) should be larger than the number of data ({})".format(
-                    len(labels), len(dhdl_list)  # type: ignore[arg-type]
+                    len(labels),
+                    len(dhdl_list),  # type: ignore[arg-type]
                 )
             )
 
@@ -153,9 +160,9 @@ def plot_ti_dhdl(dhdl_data: Any, labels: None | list[str] = None, colors: None |
     # Make sure the tick labels are not overcrowded.
     xs = np.array(xs)  # type: ignore[assignment]
     dl_mat = np.array([xs - i for i in xs])  # type: ignore[operator]
-    ri = range(len(xs)) 
+    ri = range(len(xs))
 
-    def getInd(r: range = ri, z: list[int] = [0]) -> list[int]:     # type: ignore[return]
+    def getInd(r: range = ri, z: list[int] = [0]) -> list[int]:  # type: ignore[return]
         primo = r[0]
         min_dl = ndx * 0.02 * 2 ** (primo > 10)
         if dl_mat[primo].max() < min_dl:
@@ -171,7 +178,7 @@ def plot_ti_dhdl(dhdl_data: Any, labels: None | list[str] = None, colors: None |
         if i in getInd():
             xt.append(i)
         else:
-            xt.append("") # type: ignore[arg-type]
+            xt.append("")  # type: ignore[arg-type]
 
     plt.xticks(xs[1:], xt[1:], fontsize=10)  # type: ignore[arg-type]
     ax.yaxis.label.set_size(10)  # type: ignore[attr-defined]

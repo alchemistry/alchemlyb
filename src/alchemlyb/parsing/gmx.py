@@ -253,7 +253,7 @@ def extract_dHdl(xvg: str, T: float, filter: bool = True) -> pd.DataFrame:
     return dHdl
 
 
-def extract(xvg: str, T: float, filter: bool = True) -> dict[str, pd.DataFrame| None]:
+def extract(xvg: str, T: float, filter: bool = True) -> dict[str, pd.DataFrame | None]:
     r"""Return reduced potentials `u_nk` and gradients `dH/dl`
     from a Hamiltonian differences XVG file.
 
@@ -283,7 +283,9 @@ def extract(xvg: str, T: float, filter: bool = True) -> dict[str, pd.DataFrame| 
     return {"u_nk": extract_u_nk(xvg, T, filter), "dHdl": extract_dHdl(xvg, T, filter)}
 
 
-def _extract_state(xvg: str, headers: None | dict[str, Any] = None) -> tuple[None | int, list[str], list[float]]:
+def _extract_state(
+    xvg: str, headers: None | dict[str, Any] = None
+) -> tuple[None | int, list[str], list[float]]:
     """Extract information on state sampled, names of lambdas.
 
     Parameters
@@ -342,7 +344,9 @@ def _extract_legend(xvg: str) -> dict[str, float]:
     return state_legend
 
 
-def _extract_dataframe(xvg: str, headers: None | dict[str, Any] = None, filter: bool = True) -> pd.DataFrame:
+def _extract_dataframe(
+    xvg: str, headers: None | dict[str, Any] = None, filter: bool = True
+) -> pd.DataFrame:
     """Extract a DataFrame from XVG data using Pandas `read_csv()`.
 
     pd.read_csv() shows the same behavior building pandas Dataframe with better
@@ -541,7 +545,9 @@ def _get_headers(xvg: str) -> dict[str, Any]:
     return headers
 
 
-def _get_value_by_key(headers: dict[str, Any], key1: str, key2: None | str = None) -> None | str:
+def _get_value_by_key(
+    headers: dict[str, Any], key1: str, key2: None | str = None
+) -> None | str:
     """Return value by two-level keys where the second key is optional
 
     Example

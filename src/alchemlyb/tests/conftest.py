@@ -25,7 +25,6 @@ from alchemtest.namd import (
     load_restarted_reversed,
 )
 from loguru import logger
-from typing import Any
 
 from alchemlyb.parsing import gmx, amber, gomc, namd
 
@@ -33,7 +32,7 @@ from alchemlyb.parsing import gmx, amber, gomc, namd
 @pytest.fixture
 def gmx_benzene() -> dict[str, list[str]]:
     dataset = load_benzene()
-    return dataset["data"] # type: ignore[no-any-return]
+    return dataset["data"]  # type: ignore[no-any-return]
 
 
 @pytest.fixture
@@ -49,7 +48,7 @@ def gmx_benzene_VDW_dHdl(gmx_benzene: dict[str, list[str]]) -> list[pd.DataFrame
 @pytest.fixture
 def gmx_ethanol() -> dict[str, list[str]]:
     dataset = load_ethanol()
-    return dataset["data"]# type: ignore[no-any-return]
+    return dataset["data"]  # type: ignore[no-any-return]
 
 
 @pytest.fixture
@@ -75,7 +74,7 @@ def gmx_benzene_VDW_u_nk(gmx_benzene: dict[str, list[str]]) -> list[pd.DataFrame
 @pytest.fixture
 def gmx_ABFE() -> dict[str, list[str]]:
     dataset = load_ABFE()
-    return dataset["data"] # type: ignore[no-any-return]
+    return dataset["data"]  # type: ignore[no-any-return]
 
 
 @pytest.fixture
@@ -205,21 +204,25 @@ def gmx_water_particle_without_energy_dHdl() -> list[pd.DataFrame]:
 @pytest.fixture
 def amber_simplesolvated() -> dict[str, list[str]]:
     dataset = load_simplesolvated()
-    return dataset["data"]# type: ignore[no-any-return]
+    return dataset["data"]  # type: ignore[no-any-return]
 
 
 @pytest.fixture
-def amber_simplesolvated_charge_dHdl(amber_simplesolvated: dict[str, list[str]]) -> list[pd.DataFrame]:
+def amber_simplesolvated_charge_dHdl(
+    amber_simplesolvated: dict[str, list[str]],
+) -> list[pd.DataFrame]:
     return [
-        amber.extract_dHdl(filename, T=298.0) # type: ignore[misc]
+        amber.extract_dHdl(filename, T=298.0)  # type: ignore[misc]
         for filename in amber_simplesolvated["charge"]
     ]
 
 
 @pytest.fixture
-def amber_simplesolvated_vdw_dHdl(amber_simplesolvated: dict[str, list[str]]) -> list[pd.DataFrame]:
+def amber_simplesolvated_vdw_dHdl(
+    amber_simplesolvated: dict[str, list[str]],
+) -> list[pd.DataFrame]:
     return [
-        amber.extract_dHdl(filename, T=298.0)# type: ignore[misc]
+        amber.extract_dHdl(filename, T=298.0)  # type: ignore[misc]
         for filename in amber_simplesolvated["vdw"]
     ]
 
@@ -229,7 +232,7 @@ def amber_bace_example_complex_vdw() -> list[pd.DataFrame]:
     dataset = load_bace_example()
 
     return [
-        amber.extract_u_nk(filename, T=298.0) # type: ignore[misc]
+        amber.extract_u_nk(filename, T=298.0)  # type: ignore[misc]
         for filename in dataset["data"]["complex"]["vdw"]
     ]
 
@@ -239,14 +242,15 @@ def amber_tyk2_example_complex() -> list[pd.DataFrame]:
     dataset = load_tyk2_example()
 
     return [
-        amber.extract_dHdl(filename, T=300.0) for filename in dataset["data"]["complex"] # type: ignore[misc]
+        amber.extract_dHdl(filename, T=300.0)
+        for filename in dataset["data"]["complex"]  # type: ignore[misc]
     ]
 
 
 @pytest.fixture
 def gomc_benzene() -> list[str]:
     dataset = gomc_load_benzene()
-    return dataset["data"] # type: ignore[no-any-return]
+    return dataset["data"]  # type: ignore[no-any-return]
 
 
 @pytest.fixture
@@ -269,7 +273,7 @@ def namd_tyr2ala() -> pd.DataFrame:
     u_nk1[u_nk1.isna()] = u_nk2
     u_nk = u_nk1.sort_index(level=u_nk1.index.names[1:])
 
-    return u_nk # type: ignore[no-any-return]
+    return u_nk  # type: ignore[no-any-return]
 
 
 @pytest.fixture
@@ -277,7 +281,7 @@ def namd_idws() -> pd.DataFrame:
     dataset = load_idws()
     u_nk = namd.extract_u_nk(dataset["data"]["forward"], T=300)
 
-    return u_nk # type: ignore[no-any-return]
+    return u_nk  # type: ignore[no-any-return]
 
 
 @pytest.fixture
@@ -285,7 +289,7 @@ def namd_idws_restarted() -> pd.DataFrame:
     dataset = load_restarted()
     u_nk = namd.extract_u_nk(dataset["data"]["both"], T=300)
 
-    return u_nk # type: ignore[no-any-return]
+    return u_nk  # type: ignore[no-any-return]
 
 
 @pytest.fixture
@@ -293,11 +297,11 @@ def namd_idws_restarted_reversed() -> pd.DataFrame:
     dataset = load_restarted_reversed()
     u_nk = namd.extract_u_nk(dataset["data"]["both"], T=300)
 
-    return u_nk # type: ignore[no-any-return]
+    return u_nk  # type: ignore[no-any-return]
 
 
 @pytest.fixture
-def caplog(caplog: LogCaptureFixture) -> LogCaptureFixture: # type: ignore[misc]
+def caplog(caplog: LogCaptureFixture) -> LogCaptureFixture:  # type: ignore[misc]
     handler_id = logger.add(caplog.handler, format="{message}")
     yield caplog
     logger.remove(handler_id)

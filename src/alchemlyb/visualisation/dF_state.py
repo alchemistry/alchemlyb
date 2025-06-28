@@ -19,7 +19,12 @@ from ..postprocessors.units import get_unit_converter
 
 
 def plot_dF_state(
-    estimators: Any, labels: None | list[str] = None, colors: None | list[str] = None, units: None | str = None, orientation: str = "portrait", nb: int = 10
+    estimators: Any,
+    labels: None | list[str] = None,
+    colors: None | list[str] = None,
+    units: None | str = None,
+    orientation: str = "portrait",
+    nb: int = 10,
 ) -> Figure:
     """Plot the dhdl of TI.
 

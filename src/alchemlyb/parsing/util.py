@@ -5,7 +5,7 @@ import gzip
 import os
 
 from os import PathLike
-from typing import IO, TextIO
+from typing import TextIO
 
 
 def bz2_open(filename: str, mode: str) -> TextIO:
@@ -18,7 +18,9 @@ def gzip_open(filename: str, mode: str) -> TextIO:
     return gzip.open(filename, mode)  # type: ignore[return-value]
 
 
-def anyopen(datafile: PathLike | TextIO, mode: str = "r", compression: None | str = None) -> TextIO:
+def anyopen(
+    datafile: PathLike | TextIO, mode: str = "r", compression: None | str = None
+) -> TextIO:
     """Return a file stream for file or stream, even if compressed.
 
     Supports files compressed with bzip2 (.bz2) and gzip (.gz) compression

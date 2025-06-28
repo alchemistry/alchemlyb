@@ -46,7 +46,13 @@ class WorkflowBase:
     """
 
     def __init__(
-        self, units: str = "kT", software: str = "Gromacs", T: float = 298, out: str = "./", *args: Any, **kwargs: Any
+        self,
+        units: str = "kT",
+        software: str = "Gromacs",
+        T: float = 298,
+        out: str = "./",
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         logger.info(f"Alchemlyb Version: f{__version__}")
         logger.info(f"Set Temperature to {T} K.")

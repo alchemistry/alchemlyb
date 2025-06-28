@@ -148,7 +148,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         groups = u_nk.groupby(level=u_nk.index.names[1:])
         N_k = [
             (
-                len(groups.get_group(i if isinstance(i, tuple) else (i,))) # type: ignore[unreachable]
+                len(groups.get_group(i if isinstance(i, tuple) else (i,)))  # type: ignore[unreachable]
                 if i in groups.groups
                 else 0
             )
@@ -193,46 +193,60 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         )
 
         uncertainty_method = None if self.n_bootstraps == 0 else "bootstrap"
-        out = self._mbar.compute_free_energy_differences( # type: ignore[attr-defined]
+        out = self._mbar.compute_free_energy_differences(  # type: ignore[attr-defined]
             return_theta=True, uncertainty_method=uncertainty_method
         )
         if compute_entropy_enthalpy:
             out.update(
-                self._mbar.compute_entropy_and_enthalpy( # type: ignore[attr-defined]
+                self._mbar.compute_entropy_and_enthalpy(  # type: ignore[attr-defined]
                     uncertainty_method=uncertainty_method
                 )
             )
 
         self._delta_f_ = pd.DataFrame(
-            out["Delta_f"], columns=self._states_, index=self._states_  # type: ignore[arg-type]
-        )  
+            out["Delta_f"],
+            columns=self._states_,
+            index=self._states_,  # type: ignore[arg-type]
+        )
         self._d_delta_f_ = pd.DataFrame(
-            out["dDelta_f"], columns=self._states_, index=self._states_ # type: ignore[arg-type]
+            out["dDelta_f"],
+            columns=self._states_,
+            index=self._states_,  # type: ignore[arg-type]
         )
         self.theta_ = pd.DataFrame(
-            out["Theta"], columns=self._states_, index=self._states_ # type: ignore[arg-type]
+            out["Theta"],
+            columns=self._states_,
+            index=self._states_,  # type: ignore[arg-type]
         )
         if compute_entropy_enthalpy:
             self._delta_h_ = pd.DataFrame(
-                out["Delta_u"], columns=self._states_, index=self._states_ # type: ignore[arg-type]
+                out["Delta_u"],
+                columns=self._states_,
+                index=self._states_,  # type: ignore[arg-type]
             )
             self._d_delta_h_ = pd.DataFrame(
-                out["dDelta_u"], columns=self._states_, index=self._states_ # type: ignore[arg-type]
+                out["dDelta_u"],
+                columns=self._states_,
+                index=self._states_,  # type: ignore[arg-type]
             )
             self._delta_sT_ = pd.DataFrame(
-                out["Delta_s"], columns=self._states_, index=self._states_ # type: ignore[arg-type]
+                out["Delta_s"],
+                columns=self._states_,
+                index=self._states_,  # type: ignore[arg-type]
             )
             self._d_delta_sT_ = pd.DataFrame(
-                out["dDelta_s"], columns=self._states_, index=self._states_ # type: ignore[arg-type]
+                out["dDelta_s"],
+                columns=self._states_,
+                index=self._states_,  # type: ignore[arg-type]
             )
 
         self._delta_f_.attrs = u_nk.attrs
         self._d_delta_f_.attrs = u_nk.attrs
         if compute_entropy_enthalpy:
-            self._delta_h_.attrs = u_nk.attrs # type: ignore[union-attr]
-            self._d_delta_h_.attrs = u_nk.attrs# type: ignore[union-attr]
-            self._delta_sT_.attrs = u_nk.attrs # type: ignore[union-attr]
-            self._d_delta_sT_.attrs = u_nk.attrs # type: ignore[union-attr]
+            self._delta_h_.attrs = u_nk.attrs  # type: ignore[union-attr]
+            self._d_delta_h_.attrs = u_nk.attrs  # type: ignore[union-attr]
+            self._delta_sT_.attrs = u_nk.attrs  # type: ignore[union-attr]
+            self._d_delta_sT_.attrs = u_nk.attrs  # type: ignore[union-attr]
 
         return self
 
@@ -250,4 +264,4 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         ---------
         pymbar.mbar.MBAR.computeOverlap
         """
-        return self._mbar.compute_overlap()["matrix"] # type: ignore[attr-defined, no-any-return]
+        return self._mbar.compute_overlap()["matrix"]  # type: ignore[attr-defined, no-any-return]

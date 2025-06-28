@@ -13,12 +13,12 @@ from .. import pass_attrs
 
 
 def decorrelate_u_nk(
-    df: pd.DataFrame, 
-    method: str = "dE", 
-    drop_duplicates: bool = True, 
-    sort: bool = True, 
-    remove_burnin: bool = False, 
-    **kwargs: Any
+    df: pd.DataFrame,
+    method: str = "dE",
+    drop_duplicates: bool = True,
+    sort: bool = True,
+    remove_burnin: bool = False,
+    **kwargs: Any,
 ) -> pd.DataFrame:
     """Subsample an u_nk DataFrame based on the selected method.
 
@@ -78,11 +78,11 @@ def decorrelate_u_nk(
 
 
 def decorrelate_dhdl(
-    df: pd.DataFrame, 
-    drop_duplicates: bool = True, 
-    sort: bool = True, 
-    remove_burnin: bool = False, 
-    **kwargs: Any
+    df: pd.DataFrame,
+    drop_duplicates: bool = True,
+    sort: bool = True,
+    remove_burnin: bool = False,
+    **kwargs: Any,
 ) -> pd.DataFrame:
     """Subsample a dhdl DataFrame.
     This is a wrapper function around the function
@@ -260,7 +260,9 @@ def dhdl2series(df: pd.DataFrame, method: str = "all") -> pd.Series:
 
 def _check_multiple_times(df: pd.DataFrame | pd.Series) -> bool:
     if isinstance(df, pd.Series):
-        return df.sort_index(axis=0).reset_index("time", name="").duplicated("time").any()  # type: ignore[no-any-return]
+        return (
+            df.sort_index(axis=0).reset_index("time", name="").duplicated("time").any()
+        )  # type: ignore[no-any-return]
     else:
         return df.sort_index(axis=0).reset_index("time").duplicated("time").any()  # type: ignore[no-any-return]
 
@@ -269,7 +271,9 @@ def _check_sorted(df: pd.DataFrame | pd.Series) -> bool:
     return df.reset_index(0)["time"].is_monotonic_increasing
 
 
-def _drop_duplicates(df: pd.DataFrame | pd.Series, series: None | pd.Series = None) -> tuple[pd.DataFrame | pd.Series, None | pd.Series]:
+def _drop_duplicates(
+    df: pd.DataFrame | pd.Series, series: None | pd.Series = None
+) -> tuple[pd.DataFrame | pd.Series, None | pd.Series]:
     """Drop the duplication in the ``df`` which could be Dataframe or
     Series, if series is provided, format the series such that it has the
     same length as ``df``.
@@ -328,7 +332,9 @@ def _drop_duplicates(df: pd.DataFrame | pd.Series, series: None | pd.Series = No
     return df, series
 
 
-def _sort_by_time(df: pd.DataFrame | pd.Series, series: None | pd.Series = None) -> tuple[pd.DataFrame | pd.Series, None | pd.Series]:
+def _sort_by_time(
+    df: pd.DataFrame | pd.Series, series: None | pd.Series = None
+) -> tuple[pd.DataFrame | pd.Series, None | pd.Series]:
     """Sort the ``df`` by time which could be Dataframe or
     Series, if series is provided, sort the series as well.
 
@@ -353,7 +359,12 @@ def _sort_by_time(df: pd.DataFrame | pd.Series, series: None | pd.Series = None)
     return df, series
 
 
-def _prepare_input(df: pd.DataFrame | pd.Series, series: None | pd.Series, drop_duplicates: bool, sort: bool) -> tuple[pd.DataFrame | pd.Series, None | pd.Series]:
+def _prepare_input(
+    df: pd.DataFrame | pd.Series,
+    series: None | pd.Series,
+    drop_duplicates: bool,
+    sort: bool,
+) -> tuple[pd.DataFrame | pd.Series, None | pd.Series]:
     """Prepare and check the input to be used for statistical_inefficiency or equilibrium_detection.
 
     Parameters
@@ -406,7 +417,13 @@ def _prepare_input(df: pd.DataFrame | pd.Series, series: None | pd.Series, drop_
     return df, series
 
 
-def slicing(df: pd.DataFrame | pd.Series, lower: None | float = None, upper: None | float = None, step: None | int = None, force: bool = False) -> pd.DataFrame | pd.Series:
+def slicing(
+    df: pd.DataFrame | pd.Series,
+    lower: None | float = None,
+    upper: None | float = None,
+    step: None | int = None,
+    force: bool = False,
+) -> pd.DataFrame | pd.Series:
     """Subsample a DataFrame using simple slicing.
 
     Parameters
