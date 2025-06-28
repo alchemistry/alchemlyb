@@ -10,7 +10,7 @@ k_b = R_kJmol
 
 
 @_init_attrs
-def extract_u_nk(filename, T):
+def extract_u_nk(filename: str, T: float) -> pd.DataFrame:
     """Return reduced potentials `u_nk` from a Hamiltonian differences dat file.
 
     Parameters
@@ -67,18 +67,18 @@ def extract_u_nk(filename, T):
     u_k = dict()
     cols = list()
     for col in dH:
-        u_col = eval(col.split("->")[1][:-1])
+        u_col = eval(col.split("->")[1][:-1])  # type: ignore[attr-defined]
         # calculate reduced potential u_k = dH + pV + U
         u_k[u_col] = beta * dH[col].values
         if pv_cols:
-            u_k[u_col] += beta * pv.values
+            u_k[u_col] += beta * pv.values  # type: ignore[union-attr]
         if u_cols:
-            u_k[u_col] += beta * u.values
+            u_k[u_col] += beta * u.values  # type: ignore[union-attr]
         cols.append(u_col)
 
     u_k = pd.DataFrame(
         u_k, columns=cols, index=pd.Index(times.values, name="time", dtype="Float64")
-    )
+    )  # type: ignore[assignment]
 
     # Need to modify the lambda name
     cols = [lambda_value + "-lambda" for lambda_value in lambdas]
@@ -88,15 +88,15 @@ def extract_u_nk(filename, T):
 
     # set up new multi-index
     newind = ["time"] + cols
-    u_k = u_k.reset_index().set_index(newind)
+    u_k = u_k.reset_index().set_index(newind)  # type: ignore[attr-defined]
 
     u_k.name = "u_nk"
 
-    return u_k
+    return u_k  # type: ignore[no-any-return]
 
 
 @_init_attrs
-def extract_dHdl(filename, T):
+def extract_dHdl(filename: str, T: float) -> pd.DataFrame:
     """Return gradients `dH/dl` from a Hamiltonian differences free energy file.
 
     Parameters
@@ -157,7 +157,7 @@ def extract_dHdl(filename, T):
     return dHdl
 
 
-def extract(filename, T):
+def extract(filename: str, T: float) -> dict[str, pd.DataFrame | None]:
     r"""Return reduced potentials `u_nk` and gradients `dH/dl`
     from a Hamiltonian differences free energy file.
 
@@ -187,10 +187,10 @@ def extract(filename, T):
     return {"u_nk": extract_u_nk(filename, T), "dHdl": extract_dHdl(filename, T)}
 
 
-def _extract_state(filename):
+def _extract_state(filename: str) -> tuple[int, list[str], list[float]]:
     """Extract information on state sampled, names of lambdas."""
     state = None
-    with anyopen(filename, "r") as f:
+    with anyopen(filename, "r") as f:  # type: ignore[arg-type]
         for line in f:
             if ("#" in line) and ("State" in line):
                 state = int(line.split("State")[1].split(":")[0])
@@ -199,10 +199,10 @@ def _extract_state(filename):
                 statevec = eval(line.strip().split(" = ")[-1])
                 break
 
-    return state, lambdas, statevec
+    return state, lambdas, statevec  # type: ignore[return-value]
 
 
-def _extract_dataframe(filename):
+def _extract_dataframe(filename: str) -> pd.DataFrame:
     """Extract a DataFrame from free energy data."""
     dh_col_match = "dU/dL"
     h_col_match = "DelE"
@@ -210,7 +210,7 @@ def _extract_dataframe(filename):
     u_col_match = "Total_En"
 
     xaxis = "time"
-    with anyopen(filename, "r") as f:
+    with anyopen(filename, "r") as f:  # type: ignore[arg-type]
         names = []
         rows = []
         for line in f:

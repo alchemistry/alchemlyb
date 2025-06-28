@@ -1,6 +1,7 @@
 """Basic building blocks for free energy workflows."""
 
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 from loguru import logger
@@ -45,21 +46,27 @@ class WorkflowBase:
     """
 
     def __init__(
-        self, units="kT", software="Gromacs", T=298, out="./", *args, **kwargs
-    ):
+        self,
+        units: str = "kT",
+        software: str = "Gromacs",
+        T: float = 298,
+        out: str = "./",
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         logger.info(f"Alchemlyb Version: f{__version__}")
         logger.info(f"Set Temperature to {T} K.")
-        self.T = T
+        self.T: float = T
         logger.info(f"Set Software to {software}.")
-        self.software = software
-        self.unit = units
-        self.file_list = []
-        self.out = out
+        self.software: str = software
+        self.unit: str = units
+        self.file_list: list[str] = []
+        self.out: str = out
         if not Path(out).is_dir():
             logger.info(f"Make output folder {out}.")
             Path(out).mkdir(parents=True)
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: Any, **kwargs: Any) -> None:
         """Run the workflow in an automatic fashion.
 
         This method would execute the
@@ -100,7 +107,7 @@ class WorkflowBase:
         self.check_convergence(*args, **kwargs)
         self.plot(*args, **kwargs)
 
-    def read(self, *args, **kwargs):
+    def read(self, *args: Any, **kwargs: Any) -> None:
         """The function that reads the files in `file_list` and parse them
         into u_nk and dHdl files.
 
@@ -113,10 +120,10 @@ class WorkflowBase:
             A list of :class:`pandas.DataFrame` of dHdl.
 
         """
-        self.u_nk_list = []
-        self.dHdl_list = []
+        self.u_nk_list: list[pd.DataFrame] = []
+        self.dHdl_list: list[pd.DataFrame] = []
 
-    def preprocess(self, *args, **kwargs):
+    def preprocess(self, *args: Any, **kwargs: Any) -> None:
         """The function that subsample the u_nk and dHdl in `u_nk_list` and
         `dHdl_list`.
 
@@ -129,10 +136,10 @@ class WorkflowBase:
             A list of :class:`pandas.DataFrame` of the subsampled dHdl.
 
         """
-        self.dHdl_sample_list = []
-        self.u_nk_sample_list = []
+        self.dHdl_sample_list: list[pd.DataFrame] = []
+        self.u_nk_sample_list: list[pd.DataFrame] = []
 
-    def estimate(self, *args, **kwargs):
+    def estimate(self, *args: Any, **kwargs: Any) -> None:
         """The function that runs the estimator based on `u_nk_sample_list`
         and `dHdl_sample_list`.
 
@@ -143,9 +150,9 @@ class WorkflowBase:
             The main result of the workflow.
 
         """
-        self.result = pd.DataFrame()
+        self.result: pd.DataFrame = pd.DataFrame()
 
-    def check_convergence(self, *args, **kwargs):
+    def check_convergence(self, *args: Any, **kwargs: Any) -> None:
         """The function for doing convergence analysis.
 
         Attributes
@@ -155,8 +162,8 @@ class WorkflowBase:
             The result of the convergence analysis.
 
         """
-        self.convergence = pd.DataFrame()
+        self.convergence: pd.DataFrame = pd.DataFrame()
 
-    def plot(self, *args, **kwargs):
+    def plot(self, *args: Any, **kwargs: Any) -> None:
         """The function for producing any plots."""
         pass

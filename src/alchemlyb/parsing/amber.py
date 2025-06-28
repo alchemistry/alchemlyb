@@ -12,6 +12,7 @@ Some of the file parsing parts are adapted from
 """
 
 import re
+from typing import Any, Iterator
 
 import numpy as np
 import pandas as pd
@@ -26,9 +27,9 @@ k_b = R_kJmol * kJ2kcal
 _FP_RE = r"[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?"
 
 
-def convert_to_pandas(file_datum):
+def convert_to_pandas(file_datum: Any) -> pd.DataFrame:
     """Convert the data structure from numpy to pandas format"""
-    data_dic = {}
+    data_dic: dict[str, list[Any]] = {}
     data_dic["dHdl"] = []
     data_dic["lambdas"] = []
     data_dic["time"] = []
@@ -47,7 +48,7 @@ def convert_to_pandas(file_datum):
     return df
 
 
-def _pre_gen(it, first):
+def _pre_gen(it: Iterator[Any], first: None | Any) -> Iterator[Any]:
     """A generator that returns first first if it exists."""
 
     if first:
@@ -65,17 +66,17 @@ class SectionParser:
     A simple parser to extract data values from sections.
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename: str) -> None:
         """Opens a file according to its file type."""
         self.filename = filename
         try:
-            self.fileh = anyopen(self.filename, "r")
+            self.fileh = anyopen(self.filename, "r")  # type: ignore[arg-type]
         except Exception:
             logger.exception("Cannot open file {}", filename)
             raise
         self.lineno = 0
 
-    def skip_lines(self, nlines):
+    def skip_lines(self, nlines: int) -> None | str:
         """Skip a given number of lines."""
         lineno = 0
         for line in self:
@@ -84,7 +85,7 @@ class SectionParser:
                 return line
         return None
 
-    def skip_after(self, pattern):
+    def skip_after(self, pattern: str) -> bool:
         """Skip until after a line that matches a regex pattern."""
         Found_pattern = False
         for line in self:
@@ -94,7 +95,14 @@ class SectionParser:
                 break
         return Found_pattern
 
-    def extract_section(self, start, end, fields, limit=None, extra=""):
+    def extract_section(
+        self,
+        start: str,
+        end: str,
+        fields: list[str],
+        limit: None | str = None,
+        extra: str = "",
+    ) -> list[float]:
         """
         Extract data values (int, float) in fields from a section
         marked with start and end regexes.  Do not read further than
@@ -125,25 +133,25 @@ class SectionParser:
                     except ValueError:
                         result.append(float(value))
             else:  # section may be incomplete
-                result.append(None)
+                result.append(None)  # type: ignore[arg-type]
         return result
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return self
 
-    def __next__(self):
+    def __next__(self) -> str:
         """Read next line of the filehandle and check for EOF."""
         self.lineno += 1
         return next(self.fileh)
 
-    def close(self):
+    def close(self) -> None:
         """Close the filehandle."""
         self.fileh.close()
 
-    def __enter__(self):
+    def __enter__(self) -> "SectionParser":
         return self
 
-    def __exit__(self, typ, value, traceback):
+    def __exit__(self, typ: Any, value: Any, traceback: Any) -> None:
         self.close()
 
 
@@ -164,21 +172,21 @@ class FEData:
         "mbar_lambda_idx",
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.clambda = -1.0
         self.t0 = -1.0
         self.dt = -1.0
         self.T = -1.0
         self.ntpr = -1
         self.bar_intervall = -1
-        self.gradients = []
-        self.mbar_energies = []
+        self.gradients: list[float] = []
+        self.mbar_energies: list[list[float]] = []
         self.have_mbar = False
-        self.mbar_lambdas = []
+        self.mbar_lambdas: list[str] = []
         self.mbar_lambda_idx = -1
 
 
-def file_validation(outfile):
+def file_validation(outfile: str) -> FEData:
     """
     Function that validate and parse an AMBER output file.
     :exc:`ValueError` are risen if inconsinstencies in the input file are found.
@@ -218,7 +226,7 @@ def file_validation(outfile):
             "^Free energy options:", "^$", ["clambda"], "^---"
         )
         if clambda is None:
-            logger.error(
+            logger.error(  # type: ignore[unreachable]
                 'No free energy section found in file {}, "clambda" was None.', outfile
             )
             raise ValueError(f"no free energy section found in file {outfile}")
@@ -267,7 +275,7 @@ def file_validation(outfile):
 
         (t0,) = secp.extract_section("^ begin time", "^$", ["coords"])
         if t0 is None:
-            logger.error("No starting simulation time in file {}.", outfile)
+            logger.error("No starting simulation time in file {}.", outfile)  # type: ignore[unreachable]
             raise ValueError(f"No starting simulation time in file {outfile}")
 
         if not secp.skip_after("^   4.  RESULTS"):
@@ -277,16 +285,16 @@ def file_validation(outfile):
     file_datum.clambda = clambda
     file_datum.t0 = t0
     file_datum.dt = dt
-    file_datum.ntpr = ntpr
-    file_datum.bar_intervall = bar_intervall
+    file_datum.ntpr = ntpr  # type: ignore[assignment]
+    file_datum.bar_intervall = bar_intervall  # type: ignore[assignment]
     file_datum.T = T
-    file_datum.have_mbar = have_mbar
+    file_datum.have_mbar = have_mbar  # type: ignore[assignment]
 
     return file_datum
 
 
 @_init_attrs_dict
-def extract(outfile, T):
+def extract(outfile: str, T: float) -> dict[str, None | pd.DataFrame]:
     """Return reduced potentials `u_nk` and gradients `dH/dl` from AMBER outputfile.
 
     Parameters
@@ -340,7 +348,7 @@ def extract(outfile, T):
                         )
                     file_datum.gradients.append(dvdl)
                     nensec += 1
-                    old_nstep = nstep
+                    old_nstep = nstep  # type: ignore[assignment]
             elif line.startswith("MBAR Energy analysis") and file_datum.have_mbar:
                 if finished:
                     raise ValueError(
@@ -407,7 +415,7 @@ def extract(outfile, T):
     return {"u_nk": mbar_df, "dHdl": dHdl_df}
 
 
-def extract_dHdl(outfile, T):
+def extract_dHdl(outfile: str, T: float) -> None | pd.DataFrame:
     """Return gradients `dH/dl` from AMBER TI outputfile.
 
     Parameters
@@ -432,7 +440,7 @@ def extract_dHdl(outfile, T):
     return extracted["dHdl"]
 
 
-def extract_u_nk(outfile, T):
+def extract_u_nk(outfile: str, T: float) -> None | pd.DataFrame:
     """Return reduced potentials `u_nk` from AMBER outputfile.
 
     Parameters
@@ -458,7 +466,7 @@ def extract_u_nk(outfile, T):
     return extracted["u_nk"]
 
 
-def _process_mbar_lambdas(secp):
+def _process_mbar_lambdas(secp: SectionParser) -> list[str]:
     """
     Extract the lambda points used to compute MBAR energies from an AMBER MDOUT file.
     Parameters

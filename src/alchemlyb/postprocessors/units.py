@@ -3,6 +3,8 @@ Unit conversion and constants
 """
 
 from scipy.constants import R, calorie
+import pandas as pd
+from typing import Callable
 
 #: conversion factor from kJ to kcal, based on :data:`scipy.constants.calorie`
 #: in :mod:`scipy.constants`
@@ -13,7 +15,9 @@ kJ2kcal = 1 / calorie
 R_kJmol = R / 1000
 
 
-def to_kT(df, T=None):
+def to_kT(
+    df: pd.DataFrame | pd.Series, T: None | float = None
+) -> pd.DataFrame | pd.Series:
     """Convert the unit of a DataFrame to `kT`.
 
     Note that if entropy values are passed it is assumed that they are
@@ -49,11 +53,11 @@ def to_kT(df, T=None):
     elif df.attrs["energy_unit"] == "kJ/mol":
         new_df /= R_kJmol * df.attrs["temperature"]
         new_df.attrs["energy_unit"] = "kT"
-        return new_df
+        return new_df  # type: ignore[no-any-return]
     elif df.attrs["energy_unit"] == "kcal/mol":
         new_df /= R_kJmol * df.attrs["temperature"] * kJ2kcal
         new_df.attrs["energy_unit"] = "kT"
-        return new_df
+        return new_df  # type: ignore[no-any-return]
     else:
         raise ValueError(
             "energy_unit {} can only be kT, kJ/mol or kcal/mol.".format(
@@ -62,7 +66,9 @@ def to_kT(df, T=None):
         )
 
 
-def to_kcalmol(df, T=None):
+def to_kcalmol(
+    df: pd.DataFrame | pd.Series, T: None | float = None
+) -> pd.DataFrame | pd.Series:
     """Convert the unit of a DataFrame to kcal/mol.
 
     Note that if entropy values are passed, the result is S * T in units
@@ -87,10 +93,12 @@ def to_kcalmol(df, T=None):
     kt_df = to_kT(df, T)
     kt_df *= R_kJmol * df.attrs["temperature"] * kJ2kcal
     kt_df.attrs["energy_unit"] = "kcal/mol"
-    return kt_df
+    return kt_df  # type: ignore[no-any-return]
 
 
-def to_kJmol(df, T=None):
+def to_kJmol(
+    df: pd.DataFrame | pd.Series, T: None | float = None
+) -> pd.DataFrame | pd.Series:
     """Convert the unit of a DataFrame to kJ/mol.
 
     Note that if entropy values are passed, the result is S * T in units
@@ -115,10 +123,10 @@ def to_kJmol(df, T=None):
     kt_df = to_kT(df, T)
     kt_df *= R_kJmol * df.attrs["temperature"]
     kt_df.attrs["energy_unit"] = "kJ/mol"
-    return kt_df
+    return kt_df  # type: ignore[no-any-return]
 
 
-def get_unit_converter(units):
+def get_unit_converter(units: str) -> Callable:
     """Obtain the converter according to the unit string.
 
     If `units` is 'kT', the `to_kT` converter is returned. If `units` is

@@ -12,11 +12,19 @@ The code for producing the dhdl plot is modified based on
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.font_manager import FontProperties as FP
+from matplotlib.axes import Axes
+from typing import Any
 
 from ..postprocessors.units import get_unit_converter
 
 
-def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
+def plot_ti_dhdl(
+    dhdl_data: Any,
+    labels: None | list[str] = None,
+    colors: None | list[str] = None,
+    units: None | str = None,
+    ax: None | Axes = None,
+) -> Axes:
     """Plot the dhdl of TI.
 
     Parameters
@@ -113,7 +121,8 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
         else:  # pragma: no cover
             raise ValueError(
                 "Number of colors ({}) should be larger than the number of data ({})".format(
-                    len(labels), len(dhdl_list)
+                    len(labels),  # type: ignore[arg-type]
+                    len(dhdl_list),
                 )
             )
 
@@ -149,11 +158,11 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
         ndx += 1
 
     # Make sure the tick labels are not overcrowded.
-    xs = np.array(xs)
-    dl_mat = np.array([xs - i for i in xs])
+    xs = np.array(xs)  # type: ignore[assignment]
+    dl_mat = np.array([xs - i for i in xs])  # type: ignore[operator]
     ri = range(len(xs))
 
-    def getInd(r=ri, z=[0]):
+    def getInd(r: range = ri, z: list[int] = [0]) -> list[int]:  # type: ignore[return]
         primo = r[0]
         min_dl = ndx * 0.02 * 2 ** (primo > 10)
         if dl_mat[primo].max() < min_dl:
@@ -169,20 +178,20 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
         if i in getInd():
             xt.append(i)
         else:
-            xt.append("")
+            xt.append("")  # type: ignore[arg-type]
 
-    plt.xticks(xs[1:], xt[1:], fontsize=10)
-    ax.yaxis.label.set_size(10)
+    plt.xticks(xs[1:], xt[1:], fontsize=10)  # type: ignore[arg-type]
+    ax.yaxis.label.set_size(10)  # type: ignore[attr-defined]
 
     # Remove the abscissa ticks and set up the axes limits.
     for tick in ax.get_xticklines():
         tick.set_visible(False)
     ax.set_xlim(0, ndx)
-    min_y *= 1.01
-    max_y *= 1.01
+    min_y *= 1.01  # type: ignore[assignment]
+    max_y *= 1.01  # type: ignore[assignment]
 
     # Modified so that the x label won't conflict with the lambda label
-    min_y -= (max_y - min_y) * 0.1
+    min_y -= (max_y - min_y) * 0.1  # type: ignore[assignment]
 
     ax.set_ylim(min_y, max_y)
 
@@ -223,5 +232,5 @@ def plot_ti_dhdl(dhdl_data, labels=None, colors=None, units=None, ax=None):
     )
     lege = ax.legend(prop=FP(size=14), frameon=False, loc=1)
     for legend_handle in lege.legend_handles:
-        legend_handle.set_linewidth(10)
+        legend_handle.set_linewidth(10)  # type: ignore[union-attr]
     return ax

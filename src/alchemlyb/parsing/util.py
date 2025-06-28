@@ -3,21 +3,24 @@
 import bz2
 import gzip
 import os
+
 from os import PathLike
-from typing import IO, Union
+from typing import TextIO
 
 
-def bz2_open(filename, mode):
+def bz2_open(filename: str, mode: str) -> TextIO:
     mode += "t" if mode in ["r", "w", "a", "x"] else ""
-    return bz2.open(filename, mode)
+    return bz2.open(filename, mode)  # type: ignore[return-value]
 
 
-def gzip_open(filename, mode):
+def gzip_open(filename: str, mode: str) -> TextIO:
     mode += "t" if mode in ["r", "w", "a", "x"] else ""
-    return gzip.open(filename, mode)
+    return gzip.open(filename, mode)  # type: ignore[return-value]
 
 
-def anyopen(datafile: Union[PathLike, IO], mode="r", compression=None):
+def anyopen(
+    datafile: PathLike | TextIO, mode: str = "r", compression: None | str = None
+) -> TextIO:
     """Return a file stream for file or stream, even if compressed.
 
     Supports files compressed with bzip2 (.bz2) and gzip (.gz) compression
@@ -70,10 +73,10 @@ def anyopen(datafile: Union[PathLike, IO], mode="r", compression=None):
     ):
         # if no compression specified, just pass the stream through
         if compression is None:
-            return datafile
+            return datafile  # type: ignore[return-value]
         elif compression in compressions:
             compressor = compressions[compression]
-            return compressor(datafile, mode=mode)
+            return compressor(datafile, mode=mode)  # type: ignore[arg-type]
         else:
             raise ValueError(
                 "`datafile` is a stream"
@@ -87,10 +90,10 @@ def anyopen(datafile: Union[PathLike, IO], mode="r", compression=None):
 
     # use extension to determine the compression used, if present
     elif compression is None:
-        ext = os.path.splitext(datafile)[1]
+        ext = os.path.splitext(datafile)[1]  # type: ignore[arg-type]
         if ext in extensions:
             opener = extensions[ext]
         else:
-            opener = open
+            opener = open  # type: ignore[assignment]
 
-    return opener(datafile, mode)
+    return opener(datafile, mode)  # type: ignore[arg-type]
