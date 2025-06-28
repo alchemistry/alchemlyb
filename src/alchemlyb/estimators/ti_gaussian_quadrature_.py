@@ -403,7 +403,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             adelta += np.diagflat(np.array(out), k=j)
             ad_delta += np.diagflat(np.array(dout), k=j)
 
-        adelta = adelta - adelta.T
+        adelta = adelta - adelta.T  # type: ignore[assignment]
         ad_delta = (ad_delta + ad_delta.T) - 2 * np.diagflat(d_deltas_squared)
         # yield standard delta_f_ cumulative free energies from one state to another
         self._delta_f_ = pd.DataFrame(adelta, columns=index_list, index=index_list)
