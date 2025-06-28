@@ -434,8 +434,10 @@ class ABFE(WorkflowBase):
             logger.info("No dHdl data being subsampled")
 
     def estimate(
-        self, estimators: tuple[str] = ("MBAR", "BAR", "TI"), **kwargs: Any
-    ) -> None:  # type: ignore[assignment]
+        self,
+        estimators: tuple[str] = ("MBAR", "BAR", "TI"),  # type: ignore[assignment]
+        **kwargs: Any,
+    ) -> None:
         """Estimate the free energy using the selected estimator.
 
         Parameters

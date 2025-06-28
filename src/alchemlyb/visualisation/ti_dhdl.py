@@ -121,8 +121,8 @@ def plot_ti_dhdl(
         else:  # pragma: no cover
             raise ValueError(
                 "Number of colors ({}) should be larger than the number of data ({})".format(
-                    len(labels),
-                    len(dhdl_list),  # type: ignore[arg-type]
+                    len(labels),  # type: ignore[arg-type]
+                    len(dhdl_list),
                 )
             )
 

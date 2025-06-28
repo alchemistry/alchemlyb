@@ -260,9 +260,9 @@ def dhdl2series(df: pd.DataFrame, method: str = "all") -> pd.Series:
 
 def _check_multiple_times(df: pd.DataFrame | pd.Series) -> bool:
     if isinstance(df, pd.Series):
-        return (
+        return (  # type: ignore[no-any-return]
             df.sort_index(axis=0).reset_index("time", name="").duplicated("time").any()
-        )  # type: ignore[no-any-return]
+        )
     else:
         return df.sort_index(axis=0).reset_index("time").duplicated("time").any()  # type: ignore[no-any-return]
 
