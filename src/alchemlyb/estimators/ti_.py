@@ -36,10 +36,10 @@ class TI(BaseEstimator, _EstimatorMixOut):
 
     """
 
-    def __init__(self, verbose=False):
+    def __init__(self, verbose: bool = False) -> None:
         self.verbose = verbose
 
-    def fit(self, dHdl):
+    def fit(self, dHdl: pd.DataFrame) -> "TI":
         """
         Compute free energy differences between each state by integrating
         dHdl across lambda values.
@@ -54,7 +54,7 @@ class TI(BaseEstimator, _EstimatorMixOut):
 
         # sort by state so that rows from same state are in contiguous blocks,
         # and adjacent states are next to each other
-        dHdl = dHdl.sort_index(level=dHdl.index.names[1:])
+        dHdl = dHdl.sort_index(level=dHdl.index.names[1:])  # type: ignore[arg-type]
 
         # obtain the mean and variance of the mean for each state
         # variance calculation assumes no correlation between points
@@ -95,7 +95,7 @@ class TI(BaseEstimator, _EstimatorMixOut):
 
                 # Append deviation of free energy difference between state i and i+j+1
                 dout.append(
-                    (dllr**2 * variances.iloc[i : i + j + 2].values / 4)
+                    (dllr**2 * variances.iloc[i : i + j + 2].values / 4)  # type: ignore[attr-defined]
                     .sum(axis=1)
                     .sum()
                 )
@@ -111,8 +111,8 @@ class TI(BaseEstimator, _EstimatorMixOut):
         # yield standard deviation d_delta_f_ between each state
         self._d_delta_f_ = pd.DataFrame(
             np.sqrt(ad_delta + ad_delta.T),
-            columns=variances.index.values,
-            index=variances.index.values,
+            columns=variances.index.values,  # type: ignore[attr-defined]
+            index=variances.index.values,  # type: ignore[attr-defined]
         )
 
         self._states_ = means.index.values.tolist()
@@ -123,7 +123,7 @@ class TI(BaseEstimator, _EstimatorMixOut):
 
         return self
 
-    def separate_dhdl(self):
+    def separate_dhdl(self) -> list[pd.Series]:
         """
         For transitions with multiple lambda, the attr:`dhdl` would return
         a :class:`~pandas.DataFrame` which gives the dHdl for all the lambda

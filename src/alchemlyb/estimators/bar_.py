@@ -62,11 +62,11 @@ class BAR(BaseEstimator, _EstimatorMixOut):
 
     def __init__(
         self,
-        maximum_iterations=10000,
-        relative_tolerance=1.0e-7,
-        method="false-position",
-        verbose=False,
-    ):
+        maximum_iterations: int = 10000,
+        relative_tolerance: float = 1.0e-7,
+        method: str = "false-position",
+        verbose: bool = False,
+    ) -> None:
         self.maximum_iterations = maximum_iterations
         self.relative_tolerance = relative_tolerance
         self.method = method
@@ -75,7 +75,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         # handle for pymbar.BAR object
         self._bar = None
 
-    def fit(self, u_nk):
+    def fit(self, u_nk: pd.DataFrame) -> "BAR":
         """
         Compute overlap matrix of reduced potentials using
         Bennett acceptance ratio.
@@ -88,7 +88,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
 
         """
         # sort by state so that rows from same state are in contiguous blocks
-        u_nk = u_nk.sort_index(level=u_nk.index.names[1:])
+        u_nk = u_nk.sort_index(level=u_nk.index.names[1:])  # type: ignore[arg-type]
 
         # get a list of the lambda states that are sampled
         self._states_ = u_nk.columns.values.tolist()
@@ -97,7 +97,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         groups = u_nk.groupby(level=u_nk.index.names[1:])
         N_k = [
             (
-                len(groups.get_group(i if isinstance(i, tuple) else (i,)))
+                len(groups.get_group(i if isinstance(i, tuple) else (i,)))  # type: ignore[unreachable]
                 if i in groups.groups
                 else 0
             )
@@ -112,7 +112,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
                     f"Indexed lambda state, {state}, is not represented in u_nk columns:"
                     f" {self._states_}"
                 )
-        states.sort(key=lambda x: self._states_.index(x))
+        states.sort(key=lambda x: self._states_.index(x))  # type: ignore[operator, union-attr]
 
         # Now get free energy differences and their uncertainties for each step
         deltas = np.array([])

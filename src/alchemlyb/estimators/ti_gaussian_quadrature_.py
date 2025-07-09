@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
+import numpy.typing as npt
 from .. import concat
 from .base import _EstimatorMixOut
 
@@ -327,10 +328,10 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         },
     }
 
-    def __init__(self, verbose=False):
+    def __init__(self, verbose: bool = False) -> None:
         self.verbose = verbose
 
-    def fit(self, dHdl):
+    def fit(self, dHdl: pd.DataFrame) -> "TI_GQ":
         """
         Compute cumulative free energy from one state to another by integrating
         dHdl across lambda values.
@@ -345,7 +346,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
 
         # sort by state so that rows from same state are in contiguous blocks,
         # and adjacent states are next to each other
-        dHdl = dHdl.sort_index(level=dHdl.index.names[1:])
+        dHdl = dHdl.sort_index(level=dHdl.index.names[1:])  # type: ignore[arg-type]
 
         # obtain the mean and variance of the mean for each state
         # variance calculation assumes no correlation between points
@@ -356,7 +357,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         weights = []
         # check if the lambdas in the simulations match the suggested values
         lambda_list, means_list, variances_list, index_list = (
-            self.separate_mean_variance(means, variances)
+            self.separate_mean_variance(means, variances)  # type: ignore[arg-type]
         )
         for lambdas in lambda_list:
             num_lambdas = len(lambdas)
@@ -379,8 +380,8 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
 
         # apply gaussian quadrature multiplication at each lambda state
         deltas = weights * mean_values
-        deltas = np.insert(deltas, 0, [0.0], axis=0)
-        deltas = np.append(deltas, [0.0], axis=0)
+        deltas = np.insert(deltas, 0, [0.0], axis=0)  # type: ignore[assignment]
+        deltas = np.append(deltas, [0.0], axis=0)  # type: ignore[assignment]
         d_deltas_squared = np.square(weights) * variance_values
         d_deltas_squared = np.insert(d_deltas_squared, 0, [0.0], axis=0)
         d_deltas_squared = np.append(d_deltas_squared, [0.0], axis=0)
@@ -393,7 +394,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             dout = []
             for i in range(len(deltas) - j):
                 # Append cumulative free energy value from state i to i+j
-                out.append(deltas[i] + deltas[i + 1 : i + j + 1].sum())
+                out.append(deltas[i] + deltas[i + 1 : i + j + 1].sum())  # type: ignore[attr-defined]
                 # Append cumulative squared deviation of free energy from state i to i+j
                 dout.append(
                     d_deltas_squared[i] + d_deltas_squared[i + 1 : i + j + 1].sum()
@@ -402,7 +403,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             adelta += np.diagflat(np.array(out), k=j)
             ad_delta += np.diagflat(np.array(dout), k=j)
 
-        adelta = adelta - adelta.T
+        adelta = adelta - adelta.T  # type: ignore[assignment]
         ad_delta = (ad_delta + ad_delta.T) - 2 * np.diagflat(d_deltas_squared)
         # yield standard delta_f_ cumulative free energies from one state to another
         self._delta_f_ = pd.DataFrame(adelta, columns=index_list, index=index_list)
@@ -423,7 +424,14 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         return self
 
     @staticmethod
-    def separate_mean_variance(means, variances):
+    def separate_mean_variance(
+        means: pd.DataFrame, variances: pd.DataFrame
+    ) -> tuple[
+        list[pd.Index],
+        list[pd.Series],
+        list[pd.Series],
+        list[float | tuple[float, ...]],
+    ]:
         """
         For transitions with multiple lambda, the attr:`dhdl` would return
         a :class:`~pandas.DataFrame` which gives the dHdl for all the lambda
@@ -457,10 +465,10 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             A list of :class:`float` or :class:`tuple` such that each :class:`float`
             or :class:`tuple` is the index of the final `delta_f_` and `d_delta_f_`
         """
-        lambda_list = []
-        dhdl_list = []
-        variance_list = []
-        index_list = []
+        lambda_list: list[npt.NDArray] = []
+        dhdl_list: list[pd.Series] = []
+        variance_list: list[pd.Series] = []
+        index_list: list[float | tuple[float]] = []
         # get the lambda names
         l_types = means.index.names
         # get the lambda vaules
@@ -481,7 +489,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
                     new_variances = new_variances.reset_index(l_type, drop=True)
             new_means.attrs = means.attrs
             new_variances.attrs = variances.attrs
-            lambda_list.append(new_means.index)
+            lambda_list.append(new_means.index)  # type: ignore[arg-type]
             dhdl_list.append(new_means)
             variance_list.append(new_variances)
 
@@ -490,9 +498,9 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             index_list = [0.0] + index_list + [1.0]
         else:
             index_list = (
-                [tuple([0.0] * len(l_types))]
+                [tuple([0.0] * len(l_types))]  # type: ignore[assignment]
                 + index_list
                 + [tuple([1.0] * len(l_types))]
             )
 
-        return lambda_list, dhdl_list, variance_list, index_list
+        return lambda_list, dhdl_list, variance_list, index_list  # type: ignore[return-value]

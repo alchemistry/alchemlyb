@@ -14,7 +14,7 @@ from ..postprocessors.units import R_kJmol, kJ2kcal
 k_b = R_kJmol * kJ2kcal
 
 
-def _filename_sort_key(s):
+def _filename_sort_key(s: str) -> list[int | str]:
     """Key for natural-sorting filenames, ignoring the path.
 
     This means that unlike with the standard Python sorted() function, "foo9" < "foo10".
@@ -23,7 +23,7 @@ def _filename_sort_key(s):
     return [int(t) if t.isdigit() else t.lower() for t in split(r"(\d+)", basename(s))]
 
 
-def _get_lambdas(fep_files):
+def _get_lambdas(fep_files: str | list[str]) -> None | list[float]:
     """Retrieves all lambda values included in the FEP files provided.
 
     We have to do this in order to tolerate truncated and restarted fepout files.
@@ -42,12 +42,13 @@ def _get_lambdas(fep_files):
     List of floats, or None if there is more than one lambda_idws for each lambda1.
     """
 
-    lambda_fwd_map, lambda_bwd_map = {}, {}
+    lambda_fwd_map: dict[float, float] = {}
+    lambda_bwd_map: dict[float, float] = {}
     is_ascending = set()
     endpoint_windows = []
 
     for fep_file in sorted(fep_files, key=_filename_sort_key):
-        with anyopen(fep_file, "r") as f:
+        with anyopen(fep_file, "r") as f:  # type: ignore[arg-type]
             for line in f:
                 line_split = line.strip().split()
 
@@ -112,9 +113,9 @@ def _get_lambdas(fep_files):
                         )
                     lambda_bwd_map[lambda1] = lambda_idws
 
-    is_ascending = next(iter(is_ascending))
+    is_ascending = next(iter(is_ascending))  # type: ignore[arg-type]
 
-    all_lambdas = set()
+    all_lambdas: set[float] = set()
     all_lambdas.update(lambda_fwd_map.keys())
     all_lambdas.update(lambda_fwd_map.values())
     all_lambdas.update(lambda_bwd_map.keys())
@@ -123,7 +124,7 @@ def _get_lambdas(fep_files):
 
 
 @_init_attrs
-def extract_u_nk(fep_files, T):
+def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
     """Return reduced potentials `u_nk` from NAMD fepout file(s).
 
     Parameters
@@ -167,10 +168,10 @@ def extract_u_nk(fep_files, T):
     beta = 1 / (k_b * T)
 
     # lists to get times and work values of each window
-    win_ts = []
-    win_de = []
-    win_ts_back = []
-    win_de_back = []
+    win_ts: list[float] = []
+    win_de: list[float] = []
+    win_ts_back: list[float] = []
+    win_de_back: list[float] = []
 
     # create dataframe for results
     u_nk = pd.DataFrame(columns=["time", "fep-lambda"])
@@ -193,7 +194,7 @@ def extract_u_nk(fep_files, T):
     for fep_file in sorted(fep_files, key=_filename_sort_key):
         # Note we have not set parsing=False because we could be continuing one window across
         # more than one fepout file
-        with anyopen(fep_file, "r") as f:
+        with anyopen(fep_file, "r") as f:  # type: ignore[arg-type]
             has_idws = False
             for line in f:
                 line_split = line.strip().split()
@@ -266,14 +267,14 @@ def extract_u_nk(fep_files, T):
                     # in the correct direction by _get_lambdas().
                     # The "else" case is handled by the rest of this block, by default.
                     if has_idws and lambda_idws_at_start is None:
-                        l1_idx = all_lambdas.index(lambda1)
+                        l1_idx = all_lambdas.index(lambda1)  # type: ignore[union-attr]
                         # Test for the highly pathological case where the first window is both incomplete and has IDWS
                         # data but no lambda_idws value.
                         if l1_idx == 0:
                             raise ValueError(
                                 "IDWS data present in first window but lambda_idws not included; no way to infer the correct lambda_idws"
                             )
-                        lambda_idws_at_start = all_lambdas[l1_idx - 1]
+                        lambda_idws_at_start = all_lambdas[l1_idx - 1]  # type: ignore[index]
                         logger.warning(
                             f"Warning: {fep_file} has IDWS data but lambda_idws not included."
                         )
@@ -357,8 +358,9 @@ def extract_u_nk(fep_files, T):
     return u_nk
 
 
-def extract(fep_files, T):
-    """Return reduced potentials `u_nk` from NAMD fepout file(s).
+def extract(fep_files: str | list[str], T: float) -> dict[str, pd.DataFrame | None]:
+    r"""Return reduced potentials `u_nk` and gradients `dH/dl`
+    from NAMD fepout file(s).
 
     Parameters
     ----------

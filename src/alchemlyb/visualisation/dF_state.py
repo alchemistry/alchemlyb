@@ -11,14 +11,21 @@ The code for producing the dF states plot is modified based on
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.font_manager import FontProperties as FP
+from matplotlib.figure import Figure
+from typing import Any
 
 from ..estimators import TI, BAR, MBAR
 from ..postprocessors.units import get_unit_converter
 
 
 def plot_dF_state(
-    estimators, labels=None, colors=None, units=None, orientation="portrait", nb=10
-):
+    estimators: Any,
+    labels: None | list[str] = None,
+    colors: None | list[str] = None,
+    units: None | str = None,
+    orientation: str = "portrait",
+    nb: int = 10,
+) -> Figure:
     """Plot the dhdl of TI.
 
     Parameters
@@ -125,7 +132,7 @@ def plot_dF_state(
                 ax,
             ]
         else:
-            xs = np.array_split(np.arange(max_length), max_length / nb + 1)
+            xs = np.array_split(np.arange(max_length), max_length / nb + 1)  # type: ignore[call-overload]
             fig, axs = plt.subplots(nrows=len(xs), figsize=(8, 6))
         mnb = max([len(i) for i in xs])
     else:
@@ -194,7 +201,7 @@ def plot_dF_state(
     elw = 30 * width
     ndx = 1
     for x, ax in zip(xs, axs):
-        lines = []
+        lines: list[Any] = []
         for i, (dF, error) in enumerate(zip(dF_list, error_list)):
             y = [dF[j] for j in x]
             ye = [error[j] for j in x]
@@ -214,7 +221,7 @@ def plot_dF_state(
             lines += (line[0],)
         for dir in ["left", "right", "top", "bottom"]:
             if dir == "left":
-                ax.yaxis.set_ticks_position(dir)
+                ax.yaxis.set_ticks_position(dir)  # type: ignore[arg-type]
             else:
                 ax.spines[dir].set_color("none")
 

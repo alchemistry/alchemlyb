@@ -12,9 +12,12 @@ The code for producing the overlap matrix plot is taken from
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 
 
-def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
+def plot_mbar_overlap_matrix(
+    matrix: np.ndarray, skip_lambda_index: list[int] = [], ax: None | Axes = None
+) -> Axes:
     """Plot the MBAR overlap matrix.
 
     Parameters
@@ -83,12 +86,12 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
 
     if skip_lambda_index:
         ks = [int(skip_index) for skip_index in skip_lambda_index]
-        ks = np.delete(np.arange(size + len(ks)), ks)
+        ks = np.delete(np.arange(size + len(ks)), ks)  # type: ignore[assignment]
     else:
-        ks = range(size)
+        ks = range(size)  # type: ignore[assignment]
     for i in range(size):
         ax.annotate(
-            ks[i],
+            ks[i],  # type: ignore[arg-type]
             xy=(i + 0.5, 1),
             xytext=(i + 0.5, size + 0.5),
             size=10,
@@ -98,7 +101,7 @@ def plot_mbar_overlap_matrix(matrix, skip_lambda_index=[], ax=None):
             color="k",
         )
         ax.annotate(
-            ks[i],
+            ks[i],  # type: ignore[arg-type]
             xy=(-0.5, size - (size - 0.5)),
             xytext=(-0.5, size - (i + 0.5)),
             size=10,
