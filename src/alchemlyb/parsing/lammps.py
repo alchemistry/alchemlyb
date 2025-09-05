@@ -8,6 +8,37 @@ that are very close to :math:`\lambda` can be used to calculate the derivative. 
 explicit derivatives, although one should check whether they can derive an explicit expression, they cannot for changes of 
 :math:`\lambda'` in the soft Lennard-Jones (LJ) potential.
 
+Use Cases for extract_* Functions
+=================================
+
+The extract_* functions in this module are designed to handle different aspects of alchemical free energy calculations. Below is an overview of their use cases:
+
+1. **extract_u_nk**:
+   - Purpose: Extracts reduced potentials (u_nk) for each alchemical state (k) for each frame (n).
+   - Use Case: Suitable for MBAR (Multistate Bennett Acceptance Ratio) analysis, where the reduced potentials are required to compute free energy differences across multiple states.
+   - Input Requirements: Requires columns for timestep, lambda values, potential energy, and optionally volume (for NPT ensemble).
+
+2. **extract_dHdl**:
+   - Purpose: Extracts the derivative of the Hamiltonian with respect to lambda (dH/dλ) for each alchemical state.
+   - Use Case: Used in Thermodynamic Integration (TI) to compute free energy differences by integrating dH/dλ over lambda.
+   - Input Requirements: Requires columns for timestep, lambda values, lambda derivatives, and derivative values for different components.
+
+3. **extract_H**:
+   - Purpose: Extracts the Hamiltonian (potential energy) for each alchemical state.
+   - Use Case: Provides the raw potential energy data for analysis or validation purposes.
+   - Input Requirements: Requires columns for timestep, lambda values, and potential energy.
+
+4. **extract_u_nk_from_u_n**:
+   - Purpose: Constructs u_nk from files containing u_n given a separable dependence on lambda.
+   - Use Case: Useful when the dependence of the potential energy on lambda can be expressed as a separable function.
+     This function is provided to reduce the IO cost required if all :math:`\lambda'` must be computed during a simulation.
+   - Input Requirements: Requires columns for lambda, potential energy, and optionally volume (for NPT ensemble).
+
+These functions are tailored to specific free energy calculation methods and ensure compatibility with LAMMPS output formats.
+
+File Format Requirements
+========================
+
 The parsers featured in this module are constructed to parse LAMMPS output files output using the 
 `fix ave/time command <https://docs.lammps.org/fix_ave_time.html>`_, containing data for given potential energy values (an 
 approximation of the Hamiltonian) at specified values of :math:`\lambda` and :math:`\lambda'`, :math:`U_{\lambda,\lambda'}`. Note that in 
@@ -15,9 +46,6 @@ LAMMPS, `fix adapt/fep <https://docs.lammps.org/fix_adapt_fep.html>`_ changes :m
 `compute fep <https://docs.lammps.org/compute_fep.html>`_ changes :math:`\lambda'`.
 
 This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`.
-
-File Format Requirements
-========================
 
 Input files should be space-separated text files produced by LAMMPS `fix ave/time` command, typically with the following characteristics:
 
@@ -81,6 +109,38 @@ from scipy import constants
 
 from . import _init_attrs
 from ..postprocessors.units import R_kJmol, kJ2kcal
+
+
+def _validate_ensemble_parameters(ensemble, pressure):
+    """
+    Validate ensemble and pressure parameters for LAMMPS parsing.
+
+    .. versionadded:: 2.4.0
+
+    Parameters
+    ----------
+    ensemble : str
+        Ensemble type ("npt" or "nvt").
+    pressure : float or None
+        Pressure value for npt ensemble.
+
+    Raises
+    ------
+    ValueError
+        If ensemble/pressure combination is invalid.
+    """
+    if ensemble == "npt":
+        if pressure is None or not isinstance(pressure, float) or pressure < 0:
+            raise ValueError(
+                "In the npt ensemble, a pressure must be provided in the form of a positive float"
+            )
+    elif ensemble != "nvt":
+        raise ValueError("Only ensembles of nvt or npt are supported.")
+    else:
+        if pressure is not None:
+            raise ValueError(
+                "There is no volume correction in the nvt ensemble, the pressure value will not be used."
+            )
 
 
 def beta_from_units(T, units):
@@ -496,18 +556,7 @@ def extract_u_nk_from_u_n(
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
 
-    if ensemble == "npt":
-        if pressure is None or not isinstance(pressure, float) or pressure < 0:
-            raise ValueError(
-                "In the npt ensemble, a pressure must be provided in the form of a positive float"
-            )
-    elif ensemble != "nvt":
-        raise ValueError("Only ensembles of nvt or npt are supported.")
-    else:
-        if pressure is not None:
-            raise ValueError(
-                "There is no volume correction in the nvt ensemble, the pressure value will not be used."
-            )
+    _validate_ensemble_parameters(ensemble, pressure)
 
     beta = beta_from_units(T, units)
 
@@ -699,18 +748,7 @@ def extract_u_nk(
     if not files:
         raise ValueError(f"No files have been found that match: {fep_files}")
 
-    if ensemble == "npt":
-        if pressure is None or not isinstance(pressure, float) or pressure < 0:
-            raise ValueError(
-                "In the npt ensemble, a pressure must be provided in the form of a positive float"
-            )
-    elif ensemble != "nvt":
-        raise ValueError("Only ensembles of nvt or npt are supported.")
-    else:
-        if pressure is not None:
-            raise ValueError(
-                "There is no volume correction in the nvt ensemble, the pressure value will not be used."
-            )
+    _validate_ensemble_parameters(ensemble, pressure)
 
     beta = beta_from_units(T, units)
 
@@ -1316,18 +1354,7 @@ def extract_H(
     if not files:
         raise ValueError("No files have been found that match: {}".format(fep_files))
 
-    if ensemble == "npt":
-        if pressure is None or not isinstance(pressure, float) or pressure < 0:
-            raise ValueError(
-                "In the npt ensemble, a pressure must be provided in the form of a positive float"
-            )
-    elif ensemble != "nvt":
-        raise ValueError("Only ensembles of nvt or npt are supported.")
-    else:
-        if pressure is not None:
-            raise ValueError(
-                "There is no volume correction in the nvt ensemble, the pressure value will not be used."
-            )
+    _validate_ensemble_parameters(ensemble, pressure)
 
     beta = beta_from_units(T, units)
 
