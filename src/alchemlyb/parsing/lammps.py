@@ -1,4 +1,5 @@
-r"""Parsers for extracting alchemical data from `LAMMPS <https://docs.lammps.org/Manual.html>`_ output files.
+r"""
+Parsers for extracting alchemical data from `LAMMPS <https://docs.lammps.org/Manual.html>`_ output files.
 
 For clarity, we would like to distinguish the difference between :math:`\lambda` and :math:`\lambda'`. We refer to :math:`\lambda` as
 the potential scaling of the equilibrated system, so that when this value is changed, the system undergoes another equilibration
@@ -13,26 +14,29 @@ Use Cases for extract_* Functions
 
 The extract_* functions in this module are designed to handle different aspects of alchemical free energy calculations. Below is an overview of their use cases:
 
-1. **extract_u_nk**:
-   - Purpose: Extracts reduced potentials (u_nk) for each alchemical state (k) for each frame (n).
-   - Use Case: Suitable for MBAR (Multistate Bennett Acceptance Ratio) analysis, where the reduced potentials are required to compute free energy differences across multiple states.
-   - Input Requirements: Requires columns for timestep, lambda values, potential energy, and optionally volume (for NPT ensemble).
+.. list-table::
+    :header-rows: 1
 
-2. **extract_dHdl**:
-   - Purpose: Extracts the derivative of the Hamiltonian with respect to lambda (dH/dλ) for each alchemical state.
-   - Use Case: Used in Thermodynamic Integration (TI) to compute free energy differences by integrating dH/dλ over lambda.
-   - Input Requirements: Requires columns for timestep, lambda values, lambda derivatives, and derivative values for different components.
-
-3. **extract_H**:
-   - Purpose: Extracts the Hamiltonian (potential energy) for each alchemical state.
-   - Use Case: Provides the raw potential energy data for analysis or validation purposes.
-   - Input Requirements: Requires columns for timestep, lambda values, and potential energy.
-
-4. **extract_u_nk_from_u_n**:
-   - Purpose: Constructs u_nk from files containing u_n given a separable dependence on lambda.
-   - Use Case: Useful when the dependence of the potential energy on lambda can be expressed as a separable function.
-     This function is provided to reduce the IO cost required if all :math:`\lambda'` must be computed during a simulation.
-   - Input Requirements: Requires columns for lambda, potential energy, and optionally volume (for NPT ensemble).
+    * - Function
+      - Purpose
+      - Use Case
+      - Input Requirements
+    * - **extract_u_nk**
+      - Extracts reduced potentials (u_nk) for each alchemical state (k) for each frame (n).
+      - Suitable for MBAR (Multistate Bennett Acceptance Ratio) analysis, where the reduced potentials are required to compute free energy differences across multiple states.
+      - Requires columns for timestep, lambda values, potential energy, and optionally volume (for NPT ensemble).
+    * - **extract_dHdl**
+      - Extracts the derivative of the Hamiltonian with respect to lambda (dH/dλ) for each alchemical state.
+      - Used in Thermodynamic Integration (TI) to compute free energy differences by integrating dH/dλ over lambda.
+      - Requires columns for timestep, lambda values, lambda derivatives, and derivative values for different components.
+    * - **extract_H**
+      - Extracts the Hamiltonian (potential energy) for each alchemical state.
+      - Provides the raw potential energy data for analysis or validation purposes.
+      - Requires columns for timestep, lambda values, and potential energy.
+    * - **extract_u_nk_from_u_n**
+      - Constructs u_nk from files containing u_n given a separable dependence on lambda.
+      - Useful when the dependence of the potential energy on lambda can be expressed as a separable function. This function is provided to reduce the IO cost required if all :math:`\lambda'` must be computed during a simulation.
+      - Requires columns for lambda, potential energy, and optionally volume (for NPT ensemble).
 
 These functions are tailored to specific free energy calculation methods and ensure compatibility with LAMMPS output formats.
 
@@ -59,38 +63,38 @@ Input files should be space-separated text files produced by LAMMPS `fix ave/tim
 The specific column indices depend on the extraction function, but generally include:
 
 For MBAR extraction (`extract_u_nk`):
-  - Column 0: Timestep/iteration number
-  - Columns 1-2: Lambda values (λ, λ') defining the alchemical state
-  - Column 3: Potential energy U at the current lambda state
-  - Column 4: Potential energy difference dU between lambda states
-  - Column 6: Volume (for NPT ensemble, optional)
+- Column 0: Timestep/iteration number
+- Columns 1-2: Lambda values (λ, λ') defining the alchemical state
+- Column 3: Potential energy U at the current lambda state
+- Column 4: Potential energy difference dU between lambda states
+- Column 6: Volume (for NPT ensemble, optional)
 
 For TI extraction (`extract_dHdl`):
-  - Column 0: Timestep/iteration number
-  - Column 1: Lambda value λ
-  - Column 2: Lambda derivative dλ/dt
-  - Columns 5,7: Derivative values ∂H/∂λ for different components
-  - Additional columns may contain volume, pressure, etc.
+- Column 0: Timestep/iteration number
+- Column 1: Lambda value λ
+- Column 2: Lambda derivative dλ/dt
+- Columns 5,7: Derivative values ∂H/∂λ for different components
+- Additional columns may contain volume, pressure, etc.
 
 **Example File Content:**
-```
-# LAMMPS output from fix ave/time
-# Time Lambda1 Lambda2 U dU Volume dHdl1 dHdl2
-100   0.0     0.0     -1234.5  0.0      12345.6  -23.4   15.2
-200   0.0     0.1     -1235.1  -0.6     12346.1  -24.1   15.8
-300   0.0     0.2     -1236.2  -1.7     12347.0  -25.3   16.5
-...
-```
+.. code-block:: text
+
+    # LAMMPS output from fix ave/time
+    # Time Lambda1 Lambda2 U dU Volume dHdl1 dHdl2
+    100   0.0     0.0     -1234.5  0.0      12345.6  -23.4   15.2
+    200   0.0     0.1     -1235.1  -0.6     12346.1  -24.1   15.8
+    300   0.0     0.2     -1236.2  -1.7     12347.0  -25.3   16.5
+    ...
 
 **Filename Conventions:**
-Filenames should encode lambda values for proper parsing:
+- Filenames should encode lambda values for proper parsing:
 - Format: `prefix_λ1_λ2_suffix.ext` (using underscores as separators)
 - Examples: `mbar_charge_0.0_1.0.txt`, `fep_vdw_0.5_0.75.dat`
 - Lambda values are extracted from specific positions in the filename
 - Compression extensions (.gz, .bz2) are automatically removed during parsing
 
 **Supported Units:**
-LAMMPS unit systems: "real", "lj", "metal", "si", "cgs", "electron", "micro", "nano"
+- LAMMPS unit systems: "real", "lj", "metal", "si", "cgs", "electron", "micro", "nano"
 
 **Ensemble Support:**
 - NVT: Standard canonical ensemble (no volume correction)
