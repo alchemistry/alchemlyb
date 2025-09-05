@@ -1,6 +1,9 @@
 r"""
 Parsers for extracting alchemical data from `LAMMPS <https://docs.lammps.org/Manual.html>`_ output files.
 
+Use Cases for extract_* Functions
+=================================
+
 For clarity, we would like to distinguish the difference between :math:`\lambda` and :math:`\lambda'`. We refer to :math:`\lambda` as
 the potential scaling of the equilibrated system, so that when this value is changed, the system undergoes another equilibration
 step. One the other hand, :math:`\lambda'` is the value used to scaled the potentials for the configurations of the system equilibrated
@@ -9,36 +12,27 @@ that are very close to :math:`\lambda` can be used to calculate the derivative. 
 explicit derivatives, although one should check whether they can derive an explicit expression, they cannot for changes of
 :math:`\lambda'` in the soft Lennard-Jones (LJ) potential.
 
-Use Cases for extract_* Functions
-=================================
-
 The extract_* functions in this module are designed to handle different aspects of alchemical free energy calculations. Below is an overview of their use cases:
 
-.. list-table::
-    :header-rows: 1
+    **extract_u_nk**
+      - *Purpose:* Extracts reduced potentials (u_nk) for each alchemical state (k) for each frame (n).
+      - *Use Case:* Suitable for MBAR (Multistate Bennett Acceptance Ratio) analysis, where the reduced potentials are required to compute free energy differences across multiple states.
+      - *Input Requirements:* Requires columns for timestep, lambda values, potential energy, and optionally volume (for NPT ensemble).
 
-    * - Function
-      - Purpose
-      - Use Case
-      - Input Requirements
-    * - **extract_u_nk**
-      - Extracts reduced potentials (u_nk) for each alchemical state (k) for each frame (n).
-      - Suitable for MBAR (Multistate Bennett Acceptance Ratio) analysis, where the reduced potentials are required to compute free energy differences across multiple states.
-      - Requires columns for timestep, lambda values, potential energy, and optionally volume (for NPT ensemble).
-    * - **extract_dHdl**
-      - Extracts the derivative of the Hamiltonian with respect to lambda (dH/dλ) for each alchemical state.
-      - Used in Thermodynamic Integration (TI) to compute free energy differences by integrating dH/dλ over lambda.
-      - Requires columns for timestep, lambda values, lambda derivatives, and derivative values for different components.
-    * - **extract_H**
-      - Extracts the Hamiltonian (potential energy) for each alchemical state.
-      - Provides the raw potential energy data for analysis or validation purposes.
-      - Requires columns for timestep, lambda values, and potential energy.
-    * - **extract_u_nk_from_u_n**
-      - Constructs u_nk from files containing u_n given a separable dependence on lambda.
-      - Useful when the dependence of the potential energy on lambda can be expressed as a separable function. This function is provided to reduce the IO cost required if all :math:`\lambda'` must be computed during a simulation.
-      - Requires columns for lambda, potential energy, and optionally volume (for NPT ensemble).
+    **extract_dHdl**
+      - *Purpose:* Extracts the derivative of the Hamiltonian with respect to lambda (dH/dλ) for each alchemical state.
+      - *Use Case:* Used in Thermodynamic Integration (TI) to compute free energy differences by integrating dH/dλ over lambda.
+      - *Input Requirements:* Requires columns for timestep, lambda values, lambda derivatives, and derivative values for different components.
 
-These functions are tailored to specific free energy calculation methods and ensure compatibility with LAMMPS output formats.
+    **extract_H**
+      - *Purpose:* Extracts the Hamiltonian (potential energy) for each alchemical state.
+      - *Use Case:* Provides the raw potential energy data for analysis or validation purposes.
+      - *Input Requirements:* Requires columns for timestep, lambda values, and potential energy.
+
+    **extract_u_nk_from_u_n**
+      - *Purpose:* Constructs u_nk from files containing u_n given a separable dependence on lambda.
+      - *Use Case:* Useful when the dependence of the potential energy on lambda can be expressed as a separable function. This function is provided to reduce the IO cost required if all :math:`\lambda'` must be computed during a simulation.
+      - *Input Requirements:* Requires columns for lambda, potential energy, and optionally volume (for NPT ensemble).
 
 File Format Requirements
 ========================
@@ -49,9 +43,10 @@ approximation of the Hamiltonian) at specified values of :math:`\lambda` and :ma
 LAMMPS, `fix adapt/fep <https://docs.lammps.org/fix_adapt_fep.html>`_ changes :math:`\lambda` and
 `compute fep <https://docs.lammps.org/compute_fep.html>`_ changes :math:`\lambda'`.
 
-This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`_.
-
-Input files should be space-separated text files produced by LAMMPS `fix ave/time` command, typically with the following characteristics:
+Given the broad flexibility and unstandardized format of LAMMPS output files a user should consider the way they write the output of their
+simulation. A user may find the package `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`_
+useful to generate their input scripts. Input files should be space-separated text files produced by LAMMPS `fix ave/time` command, typically 
+with the following characteristics:
 
 **File Structure:**
 - Space-separated columns with no header
