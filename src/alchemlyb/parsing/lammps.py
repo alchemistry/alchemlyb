@@ -834,7 +834,9 @@ def extract_u_nk(
             # lambda2 is guaranteed to be float when column_lambda2 is not None
             assert lambda2 is not None
             columns_b_simple = []  # Not used in this branch
-            columns_b_tuple = [str((lambda2, x)) for x in lambda_values]  # u_nk cols > 2
+            columns_b_tuple = [
+                str((lambda2, x)) for x in lambda_values
+            ]  # u_nk cols > 2
         elif vdw_lambda == 2:
             # column names from lammps dump file
             columns = [
@@ -852,7 +854,9 @@ def extract_u_nk(
             # lambda2 is guaranteed to be float when column_lambda2 is not None
             assert lambda2 is not None
             columns_b_simple = []  # Not used in this branch
-            columns_b_tuple = [str((x, lambda2)) for x in lambda_values]  # u_nk cols > 2
+            columns_b_tuple = [
+                str((x, lambda2)) for x in lambda_values
+            ]  # u_nk cols > 2
         else:
             raise ValueError(f"'vdw_lambda must be either 1 or 2, not: {vdw_lambda}'")
         columns_a = ["time", "coul-lambda", "vdw-lambda"]  # u_nk cols 0, 1, 2
@@ -919,7 +923,9 @@ def extract_u_nk(
                     # If u_nk doesn't contain rows for this lambda state,
                     # Create rows with values of zero to populate energies
                     # from lambda' values
-                    df_columns = columns_b_simple if column_lambda2 is None else columns_b_tuple
+                    df_columns = (
+                        columns_b_simple if column_lambda2 is None else columns_b_tuple
+                    )
                     tmp_df3 = pd.concat(
                         [
                             tmp_df2[columns_a],
