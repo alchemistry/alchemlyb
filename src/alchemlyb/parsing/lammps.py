@@ -77,6 +77,7 @@ For TI extraction (`extract_dHdl`):
 - Additional columns may contain volume, pressure, etc.
 
 **Example File Content:**
+
 .. code-block:: text
 
     # LAMMPS output from fix ave/time
