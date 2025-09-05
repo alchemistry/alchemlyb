@@ -137,7 +137,7 @@ def test_u_nk_glob_error():
         ValueError,
         match=r"No files have been found that match: test_\*.txt",
     ):
-        u_nk = lmp.extract_u_nk("test_*.txt", T=300)
+        _ = lmp.extract_u_nk("test_*.txt", T=300)
 
 
 def test_tuple_from_filename():
@@ -223,7 +223,7 @@ def test_dHdl_glob_error():
         ValueError,
         match=r"No files have been found that match: test_\*.txt",
     ):
-        u_nk = lmp.extract_dHdl("test_*.txt", T=300)
+        _ = lmp.extract_dHdl("test_*.txt", T=300)
 
 
 class TestLammpsMbar:
@@ -249,7 +249,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"In the npt ensemble, a pressure must be provided in the form of a positive float",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_unknown_ensemble(
         self,
@@ -262,7 +262,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Only ensembles of nvt or npt are supported.",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_nvt_with_pressure(
         self,
@@ -275,7 +275,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"There is no volume correction in the nvt ensemble, the pressure value will not be used.",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_wrong_cols(
         self,
@@ -288,7 +288,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Provided columns for lambda1 must have a length of two, columns_lambda1: \[1, 2, 2\]",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_wrong_col_type(
         self,
@@ -301,7 +301,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Provided column for columns_lambda1 must be type int. columns_lambda1: \['test', 2\]",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_col2_type_error(
         self,
@@ -314,7 +314,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Provided column for lambda must be type int. column_lambda2: test, type: <class 'str'>",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_col_dU_type_error(
         self,
@@ -327,7 +327,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Provided column for dU_nk must be type int. column_dU: test, type: <class 'str'>",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_col_U_type_error(
         self,
@@ -340,7 +340,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Provided column for U must be type int. column_U: test, type: <class 'str'>",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_col_lambda2_error(
         self,
@@ -354,7 +354,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"If column_lambda2 is defined, the length of `indices` should be 3 indicating the value of the second value of lambda held constant.",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_col_lambda2(
         self,
@@ -390,7 +390,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"File not found: test_test_1_1_test_1.txt",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_error_neg_lambda(
         self,
@@ -417,7 +417,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"BAR calculation cannot be performed without the following lambda-lambda prime combinations: \[\(1.0, 1.0\)\]",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_force_inconsistent_lambda_missing(self, data):
         """Test warning force inconsistent lambda values in filenames"""
@@ -441,7 +441,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Entry, 1 in filename cannot be converted to float: ",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
         kwargs["indices"] = [2, 1]
 
@@ -449,7 +449,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Entry, 1 in filename cannot be converted to float: ",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
         kwargs["indices"] = [2, 3, 1]
 
@@ -457,7 +457,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Entry, 1 in filename cannot be converted to float: ",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_error_multiple_values_lambda2(self, data):
         """Test multiple values of lambda"""
@@ -469,7 +469,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"More than one value of lambda2 is present in the provided files.",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_error_num_cols(self, data):
         """Test error no file"""
@@ -482,7 +482,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Number of columns, 7, is less than necessary for indices: \[7\]",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_error_prec_1(self, data):
         """Test error no file"""
@@ -493,7 +493,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Lambda value found in a file does not align with those in the filenames. Check that 'columns_lambda1\[1\]'",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_error_prec_2(self, data):
         """Test error no file"""
@@ -504,7 +504,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Lambda value found in a file does not align with those in the filenames. Check that 'columns_lambda1\[0\]'",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_error_duplicate_files(self, data):
         """Test error when two files for the same data is present."""
@@ -515,7 +515,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"Energy values already available for lambda,",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
     def test_u_nk_error_dU(self, data):
         """Test error when two files for the same data is present."""
@@ -526,7 +526,7 @@ class TestLammpsMbar:
             ValueError,
             match=r"The difference in dU should be zero when lambda = lambda'",
         ):
-            u_nk = lmp.extract_u_nk(filenames, 300, **kwargs)
+            lmp.extract_u_nk(filenames, 300, **kwargs)
 
 
 class TestLammpsTI:
@@ -549,7 +549,7 @@ class TestLammpsTI:
             ValueError,
             match=r"Provided column_lambda1 must be type 'int', instead of <class 'str'>",
         ):
-            dHdl = lmp.extract_dHdl(filenames, 300, **kwargs)
+            lmp.extract_dHdl(filenames, 300, **kwargs)
 
     def test_dHdl_error_col_lam2(self, data):
         """Test error when two files for the same data is present."""
@@ -561,7 +561,7 @@ class TestLammpsTI:
             ValueError,
             match=r"Provided column_lambda2 must be type 'int', instead of <class 'str'>",
         ):
-            dHdl = lmp.extract_dHdl(filenames, 300, **kwargs)
+            lmp.extract_dHdl(filenames, 300, **kwargs)
 
     def test_dHdl_error_col_dlam1(self, data):
         """Test error when two files for the same data is present."""
@@ -573,7 +573,7 @@ class TestLammpsTI:
             ValueError,
             match=r"Provided column_dlambda1 must be type 'int', instead of <class 'str'>",
         ):
-            dHdl = lmp.extract_dHdl(filenames, 300, **kwargs)
+            lmp.extract_dHdl(filenames, 300, **kwargs)
 
     def test_dHdl_error_col_dU(self, data):
         """Test error when two files for the same data is present."""
@@ -585,14 +585,14 @@ class TestLammpsTI:
             ValueError,
             match=r"Provided columns for derivative values must have a length of two,",
         ):
-            dHdl = lmp.extract_dHdl(filenames, 300, **kwargs)
+            lmp.extract_dHdl(filenames, 300, **kwargs)
 
         kwargs["columns_derivative"] = [1.1, 1]
         with pytest.raises(
             ValueError,
             match=r"Provided column for columns_derivative must be type int. columns_derivative:",
         ):
-            dHdl = lmp.extract_dHdl(filenames, 300, **kwargs)
+            lmp.extract_dHdl(filenames, 300, **kwargs)
 
     def test_lam2(self, data):
         """Test two lambda values"""
@@ -633,7 +633,7 @@ class TestLammpsTI:
             ValueError,
             match=r"File not found: test_test_1_1_test_1.txt",
         ):
-            dHdl = lmp.extract_dHdl(filenames, 300, **kwargs)
+            lmp.extract_dHdl(filenames, 300, **kwargs)
 
     def test_dHdl_error_num_cols(
         self,
@@ -651,7 +651,7 @@ class TestLammpsTI:
             ValueError,
             match=r"Number of columns, 9, is less than index: \[0, 1, 2, 9, 8\]",
         ):
-            dHdl = lmp.extract_dHdl(filenames, 300, **kwargs)
+            lmp.extract_dHdl(filenames, 300, **kwargs)
 
 
 class TestLammpsH:
@@ -681,7 +681,7 @@ class TestLammpsH:
             ValueError,
             match=r"No files have been found that match: test_test_1_1_test_1.txt",
         ):
-            H = lmp.extract_H(filenames, 300, **kwargs)
+            lmp.extract_H(filenames, 300, **kwargs)
 
     def test_H_error_no_file(
         self,
@@ -695,7 +695,7 @@ class TestLammpsH:
             ValueError,
             match=r"File not found: test_test_1_1_test_1.txt",
         ):
-            H = lmp.extract_H(filenames, 300, **kwargs)
+            lmp.extract_H(filenames, 300, **kwargs)
 
     def test_H_npt_nvt(self, data):
         """Test ensembles"""
@@ -731,7 +731,7 @@ class TestLammpsH:
             ValueError,
             match=r"There is no volume correction in the nvt ensemble, the pressure value will not be used.",
         ):
-            H = lmp.extract_H(filenames, 300, **kwargs)
+            lmp.extract_H(filenames, 300, **kwargs)
 
         kwargs["ensemble"] = "npt"
         del kwargs["pressure"]
@@ -739,7 +739,7 @@ class TestLammpsH:
             ValueError,
             match=r"In the npt ensemble, a pressure must be provided in the form of a positive float",
         ):
-            H = lmp.extract_H(filenames, 300, **kwargs)
+            lmp.extract_H(filenames, 300, **kwargs)
 
     def test_H_error_col_lam1(self, data):
         """Test type col lambda 1"""
@@ -751,7 +751,7 @@ class TestLammpsH:
             ValueError,
             match=r"Provided column_lambda1 must be type 'int', instead of",
         ):
-            H = lmp.extract_H(filenames, 300, **kwargs)
+            lmp.extract_H(filenames, 300, **kwargs)
 
     def test_H_error_col_lam2(self, data):
         """Test error type col lambda 2"""
@@ -763,7 +763,7 @@ class TestLammpsH:
             ValueError,
             match=r"Provided column_lambda2 must be type 'int', instead of <class 'str'>",
         ):
-            H = lmp.extract_H(filenames, 300, **kwargs)
+            lmp.extract_H(filenames, 300, **kwargs)
 
     def test_H(self, data):
         """Test error type col lambda 2"""
@@ -771,7 +771,7 @@ class TestLammpsH:
         filenames, kwargs = copy.deepcopy(data)
         kwargs = copy.deepcopy(kwargs)
 
-        H = lmp.extract_H(filenames, 300, **kwargs)
+        lmp.extract_H(filenames, 300, **kwargs)
 
     def test_H_lam2(self, data):
         """Test two lambda values"""
@@ -793,7 +793,7 @@ class TestLammpsH:
             ValueError,
             match=r"Provided column_pe must be type 'int', instead of <class 'str'>",
         ):
-            H = lmp.extract_H(filenames, 300, **kwargs)
+            lmp.extract_H(filenames, 300, **kwargs)
 
     def test_H_error_num_cols(
         self,
@@ -808,7 +808,7 @@ class TestLammpsH:
             ValueError,
             match=r"Number of columns, 10, is less than index: \[0, 1, 5, 10\]",
         ):
-            H = lmp.extract_H(filenames, 300, **kwargs)
+            lmp.extract_H(filenames, 300, **kwargs)
 
 
 class TestLammpsLJDimer_TI:
@@ -832,7 +832,7 @@ class TestLammpsLJDimer_TI:
             ValueError,
             match=r"No files have been found that match: test_test_1_1_test_1.txt",
         ):
-            H = lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
 
     def test_H_error_no_file(
         self,
@@ -847,7 +847,7 @@ class TestLammpsLJDimer_TI:
             ValueError,
             match=r"File not found: test_test_1_1_test_1.txt",
         ):
-            H = lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
 
     def test_H_error_col_lam1(self, data):
         """Test type col lambda 1"""
@@ -859,7 +859,7 @@ class TestLammpsLJDimer_TI:
             ValueError,
             match=r"Provided column for lambda must be type int. column_lambda:",
         ):
-            H = lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
 
     def test_H_error_col_u_cross(self, data):
         """Test error col u_cross"""
@@ -871,7 +871,7 @@ class TestLammpsLJDimer_TI:
             ValueError,
             match=r"Provided column for u_cross must be type int. column_u_cross:",
         ):
-            H = lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
 
     def test_H_error_num_cols(
         self,
@@ -886,7 +886,7 @@ class TestLammpsLJDimer_TI:
             ValueError,
             match=r"Number of columns, 11, is less than index: \[0, 1, 12\]",
         ):
-            H = lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_dHdl_from_u_n(filenames, T_lj, **kwargs)
 
     def test_H(
         self,
@@ -929,7 +929,7 @@ class TestLammpsLJDimer_MBAR:
             ValueError,
             match=r"In the npt ensemble, a pressure must be provided in the form of a positive float",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
 
     def test_u_nk_unknown_ensemble(
         self,
@@ -942,7 +942,7 @@ class TestLammpsLJDimer_MBAR:
             ValueError,
             match=r"Only ensembles of nvt or npt are supported.",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
 
     def test_u_nk_nvt_with_pressure(
         self,
@@ -955,7 +955,7 @@ class TestLammpsLJDimer_MBAR:
             ValueError,
             match=r"There is no volume correction in the nvt ensemble, the pressure value will not be used.",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
 
     def test_u_nk_nvt(
         self,
@@ -983,7 +983,7 @@ class TestLammpsLJDimer_MBAR:
             ValueError,
             match=r"File not found: test_test_1_1_test_1.txt",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
 
     def test_u_nk_error_no_path(
         self,
@@ -997,7 +997,7 @@ class TestLammpsLJDimer_MBAR:
             ValueError,
             match=r"No files have been found that match: test_test_1_1_test_1.txt",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
 
     def test_u_nk_col_type_error(
         self,
@@ -1010,7 +1010,7 @@ class TestLammpsLJDimer_MBAR:
             ValueError,
             match=r"Provided column for lambda must be type int. column_u_lambda:",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
 
     def test_u_nk_col_Ucross_type_error(
         self,
@@ -1023,20 +1023,20 @@ class TestLammpsLJDimer_MBAR:
             ValueError,
             match=r"Provided column for `U_cross` must be type int. column_U_cross:",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
 
-    def test_u_nk_col_U_type_error(
+    def test_u_nk_col_lambda_type_error(
         self,
         data,
     ):
-        """Test column_dU type error"""
+        """Test column_lambda type error"""
         filenames, kwargs = copy.deepcopy(data)
-        kwargs["column_dU"] = "test"
+        kwargs["column_lambda"] = "test"
         with pytest.raises(
             ValueError,
-            match=r"Provided column for `U` must be type int. column_U:",
+            match=r"Provided column for lambda must be type int. column_u_lambda:",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
 
     def test_u_nk_col_U_type_error(
         self,
@@ -1049,7 +1049,7 @@ class TestLammpsLJDimer_MBAR:
             ValueError,
             match=r"Provided column for `U` must be type int. column_U: test, type: <class 'str'>",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
 
     def test_u_nk_error_duplicate_files(self, data):
         """Test error when two files for the same data is present."""
@@ -1060,7 +1060,7 @@ class TestLammpsLJDimer_MBAR:
             ValueError,
             match=r"Energy values already available for lambda,",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
 
     def test_u_nk_error_num_cols(
         self,
@@ -1075,4 +1075,4 @@ class TestLammpsLJDimer_MBAR:
             ValueError,
             match=r"Number of columns, 11, is less than indices: \[12\]",
         ):
-            u_nk = lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
+            lmp.extract_u_nk_from_u_n(filenames, T_lj, **kwargs)
