@@ -45,7 +45,7 @@ approximation of the Hamiltonian) at specified values of :math:`\lambda` and :ma
 LAMMPS, `fix adapt/fep <https://docs.lammps.org/fix_adapt_fep.html>`_ changes :math:`\lambda` and
 `compute fep <https://docs.lammps.org/compute_fep.html>`_ changes :math:`\lambda'`.
 
-This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`.
+This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`_.
 
 Input files should be space-separated text files produced by LAMMPS `fix ave/time` command, typically with the following characteristics:
 
@@ -169,6 +169,7 @@ def beta_from_units(T: float, units: str) -> float:
     .. versionadded:: 2.4.1
 
     """
+    beta: float
     match units:
         case "real":  # E in kcal/mol, T in K
             beta = 1 / (R_kJmol * kJ2kcal * T)
@@ -223,6 +224,7 @@ def energy_from_units(units: str) -> float:
     .. versionadded:: 2.4.1
 
     """
+    scaling_factor: float
     match units:
         case "real":  # E in kcal/mol, Vol in Å^3, pressure in atm
             scaling_factor = (
@@ -296,7 +298,7 @@ def tuple_from_filename(
     The function automatically handles compressed files (.gz, .bz2) by removing the
     compression extensions before parsing.
 
-    This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`.
+    This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`_.
 
     Parameters
     ----------
@@ -647,6 +649,8 @@ def extract_u_nk_from_u_n(
                     + tmp_df["U"]
                 )
                 if ensemble == "npt":
+                    # pressure is guaranteed to be float by _validate_ensemble_parameters
+                    assert pressure is not None
                     u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12] += (
                         beta * pressure * tmp_df["volume"] * energy_from_units(units)
                     )
@@ -808,7 +812,8 @@ def extract_u_nk(
             "fep-lambda",
             "fep-lambda2",
         )  # cols for lambda, lambda'
-        columns_b = lambda_values  # u_nk cols > 1
+        columns_b_simple: list[str] = [str(lv) for lv in lambda_values]  # u_nk cols > 1
+        columns_b_tuple: list[str] = []  # Not used in this branch
     else:  # There is a frozen, second lambda state
         u_nk = pd.DataFrame(columns=["time", "coul-lambda", "vdw-lambda"])
         lc = len(lambda_values)
@@ -822,7 +827,10 @@ def extract_u_nk(
                 "vdw-lambda",
                 "vdw-lambda2",
             )  # cols for lambda, lambda'
-            columns_b = [(lambda2, x) for x in lambda_values]  # u_nk cols > 2
+            # lambda2 is guaranteed to be float when column_lambda2 is not None
+            assert lambda2 is not None
+            columns_b_simple = []  # Not used in this branch
+            columns_b_tuple = [str((lambda2, x)) for x in lambda_values]  # u_nk cols > 2
         elif vdw_lambda == 2:
             # column names from lammps dump file
             columns = [
@@ -837,7 +845,10 @@ def extract_u_nk(
                 "coul-lambda",
                 "coul-lambda2",
             )  # cols for lambda, lambda'
-            columns_b = [(x, lambda2) for x in lambda_values]  # u_nk cols > 2
+            # lambda2 is guaranteed to be float when column_lambda2 is not None
+            assert lambda2 is not None
+            columns_b_simple = []  # Not used in this branch
+            columns_b_tuple = [str((x, lambda2)) for x in lambda_values]  # u_nk cols > 2
         else:
             raise ValueError(f"'vdw_lambda must be either 1 or 2, not: {vdw_lambda}'")
         columns_a = ["time", "coul-lambda", "vdw-lambda"]  # u_nk cols 0, 1, 2
@@ -895,7 +906,7 @@ def extract_u_nk(
                         " file: {}; lambda columns: {}".format(lambda12, lambda_values)
                     )
                 else:
-                    column_name = lambda_values[column_list[0]]
+                    column_name_value = lambda_values[column_list[0]]
 
                 tmp_df2 = tmp_df.loc[tmp_df[lambda1_2_col] == lambda12]
 
@@ -904,12 +915,13 @@ def extract_u_nk(
                     # If u_nk doesn't contain rows for this lambda state,
                     # Create rows with values of zero to populate energies
                     # from lambda' values
+                    df_columns = columns_b_simple if column_lambda2 is None else columns_b_tuple
                     tmp_df3 = pd.concat(
                         [
                             tmp_df2[columns_a],
                             pd.DataFrame(
                                 np.zeros((lr, lc)),
-                                columns=columns_b,
+                                columns=df_columns,
                             ),
                         ],
                         axis=1,
@@ -921,11 +933,15 @@ def extract_u_nk(
                     )
 
                 if column_lambda2 is not None:
-                    column_name = (
-                        (lambda2, column_name)
+                    # lambda2 is guaranteed to be float by validation above
+                    assert lambda2 is not None
+                    column_name: str = str(
+                        (lambda2, column_name_value)
                         if vdw_lambda == 1
-                        else (column_name, lambda2)
+                        else (column_name_value, lambda2)
                     )
+                else:
+                    column_name = str(column_name_value)
 
                 column_index = list(u_nk.columns).index(column_name)
                 row_indices = np.where(u_nk[lambda1_col] == lambda1)[0]
@@ -980,6 +996,8 @@ def extract_u_nk(
                     tmp_df2["dU_nk"] + tmp_df2["U"]
                 )
                 if ensemble == "npt":
+                    # pressure is guaranteed to be float by _validate_ensemble_parameters
+                    assert pressure is not None
                     u_nk.iloc[row_indices, column_index] += (
                         beta * pressure * tmp_df2["volume"] * energy_from_units(units)
                     )
@@ -1084,13 +1102,13 @@ def extract_dHdl_from_u_n(
 
         data.columns = ["time", "fep-lambda", "U"]
         data["fep-lambda"] = data["fep-lambda"].apply(lambda x: round(x, prec))
-        data["fep"] = dependence(data.loc[:, "fep-lambda"]) * data.U
+        data["fep"] = data["fep-lambda"].apply(dependence) * data.U
         data.drop(columns=["U"], inplace=True)
 
         dHdl = pd.concat([dHdl, data], axis=0, sort=False) if len(dHdl) != 0 else data
 
     dHdl.set_index(["time", "fep-lambda"], inplace=True)
-    dHdl = dHdl.mul({"fep": beta})
+    dHdl["fep"] = dHdl["fep"] * beta
     dHdl.name = "dH_dl"
 
     return dHdl
@@ -1279,13 +1297,13 @@ def extract_dHdl(
 
     if column_lambda2 is None:
         dHdl.set_index(["time", "fep-lambda"], inplace=True)
-        dHdl = dHdl.mul({"fep": beta})
+        dHdl["fep"] = dHdl["fep"] * beta
     else:
         dHdl.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
         if vdw_lambda == 1:
-            dHdl = dHdl.mul({"vdw": beta})
+            dHdl["vdw"] = dHdl["vdw"] * beta
         else:
-            dHdl = dHdl.mul({"coul": beta})
+            dHdl["coul"] = dHdl["coul"] * beta
 
     dHdl.name = "dH_dl"
 
@@ -1428,6 +1446,8 @@ def extract_H(
         data["u_n"] = beta * data["U"]
         del data["U"]
         if ensemble == "npt":
+            # pressure is guaranteed to be float by _validate_ensemble_parameters
+            assert pressure is not None
             data["u_n"] += beta * pressure * data["volume"] * energy_from_units(units)
             del data["volume"]
 
@@ -1437,6 +1457,5 @@ def extract_H(
         df_H.set_index(["time", "fep-lambda"], inplace=True)
     else:
         df_H.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
-    df_H = df_H.mul({"U": beta})
 
     return df_H
