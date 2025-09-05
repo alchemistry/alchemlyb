@@ -21,6 +21,8 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 import datetime
+import alchemlyb
+import sphinx_rtd_theme
 
 # -- General configuration ------------------------------------------------
 
@@ -54,8 +56,10 @@ master_doc = "index"
 # General information about the project.
 now = datetime.datetime.now()
 project = "alchemlyb"
-author = 'The alchemlyb development team ' \
+author = (
+    "The alchemlyb development team "
     + '(see <a href="https://raw.githubusercontent.com/alchemistry/alchemlyb/master/AUTHORS">AUTHORS</a>)'
+)
 copyright = f"2017-{now.year}, " + author
 
 
@@ -67,8 +71,6 @@ copyright = f"2017-{now.year}, " + author
 # alchemtest is installed)
 # We always display the full release string; if something else is
 # desired, see the commented out code
-
-import alchemlyb
 
 release = alchemlyb.__version__
 version = release
@@ -100,9 +102,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-import sphinx_rtd_theme
-
-html_theme = "sphinx_rtd_theme"
+# html_theme = "sphinx_rtd_theme"
 
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # Theme options are theme-specific and customize the look and feel of a theme

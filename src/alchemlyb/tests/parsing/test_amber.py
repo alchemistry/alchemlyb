@@ -203,6 +203,21 @@ def test_wrong_T_should_raise_warning(single_dHdl, T=300.0):
         _ = extract(single_dHdl, T=T)
 
 
+def test_u_nk_time_reading_bar_intervall(single_u_nk, tmp_path):
+    """Test if time information is read correctly when extracting u_nk"""
+    with bz2.open(single_u_nk, "rt") as bz2_file:
+        content = bz2_file.read()
+
+    with open(tmp_path / "amber.log", "w") as text_file:
+        text_file.write(
+            content.replace("bar_intervall =     1000", "bar_intervall =   10")
+        )
+
+    u_nk = extract_u_nk(tmp_path / "amber.log", T=298.0)
+    # was 22 before
+    assert_allclose(u_nk.index.values[0][0], 20.02)
+
+
 ###################################################################
 ################ Check the behaviour on proper datasets
 ###################################################################

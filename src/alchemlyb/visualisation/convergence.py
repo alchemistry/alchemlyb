@@ -1,11 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.font_manager import FontProperties as FP
+from matplotlib.axes import Axes
+import pandas as pd
 
 from ..postprocessors.units import get_unit_converter
 
 
-def plot_convergence(dataframe, units=None, final_error=None, ax=None):
+def plot_convergence(
+    dataframe: pd.DataFrame,
+    units: None | str = None,
+    final_error: None | float = None,
+    ax: None | Axes = None,
+) -> Axes:
     """Plot the forward and backward convergence.
 
      The input could be the result from
@@ -93,7 +100,7 @@ def plot_convergence(dataframe, units=None, final_error=None, ax=None):
         final_error = backward_error[-1]
 
     if np.isfinite(backward[-1]) and np.isfinite(final_error):
-        line0 = ax.fill_between(
+        ax.fill_between(
             [0, 1],
             backward[-1] - final_error,
             backward[-1] + final_error,
@@ -147,7 +154,12 @@ def plot_convergence(dataframe, units=None, final_error=None, ax=None):
     return ax
 
 
-def plot_block_average(dataframe, units=None, final_error=None, ax=None):
+def plot_block_average(
+    dataframe: pd.DataFrame,
+    units: None | str = None,
+    final_error: None | float = None,
+    ax: None | Axes = None,
+) -> Axes:
     """Plot the forward and backward convergence.
 
      The input could be the result from
@@ -223,14 +235,14 @@ def plot_block_average(dataframe, units=None, final_error=None, ax=None):
             final_error = 1.0
 
     if np.isfinite(final_error):
-        line0 = ax.fill_between(
+        ax.fill_between(
             [0, 1],
             np.mean(df_avg) - final_error,
             np.mean(df_avg) + final_error,
             color="#D2B9D3",
             zorder=1,
         )
-    line1 = ax.errorbar(
+    ax.errorbar(
         f_ts,
         df_avg,
         yerr=df_avg_error,

@@ -1,9 +1,8 @@
-"""Parsers for extracting alchemical data from `Gromacs <http://www.gromacs.org/>`_ output files.
-
-"""
+"""Parsers for extracting alchemical data from `Gromacs <http://www.gromacs.org/>`_ output files."""
 
 import numpy as np
 import pandas as pd
+from typing import Any
 
 from . import _init_attrs
 from .util import anyopen
@@ -13,7 +12,7 @@ k_b = R_kJmol
 
 
 @_init_attrs
-def extract_u_nk(xvg, T, filter=True):
+def extract_u_nk(xvg: str, T: float, filter: bool = True) -> pd.DataFrame:
     r"""Return reduced potentials `u_nk` from a Hamiltonian differences XVG file.
 
     Parameters
@@ -96,18 +95,18 @@ def extract_u_nk(xvg, T, filter=True):
     u_k = dict()
     cols = list()
     for col in dH:
-        u_col = eval(col.split("to")[1])
+        u_col = eval(col.split("to")[1])  # type: ignore[attr-defined]
         # calculate reduced potential u_k = dH + pV + U
         u_k[u_col] = beta * dH[col].values
         if pv_cols:
-            u_k[u_col] += beta * pv.values
+            u_k[u_col] += beta * pv.values  # type: ignore[union-attr]
         if u_cols:
-            u_k[u_col] += beta * u.values
+            u_k[u_col] += beta * u.values  # type: ignore[union-attr]
         cols.append(u_col)
 
     u_k = pd.DataFrame(
         u_k, columns=cols, index=pd.Index(times.values, name="time", dtype="Float64")
-    )
+    )  # type: ignore[assignment]
 
     # create columns for each lambda, indicating state each row sampled from
     # if state is None run as expanded ensemble data or REX
@@ -118,33 +117,33 @@ def extract_u_nk(xvg, T, filter=True):
         if "Thermodynamic state" in df:
             ts_index = df.columns.get_loc("Thermodynamic state")
             thermo_state = df[df.columns[ts_index]]
-            for i, l in enumerate(lambdas):
+            for i, lambda_value in enumerate(lambdas):
                 v = []
                 for t in thermo_state:
-                    v.append(statevec[int(t)][i])
-                u_k[l] = v
+                    v.append(statevec[int(t)][i])  # type: ignore[index, call-overload]
+                u_k[lambda_value] = v
         else:
             state_legend = _extract_legend(xvg)
-            for i, l in enumerate(state_legend):
-                u_k[l] = state_legend[l]
+            for i, state_legend_item in enumerate(state_legend):
+                u_k[state_legend_item] = state_legend[state_legend_item]
     else:
-        for i, l in enumerate(lambdas):
+        for i, lambda_value in enumerate(lambdas):
             try:
-                u_k[l] = statevec[i]
+                u_k[lambda_value] = statevec[i]
             except TypeError:
-                u_k[l] = statevec
+                u_k[lambda_value] = statevec
 
     # set up new multi-index
     newind = ["time"] + lambdas
-    u_k = u_k.reset_index().set_index(newind)
+    u_k = u_k.reset_index().set_index(newind)  # type: ignore[attr-defined]
 
     u_k.name = "u_nk"
 
-    return u_k
+    return u_k  # type: ignore[no-any-return]
 
 
 @_init_attrs
-def extract_dHdl(xvg, T, filter=True):
+def extract_dHdl(xvg: str, T: float, filter: bool = True) -> pd.DataFrame:
     r"""Return gradients `dH/dl` from a Hamiltonian differences XVG file.
 
     Parameters
@@ -202,8 +201,8 @@ def extract_dHdl(xvg, T, filter=True):
 
     # want to grab only dH/dl columns
     dHcols = []
-    for l in lambdas:
-        dHcols.extend([col for col in df.columns if (l in col)])
+    for lambda_value in lambdas:
+        dHcols.extend([col for col in df.columns if (lambda_value in col)])
 
     dHdl = df[dHcols]
 
@@ -212,7 +211,7 @@ def extract_dHdl(xvg, T, filter=True):
 
     # rename columns to not include the word 'lambda', since we use this for
     # index below
-    cols = [l.split("-")[0] for l in lambdas]
+    cols = [lambda_value.split("-")[0] for lambda_value in lambdas]
 
     dHdl = pd.DataFrame(
         dHdl.values,
@@ -229,21 +228,21 @@ def extract_dHdl(xvg, T, filter=True):
         if "Thermodynamic state" in df:
             ts_index = df.columns.get_loc("Thermodynamic state")
             thermo_state = df[df.columns[ts_index]]
-            for i, l in enumerate(lambdas):
+            for i, lambda_value in enumerate(lambdas):
                 v = []
                 for t in thermo_state:
-                    v.append(statevec[int(t)][i])
-                dHdl[l] = v
+                    v.append(statevec[int(t)][i])  # type: ignore[index, call-overload]
+                dHdl[lambda_value] = v
         else:
             state_legend = _extract_legend(xvg)
-            for i, l in enumerate(state_legend):
-                dHdl[l] = state_legend[l]
+            for i, state_legend_item in enumerate(state_legend):
+                dHdl[state_legend_item] = state_legend[state_legend_item]
     else:
-        for i, l in enumerate(lambdas):
+        for i, lambda_value in enumerate(lambdas):
             try:
-                dHdl[l] = statevec[i]
+                dHdl[lambda_value] = statevec[i]
             except TypeError:
-                dHdl[l] = statevec
+                dHdl[lambda_value] = statevec
 
     # set up new multi-index
     newind = ["time"] + lambdas
@@ -254,7 +253,7 @@ def extract_dHdl(xvg, T, filter=True):
     return dHdl
 
 
-def extract(xvg, T, filter=True):
+def extract(xvg: str, T: float, filter: bool = True) -> dict[str, pd.DataFrame | None]:
     r"""Return reduced potentials `u_nk` and gradients `dH/dl`
     from a Hamiltonian differences XVG file.
 
@@ -284,7 +283,9 @@ def extract(xvg, T, filter=True):
     return {"u_nk": extract_u_nk(xvg, T, filter), "dHdl": extract_dHdl(xvg, T, filter)}
 
 
-def _extract_state(xvg, headers=None):
+def _extract_state(
+    xvg: str, headers: None | dict[str, Any] = None
+) -> tuple[None | int, list[str], list[float]]:
     """Extract information on state sampled, names of lambdas.
 
     Parameters
@@ -332,10 +333,10 @@ def _extract_state(xvg, headers=None):
     return state, lambdas, statevec
 
 
-def _extract_legend(xvg):
+def _extract_legend(xvg: str) -> dict[str, float]:
     """Extract information on state sampled for REX simulations."""
     state_legend = {}
-    with anyopen(xvg, "r") as f:
+    with anyopen(xvg, "r") as f:  # type: ignore[arg-type]
         for line in f:
             if ("legend" in line) and ("lambda" in line):
                 state_legend[line.split()[4]] = float(line.split()[6].strip('"'))
@@ -343,7 +344,9 @@ def _extract_legend(xvg):
     return state_legend
 
 
-def _extract_dataframe(xvg, headers=None, filter=filter):
+def _extract_dataframe(
+    xvg: str, headers: None | dict[str, Any] = None, filter: bool = True
+) -> pd.DataFrame:
     """Extract a DataFrame from XVG data using Pandas `read_csv()`.
 
     pd.read_csv() shows the same behavior building pandas Dataframe with better
@@ -375,8 +378,8 @@ def _extract_dataframe(xvg, headers=None, filter=filter):
 
     # march through column names, mark duplicates when found
     cols = [
-        col + "{}[duplicated]".format(i) if col in cols[:i] else col
-        for i, col, in enumerate(cols)
+        col + "{}[duplicated]".format(i) if col in cols[:i] else col  # type: ignore[operator]
+        for i, col in enumerate(cols)
     ]
 
     header_cnt = len(headers["_raw_lines"])
@@ -417,7 +420,7 @@ def _extract_dataframe(xvg, headers=None, filter=filter):
     return df
 
 
-def _parse_header(line, headers={}, depth=2):
+def _parse_header(line: str, headers: dict[str, Any] = {}, depth: int = 2) -> None:
     """Build python dictionary for single line header
 
     Update python dictionary to ``headers`` by reading ``line`` separated by
@@ -465,7 +468,7 @@ def _parse_header(line, headers={}, depth=2):
     next_t["_val"] = "".join(s[1:]).rstrip().strip('"')
 
 
-def _get_headers(xvg):
+def _get_headers(xvg: str) -> dict[str, Any]:
     """Build python dictionary from header lines
 
     Build nested key and value store by reading header ('@') lines from a file.
@@ -523,8 +526,8 @@ def _get_headers(xvg):
     headers: dict
 
     """
-    with anyopen(xvg, "r") as f:
-        headers = {"_raw_lines": []}
+    with anyopen(xvg, "r") as f:  # type: ignore[arg-type]
+        headers: dict[str, Any] = {"_raw_lines": []}
         for line in f:
             line = line.strip()
             if len(line) == 0:
@@ -542,7 +545,9 @@ def _get_headers(xvg):
     return headers
 
 
-def _get_value_by_key(headers, key1, key2=None):
+def _get_value_by_key(
+    headers: dict[str, Any], key1: str, key2: None | str = None
+) -> None | str:
     """Return value by two-level keys where the second key is optional
 
     Example

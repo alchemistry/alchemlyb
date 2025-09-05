@@ -37,7 +37,7 @@ def _read_parquet_with_metadata(path: str, T: float) -> pd.DataFrame:
     return df
 
 
-def extract_u_nk(path, T):
+def extract_u_nk(path: str, T: float) -> pd.DataFrame:
     r"""Return reduced potentials `u_nk` (unit: kT) from a pandas parquet file.
 
     The parquet file should be serialised from the dataframe output
@@ -86,7 +86,7 @@ def extract_u_nk(path, T):
 
 
 @_init_attrs
-def extract_dHdl(path, T):
+def extract_dHdl(path: str, T: float) -> pd.DataFrame:
     r"""Return gradients `dH/dl` (unit: kT) from a pandas parquet file.
 
     The parquet file should be serialised from the dataframe output
