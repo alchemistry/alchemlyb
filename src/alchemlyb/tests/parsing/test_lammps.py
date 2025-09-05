@@ -53,21 +53,31 @@ T_lj = 0.7
 P_lj = 0.01
 
 
-def test_beta_from_units():
+@pytest.mark.parametrize(
+    "temperature,unit,expected,test_type,decimal_or_significant",
+    [
+        (300, "real", 1.6774, "decimal", 4),
+        (0.7, "lj", 1.4286, "decimal", 4),
+        (300, "metal", 38.6817, "decimal", 4),
+        (300, "si", 2.414323505391137e20, "significant", 7),
+        (300, "cgs", 24143235053911.37, "significant", 7),
+        (300, "electron", 1052.5834, "decimal", 4),
+        (300, "micro", 241432.3505, "decimal", 4),
+        (300, "nano", 0.24143, "decimal", 4),
+    ],
+)
+def test_beta_from_units(temperature, unit, expected, test_type, decimal_or_significant):
     """Test value of beta in different units."""
+    result = lmp.beta_from_units(temperature, unit)
+    
+    if test_type == "decimal":
+        assert_almost_equal(result, expected, decimal=decimal_or_significant)
+    elif test_type == "significant":
+        assert_approx_equal(result, expected, significant=decimal_or_significant)
 
-    assert_almost_equal(lmp.beta_from_units(T_K, "real"), 1.6774, decimal=4)
-    assert_almost_equal(lmp.beta_from_units(T_lj, "lj"), 1.4286, decimal=4)
-    assert_almost_equal(lmp.beta_from_units(T_K, "metal"), 38.6817, decimal=4)
-    assert_approx_equal(
-        lmp.beta_from_units(T_K, "si"), 2.414323505391137e20, significant=7
-    )
-    assert_approx_equal(
-        lmp.beta_from_units(T_K, "cgs"), 24143235053911.37, significant=7
-    )
-    assert_almost_equal(lmp.beta_from_units(T_K, "electron"), 1052.5834, decimal=4)
-    assert_almost_equal(lmp.beta_from_units(T_K, "micro"), 241432.3505, decimal=4)
-    assert_almost_equal(lmp.beta_from_units(T_K, "nano"), 0.24143, decimal=4)
+
+def test_beta_from_units_invalid_unit():
+    """Test that beta_from_units raises ValueError for invalid units."""
     with pytest.raises(
         ValueError,
         match=r"Supported types are: cgs, electron,",
@@ -75,19 +85,27 @@ def test_beta_from_units():
         _ = lmp.beta_from_units(T_K, "not a unit")
 
 
-def test_energy_from_units():
-    """Test value of beta in different units."""
+@pytest.mark.parametrize(
+    "unit,expected",
+    [
+        ("real", 1.4584e-05),
+        ("lj", 1),
+        ("metal", 6.2415e-07),
+        ("si", 1),
+        ("cgs", 1),
+        ("electron", 3.3989309217431655e-14),
+        ("micro", 1),
+        ("nano", 1),
+    ],
+)
+def test_energy_from_units(unit, expected):
+    """Test value of energy conversion factor in different units."""
+    result = lmp.energy_from_units(unit)
+    assert_almost_equal(result, expected, decimal=4)
 
-    assert_almost_equal(lmp.energy_from_units("real"), 1.4584e-05, decimal=4)
-    assert_almost_equal(lmp.energy_from_units("lj"), 1, decimal=4)
-    assert_almost_equal(lmp.energy_from_units("metal"), 6.2415e-07, decimal=4)
-    assert_almost_equal(lmp.energy_from_units("si"), 1, decimal=4)
-    assert_almost_equal(lmp.energy_from_units("cgs"), 1, decimal=4)
-    assert_almost_equal(
-        lmp.energy_from_units("electron"), 3.3989309217431655e-14, decimal=4
-    )
-    assert_almost_equal(lmp.energy_from_units("micro"), 1, decimal=4)
-    assert_almost_equal(lmp.energy_from_units("nano"), 1, decimal=4)
+
+def test_energy_from_units_invalid_unit():
+    """Test that energy_from_units raises ValueError for invalid units."""
     with pytest.raises(
         ValueError,
         match=r"Supported types are: cgs, electron,",
@@ -120,6 +138,47 @@ def test_u_nk_glob_error():
         match=r"No files have been found that match: test_\*.txt",
     ):
         u_nk = lmp.extract_u_nk("test_*.txt", T=300)
+
+
+def test_tuple_from_filename():
+    """Test that tuple_from_filename correctly extracts lambda values from filenames."""
+    
+    # Test default parameters (indices=[2, 3], separator="_") 
+    # These filenames have lambda values at positions 2 and 3
+    assert lmp.tuple_from_filename("simulation_data_0.25_0.75_output.dat") == (0.25, 0.75)
+    assert lmp.tuple_from_filename("lammps_run_0.5_1.0.log.gz") == (0.5, 1.0)
+    assert lmp.tuple_from_filename("path/to/file_prefix_0.1_0.9_suffix.txt.bz2") == (0.1, 0.9)
+    
+    # Test real filename patterns from alchemtest data
+    assert lmp.tuple_from_filename("mbar_charge_0.4_0.6.txt.bz2") == (0.4, 0.6)
+    assert lmp.tuple_from_filename("mbar_lj-cut-soft-lambda_0.3_0.75_charge--0.0_0.txt.bz2") == (0.3, 0.75)
+    
+    # Test filenames that need different indices
+    assert lmp.tuple_from_filename("fep_0.0_1.0.txt", indices=[1, 2]) == (0.0, 1.0)
+    assert lmp.tuple_from_filename("0.0_1.0_fep.txt", indices=[0, 1]) == (0.0, 1.0)
+    assert lmp.tuple_from_filename("run_0.0_data_1.0_output.txt", indices=[1, 3]) == (0.0, 1.0)
+    
+    # Test different separator
+    assert lmp.tuple_from_filename("0.0-data-1.0.txt", separator="-", indices=[0, 2]) == (0.0, 1.0)
+    
+    # Test negative indexing
+    assert lmp.tuple_from_filename("prefix_data_0.0_1.0.txt", indices=[-2, -1]) == (0.0, 1.0)
+    
+    # Test precision parameter - use correct indices for these 3-component filenames
+    assert lmp.tuple_from_filename("test_0.123456_0.987654.txt", indices=[1, 2], prec=2) == (0.12, 0.99)
+    assert lmp.tuple_from_filename("test_0.123456_0.987654.txt", indices=[1, 2], prec=6) == (0.123456, 0.987654)
+    
+    # Test compressed file extensions are properly handled
+    assert lmp.tuple_from_filename("test_prefix_0.5_0.8.txt.gz") == (0.5, 0.8)
+    assert lmp.tuple_from_filename("test_prefix_0.5_0.8.txt.bz2") == (0.5, 0.8)
+    
+    # Test error cases
+    with pytest.raises(ValueError, match=r"Entry, 0 in filename cannot be converted to float"):
+        lmp.tuple_from_filename("not_a_number_1.0.txt", indices=[0, 1])
+    
+    with pytest.raises(ValueError, match=r"Entry, 1 in filename cannot be converted to float"):
+        lmp.tuple_from_filename("1.0_not_a_number.txt", indices=[0, 1])
+
 
 
 def test_dHdl():

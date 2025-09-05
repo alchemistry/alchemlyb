@@ -14,6 +14,60 @@ approximation of the Hamiltonian) at specified values of :math:`\lambda` and :ma
 LAMMPS, `fix adapt/fep <https://docs.lammps.org/fix_adapt_fep.html>`_ changes :math:`\lambda` and 
 `compute fep <https://docs.lammps.org/compute_fep.html>`_ changes :math:`\lambda'`.
 
+This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`.
+
+File Format Requirements
+========================
+
+Input files should be space-separated text files produced by LAMMPS `fix ave/time` command, typically with the following characteristics:
+
+**File Structure:**
+- Space-separated columns with no header
+- Lines starting with '#' are treated as comments and ignored
+- Each row represents a single timestep/frame
+- Compressed files (.gz, .bz2) are automatically handled
+
+**Essential Columns:**
+The specific column indices depend on the extraction function, but generally include:
+
+For MBAR extraction (`extract_u_nk`):
+  - Column 0: Timestep/iteration number
+  - Columns 1-2: Lambda values (λ, λ') defining the alchemical state
+  - Column 3: Potential energy U at the current lambda state
+  - Column 4: Potential energy difference dU between lambda states
+  - Column 6: Volume (for NPT ensemble, optional)
+
+For TI extraction (`extract_dHdl`):
+  - Column 0: Timestep/iteration number  
+  - Column 1: Lambda value λ
+  - Column 2: Lambda derivative dλ/dt
+  - Columns 5,7: Derivative values ∂H/∂λ for different components
+  - Additional columns may contain volume, pressure, etc.
+
+**Example File Content:**
+```
+# LAMMPS output from fix ave/time
+# Time Lambda1 Lambda2 U dU Volume dHdl1 dHdl2 
+100   0.0     0.0     -1234.5  0.0      12345.6  -23.4   15.2
+200   0.0     0.1     -1235.1  -0.6     12346.1  -24.1   15.8
+300   0.0     0.2     -1236.2  -1.7     12347.0  -25.3   16.5
+...
+```
+
+**Filename Conventions:**
+Filenames should encode lambda values for proper parsing:
+- Format: `prefix_λ1_λ2_suffix.ext` (using underscores as separators)
+- Examples: `mbar_charge_0.0_1.0.txt`, `fep_vdw_0.5_0.75.dat`
+- Lambda values are extracted from specific positions in the filename
+- Compression extensions (.gz, .bz2) are automatically removed during parsing
+
+**Supported Units:**
+LAMMPS unit systems: "real", "lj", "metal", "si", "cgs", "electron", "micro", "nano"
+
+**Ensemble Support:**
+- NVT: Standard canonical ensemble (no volume correction)
+- NPT: Isothermal-isobaric ensemble (requires volume column and pressure specification)
+
 .. versionadded:: 2.4.1
 
 """
@@ -32,7 +86,7 @@ from ..postprocessors.units import R_kJmol, kJ2kcal
 def beta_from_units(T, units):
     """Output value of beta from temperature and units.
 
-    Supported types are: cgs, electron, lj. metal, micro, nano, real, si
+    Supported types are: cgs, electron, lj, metal, micro, nano, real, si
 
     Parameters
     ----------
@@ -54,32 +108,33 @@ def beta_from_units(T, units):
     .. versionadded:: 2.4.1
 
     """
-    if units == "real":  # E in kcal/mol, T in K
-        beta = 1 / (R_kJmol * kJ2kcal * T)
-    elif units == "lj":  # Nondimensional E and T scaled by epsilon
-        beta = 1 / T
-    elif units == "metal":  # E in eV, T in K
-        beta = 1 / (constants.R * T / constants.eV / constants.Avogadro)
-    elif units == "si":  # E in J, T in K
-        beta = 1 / (constants.R * T / constants.Avogadro)
-    elif units == "cgs":  # E in ergs, T in K
-        beta = 1 / (constants.R * T / constants.Avogadro * 1e7)
-    elif units == "electron":  # E in Hartrees, T in K
-        beta = 1 / (
-            constants.R
-            * T
-            / constants.Avogadro
-            / constants.physical_constants["Hartree energy"][0]
-        )
-    elif units == "micro":  # E in picogram-micrometer^2/microsecond^2, T in K
-        beta = 1 / (constants.R * T / constants.Avogadro * 1e15)
-    elif units == "nano":  # E in attogram-nanometer^2/nanosecond^2, T in K
-        beta = 1 / (constants.R * T / constants.Avogadro * 1e21)
-    else:
-        raise ValueError(
-            "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
-            " lj, metal, micro, nano, real, si".format(units)
-        )
+    match units:
+        case "real":  # E in kcal/mol, T in K
+            beta = 1 / (R_kJmol * kJ2kcal * T)
+        case "lj":  # Nondimensional E and T scaled by epsilon
+            beta = 1 / T
+        case "metal":  # E in eV, T in K
+            beta = 1 / (constants.R * T / constants.eV / constants.Avogadro)
+        case "si":  # E in J, T in K
+            beta = 1 / (constants.R * T / constants.Avogadro)
+        case "cgs":  # E in ergs, T in K
+            beta = 1 / (constants.R * T / constants.Avogadro * 1e7)
+        case "electron":  # E in Hartrees, T in K
+            beta = 1 / (
+                constants.R
+                * T
+                / constants.Avogadro
+                / constants.physical_constants["Hartree energy"][0]
+            )
+        case "micro":  # E in picogram-micrometer^2/microsecond^2, T in K
+            beta = 1 / (constants.R * T / constants.Avogadro * 1e15)
+        case "nano":  # E in attogram-nanometer^2/nanosecond^2, T in K
+            beta = 1 / (constants.R * T / constants.Avogadro * 1e21)
+        case _:
+            raise ValueError(
+                "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron, "
+                "lj, metal, micro, nano, real, si".format(units)
+            )
 
     return beta
 
@@ -87,7 +142,7 @@ def beta_from_units(T, units):
 def energy_from_units(units):
     """Output conversion factor for pressure * volume to LAMMPS energy units
 
-    Supported types are: cgs, electron, lj. metal, micro, nano, real, si
+    Supported types are: cgs, electron, lj, metal, micro, nano, real, si
 
     Parameters
     ----------
@@ -107,57 +162,101 @@ def energy_from_units(units):
     .. versionadded:: 2.4.1
 
     """
-    if units == "real":  # E in kcal/mol, Vol in Å^3, pressure in atm
-        scaling_factor = (
-            constants.atm * constants.angstrom**3 / 1e3 * kJ2kcal * constants.N_A
-        )
-    elif (
-        units == "lj"
-    ):  # Nondimensional E scaled by epsilon, vol in sigma^3, pressure in epsilon / sigma^3
-        scaling_factor = 1
-    elif units == "metal":  # E in eV, vol in Å^3, pressure in bar
-        scaling_factor = constants.bar * constants.angstrom**3 / constants.eV
-    elif units == "si":  # E in J, vol in m^3, pressure in Pa
-        scaling_factor = 1
-    elif units == "cgs":  # E in ergs, vol in cm^3, pressure in dyne/cm^2
-        scaling_factor = 1
-    elif units == "electron":  # E in Hartrees, vol in Bohr^3, pressure in Pa
-        Hartree2J = constants.physical_constants["Hartree energy"][0]
-        Bohr2m = constants.physical_constants["Bohr radius"][0]
-        scaling_factor = Bohr2m**3 / Hartree2J
-    elif units == "micro":
-        # E in picogram-micrometer^2/microsecond^2, vol in um^3, pressure in picogram/(micrometer-microsecond^2)
-        scaling_factor = 1
-    elif units == "nano":
-        # E in attogram-nanometer^2/nanosecond^2, vol in nm^3, pressure in attogram/(nanometer-nanosecond^2)
-        scaling_factor = 1
-    else:
-        raise ValueError(
-            "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron,"
-            " lj, metal, micro, nano, real, si".format(units)
-        )
+    match units:
+        case "real":  # E in kcal/mol, Vol in Å^3, pressure in atm
+            scaling_factor = (
+                constants.atm * constants.angstrom**3 / 1e3 * kJ2kcal * constants.N_A
+            )
+        case "lj":  # Nondimensional E scaled by epsilon, vol in sigma^3, pressure in epsilon / sigma^3
+            scaling_factor = 1
+        case "metal":  # E in eV, vol in Å^3, pressure in bar
+            scaling_factor = constants.bar * constants.angstrom**3 / constants.eV
+        case "si":  # E in J, vol in m^3, pressure in Pa
+            scaling_factor = 1
+        case "cgs":  # E in ergs, vol in cm^3, pressure in dyne/cm^2
+            scaling_factor = 1
+        case "electron":  # E in Hartrees, vol in Bohr^3, pressure in Pa
+            Hartree2J = constants.physical_constants["Hartree energy"][0]
+            Bohr2m = constants.physical_constants["Bohr radius"][0]
+            scaling_factor = Bohr2m**3 / Hartree2J
+        case "micro":
+            # E in picogram-micrometer^2/microsecond^2, vol in um^3, pressure in picogram/(micrometer-microsecond^2)
+            scaling_factor = 1
+        case "nano":
+            # E in attogram-nanometer^2/nanosecond^2, vol in nm^3, pressure in attogram/(nanometer-nanosecond^2)
+            scaling_factor = 1
+        case _:
+            raise ValueError(
+                "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron, "
+                "lj, metal, micro, nano, real, si".format(units)
+            )
 
     return scaling_factor
 
 
-def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
+def tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     r"""Pull a tuple representing the lambda values used, as defined by the filenames.
+
+    This function extracts lambda values from structured filenames that contain numerical
+    lambda values separated by a specified separator character. The function is designed
+    to work with various filename formats as long as they follow a consistent pattern.
+
+    Examples with different indices configurations:
+
+    **Default indices=[2, 3], separator="_":**
+    
+    - ``fep_0.0_1.0.txt`` → (0.0, 1.0)
+    - ``simulation_data_0.25_0.75_output.dat`` → (0.25, 0.75)
+    - ``lammps_run_0.5_1.0.log.gz`` → (0.5, 1.0)
+    - ``path/to/file_prefix_0.1_0.9_suffix.txt.bz2`` → (0.1, 0.9)
+
+    **indices=[0, 1], separator="_":**
+    
+    - ``0.0_1.0_fep.txt`` → (0.0, 1.0)
+    - ``0.25_0.75_simulation.dat`` → (0.25, 0.75)
+
+    **indices=[1, 3], separator="_":**
+    
+    - ``run_0.0_data_1.0_output.txt`` → (0.0, 1.0)
+    - ``sim_0.25_info_0.75_result.dat`` → (0.25, 0.75)
+
+    **indices=[0, 2], separator="-":**
+    
+    - ``0.0-data-1.0.txt`` → (0.0, 1.0)
+    - ``0.25-sim-0.75.dat`` → (0.25, 0.75)
+
+    **indices=[-2, -1], separator="_" (negative indexing):**
+    
+    - ``prefix_data_0.0_1.0.txt`` → (0.0, 1.0)
+    - ``long_filename_with_many_parts_0.25_0.75.dat`` → (0.25, 0.75)
+
+    The function automatically handles compressed files (.gz, .bz2) by removing the 
+    compression extensions before parsing.
+
+    This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`.
 
     Parameters
     ----------
     filename : str
-        Filename and path
+        Filename and path. The filename (excluding path and file extension) should 
+        contain numerical lambda values separated by the specified separator.
     separator : str, default="_"
         Separator used to breakup the filename. The choice in ``indices`` is dependent on this choice.
     indices : list, default=[2, 3]
-        Indices used to pull :math:`\lambda` and :math:`\lambda'`
+        Indices used to pull :math:`\lambda` and :math:`\lambda'` from the filename 
+        components after splitting by separator. Supports both positive and negative indexing.
     prec : int, default=4
         Number of decimal points in the output.
 
     Returns
     -------
     tuple[float]
-        Tuple of lambda values
+        Tuple of lambda values (:math:`\lambda`, :math:`\lambda'`)
+
+    Raises
+    ------
+    ValueError
+        If the specified indices cannot be converted to float values.
 
     .. versionadded:: 2.4.1
 
@@ -184,7 +283,7 @@ def _tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     )
 
 
-def _lambda_from_filename(filename, separator="_", index=-1, prec=4):
+def lambda_from_filename(filename, separator="_", index=-1, prec=4):
     r"""Pull the :math:`\lambda'` value, as defined by the filenames.
 
     Here :math:`\lambda'` is the scaling value applied to a configuration that is equilibrated to
@@ -196,7 +295,7 @@ def _lambda_from_filename(filename, separator="_", index=-1, prec=4):
         Filename and path
     separator : str, default="_"
         Separator used to breakup the filename. The choice in ``index`` is dependent on this choice.
-    index : list, default=1
+    index : int, default=-1
         Index used to pull :math:`\lambda'`
     prec : int, default=4
         Number of decimal points in the output.
@@ -220,16 +319,17 @@ def _lambda_from_filename(filename, separator="_", index=-1, prec=4):
     return round(value, prec)
 
 
-def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
+def get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
     """Retrieves all lambda values from FEP filenames.
 
     Parameters
     ----------
     fep_files: str or list of str
         Path(s) to fepout files to extract data from.
-    indices : list[int], default=[1,2]
+    indices : list[int], default=[2,3]
         In provided file names, using underscore as a separator, these indices mark the part of the filename
         containing the lambda information. If three values, implies a value of lambda2 is present.
+        See :func:`tuple_from_filename` for details on how indices are used to extract lambda values.
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
     force : bool, default=False
@@ -249,13 +349,13 @@ def _get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
     """
 
     lambda_pairs = [
-        _tuple_from_filename(y, indices=indices, prec=prec) for y in fep_files
+        tuple_from_filename(y, indices=indices, prec=prec) for y in fep_files
     ]
     if len(indices) == 3:
         lambda2 = list(
             set(
                 [
-                    _lambda_from_filename(y, index=indices[2], prec=prec)
+                    lambda_from_filename(y, index=indices[2], prec=prec)
                     for y in fep_files
                 ]
             )
@@ -347,7 +447,7 @@ def extract_u_nk_from_u_n(
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
-    columns_lambda : int
+    column_lambda : int
         Indices for columns (file column number minus one) representing the lambda at which the system is equilibrated
     column_U : int
         Index for the column (file column number minus one) representing the potential energy of the system.
@@ -358,10 +458,10 @@ def extract_u_nk_from_u_n(
         Dependence of changing variable on the potential energy, which must be separable.
     index : int, default=-1
         In provided file names, using underscore as a separator, these indices mark the part of the filename
-        containing the lambda information for :func:`alchemlyb.parsing._lambda_from_filename`. If ``column_lambda2 != None``
+        containing the lambda information for :func:`alchemlyb.parsing.lambda_from_filename`. If ``column_lambda2 != None``
         this list should be of length three, where the last value represents the invariant lambda.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj", "metal", "micro", "nano",
         "real", "si"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
@@ -425,7 +525,7 @@ def extract_u_nk_from_u_n(
         )
 
     lambda_values = list(
-        set([_lambda_from_filename(y, index=index, prec=prec) for y in files])
+        set([lambda_from_filename(y, index=index, prec=prec) for y in files])
     )
     lambda_values = sorted(lambda_values)
 
@@ -543,15 +643,15 @@ def extract_u_nk(
         Index for the column (column number minus one) representing the difference in potential energy between lambda states
     column_U : int, default=3
         Index for the column (column number minus one) representing the potential energy
-    column_lambda2 : int
+    column_lambda2 : int, default=None
         Index for column (column number minus one) for the unchanging value of lambda for another potential.
         If ``None`` then we do not expect two lambda values being varied.
     indices : list[int], default=[1,2]
         In provided file names, using underscore as a separator, these indices mark the part of the filename
-        containing the lambda information for :func:`alchemlyb.parsing._get_bar_lambdas`. If ``column_lambda2 != None``
+        containing the lambda information for :func:`alchemlyb.parsing.get_bar_lambdas`. If ``column_lambda2 != None``
         this list should be of length three, where the last value represents the invariant lambda.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj", "metal", "micro", "nano",
         "real", "si"
     vdw_lambda : int, default=1
         In the case that ``column_lambda2 is not None``, this integer represents which lambda represents vdw interactions.
@@ -561,7 +661,7 @@ def extract_u_nk(
     pressure : float, default=None
         The pressure of the system in the NPT ensemble in units of energy / volume, where the units of energy and volume
         are as recorded in the LAMMPS dump file.
-    column_volume : int, default=4
+    column_volume : int, default=6
         The column for the volume in a LAMMPS dump file.
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
@@ -635,7 +735,7 @@ def extract_u_nk(
             f"Provided column for U must be type int. column_U: {column_U}, type: {type(column_U)}"
         )
 
-    lambda_values, _, lambda2 = _get_bar_lambdas(
+    lambda_values, _, lambda2 = get_bar_lambdas(
         files, indices=indices, prec=prec, force=force
     )
 
@@ -868,7 +968,7 @@ def extract_dHdl_from_u_n(
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
-    columns_lambda : int, default=None
+    column_lambda : int, default=None
         Indices for columns (file column number minus one) representing the lambda at which the system is equilibrated
     column_u_cross : int, default=None
         Index for the column (file column number minus one) representing the cross interaction potential energy of the system
@@ -877,7 +977,7 @@ def extract_dHdl_from_u_n(
         For example, for the LJ potential U = eps * f(sig, r), dU/deps = f(sig, r), so we need a dependence function of 1/eps to convert the
         potential energy to the derivative with respect to eps.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj", "metal", "micro", "nano",
         "real", "si"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
@@ -978,9 +1078,9 @@ def extract_dHdl(
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
-    column_lambda1 : int, default=2
+    column_lambda1 : int, default=1
         Index for column (column number minus one) representing the lambda at which the system is equilibrated.
-    column_dlambda1 : int, default=3
+    column_dlambda1 : int, default=2
         Index for column (column number minus one) for the change in lambda.
     column_lambda2 : int, default=None
         Index for column (column number minus one) for a second value of lambda.
@@ -991,7 +1091,7 @@ def extract_dHdl(
     vdw_lambda : int, default=1
         In the case that ``column_lambda2 is not None``, this integer represents which lambda represents vdw interactions.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj", "metal", "micro", "nano",
         "real", "si"
     prec : int, default=4
         Number of decimal places defined used in ``round()`` function.
@@ -1182,7 +1282,7 @@ def extract_H(
         Index for column (column number minus one) for a second value of lambda.
         If this array is ``None`` then we do not expect two lambda values.
     units : str, default="real"
-        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj". "metal", "micro", "nano",
+        Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj", "metal", "micro", "nano",
         "real", "si"
     ensemble : str, default="nvt"
         Ensemble from which the given data was generated. Either "nvt" or "npt" is supported where values from NVT are
@@ -1190,7 +1290,7 @@ def extract_H(
     pressure : float, default=None
         The pressure of the system in the NPT ensemble in units of energy / volume, where the units of energy and volume
         are as recorded in the LAMMPS dump file.
-    column_volume : int, default=4
+    column_volume : int, default=6
         The column for the volume in a LAMMPS dump file.
 
     Results
