@@ -1,6 +1,4 @@
-"""LAMMPS parser tests.
-
-"""
+"""LAMMPS parser tests."""
 
 import copy
 import pytest
@@ -66,10 +64,12 @@ P_lj = 0.01
         (300, "nano", 0.24143, "decimal", 4),
     ],
 )
-def test_beta_from_units(temperature, unit, expected, test_type, decimal_or_significant):
+def test_beta_from_units(
+    temperature, unit, expected, test_type, decimal_or_significant
+):
     """Test value of beta in different units."""
     result = lmp.beta_from_units(temperature, unit)
-    
+
     if test_type == "decimal":
         assert_almost_equal(result, expected, decimal=decimal_or_significant)
     elif test_type == "significant":
@@ -142,43 +142,66 @@ def test_u_nk_glob_error():
 
 def test_tuple_from_filename():
     """Test that tuple_from_filename correctly extracts lambda values from filenames."""
-    
-    # Test default parameters (indices=[2, 3], separator="_") 
+
+    # Test default parameters (indices=[2, 3], separator="_")
     # These filenames have lambda values at positions 2 and 3
-    assert lmp.tuple_from_filename("simulation_data_0.25_0.75_output.dat") == (0.25, 0.75)
+    assert lmp.tuple_from_filename("simulation_data_0.25_0.75_output.dat") == (
+        0.25,
+        0.75,
+    )
     assert lmp.tuple_from_filename("lammps_run_0.5_1.0.log.gz") == (0.5, 1.0)
-    assert lmp.tuple_from_filename("path/to/file_prefix_0.1_0.9_suffix.txt.bz2") == (0.1, 0.9)
-    
+    assert lmp.tuple_from_filename("path/to/file_prefix_0.1_0.9_suffix.txt.bz2") == (
+        0.1,
+        0.9,
+    )
+
     # Test real filename patterns from alchemtest data
     assert lmp.tuple_from_filename("mbar_charge_0.4_0.6.txt.bz2") == (0.4, 0.6)
-    assert lmp.tuple_from_filename("mbar_lj-cut-soft-lambda_0.3_0.75_charge--0.0_0.txt.bz2") == (0.3, 0.75)
-    
+    assert lmp.tuple_from_filename(
+        "mbar_lj-cut-soft-lambda_0.3_0.75_charge--0.0_0.txt.bz2"
+    ) == (0.3, 0.75)
+
     # Test filenames that need different indices
     assert lmp.tuple_from_filename("fep_0.0_1.0.txt", indices=[1, 2]) == (0.0, 1.0)
     assert lmp.tuple_from_filename("0.0_1.0_fep.txt", indices=[0, 1]) == (0.0, 1.0)
-    assert lmp.tuple_from_filename("run_0.0_data_1.0_output.txt", indices=[1, 3]) == (0.0, 1.0)
-    
+    assert lmp.tuple_from_filename("run_0.0_data_1.0_output.txt", indices=[1, 3]) == (
+        0.0,
+        1.0,
+    )
+
     # Test different separator
-    assert lmp.tuple_from_filename("0.0-data-1.0.txt", separator="-", indices=[0, 2]) == (0.0, 1.0)
-    
+    assert lmp.tuple_from_filename(
+        "0.0-data-1.0.txt", separator="-", indices=[0, 2]
+    ) == (0.0, 1.0)
+
     # Test negative indexing
-    assert lmp.tuple_from_filename("prefix_data_0.0_1.0.txt", indices=[-2, -1]) == (0.0, 1.0)
-    
+    assert lmp.tuple_from_filename("prefix_data_0.0_1.0.txt", indices=[-2, -1]) == (
+        0.0,
+        1.0,
+    )
+
     # Test precision parameter - use correct indices for these 3-component filenames
-    assert lmp.tuple_from_filename("test_0.123456_0.987654.txt", indices=[1, 2], prec=2) == (0.12, 0.99)
-    assert lmp.tuple_from_filename("test_0.123456_0.987654.txt", indices=[1, 2], prec=6) == (0.123456, 0.987654)
-    
+    assert lmp.tuple_from_filename(
+        "test_0.123456_0.987654.txt", indices=[1, 2], prec=2
+    ) == (0.12, 0.99)
+    assert lmp.tuple_from_filename(
+        "test_0.123456_0.987654.txt", indices=[1, 2], prec=6
+    ) == (0.123456, 0.987654)
+
     # Test compressed file extensions are properly handled
     assert lmp.tuple_from_filename("test_prefix_0.5_0.8.txt.gz") == (0.5, 0.8)
     assert lmp.tuple_from_filename("test_prefix_0.5_0.8.txt.bz2") == (0.5, 0.8)
-    
-    # Test error cases
-    with pytest.raises(ValueError, match=r"Entry, 0 in filename cannot be converted to float"):
-        lmp.tuple_from_filename("not_a_number_1.0.txt", indices=[0, 1])
-    
-    with pytest.raises(ValueError, match=r"Entry, 1 in filename cannot be converted to float"):
-        lmp.tuple_from_filename("1.0_not_a_number.txt", indices=[0, 1])
 
+    # Test error cases
+    with pytest.raises(
+        ValueError, match=r"Entry, 0 in filename cannot be converted to float"
+    ):
+        lmp.tuple_from_filename("not_a_number_1.0.txt", indices=[0, 1])
+
+    with pytest.raises(
+        ValueError, match=r"Entry, 1 in filename cannot be converted to float"
+    ):
+        lmp.tuple_from_filename("1.0_not_a_number.txt", indices=[0, 1])
 
 
 def test_dHdl():
@@ -204,7 +227,6 @@ def test_dHdl_glob_error():
 
 
 class TestLammpsMbar:
-
     @staticmethod
     @pytest.fixture(scope="class")
     def data():
@@ -508,7 +530,6 @@ class TestLammpsMbar:
 
 
 class TestLammpsTI:
-
     @staticmethod
     @pytest.fixture(scope="class")
     def data():
@@ -634,7 +655,6 @@ class TestLammpsTI:
 
 
 class TestLammpsH:
-
     @staticmethod
     @pytest.fixture(scope="class")
     def data():
@@ -792,7 +812,6 @@ class TestLammpsH:
 
 
 class TestLammpsLJDimer_TI:
-
     @staticmethod
     @pytest.fixture(scope="class")
     def data():
@@ -882,7 +901,6 @@ class TestLammpsLJDimer_TI:
 
 
 class TestLammpsLJDimer_MBAR:
-
     @staticmethod
     @pytest.fixture(scope="class")
     def data():

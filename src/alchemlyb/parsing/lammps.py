@@ -1,11 +1,11 @@
-r""" Parsers for extracting alchemical data from `LAMMPS <https://docs.lammps.org/Manual.html>`_ output files.
+r"""Parsers for extracting alchemical data from `LAMMPS <https://docs.lammps.org/Manual.html>`_ output files.
 
-For clarity, we would like to distinguish the difference between :math:`\lambda` and :math:`\lambda'`. We refer to :math:`\lambda` as 
-the potential scaling of the equilibrated system, so that when this value is changed, the system undergoes another equilibration 
-step. One the other hand, :math:`\lambda'` is the value used to scaled the potentials for the configurations of the system equilibrated 
-for :math:`\lambda`. The value of :math:`\lambda'` is used in two instances. First, in thermodynamic integration (TI), values of :math:`\lambda'` 
-that are very close to :math:`\lambda` can be used to calculate the derivative. This is needed because LAMMPS does not compute 
-explicit derivatives, although one should check whether they can derive an explicit expression, they cannot for changes of 
+For clarity, we would like to distinguish the difference between :math:`\lambda` and :math:`\lambda'`. We refer to :math:`\lambda` as
+the potential scaling of the equilibrated system, so that when this value is changed, the system undergoes another equilibration
+step. One the other hand, :math:`\lambda'` is the value used to scaled the potentials for the configurations of the system equilibrated
+for :math:`\lambda`. The value of :math:`\lambda'` is used in two instances. First, in thermodynamic integration (TI), values of :math:`\lambda'`
+that are very close to :math:`\lambda` can be used to calculate the derivative. This is needed because LAMMPS does not compute
+explicit derivatives, although one should check whether they can derive an explicit expression, they cannot for changes of
 :math:`\lambda'` in the soft Lennard-Jones (LJ) potential.
 
 Use Cases for extract_* Functions
@@ -39,10 +39,10 @@ These functions are tailored to specific free energy calculation methods and ens
 File Format Requirements
 ========================
 
-The parsers featured in this module are constructed to parse LAMMPS output files output using the 
-`fix ave/time command <https://docs.lammps.org/fix_ave_time.html>`_, containing data for given potential energy values (an 
-approximation of the Hamiltonian) at specified values of :math:`\lambda` and :math:`\lambda'`, :math:`U_{\lambda,\lambda'}`. Note that in 
-LAMMPS, `fix adapt/fep <https://docs.lammps.org/fix_adapt_fep.html>`_ changes :math:`\lambda` and 
+The parsers featured in this module are constructed to parse LAMMPS output files output using the
+`fix ave/time command <https://docs.lammps.org/fix_ave_time.html>`_, containing data for given potential energy values (an
+approximation of the Hamiltonian) at specified values of :math:`\lambda` and :math:`\lambda'`, :math:`U_{\lambda,\lambda'}`. Note that in
+LAMMPS, `fix adapt/fep <https://docs.lammps.org/fix_adapt_fep.html>`_ changes :math:`\lambda` and
 `compute fep <https://docs.lammps.org/compute_fep.html>`_ changes :math:`\lambda'`.
 
 This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`.
@@ -66,7 +66,7 @@ For MBAR extraction (`extract_u_nk`):
   - Column 6: Volume (for NPT ensemble, optional)
 
 For TI extraction (`extract_dHdl`):
-  - Column 0: Timestep/iteration number  
+  - Column 0: Timestep/iteration number
   - Column 1: Lambda value λ
   - Column 2: Lambda derivative dλ/dt
   - Columns 5,7: Derivative values ∂H/∂λ for different components
@@ -75,7 +75,7 @@ For TI extraction (`extract_dHdl`):
 **Example File Content:**
 ```
 # LAMMPS output from fix ave/time
-# Time Lambda1 Lambda2 U dU Volume dHdl1 dHdl2 
+# Time Lambda1 Lambda2 U dU Volume dHdl1 dHdl2
 100   0.0     0.0     -1234.5  0.0      12345.6  -23.4   15.2
 200   0.0     0.1     -1235.1  -0.6     12346.1  -24.1   15.8
 300   0.0     0.2     -1236.2  -1.7     12347.0  -25.3   16.5
@@ -102,6 +102,7 @@ LAMMPS unit systems: "real", "lj", "metal", "si", "cgs", "electron", "micro", "n
 
 import os
 import warnings
+from collections.abc import Callable
 import numpy as np
 import pandas as pd
 import glob
@@ -111,7 +112,7 @@ from . import _init_attrs
 from ..postprocessors.units import R_kJmol, kJ2kcal
 
 
-def _validate_ensemble_parameters(ensemble, pressure):
+def _validate_ensemble_parameters(ensemble: str, pressure: float | None) -> None:
     """
     Validate ensemble and pressure parameters for LAMMPS parsing.
 
@@ -143,7 +144,7 @@ def _validate_ensemble_parameters(ensemble, pressure):
             )
 
 
-def beta_from_units(T, units):
+def beta_from_units(T: float, units: str) -> float:
     """Output value of beta from temperature and units.
 
     Supported types are: cgs, electron, lj, metal, micro, nano, real, si
@@ -199,7 +200,7 @@ def beta_from_units(T, units):
     return beta
 
 
-def energy_from_units(units):
+def energy_from_units(units: str) -> float:
     """Output conversion factor for pressure * volume to LAMMPS energy units
 
     Supported types are: cgs, electron, lj, metal, micro, nano, real, si
@@ -254,7 +255,9 @@ def energy_from_units(units):
     return scaling_factor
 
 
-def tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
+def tuple_from_filename(
+    filename: str, separator: str = "_", indices: list[int] = [2, 3], prec: int = 4
+) -> tuple[float, ...]:
     r"""Pull a tuple representing the lambda values used, as defined by the filenames.
 
     This function extracts lambda values from structured filenames that contain numerical
@@ -264,33 +267,33 @@ def tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     Examples with different indices configurations:
 
     **Default indices=[2, 3], separator="_":**
-    
+
     - ``fep_0.0_1.0.txt`` → (0.0, 1.0)
     - ``simulation_data_0.25_0.75_output.dat`` → (0.25, 0.75)
     - ``lammps_run_0.5_1.0.log.gz`` → (0.5, 1.0)
     - ``path/to/file_prefix_0.1_0.9_suffix.txt.bz2`` → (0.1, 0.9)
 
     **indices=[0, 1], separator="_":**
-    
+
     - ``0.0_1.0_fep.txt`` → (0.0, 1.0)
     - ``0.25_0.75_simulation.dat`` → (0.25, 0.75)
 
     **indices=[1, 3], separator="_":**
-    
+
     - ``run_0.0_data_1.0_output.txt`` → (0.0, 1.0)
     - ``sim_0.25_info_0.75_result.dat`` → (0.25, 0.75)
 
     **indices=[0, 2], separator="-":**
-    
+
     - ``0.0-data-1.0.txt`` → (0.0, 1.0)
     - ``0.25-sim-0.75.dat`` → (0.25, 0.75)
 
     **indices=[-2, -1], separator="_" (negative indexing):**
-    
+
     - ``prefix_data_0.0_1.0.txt`` → (0.0, 1.0)
     - ``long_filename_with_many_parts_0.25_0.75.dat`` → (0.25, 0.75)
 
-    The function automatically handles compressed files (.gz, .bz2) by removing the 
+    The function automatically handles compressed files (.gz, .bz2) by removing the
     compression extensions before parsing.
 
     This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`.
@@ -298,12 +301,12 @@ def tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     Parameters
     ----------
     filename : str
-        Filename and path. The filename (excluding path and file extension) should 
+        Filename and path. The filename (excluding path and file extension) should
         contain numerical lambda values separated by the specified separator.
     separator : str, default="_"
         Separator used to breakup the filename. The choice in ``indices`` is dependent on this choice.
     indices : list, default=[2, 3]
-        Indices used to pull :math:`\lambda` and :math:`\lambda'` from the filename 
+        Indices used to pull :math:`\lambda` and :math:`\lambda'` from the filename
         components after splitting by separator. Supports both positive and negative indexing.
     prec : int, default=4
         Number of decimal points in the output.
@@ -343,7 +346,9 @@ def tuple_from_filename(filename, separator="_", indices=[2, 3], prec=4):
     )
 
 
-def lambda_from_filename(filename, separator="_", index=-1, prec=4):
+def lambda_from_filename(
+    filename: str, separator: str = "_", index: int = -1, prec: int = 4
+) -> float:
     r"""Pull the :math:`\lambda'` value, as defined by the filenames.
 
     Here :math:`\lambda'` is the scaling value applied to a configuration that is equilibrated to
@@ -372,14 +377,19 @@ def lambda_from_filename(filename, separator="_", index=-1, prec=4):
     name_array = ".".join(os.path.split(filename)[-1].split(".")[:-1]).split(separator)
     try:
         value = float(name_array[index])
-    except:
+    except (ValueError, IndexError):
         raise ValueError(
             f"Entry, {index} in filename cannot be converted to float: {name_array[index]}"
         )
     return round(value, prec)
 
 
-def get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
+def get_bar_lambdas(
+    fep_files: str | list[str],
+    indices: list[int] = [2, 3],
+    prec: int = 4,
+    force: bool = False,
+) -> tuple[list[float], list[tuple[float, ...]], float | None]:
     """Retrieves all lambda values from FEP filenames.
 
     Parameters
@@ -412,7 +422,7 @@ def get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
         tuple_from_filename(y, indices=indices, prec=prec) for y in fep_files
     ]
     if len(indices) == 3:
-        lambda2 = list(
+        lambda2_list = list(
             set(
                 [
                     lambda_from_filename(y, index=indices[2], prec=prec)
@@ -420,13 +430,13 @@ def get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
                 ]
             )
         )
-        if len(lambda2) > 1:
+        if len(lambda2_list) > 1:
             raise ValueError(
                 "More than one value of lambda2 is present in the provided files."
-                f" Restrict filename input to one of: {lambda2}"
+                f" Restrict filename input to one of: {lambda2_list}"
             )
         else:
-            lambda2 = lambda2[0]
+            lambda2: float | None = lambda2_list[0]
     else:
         lambda2 = None
 
@@ -485,19 +495,19 @@ def get_bar_lambdas(fep_files, indices=[2, 3], prec=4, force=False):
 
 @_init_attrs
 def extract_u_nk_from_u_n(
-    fep_files,
-    T,
-    column_lambda,
-    column_U,
-    column_U_cross,
-    dependence=lambda x: (x),
-    index=-1,
-    units="real",
-    prec=4,
-    ensemble="nvt",
-    pressure=None,
-    column_volume=4,
-):
+    fep_files: str | list[str],
+    T: float,
+    column_lambda: int,
+    column_U: int,
+    column_U_cross: int,
+    dependence: Callable[[float], float] = lambda x: (x),
+    index: int = -1,
+    units: str = "real",
+    prec: int = 4,
+    ensemble: str = "nvt",
+    pressure: float | None = None,
+    column_volume: int = 4,
+) -> pd.DataFrame:
     """Produce u_nk from files containing u_n given a separable dependence on lambda.
 
     Parameters
@@ -649,22 +659,22 @@ def extract_u_nk_from_u_n(
 
 @_init_attrs
 def extract_u_nk(
-    fep_files,
-    T,
-    columns_lambda1=[1, 2],
-    column_dU=4,
-    column_U=3,
-    column_lambda2=None,
-    indices=[1, 2],
-    units="real",
-    vdw_lambda=1,
-    ensemble="nvt",
-    pressure=None,
-    column_volume=6,
-    prec=4,
-    force=False,
-    tol=None,
-):
+    fep_files: str | list[str],
+    T: float,
+    columns_lambda1: list[int] = [1, 2],
+    column_dU: int = 4,
+    column_U: int = 3,
+    column_lambda2: int | None = None,
+    indices: list[int] = [1, 2],
+    units: str = "real",
+    vdw_lambda: int = 1,
+    ensemble: str = "nvt",
+    pressure: float | None = None,
+    column_volume: int = 6,
+    prec: int = 4,
+    force: bool = False,
+    tol: float | None = None,
+) -> pd.DataFrame:
     """Return reduced potentials `u_nk` from LAMMPS dump file(s).
 
     Each file is imported as a data frame where the columns kept are either::
@@ -785,7 +795,9 @@ def extract_u_nk(
 
     # Set-up u_nk and column names / indices
     if column_lambda2 is None:  # No second lambda state value
-        u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
+        u_nk = pd.DataFrame(
+            columns=["time", "fep-lambda"] + [str(lv) for lv in lambda_values]
+        )
         lc = len(lambda_values)
         # columns to pull from lammps dump file
         col_indices = [0] + list(columns_lambda1) + [column_U, column_dU]
@@ -985,14 +997,14 @@ def extract_u_nk(
 
 @_init_attrs
 def extract_dHdl_from_u_n(
-    fep_files,
-    T,
-    column_lambda=None,
-    column_u_cross=None,
-    dependence=lambda x: (1 / x),
-    units="real",
-    prec=4,
-):
+    fep_files: str | list[str],
+    T: float,
+    column_lambda: int | None = None,
+    column_u_cross: int | None = None,
+    dependence: Callable[[float], float] = lambda x: (1 / x),
+    units: str = "real",
+    prec: int = 4,
+) -> pd.DataFrame:
     """Produce dHdl dataframe from separated contributions of the potential energy.
 
     Each file is imported as a dataframe where the columns are:
@@ -1086,16 +1098,16 @@ def extract_dHdl_from_u_n(
 
 @_init_attrs
 def extract_dHdl(
-    fep_files,
-    T,
-    column_lambda1=1,
-    column_dlambda1=2,
-    column_lambda2=None,
-    columns_derivative=[8, 7],
-    vdw_lambda=1,
-    units="real",
-    prec=4,
-):
+    fep_files: str | list[str],
+    T: float,
+    column_lambda1: int = 1,
+    column_dlambda1: int = 2,
+    column_lambda2: int | None = None,
+    columns_derivative: list[int] = [8, 7],
+    vdw_lambda: int = 1,
+    units: str = "real",
+    prec: int = 4,
+) -> pd.DataFrame:
     """Return reduced potentials `dHdl` from LAMMPS dump file(s).
 
     Each file is imported as a data frame where the columns kept are either::
@@ -1282,16 +1294,16 @@ def extract_dHdl(
 
 @_init_attrs
 def extract_H(
-    fep_files,
-    T,
-    column_lambda1=1,
-    column_pe=5,
-    column_lambda2=None,
-    units="real",
-    ensemble="nvt",
-    pressure=None,
-    column_volume=6,
-):
+    fep_files: str | list[str],
+    T: float,
+    column_lambda1: int = 1,
+    column_pe: int = 5,
+    column_lambda2: int | None = None,
+    units: str = "real",
+    ensemble: str = "nvt",
+    pressure: float | None = None,
+    column_volume: int = 6,
+) -> pd.DataFrame:
     """Return reduced potentials Hamiltonian from LAMMPS dump file(s).
 
     Each file is imported as a data frame where the columns kept are either::
