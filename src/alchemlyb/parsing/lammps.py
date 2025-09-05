@@ -45,7 +45,7 @@ LAMMPS, `fix adapt/fep <https://docs.lammps.org/fix_adapt_fep.html>`_ changes :m
 
 Given the broad flexibility and unstandardized format of LAMMPS output files a user should consider the way they write the output of their
 simulation. A user may find the package `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`_
-useful to generate their input scripts. Input files should be space-separated text files produced by LAMMPS `fix ave/time` command, typically 
+useful to generate their input scripts. Input files should be space-separated text files produced by LAMMPS `fix ave/time` command, typically
 with the following characteristics:
 
 **File Structure:**
