@@ -6,7 +6,7 @@ Use Cases for extract_* Functions
 
 For clarity, we would like to distinguish the difference between :math:`\lambda` and :math:`\lambda'`. We refer to :math:`\lambda` as
 the potential scaling of the equilibrated system, so that when this value is changed, the system undergoes another equilibration
-step. One the other hand, :math:`\lambda'` is the value used to scaled the potentials for the configurations of the system equilibrated
+step. On the other hand, :math:`\lambda'` is the value used to scale the potentials for the configurations of the system equilibrated
 for :math:`\lambda`. The value of :math:`\lambda'` is used in two instances. First, in thermodynamic integration (TI), values of :math:`\lambda'`
 that are very close to :math:`\lambda` can be used to calculate the derivative. This is needed because LAMMPS does not compute
 explicit derivatives; although one should check whether explicit expressions can be derived, this is not possible for changes of
@@ -1099,7 +1099,7 @@ def extract_dHdl_from_u_n(
 
         data = pd.read_csv(file, sep=" ", comment="#", header=None)
         lx = len(data.columns)
-        if [False for x in col_indices if x >= lx]:
+        if any(x >= lx for x in col_indices):
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
@@ -1248,7 +1248,7 @@ def extract_dHdl(
 
         data = pd.read_csv(file, sep=" ", comment="#", header=None)
         lx = len(data.columns)
-        if [False for x in col_indices if x >= lx]:
+        if any(x >= lx for x in col_indices):
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
@@ -1431,7 +1431,7 @@ def extract_H(
 
         data = pd.read_csv(file, sep=" ", comment="#", header=None)
         lx = len(data.columns)
-        if [False for x in col_indices if x >= lx]:
+        if any(x >= lx for x in col_indices):
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
