@@ -9,7 +9,7 @@ the potential scaling of the equilibrated system, so that when this value is cha
 step. One the other hand, :math:`\lambda'` is the value used to scaled the potentials for the configurations of the system equilibrated
 for :math:`\lambda`. The value of :math:`\lambda'` is used in two instances. First, in thermodynamic integration (TI), values of :math:`\lambda'`
 that are very close to :math:`\lambda` can be used to calculate the derivative. This is needed because LAMMPS does not compute
-explicit derivatives, although one should check whether they can derive an explicit expression, they cannot for changes of
+explicit derivatives; although one should check whether explicit expressions can be derived, this is not possible for changes of
 :math:`\lambda'` in the soft Lennard-Jones (LJ) potential.
 
 The extract_* functions in this module are designed to handle different aspects of alchemical free energy calculations. Below is an overview of their use cases:
