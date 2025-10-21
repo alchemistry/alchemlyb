@@ -221,23 +221,23 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         if compute_entropy_enthalpy:
             self._delta_h_ = pd.DataFrame(
                 out["Delta_u"],
-            columns=self._states_,
-            index=self._states_,
+                columns=self._states_,
+                index=self._states_,
             )
             self._d_delta_h_ = pd.DataFrame(
                 out["dDelta_u"],
-            columns=self._states_,
-            index=self._states_,
+                columns=self._states_,
+                index=self._states_,
             )
             self._delta_sT_ = pd.DataFrame(
                 out["Delta_s"],
-            columns=self._states_,
-            index=self._states_,
+                columns=self._states_,
+                index=self._states_,
             )
             self._d_delta_sT_ = pd.DataFrame(
                 out["dDelta_s"],
-            columns=self._states_,
-            index=self._states_,
+                columns=self._states_,
+                index=self._states_,
             )
 
         self._delta_f_.attrs = u_nk.attrs

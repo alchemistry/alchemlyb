@@ -575,7 +575,7 @@ class ABFE(WorkflowBase):
             logger.info("use the stage name from dHdl")
 
         for stage in stages:
-            data_dict["name"].append(stage.split("-")[0])   # type: ignore[union-attr]
+            data_dict["name"].append(stage.split("-")[0])  # type: ignore[union-attr]
             data_dict["state"].append("Stages")
         data_dict["name"].append("TOTAL")
         data_dict["state"].append("Stages")
