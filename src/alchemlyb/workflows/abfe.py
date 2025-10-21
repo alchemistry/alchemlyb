@@ -575,7 +575,7 @@ class ABFE(WorkflowBase):
             logger.info("use the stage name from dHdl")
 
         for stage in stages:
-            data_dict["name"].append(stage.split("-")[0])  # type: ignore[attr-defined]
+            data_dict["name"].append(stage.split("-")[0])   # type: ignore[union-attr]
             data_dict["state"].append("Stages")
         data_dict["name"].append("TOTAL")
         data_dict["state"].append("Stages")
@@ -606,15 +606,15 @@ class ABFE(WorkflowBase):
                     end = len(estimator.states_) - 1  # type: ignore[arg-type]
                 else:
                     # Get the start and the end of the state
-                    lambda_min = min([state[index] for state in estimator.states_])  # type: ignore[index,union-attr]
-                    lambda_max = max([state[index] for state in estimator.states_])  # type: ignore[index,union-attr]
+                    lambda_min = min([state[index] for state in estimator.states_])  # type: ignore[union-attr]
+                    lambda_max = max([state[index] for state in estimator.states_])  # type: ignore[union-attr]
                     if lambda_min == lambda_max:
                         # Deal with the case where a certain lambda is used but
                         # not perturbed
                         start = 0
                         end = 0
                     else:
-                        states = [state[index] for state in estimator.states_]  # type: ignore[index,union-attr]
+                        states = [state[index] for state in estimator.states_]  # type: ignore[union-attr]
                         start = list(reversed(states)).index(lambda_min)
                         start = num_states - start - 1
                         end = states.index(lambda_max)
