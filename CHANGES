@@ -12,7 +12,7 @@ The rules for this file:
   * accompany each entry with github issue/PR number (Issue #xyz)
   * release numbers follow "Semantic Versioning" https://semver.org
 
-**/**/**** xiki-tempula, jaclark5, yuxuanzhuang
+**/**/**** xiki-tempula, jaclark5, yuxuanzhuang. orbeckst
 
   * 2.5.0
 
@@ -20,11 +20,12 @@ Fixes
   - Get correct timestamp based on bar_intervall (Issue #428, PR #429)
 
 Changes
-  - Use mypy to do type check and add type hints (PR #433)
+  - Add support for Python 3.14 (#439)
+  - Use mypy to do type check and add type hints (PR #433, PR #441)
   - Use Ruff to do format and lint check and rename some variables, drop black (PR #432)
   - Add support for py3.13 (PR #431)
   - Drop support for py3.10 (PR #431)
-  - Only numpy <2.3 is supported due to potential changes in output of up to 0.1 kT
+  - Exclude numpy 2.3.0-2.3.2 due to potential changes in output of up to 0.1 kT
     (see PR #431 and issue choderalab/pymbar#556) (PR #431)
 
 Enhancements

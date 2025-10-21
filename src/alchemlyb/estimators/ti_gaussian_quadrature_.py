@@ -386,7 +386,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         d_deltas_squared = np.insert(d_deltas_squared, 0, [0.0], axis=0)
         d_deltas_squared = np.append(d_deltas_squared, [0.0], axis=0)
         # build matrix of deltas between each state
-        adelta = np.zeros((len(deltas), len(deltas)))
+        adelta = np.zeros((len(deltas), len(deltas)), dtype=float)
         ad_delta = np.zeros_like(adelta)
 
         for j in range(len(deltas)):
@@ -403,7 +403,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             adelta += np.diagflat(np.array(out), k=j)
             ad_delta += np.diagflat(np.array(dout), k=j)
 
-        adelta = adelta - adelta.T  # type: ignore[assignment]
+        adelta = adelta - adelta.T
         ad_delta = (ad_delta + ad_delta.T) - 2 * np.diagflat(d_deltas_squared)
         # yield standard delta_f_ cumulative free energies from one state to another
         self._delta_f_ = pd.DataFrame(adelta, columns=index_list, index=index_list)
