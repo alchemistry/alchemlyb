@@ -172,10 +172,10 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
                 ]
                 initial_f_k = pd.Series(
                     [
-                        initial_f_k.loc(x) if x in states else np.nan
-                        for x in self._states_  # type: ignore
+                        initial_f_k.loc[x] if x in states else np.nan
+                        for x in self._states_
                     ],
-                    index=self._states_,  # type: ignore[arg-type]
+                    index=self._states_,
                     dtype=float,
                 )
         else:
@@ -205,39 +205,39 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 
         self._delta_f_ = pd.DataFrame(
             out["Delta_f"],
-            columns=self._states_,  # type: ignore[arg-type]
-            index=self._states_,  # type: ignore[arg-type]
+            columns=self._states_,
+            index=self._states_,
         )
         self._d_delta_f_ = pd.DataFrame(
             out["dDelta_f"],
-            columns=self._states_,  # type: ignore[arg-type]
-            index=self._states_,  # type: ignore[arg-type]
+            columns=self._states_,
+            index=self._states_,
         )
         self.theta_ = pd.DataFrame(
             out["Theta"],
-            columns=self._states_,  # type: ignore[arg-type]
-            index=self._states_,  # type: ignore[arg-type]
+            columns=self._states_,
+            index=self._states_,
         )
         if compute_entropy_enthalpy:
             self._delta_h_ = pd.DataFrame(
                 out["Delta_u"],
-                columns=self._states_,  # type: ignore[arg-type]
-                index=self._states_,  # type: ignore[arg-type]
+                columns=self._states_,
+                index=self._states_,
             )
             self._d_delta_h_ = pd.DataFrame(
                 out["dDelta_u"],
-                columns=self._states_,  # type: ignore[arg-type]
-                index=self._states_,  # type: ignore[arg-type]
+                columns=self._states_,
+                index=self._states_,
             )
             self._delta_sT_ = pd.DataFrame(
                 out["Delta_s"],
-                columns=self._states_,  # type: ignore[arg-type]
-                index=self._states_,  # type: ignore[arg-type]
+                columns=self._states_,
+                index=self._states_,
             )
             self._d_delta_sT_ = pd.DataFrame(
                 out["dDelta_s"],
-                columns=self._states_,  # type: ignore[arg-type]
-                index=self._states_,  # type: ignore[arg-type]
+                columns=self._states_,
+                index=self._states_,
             )
 
         self._delta_f_.attrs = u_nk.attrs
