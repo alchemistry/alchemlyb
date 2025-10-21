@@ -112,7 +112,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
                     f"Indexed lambda state, {state}, is not represented in u_nk columns:"
                     f" {self._states_}"
                 )
-        states.sort(key=lambda x: self._states_.index(x))  # type: ignore[operator, union-attr]
+        states.sort(key=lambda x: self._states_.index(x))  # type: ignore[union-attr]
 
         # Now get free energy differences and their uncertainties for each step
         deltas = np.array([])
