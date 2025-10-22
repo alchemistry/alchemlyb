@@ -458,8 +458,12 @@ class ABFE(WorkflowBase):
 
 
         .. versionchanged:: 2.1.0
-            DeprecationWarning for using analytic error for MBAR estimator.
+            DeprecationWarning for using analytic error for MBAR estimator; from 2.6.0
+            onwards, the `MBAR bootstrap error`_ will be used instead.
 
+
+        .. _`MBAR bootstrap error`:
+           https://pymbar.readthedocs.io/en/stable/pymbar.mbar.html#pymbar.mbar.MBAR.bootstrap_error
         """
         # Make estimators into a tuple
         if isinstance(estimators, str):
@@ -494,7 +498,7 @@ class ABFE(WorkflowBase):
             if estimator == "MBAR":
                 logger.info("Run MBAR estimator.")
                 warnings.warn(
-                    "From 2.2.0, n_bootstraps=50 will be the default for estimating MBAR error.",
+                    "From 2.6.0, n_bootstraps=50 will be the default for estimating MBAR error.",
                     DeprecationWarning,
                 )
                 self.estimator[estimator] = MBAR(**kwargs).fit(u_nk)  # type: ignore[arg-type]

@@ -150,7 +150,7 @@ Fixes
 
 DeprecationWarning
   - The default MBAR error estimator in workflow.ABFE.estimate will change from
-    analytic to bootstrap=50 in 2.2.0 (issue #320, PR#322).
+    analytic to bootstrap=50 in 2.6.0 (issue #320, PR#322).
 
 
 04/06/2023 xiki-tempula

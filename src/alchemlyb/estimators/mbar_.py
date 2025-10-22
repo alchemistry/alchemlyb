@@ -35,7 +35,6 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
            The new default is now "BAR" as it provides a substantial speedup
            over the previous default `None`.
 
-
     method : str, optional, default="robust"
         The optimization routine to use.  This can be any of the methods
         available via :func:`scipy.optimize.minimize` or
@@ -262,6 +261,6 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
 
         See Also
         ---------
-        pymbar.mbar.MBAR.computeOverlap
+        pymbar.MBAR.compute_overlap
         """
         return self._mbar.compute_overlap()["matrix"]  # type: ignore[attr-defined, no-any-return]

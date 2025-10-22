@@ -35,8 +35,10 @@ def anyopen(
     any extension on the filename. Leaving `compression` as `None` will rely on
     the extension for determining compression, if any.
 
+
     .. versionchanged:: 0.7.0
        Removed stated support for zip, given broken implementation.
+
 
     Parameters
     ----------

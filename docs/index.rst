@@ -30,15 +30,13 @@ See :ref:`contact` for how to get in touch if you have questions or find problem
 .. _`issue #207`: https://github.com/alchemistry/alchemlyb/issues/207
 
 How to Cite
-===========
+-----------
 
 If you use this software in your research, please cite it as follows:
 
 Wu, Z., Dotson, D. L., Alibay, I., Allen, B. K., Barhaghi, M. S., Hénin, J., Joseph, T. T.,
 Kenney, I. M., Lee, H., Li, H., Lim, V., Liu, S., Marson, D., Merz, P. T., Schlaich, A.,
-Mobley, D., Shirts, M. R., Beckstein, O. (2024).
-**alchemlyb: the simple alchemistry library.**
-*Journal of Open Source Software, 9*(101), 6934.
+Mobley, D., Shirts, M. R., Beckstein, O. (2024). **alchemlyb: the simple alchemistry library.** *Journal of Open Source Software*, **9** (101), 6934.
 https://doi.org/10.21105/joss.06934
 
 Core philosophy

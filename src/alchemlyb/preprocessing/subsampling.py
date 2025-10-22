@@ -49,10 +49,12 @@ def decorrelate_u_nk(
         Additional keyword arguments for
         :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
         or :func:`~alchemlyb.preprocessing.subsampling.equilibrium_detection`.
+
     Returns
     -------
-    DataFrame
+    :class:`pandas.DataFrame`
         `df` subsampled according to selected `method`.
+
     Note
     ----
     The default of ``True`` for  `drop_duplicates` and `sort` should result in robust decorrelation
@@ -110,7 +112,7 @@ def decorrelate_dhdl(
 
     Returns
     -------
-    DataFrame
+    :class:`pandas.DataFrame`
         `df` subsampled.
 
     Note
@@ -155,7 +157,7 @@ def u_nk2series(df: pd.DataFrame, method: str = "dE") -> pd.Series:
 
     Returns
     -------
-    Series
+    :class:`pandas.Series`
         `series` to be used as input for
         :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
         or
@@ -242,7 +244,7 @@ def dhdl2series(df: pd.DataFrame, method: str = "all") -> pd.Series:
 
     Returns
     -------
-    Series
+    :class:`pandas.Series`
         `series` to be used as input for
         :func:`~alchemlyb.preprocessing.subsampling.statistical_inefficiency`
         or
@@ -428,7 +430,7 @@ def slicing(
 
     Parameters
     ----------
-    df : DataFrame
+    df : :class:`pandas.DataFrame`
         DataFrame to subsample.
     lower : float
         Lower time to slice from.
@@ -441,7 +443,7 @@ def slicing(
 
     Returns
     -------
-    DataFrame
+    :class:`pandas.DataFrame`
         `df` subsampled.
 
 
@@ -481,9 +483,9 @@ def statistical_inefficiency(
 
     Parameters
     ----------
-    df : DataFrame
+    df : :class:`pandas.DataFrame`
         DataFrame to subsample according statistical inefficiency of `series`.
-    series : Series
+    series : :class:`pandas.Series`
         Series to use for calculating statistical inefficiency. If ``None``,
         no statistical inefficiency-based subsampling will be performed.
     lower : float
@@ -504,7 +506,7 @@ def statistical_inefficiency(
 
     Returns
     -------
-    DataFrame
+    :class:`pandas.DataFrame`
         `df` subsampled according to subsampled `series`.
 
     Warning
@@ -585,9 +587,9 @@ def equilibrium_detection(
 
     Parameters
     ----------
-    df : DataFrame
+    df : :class:`pandas.DataFrame`
         DataFrame to subsample according to equilibrium detection on `series`.
-    series : Series
+    series : :class:`pandas.Series`
         Series to detect equilibration on. If ``None``, no equilibrium
         detection-based subsampling will be performed.
     lower : float
@@ -603,7 +605,7 @@ def equilibrium_detection(
 
     Returns
     -------
-    DataFrame
+    :class:`pandas.DataFrame`
         `df` subsampled according to subsampled `series`.
 
     Notes
