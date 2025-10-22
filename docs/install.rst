@@ -24,6 +24,18 @@ You can later **update** your installation with ::
 
   conda update -c conda-forge alchemlyb
 
+Managing the ``JAX`` Dependency
+-------------------------------
+
+By default, the conda installation of alchemlyb includes the JAX library for accelerated performance. If you encounter dependency conflicts or prefer a leaner installation, you can manage this dependency.
+
+To install without JAX, specify the core build. This version offers the basic functionality without the JAX-based acceleration. ::
+
+	conda install -c conda-forge 'alchemlyb=*=core_*'
+
+To explicitly install with JAX, you can specify the jax build. This is useful to ensure you're getting the accelerated version. ::
+
+	conda install -c conda-forge 'alchemlyb=*=jax_*'
 
 ``pip`` installation
 --------------------
