@@ -12,7 +12,7 @@ The rules for this file:
   * accompany each entry with github issue/PR number (Issue #xyz)
   * release numbers follow "Semantic Versioning" https://semver.org
 
-**/**/**** xiki-tempula, jaclark5, yuxuanzhuang. orbeckst
+10/21/2025 xiki-tempula, jaclark5, yuxuanzhuang. orbeckst
 
   * 2.5.0
 
@@ -27,6 +27,9 @@ Changes
   - Drop support for py3.10 (PR #431)
   - Exclude numpy 2.3.0-2.3.2 due to potential changes in output of up to 0.1 kT
     (see PR #431 and issue choderalab/pymbar#556) (PR #431)
+  - Functions in alchemlyb.convergence now only accept UPPERCASE estimator names
+    (lowercase had been deprecated in 1.0.0 and scheduled for removal in 2.0.0)
+    (PR #443)
 
 Enhancements
   - Added matrices for entropy and enthalpy for MBAR (PR #406)
