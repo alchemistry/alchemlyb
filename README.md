@@ -60,6 +60,6 @@ We also welcome code contributions: have a look at our [Developer Guide](https:/
 
 ## References
 
-- <a name="shirts2008">Shirts, M.R.</a>, and Chodera, J.D. (2008). Statistically optimal analysis of samples from multiple equilibrium states. The Journal of Chemical Physics 129, 124105.
-- <a name="chodera2016">Chodera, J.D</a>. (2016). A Simple Method for Automated Equilibration Detection in Molecular Simulations. Journal of Chemical Theory and Computation 12, 1799–1805.
-- <a name="wu2024">Wu, Z.</a>, Dotson, D. L., Alibay, I., Allen, B. K., Barhaghi, M. S., Hénin, J., Joseph, T. T., Kenney, I. M., Lee, H., Li, H., Lim, V., Liu, S., Marson, D., Merz, P. T., Schlaich, A., Mobley, D., Shirts, M. R., Beckstein, O. (2024). **alchemlyb: the simple alchemistry library.** *Journal of Open Source Software*, **9** (101), 6934. [https://doi.org/10.21105/joss.06934](https://doi.org/10.21105/joss.06934)
+- <a id="shirts2008">Shirts, M.R.</a>, and Chodera, J.D. (2008). Statistically optimal analysis of samples from multiple equilibrium states. The Journal of Chemical Physics 129, 124105.
+- <a id="chodera2016">Chodera, J.D</a>. (2016). A Simple Method for Automated Equilibration Detection in Molecular Simulations. Journal of Chemical Theory and Computation 12, 1799–1805.
+- <a id="wu2024">Wu, Z.</a>, Dotson, D. L., Alibay, I., Allen, B. K., Barhaghi, M. S., Hénin, J., Joseph, T. T., Kenney, I. M., Lee, H., Li, H., Lim, V., Liu, S., Marson, D., Merz, P. T., Schlaich, A., Mobley, D., Shirts, M. R., Beckstein, O. (2024). **alchemlyb: the simple alchemistry library.** *Journal of Open Source Software*, **9** (101), 6934. [https://doi.org/10.21105/joss.06934](https://doi.org/10.21105/joss.06934)
