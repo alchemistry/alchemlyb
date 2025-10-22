@@ -50,6 +50,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
     See Also
     --------
     MBAR
+    pymbar.other_estimators.bar
 
 
     .. versionchanged:: 1.0.0

@@ -433,10 +433,10 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         list[float | tuple[float, ...]],
     ]:
         """
-        For transitions with multiple lambda, the attr:`dhdl` would return
+        For transitions with multiple lambda, the :attr:`dhdl` would return
         a :class:`~pandas.DataFrame` which gives the dHdl for all the lambda
         states, regardless of whether it is perturbed or not. This function
-        creates 3 lists of :class:`numpy.array`, :class:`pandas.Series` and
+        creates 3 lists of :class:`numpy.ndarray`, :class:`pandas.Series` and
         :class:`pandas.Series` for each lambda, where the lists describe
         the lambda values, potential energy gradient and variance values for
         the lambdas state that is perturbed.

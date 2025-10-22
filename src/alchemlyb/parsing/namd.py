@@ -146,7 +146,7 @@ def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
 
     Returns
     -------
-    u_nk : DataFrame
+    u_nk : :class:`pandas.DataFrame`
         Potential energy for each alchemical state (k) for each frame (n).
 
     Note
@@ -163,7 +163,7 @@ def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
         Support for Interleaved Double-Wide Sampling files added, with various
         robustness checks.
 
-        `fep_files` can now be a list of filenames.
+        :param:`fep_files` can now be a list of filenames.
     """
     beta = 1 / (k_b * T)
 
