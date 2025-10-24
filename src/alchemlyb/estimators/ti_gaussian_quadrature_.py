@@ -386,7 +386,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         d_deltas_squared = np.insert(d_deltas_squared, 0, [0.0], axis=0)
         d_deltas_squared = np.append(d_deltas_squared, [0.0], axis=0)
         # build matrix of deltas between each state
-        adelta = np.zeros((len(deltas), len(deltas)))
+        adelta = np.zeros((len(deltas), len(deltas)), dtype=float)
         ad_delta = np.zeros_like(adelta)
 
         for j in range(len(deltas)):
@@ -403,7 +403,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
             adelta += np.diagflat(np.array(out), k=j)
             ad_delta += np.diagflat(np.array(dout), k=j)
 
-        adelta = adelta - adelta.T  # type: ignore[assignment]
+        adelta = adelta - adelta.T
         ad_delta = (ad_delta + ad_delta.T) - 2 * np.diagflat(d_deltas_squared)
         # yield standard delta_f_ cumulative free energies from one state to another
         self._delta_f_ = pd.DataFrame(adelta, columns=index_list, index=index_list)
@@ -433,10 +433,10 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
         list[float | tuple[float, ...]],
     ]:
         """
-        For transitions with multiple lambda, the attr:`dhdl` would return
+        For transitions with multiple lambda, the :attr:`dhdl` would return
         a :class:`~pandas.DataFrame` which gives the dHdl for all the lambda
         states, regardless of whether it is perturbed or not. This function
-        creates 3 lists of :class:`numpy.array`, :class:`pandas.Series` and
+        creates 3 lists of :class:`numpy.ndarray`, :class:`pandas.Series` and
         :class:`pandas.Series` for each lambda, where the lists describe
         the lambda values, potential energy gradient and variance values for
         the lambdas state that is perturbed.

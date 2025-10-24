@@ -22,7 +22,7 @@ def extract_u_nk(filename: str, T: float) -> pd.DataFrame:
 
     Returns
     -------
-    u_nk : DataFrame
+    u_nk : :class:`pandas.DataFrame`
         Potential energy for each alchemical state (k) for each frame (n).
 
 
@@ -108,7 +108,7 @@ def extract_dHdl(filename: str, T: float) -> pd.DataFrame:
 
     Returns
     -------
-    dH/dl : Series
+    dH/dl : :class:`pandas.Series`
         dH/dl as a function of step for this lambda window.
 
 
@@ -174,10 +174,10 @@ def extract(filename: str, T: float) -> dict[str, pd.DataFrame | None]:
 
     Returns
     -------
-    Dict
-        A dictionary with keys of 'u_nk', which is a pandas DataFrame of
+    :class:`dict`
+        A dictionary with keys of 'u_nk', which is a :class:`~pandas.DataFrame` of
         potential energy for each alchemical state (k) for each frame (n),
-        and 'dHdl', which is a Series of dH/dl
+        and 'dHdl', which is a :class:`~pandas.Series` of dH/dl
         as a function of time for this lambda window.
 
 

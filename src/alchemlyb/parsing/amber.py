@@ -198,7 +198,7 @@ def file_validation(outfile: str) -> FEData:
 
     Returns
     -------
-    `:class:~FEData`
+    :class:`~alchemlyb.parsing.amber.FEData`
         FEData object populated with data from the parsed AMBER output file.
 
     """
@@ -307,7 +307,7 @@ def extract(outfile: str, T: float) -> dict[str, None | pd.DataFrame]:
 
     Returns
     -------
-    Dict
+    :class:`dict`
         A dictionary with keys of 'u_nk', which is a pandas DataFrame of reduced potentials for each
         alchemical state (k) for each frame (n), and 'dHdl', which is a Series of dH/dl
         as a function of time for this lambda window.
@@ -427,7 +427,7 @@ def extract_dHdl(outfile: str, T: float) -> None | pd.DataFrame:
 
     Returns
     -------
-    dH/dl : Series
+    dH/dl : :class:`pandas.Series`
         dH/dl as a function of time for this lambda window.
 
 
@@ -453,7 +453,7 @@ def extract_u_nk(outfile: str, T: float) -> None | pd.DataFrame:
 
     Returns
     -------
-    u_nk : DataFrame
+    u_nk : :class:`pandas.DataFrame`
         Reduced potential for each alchemical state (k) for each frame (n).
 
 

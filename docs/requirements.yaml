@@ -1,9 +1,21 @@
 name: docs
 channels:
+  - conda-forge
 dependencies:
-    # Base depends
-  - python=3.11
+  # Base depends
+  - python
   - pip
   # Doc
   - sphinx
   - sphinx_rtd_theme
+  # package dependencies
+  - numpy!=2.3.0,!=2.3.1,!=2.3.2
+  - pandas>=2.1
+  - pymbar>=4
+  - scipy
+  - scikit-learn
+  - matplotlib>=3.7
+  - loguru
+  # pyarrow does not build on RTD at the moment (2025-10-21)
+  - pyarrow
+  - joblib

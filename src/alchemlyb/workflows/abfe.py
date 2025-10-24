@@ -458,8 +458,12 @@ class ABFE(WorkflowBase):
 
 
         .. versionchanged:: 2.1.0
-            DeprecationWarning for using analytic error for MBAR estimator.
+            DeprecationWarning for using analytic error for MBAR estimator; from 2.6.0
+            onwards, the `MBAR bootstrap error`_ will be used instead.
 
+
+        .. _`MBAR bootstrap error`:
+           https://pymbar.readthedocs.io/en/stable/pymbar.mbar.html#pymbar.mbar.MBAR.bootstrap_error
         """
         # Make estimators into a tuple
         if isinstance(estimators, str):
@@ -494,7 +498,7 @@ class ABFE(WorkflowBase):
             if estimator == "MBAR":
                 logger.info("Run MBAR estimator.")
                 warnings.warn(
-                    "From 2.2.0, n_bootstraps=50 will be the default for estimating MBAR error.",
+                    "From 2.6.0, n_bootstraps=50 will be the default for estimating MBAR error.",
                     DeprecationWarning,
                 )
                 self.estimator[estimator] = MBAR(**kwargs).fit(u_nk)  # type: ignore[arg-type]
@@ -575,7 +579,7 @@ class ABFE(WorkflowBase):
             logger.info("use the stage name from dHdl")
 
         for stage in stages:
-            data_dict["name"].append(stage.split("-")[0])  # type: ignore[attr-defined]
+            data_dict["name"].append(stage.split("-")[0])  # type: ignore[union-attr]
             data_dict["state"].append("Stages")
         data_dict["name"].append("TOTAL")
         data_dict["state"].append("Stages")
@@ -606,15 +610,15 @@ class ABFE(WorkflowBase):
                     end = len(estimator.states_) - 1  # type: ignore[arg-type]
                 else:
                     # Get the start and the end of the state
-                    lambda_min = min([state[index] for state in estimator.states_])  # type: ignore[index,union-attr]
-                    lambda_max = max([state[index] for state in estimator.states_])  # type: ignore[index,union-attr]
+                    lambda_min = min([state[index] for state in estimator.states_])  # type: ignore[union-attr]
+                    lambda_max = max([state[index] for state in estimator.states_])  # type: ignore[union-attr]
                     if lambda_min == lambda_max:
                         # Deal with the case where a certain lambda is used but
                         # not perturbed
                         start = 0
                         end = 0
                     else:
-                        states = [state[index] for state in estimator.states_]  # type: ignore[index,union-attr]
+                        states = [state[index] for state in estimator.states_]  # type: ignore[union-attr]
                         start = list(reversed(states)).index(lambda_min)
                         start = num_states - start - 1
                         end = states.index(lambda_max)
