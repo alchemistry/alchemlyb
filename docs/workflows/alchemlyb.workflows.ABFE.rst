@@ -141,7 +141,7 @@ to the data generated at each stage of the analysis. ::
     >>> # Decorrelate the data.
     >>> workflow.preprocess(skiptime=10, uncorr='dhdl', threshold=50)
     >>> # Run the estimator
-    >>> workflow.estimate(estimators=('mbar', 'bar', 'ti'))
+    >>> workflow.estimate(estimators=('MBAR', 'BAR', 'TI'))
     >>> # Retrieve the result
     >>> summary = workflow.generate_result()
     >>> # Plot the overlap matrix
