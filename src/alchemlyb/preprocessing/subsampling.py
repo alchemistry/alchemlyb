@@ -211,16 +211,16 @@ def u_nk2series(df: pd.DataFrame, method: str = "dE") -> pd.Series:
         else:
             # For the case of more than 1 lambda
             index = df.columns.values.tolist().index(key)
-            # for the state that is not the last state, take the state+1
+        # for the state that is not the last state, take the state+1
         current_lambda = df.iloc[:, index]
         if index + 1 < len(df.columns):
             new_lambda = df.iloc[:, index + 1]
-            # for the state that is the last state, take the state-1
+        # for the state that is the last state, take the state-1
         else:
             new_lambda = df.iloc[:, index - 1]
         series = new_lambda - current_lambda
     else:
-        raise ValueError("Decorrelation method {} not found.".format(method))
+        raise ValueError(f"Decorrelation method {method} not found.")
     return series
 
 
@@ -261,16 +261,15 @@ def dhdl2series(df: pd.DataFrame, method: str = "all") -> pd.Series:
 
 
 def _check_multiple_times(df: pd.DataFrame | pd.Series) -> bool:
-    if isinstance(df, pd.Series):
-        return (
-            df.sort_index(axis=0).reset_index("time", name="").duplicated("time").any()  # type: ignore[return-value]
-        )
-    else:
-        return df.sort_index(axis=0).reset_index("time").duplicated("time").any()  # type: ignore[return-value]
+    """Check if there are duplicate time values in the index."""
+    times = df.index.get_level_values("time")
+    return times.duplicated().any()
 
 
 def _check_sorted(df: pd.DataFrame | pd.Series) -> bool:
-    return df.reset_index(0)["time"].is_monotonic_increasing
+    """Check if the DataFrame/Series is sorted by time."""
+    times = df.index.get_level_values("time")
+    return times.is_monotonic_increasing
 
 
 def _drop_duplicates(
@@ -294,43 +293,14 @@ def _drop_duplicates(
     series : Series
         Formatted Series.
     """
-    if isinstance(df, pd.Series):
-        # remove the duplicate based on time
-        drop_duplicates_series = df.reset_index("time", name="").drop_duplicates("time")
-        # Rest the time index
-        lambda_names = [
-            "time",
-        ]
-        lambda_names.extend(drop_duplicates_series.index.names)  # type: ignore[arg-type]
-        df = drop_duplicates_series.set_index("time", append=True).reorder_levels(
-            lambda_names
-        )
-    else:
-        # remove the duplicate based on time
-        drop_duplicates_df = df.reset_index("time").drop_duplicates("time")
-        # Rest the time index
-        lambda_names = [
-            "time",
-        ]
-        lambda_names.extend(drop_duplicates_df.index.names)  # type: ignore[arg-type]
-        df = drop_duplicates_df.set_index("time", append=True).reorder_levels(
-            lambda_names
-        )
+    # Use boolean indexing with duplicated() - much faster than reset_index/set_index
+    times = df.index.get_level_values("time")
+    mask = ~times.duplicated(keep="first")
+    df = df[mask]
 
-    # Do the same withing with the series
     if series is not None:
-        # remove the duplicate based on time
-        drop_duplicates_series = series.reset_index("time", name="").drop_duplicates(
-            "time"
-        )
-        # Rest the time index
-        lambda_names = [
-            "time",
-        ]
-        lambda_names.extend(drop_duplicates_series.index.names)  # type: ignore[arg-type]
-        series = drop_duplicates_series.set_index("time", append=True).reorder_levels(
-            lambda_names
-        )  # type: ignore[assignment]
+        series = series[mask]
+
     return df, series
 
 
@@ -412,9 +382,9 @@ def _prepare_input(
             )
 
     if series is not None:
-        if len(series) != len(df) or not all(
-            series.reset_index()["time"] == df.reset_index()["time"]
-        ):
+        if len(series) != len(df) or not (
+            series.index.get_level_values("time") == df.index.get_level_values("time")
+        ).all():
             raise ValueError("series and data must be sampled at the same times")
     return df, series
 
