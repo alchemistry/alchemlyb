@@ -3,7 +3,7 @@ channels:
 - conda-forge
 dependencies:
 - python
-- numpy<2.3
+- numpy!=2.3.0,!=2.3.1,!=2.3.2
 - pandas>=2.1
 - pymbar>=4
 - scipy

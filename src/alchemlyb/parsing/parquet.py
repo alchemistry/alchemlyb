@@ -18,7 +18,7 @@ def _read_parquet_with_metadata(path: str, T: float) -> pd.DataFrame:
 
     Returns
     -------
-    DataFrame
+    :class:`pandas.DataFrame`
     """
     df = pd.read_parquet(path)
     if "temperature" not in df.attrs:
@@ -53,7 +53,7 @@ def extract_u_nk(path: str, T: float) -> pd.DataFrame:
 
     Returns
     -------
-    u_nk : DataFrame
+    u_nk : :class:`pandas.DataFrame`
         Potential energy for each alchemical state (k) for each frame (n).
 
 
@@ -102,7 +102,7 @@ def extract_dHdl(path: str, T: float) -> pd.DataFrame:
 
     Returns
     -------
-    dH/dl : DataFrame
+    dH/dl : :class:`pandas.DataFrame`
         dH/dl as a function of time for this lambda window.
 
     Note

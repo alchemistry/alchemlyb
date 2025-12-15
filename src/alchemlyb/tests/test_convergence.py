@@ -145,14 +145,14 @@ def test_convergence_wrong_estimator(gmx_benzene_Coulomb_dHdl):
 
 
 def test_convergence_wrong_cases(gmx_benzene_Coulomb_u_nk):
-    with pytest.warns(DeprecationWarning, match="Using lower-case strings for"):
+    with pytest.raises(ValueError, match="is not available in"):
         forward_backward_convergence(gmx_benzene_Coulomb_u_nk, "mbar")
 
 
 def test_convergence_bootstrap(gmx_benzene_Coulomb_u_nk, caplog):
-    normal_c = forward_backward_convergence(gmx_benzene_Coulomb_u_nk, "mbar", num=2)
+    normal_c = forward_backward_convergence(gmx_benzene_Coulomb_u_nk, "MBAR", num=2)
     bootstrap_c = forward_backward_convergence(
-        gmx_benzene_Coulomb_u_nk, "mbar", error_tol=0.01, num=2
+        gmx_benzene_Coulomb_u_nk, "MBAR", error_tol=0.01, num=2
     )
     assert "use bootstrap error instead." in caplog.text
     assert (bootstrap_c["Forward_Error"] != normal_c["Forward_Error"]).all()

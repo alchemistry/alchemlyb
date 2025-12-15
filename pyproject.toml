@@ -18,14 +18,13 @@ maintainers = [
 dynamic = ["version"]
 
 readme = { file = "README.md", content-type = "text/markdown" }
-license = { text = "BSD" }
+license = "BSD-3-Clause"
 keywords = ["free energy", "MBAR", "thermodynamic integration",
             "free energy perturbation", "FEP", "alchemistry", "analysis",
 	    "GROMACS", "NAMD", "AMBER", "molecular dynamics"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
     "Operating System :: POSIX",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: Microsoft :: Windows",
@@ -34,6 +33,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Chemistry",
@@ -42,7 +42,7 @@ classifiers = [
 requires-python = ">=3.11"
 
 dependencies = [
-	     "numpy<2.3",
+	     "numpy!=2.3.0,!=2.3.1,!=2.3.2",
 	     "pandas>=2.1",
 	     "pymbar>=4",
 	     "scipy",

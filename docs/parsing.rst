@@ -240,4 +240,5 @@ See the documentation for the package you are using for more details on parser u
     namd
     gomc
     parquet
+    lammps
     

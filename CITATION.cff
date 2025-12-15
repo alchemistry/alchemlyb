@@ -218,7 +218,7 @@ preferred-citation:
       affiliation: Arizona State University
       orcid: 'https://orcid.org/0000-0003-1340-0831'
   type: 'article'
-  year: 2024
+  year: '2024'
   journal: 'Journal of Open Source Software'
   doi: '10.21105/joss.06934'
   pages: '6934'
@@ -241,7 +241,7 @@ references:
       - family-names: Chodera
         given-names: John D.
     type: 'article'
-    pages: '1799–1805'
+    pages: '1799-1805'
     year: '2016'
     journal: 'Journal of Chemical Theory and Computation'
     doi: '10.1021/acs.jctc.5b00784'

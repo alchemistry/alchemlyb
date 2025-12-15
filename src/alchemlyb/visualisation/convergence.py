@@ -70,14 +70,14 @@ def plot_convergence(
     """
     if units is not None:
         dataframe = get_unit_converter(units)(dataframe)
-    forward = dataframe["Forward"].to_numpy()
+    forward = dataframe["Forward"].to_numpy(dtype=float)
     if "Forward_Error" in dataframe:
-        forward_error = dataframe["Forward_Error"].to_numpy()
+        forward_error = dataframe["Forward_Error"].to_numpy(dtype=float)
     else:
         forward_error = np.zeros(len(forward))
-    backward = dataframe["Backward"].to_numpy()
+    backward = dataframe["Backward"].to_numpy(dtype=float)
     if "Backward_Error" in dataframe:
-        backward_error = dataframe["Backward_Error"].to_numpy()
+        backward_error = dataframe["Backward_Error"].to_numpy(dtype=float)
     else:
         backward_error = np.zeros(len(backward))
 
@@ -208,9 +208,9 @@ def plot_block_average(
     """
     if units is not None:
         dataframe = get_unit_converter(units)(dataframe)
-    df_avg = dataframe["FE"].to_numpy()
+    df_avg = dataframe["FE"].to_numpy(dtype=float)
     if "FE_Error" in dataframe:
-        df_avg_error = dataframe["FE_Error"].to_numpy()
+        df_avg_error = dataframe["FE_Error"].to_numpy(dtype=float)
     else:
         df_avg_error = np.zeros(len(df_avg))
 
@@ -234,7 +234,7 @@ def plot_block_average(
         else:
             final_error = 1.0
 
-    if np.isfinite(final_error):
+    if final_error is not None and np.isfinite(final_error):
         ax.fill_between(
             [0, 1],
             np.mean(df_avg) - final_error,

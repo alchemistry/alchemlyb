@@ -1,3 +1,4 @@
+from typing import Any
 import pandas as pd
 
 
@@ -8,7 +9,7 @@ class _EstimatorMixOut:
 
     _d_delta_f_: pd.DataFrame | None = None
     _delta_f_: pd.DataFrame | None = None
-    _states_: pd.DataFrame | None = None
+    _states_: list[Any] | None = None
     _d_delta_h_: pd.DataFrame | None = None
     _delta_h_: pd.DataFrame | None = None
     _d_delta_sT_: pd.DataFrame | None = None
@@ -39,5 +40,5 @@ class _EstimatorMixOut:
         return self._delta_sT_
 
     @property
-    def states_(self) -> pd.DataFrame | None:
+    def states_(self) -> list[Any] | None:
         return self._states_
