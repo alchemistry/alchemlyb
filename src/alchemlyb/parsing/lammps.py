@@ -610,10 +610,10 @@ def extract_u_nk_from_u_n(
                     len(tmp_data.columns), ind
                 )
             )
-        data = tmp_data.iloc[:, col_indices]
+        data = tmp_data.iloc[:, col_indices].copy()
         data.columns = columns
         lambda1_col = "fep-lambda"
-        data.loc[:, [lambda1_col]] = data[[lambda1_col]].apply(lambda x: round(x, prec))
+        data[lambda1_col] = data[lambda1_col].round(prec)
 
         for lambda1 in list(data[lambda1_col].unique()):
             tmp_df = data.loc[data[lambda1_col] == lambda1]
@@ -874,18 +874,16 @@ def extract_u_nk(
                     len(tmp_data.columns), ind
                 )
             )
-        data = tmp_data.iloc[:, col_indices]
+        data = tmp_data.iloc[:, col_indices].copy()
         data.columns = columns
 
         # Round values of lambda according to ``prec`` variable
         if column_lambda2 is None:
-            data.loc[:, [lambda1_col, lambda1_2_col]] = data[
-                [lambda1_col, lambda1_2_col]
-            ].apply(lambda x: round(x, prec))
+            cols_to_round = [lambda1_col, lambda1_2_col]
+            data[cols_to_round] = data[cols_to_round].round(prec)
         else:
-            data.loc[:, columns_a[1:] + [lambda1_2_col]] = data[
-                columns_a[1:] + [lambda1_2_col]
-            ].apply(lambda x: round(x, prec))
+            cols_to_round = columns_a[1:] + [lambda1_2_col]
+            data[cols_to_round] = data[cols_to_round].round(prec)
 
         # Iterate over lambda states (configurations equilibrated at certain lambda value)
         for lambda1 in list(data[lambda1_col].unique()):
@@ -1107,7 +1105,7 @@ def extract_dHdl_from_u_n(
         data = data.iloc[:, col_indices]
 
         data.columns = ["time", "fep-lambda", "U"]
-        data["fep-lambda"] = data["fep-lambda"].apply(lambda x: round(x, prec))
+        data["fep-lambda"] = data["fep-lambda"].round(prec)
         data["fep"] = data["fep-lambda"].apply(dependence) * data.U
         data.drop(columns=["U"], inplace=True)
 
@@ -1257,7 +1255,7 @@ def extract_dHdl(
         if column_lambda2 is None:
             # dU_back: U(l-dl) - U(l); dU_forw: U(l+dl) - U(l)
             data.columns = ["time", "fep-lambda", "dlambda", "dU_forw", "dU_back"]
-            data["fep-lambda"] = data["fep-lambda"].apply(lambda x: round(x, prec))
+            data["fep-lambda"] = data["fep-lambda"].round(prec)
             data["fep"] = (data.dU_forw - data.dU_back) / (2 * data.dlambda)
             data.drop(columns=["dlambda", "dU_back", "dU_forw"], inplace=True)
         else:
@@ -1292,8 +1290,8 @@ def extract_dHdl(
                     f"'vdw_lambda must be either 1 or 2, not: {vdw_lambda}'"
                 )
 
-            data["vdw-lambda"] = data["vdw-lambda"].apply(lambda x: round(x, prec))
-            data["coul-lambda"] = data["coul-lambda"].apply(lambda x: round(x, prec))
+            data["vdw-lambda"] = data["vdw-lambda"].round(prec)
+            data["coul-lambda"] = data["coul-lambda"].round(prec)
 
             data.drop(
                 columns=columns[3:],
