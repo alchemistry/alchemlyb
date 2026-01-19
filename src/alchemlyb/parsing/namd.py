@@ -125,9 +125,7 @@ def _get_lambdas(fep_files: str | list[str]) -> None | list[float]:
 
 @_init_attrs
 def extract_u_nk(
-    fep_files: str | list[str],
-    T: float,
-    ignore_equilibration: bool = False
+    fep_files: str | list[str], T: float, ignore_equilibration: bool = False
 ) -> pd.DataFrame:
     """Return reduced potentials `u_nk` from NAMD fepout file(s).
 
