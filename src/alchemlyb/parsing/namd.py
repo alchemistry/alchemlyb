@@ -124,12 +124,16 @@ def _get_lambdas(fep_files: str | list[str]) -> None | list[float]:
 
 
 @_init_attrs
-def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
+def extract_u_nk(
+    fep_files: str | list[str],
+    T: float,
+    ignore_equilibration: bool = False
+) -> pd.DataFrame:
     """Return reduced potentials `u_nk` from NAMD fepout file(s).
 
     Parameters
     ----------
-    fep_file : str or list of str
+    fep_files : str or list of str
         Path to fepout file(s) to extract data from. These are sorted by filename,
         not including the path, prior to processing, using natural-sort. This way,
         filenames including numbers without leading zeros are handled intuitively.
@@ -144,13 +148,21 @@ def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
     T : float
         Temperature in Kelvin at which the simulation was sampled.
 
+    ignore_equilibration : bool, optional
+        If True, the parser will begin collecting energy data immediately from
+        the start of a window, ignoring the "#STARTING COLLECTION..." line.
+        This effectively includes the equilibration steps (defined by NAMD's
+        alchEquilSteps) in the resulting DataFrame. Default is False.
+
     Returns
     -------
     u_nk : :class:`pandas.DataFrame`
         Potential energy for each alchemical state (k) for each frame (n).
 
-    Note
-    ----
+    Notes
+    -----
+    Only samples collected after alchEquilSteps steps in each window are read.
+    If post-hoc equilibrium detection is used, alchEquilSteps can be set to 0 in NAMD.
     If the number of forward and backward samples in a given window are different,
     the extra sample(s) will be discarded. This is typically zero or one sample.
 
@@ -164,6 +176,10 @@ def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
         robustness checks.
 
         :param:`fep_files` can now be a list of filenames.
+
+    .. versionchanged:: 2.6.0
+        Added parameter ignore_equilibration.
+
     """
     beta = 1 / (k_b * T)
 
@@ -176,8 +192,8 @@ def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
     # create dataframe for results
     u_nk = pd.DataFrame(columns=["time", "fep-lambda"])
 
-    # boolean flag to parse data after equil time
-    parsing = False
+    # Flag to detect inconsistencies like truncated windows
+    in_window = False
 
     if type(fep_files) is str:
         fep_files = [fep_files]
@@ -209,7 +225,7 @@ def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
                 # within the same file, then complain. This can happen if truncated fepout files
                 # are presented in the wrong order.
                 if line_split[0] == "#NEW":
-                    if parsing:
+                    if in_window:
                         logger.error(
                             f"Window with lambda1: {lambda1_at_start} lambda2: {lambda2_at_start} lambda_idws: {lambda_idws_at_start} appears truncated"
                         )
@@ -217,6 +233,7 @@ def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
                             f"because a new window was encountered in {fep_file} before the previous one finished."
                         )
                         raise ValueError("New window begun after truncated window")
+                    in_window = True
 
                     lambda1_at_start, lambda2_at_start = (
                         float(line_split[6]),
@@ -229,6 +246,13 @@ def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
 
                 # this line marks end of window; dump data into dataframe
                 if line_split[0] == "#Free":
+                    if not in_window:
+                        logger.error(
+                            f"End-of-window line detected before new window begun while processing {fep_file}"
+                        )
+                        raise ValueError("End-of-window line before new window begun")
+                    in_window = False
+
                     # extract lambda values for finished window
                     # lambda1 = sampling lambda (row), lambda2 = comparison lambda (col)
                     lambda1 = float(line_split[7])
@@ -320,28 +344,30 @@ def extract_u_nk(fep_files: str | list[str], T: float) -> pd.DataFrame:
                     win_ts = []
                     win_de_back = []
                     win_ts_back = []
-                    parsing = False
                     has_idws = False
                     lambda1_at_start, lambda2_at_start, lambda_idws_at_start = (
                         None,
                         None,
                         None,
                     )
+                    # end of "#Free" line processing
 
                 # append work value from 'dE' column of fepout file
-                if parsing:
-                    if line_split[0] == "FepEnergy:":
-                        win_de.append(float(line_split[6]))
-                        win_ts.append(float(line_split[1]))
-                    elif line_split[0] == "FepE_back:":
-                        win_de_back.append(float(line_split[6]))
-                        win_ts_back.append(float(line_split[1]))
+                if line_split[0] == "FepEnergy:":
+                    win_de.append(float(line_split[6]))
+                    win_ts.append(float(line_split[1]))
+                elif line_split[0] == "FepE_back:":
+                    win_de_back.append(float(line_split[6]))
+                    win_ts_back.append(float(line_split[1]))
 
-                # Turn parsing on after line 'STARTING COLLECTION OF ENSEMBLE AVERAGE'
-                if "#STARTING" in line_split:
-                    parsing = True
+                # Forget previous data for this point after line 'STARTING COLLECTION OF ENSEMBLE AVERAGE'
+                if "#STARTING" in line_split and not ignore_equilibration:
+                    win_de = []
+                    win_ts = []
+                    win_de_back = []
+                    win_ts_back = []
 
-    if len(win_de) != 0 or len(win_de_back) != 0:  # pragma: no cover
+    if in_window or len(win_de) != 0 or len(win_de_back) != 0:  # pragma: no cover
         logger.warning(
             'Trailing data without footer line ("#Free energy..."). Interrupted run?'
         )
