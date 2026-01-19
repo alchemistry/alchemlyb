@@ -246,11 +246,7 @@ def extract_u_nk(
 
                 # this line marks end of window; dump data into dataframe
                 if line_split[0] == "#Free":
-                    if not in_window:
-                        logger.error(
-                            f"End-of-window line detected before new window begun while processing {fep_file}"
-                        )
-                        raise ValueError("End-of-window line before new window begun")
+                    # Note: in_window might already be false if this window was restarted without another "#NEW" line
                     in_window = False
 
                     # extract lambda values for finished window
