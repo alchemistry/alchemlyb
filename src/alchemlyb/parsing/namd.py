@@ -378,7 +378,9 @@ def extract_u_nk(
     return u_nk
 
 
-def extract(fep_files: str | list[str], T: float) -> dict[str, pd.DataFrame | None]:
+def extract(
+    fep_files: str | list[str], T: float, ignore_equilibration: bool = False
+) -> dict[str, pd.DataFrame | None]:
     r"""Return reduced potentials `u_nk` and gradients `dH/dl`
     from NAMD fepout file(s).
 
@@ -415,5 +417,5 @@ def extract(fep_files: str | list[str], T: float) -> dict[str, pd.DataFrame | No
     """
 
     return {
-        "u_nk": extract_u_nk(fep_files, T)
+        "u_nk": extract_u_nk(fep_files, T, ignore_equilibration)
     }  # NOTE: maybe we should also have 'dHdl': None
