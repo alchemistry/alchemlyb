@@ -248,7 +248,7 @@ def extract_dHdl(xvg: str, T: float, filter: bool = True) -> pd.DataFrame:
     newind = ["time"] + lambdas
     dHdl = dHdl.reset_index().set_index(newind)
 
-    dHdl.name = "dH/dl"
+    dHdl.name = "dH/dl"  # type: ignore[attr-defined]
 
     return dHdl
 

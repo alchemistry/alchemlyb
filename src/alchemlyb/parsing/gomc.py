@@ -152,7 +152,7 @@ def extract_dHdl(filename: str, T: float) -> pd.DataFrame:
     newind = ["time"] + cols
     dHdl = dHdl.reset_index().set_index(newind)
 
-    dHdl.name = "dH/dl"
+    dHdl.name = "dH/dl"  # type: ignore[attr-defined]
 
     return dHdl
 

@@ -12,6 +12,11 @@ The rules for this file:
   * accompany each entry with github issue/PR number (Issue #xyz)
   * release numbers follow "Semantic Versioning" https://semver.org
 
+01/20/2026 jhenin
+
+  - Add flag to ignore NAMD's equilibration in NAMD parser
+  - Accept NAMD data with 0 equilibration steps
+
 10/21/2025 xiki-tempula, jaclark5, yuxuanzhuang. orbeckst
 
   * 2.5.0
