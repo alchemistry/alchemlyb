@@ -656,7 +656,7 @@ def extract_u_nk_from_u_n(
                     )
 
     u_nk.set_index(["time", "fep-lambda"], inplace=True)
-    u_nk.name = "u_nk"
+    u_nk.name = "u_nk"  # type: ignore[attr-defined]
 
     return u_nk
 
@@ -1010,7 +1010,7 @@ def extract_u_nk(
         u_nk.set_index(["time", "fep-lambda"], inplace=True)
     else:
         u_nk.set_index(["time", "coul-lambda", "vdw-lambda"], inplace=True)
-    u_nk.name = "u_nk"
+    u_nk.name = "u_nk"  # type: ignore[attr-defined]
 
     u_nk = u_nk.dropna()
 
@@ -1113,7 +1113,7 @@ def extract_dHdl_from_u_n(
 
     dHdl.set_index(["time", "fep-lambda"], inplace=True)
     dHdl["fep"] = dHdl["fep"] * beta
-    dHdl.name = "dH_dl"
+    dHdl.name = "dH_dl"  # type: ignore[attr-defined]
 
     return dHdl
 
@@ -1309,7 +1309,7 @@ def extract_dHdl(
         else:
             dHdl["coul"] = dHdl["coul"] * beta
 
-    dHdl.name = "dH_dl"
+    dHdl.name = "dH_dl"  # type: ignore[attr-defined]
 
     return dHdl
 

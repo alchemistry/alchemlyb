@@ -12,14 +12,17 @@ The rules for this file:
   * accompany each entry with github issue/PR number (Issue #xyz)
   * release numbers follow "Semantic Versioning" https://semver.org
 
-XX/XX/XXXX jaclark5, xiki-tempula
+??/??/2026 jaclark5, jhenin
 
-* Unreleased
+  * 2.6.0
+
 Fixes
   - Fix pandas warning (Issue #428, PR #429)
-
+  
 Enhancements
-  - Lammps Support (PR #348)
+  - Add flag to ignore NAMD's equilibration in NAMD parser
+  - Accept NAMD data with 0 equilibration steps
+  - Add support for LAMMPS FEP files (Issue #349, PR #348)
 
 10/21/2025 xiki-tempula, jaclark5, yuxuanzhuang. orbeckst
 
@@ -43,7 +46,6 @@ Changes
 Enhancements
   - Added matrices for entropy and enthalpy for MBAR (PR #406)
   - Parallelise read and preprocess for ABFE workflow. (PR #371)
-  - Add support for LAMMPS FEP files (Issue #349, PR #348)
 
 
 09/19/2024 orbeckst, jaclark5
