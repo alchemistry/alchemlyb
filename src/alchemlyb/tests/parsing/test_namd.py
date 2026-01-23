@@ -441,3 +441,27 @@ def test_u_nk_restarted_last_window_truncated(restarted_dataset_last_window_trun
 
     with pytest.raises(ValueError, match="Last window is truncated"):
         extract_u_nk(restarted_dataset_last_window_truncated["data"]["both"], T=300)
+
+
+def test_u_nk_ignore_equilibration(dataset):
+    """Test that ignore_equilibration=True returns all data"""
+
+    original_file = dataset["data"]["forward"][0]
+    u_nk_original = extract_u_nk(original_file, T=300)
+
+    # New behavior: Should return the full dataset (including equilibration)
+    u_nk_ignored = extract_u_nk(original_file, T=300, ignore_equilibration=True)
+    assert len(u_nk_ignored) > len(u_nk_original)
+
+
+def test_u_nk_no_equilibration(dataset, tmp_path):
+    """Test that all data is read when the #STARTING line is missing from the fepout file"""
+
+    original_file = dataset["data"]["forward"][0]
+
+    no_starting_file = _corrupt_fepout(
+        original_file, [("#STARTING", lambda tokens: None)], tmp_path
+    )
+
+    u_nk_no_equilibration = extract_u_nk(no_starting_file, T=300)
+    assert len(u_nk_no_equilibration) > 0
