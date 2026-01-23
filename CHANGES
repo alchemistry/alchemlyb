@@ -17,12 +17,14 @@ The rules for this file:
 
   * 2.6.0
 
+Fixes
+  - Fix pandas warning (Issue #428, PR #429)
+  
 Enhancements
   - Update pandas>=2.2 (Issue #413, PR #452)
   - Add flag to ignore NAMD's equilibration in NAMD parser
   - Accept NAMD data with 0 equilibration steps
   - Add support for LAMMPS FEP files (Issue #349, PR #348)
-
 
 10/21/2025 xiki-tempula, jaclark5, yuxuanzhuang. orbeckst
 
