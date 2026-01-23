@@ -4,7 +4,7 @@ channels:
 dependencies:
 - python
 - numpy!=2.3.0,!=2.3.1,!=2.3.2
-- pandas>=2.1
+- pandas>=2.2
 - pymbar>=4
 - scipy
 - scikit-learn
