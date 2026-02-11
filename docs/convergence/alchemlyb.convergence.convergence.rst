@@ -28,5 +28,6 @@ All convergence functions are located in the :mod:`alchemlyb.convergence.converg
 
 .. automodule:: alchemlyb.convergence.convergence
    :members:
+   :no-index:
    :show-inheritance:
 

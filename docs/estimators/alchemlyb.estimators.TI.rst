@@ -1,4 +1,4 @@
-.. _estimators_TI:
+.. _estimators_TI_api:
 
 TI
 ==
@@ -9,3 +9,4 @@ API Reference
 .. autoclass:: alchemlyb.estimators.TI
     :members:
     :inherited-members:
+    :no-index:

@@ -224,6 +224,10 @@ nitpick_ignore = [
     ("py:class", "typing.Optional"),
 ]
 
+# Suppress warnings from inherited sklearn docstrings that reference
+# sklearn-internal labels and glossary terms we cannot resolve.
+suppress_warnings = ["ref.ref", "ref.term"]
+
 # Add any custom static files (CSS, JS, etc.)
 # html_static_path = ["_static"]
 

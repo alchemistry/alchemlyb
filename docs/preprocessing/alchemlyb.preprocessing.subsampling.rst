@@ -4,6 +4,7 @@ Subsampling
 ===========
 
 .. automodule:: alchemlyb.preprocessing.subsampling
+   :no-members:
 
 The functions featured in this module can be used to easily subsample either
 :ref:`dHdl <dHdl>` or :ref:`u_nk <u_nk>` datasets to give less correlated

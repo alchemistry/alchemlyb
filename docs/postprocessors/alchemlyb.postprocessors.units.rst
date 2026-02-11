@@ -1,7 +1,8 @@
-﻿alchemlyb.postprocessors.units
+alchemlyb.postprocessors.units
 ==============================
 
 .. automodule:: alchemlyb.postprocessors.units
+   :no-members:
 
 Some examples are given here to illustrate how to use the unit converter
 functions to convert units. ::

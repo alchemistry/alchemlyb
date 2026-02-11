@@ -49,3 +49,4 @@ API Reference
 .. autoclass:: alchemlyb.estimators.TI_GQ
     :members:
     :inherited-members:
+    :no-index:

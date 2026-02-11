@@ -11,4 +11,5 @@ API Reference
 .. autoclass:: alchemlyb.estimators.MBAR
     :members:
     :inherited-members:
+    :no-index:
 

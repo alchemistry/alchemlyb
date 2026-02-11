@@ -13,3 +13,4 @@ API Reference
 .. autoclass:: alchemlyb.estimators.BAR
     :members:
     :inherited-members:
+    :no-index:

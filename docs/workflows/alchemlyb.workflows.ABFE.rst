@@ -195,3 +195,4 @@ API Reference
 .. autoclass:: alchemlyb.workflows.ABFE
     :members:
     :inherited-members:
+    :no-index:

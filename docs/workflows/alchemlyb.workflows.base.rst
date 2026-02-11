@@ -1,6 +1,7 @@
 The base workflow
 =================
 .. automodule:: alchemlyb.workflows.base
+   :no-members:
 
 The :class:`alchemlyb.workflows.base.WorkflowBase` class provides a
 basic API template for the workflow development.  The workflow should
@@ -31,3 +32,4 @@ API Reference
 .. autoclass:: alchemlyb.workflows.base.WorkflowBase
     :members:
     :inherited-members:
+    :no-index:

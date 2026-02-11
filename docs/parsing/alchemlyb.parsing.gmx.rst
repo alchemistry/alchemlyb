@@ -1,6 +1,7 @@
 Gromacs parsing
 ===============
 .. automodule:: alchemlyb.parsing.gmx
+   :no-members:
 
 The parsers featured in this module are constructed to properly parse XVG files containing Hamiltonian differences (for obtaining reduced potentials, :math:`u_{nk}`) and/or Hamiltonian derivatives (for obtaining gradients, :math:`\frac{dH}{d\lambda}`).
 To produce such a file from an existing EDR energy file, use ``gmx energy -f <.edr> -odh dhdl.xvg`` with your installation of `Gromacs`_.

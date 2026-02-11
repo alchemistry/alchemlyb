@@ -1,6 +1,7 @@
 LAMMPS Parsing
-=============
+==============
 .. automodule:: alchemlyb.parsing.lammps
+   :no-members:
 
 API Reference
 -------------

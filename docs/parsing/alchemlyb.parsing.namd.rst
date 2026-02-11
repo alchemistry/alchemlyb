@@ -1,6 +1,7 @@
 NAMD parsing
 =============
 .. automodule:: alchemlyb.parsing.namd
+   :no-members:
 
 The parsers featured in this module are constructed to properly parse `NAMD`_ ``.fepout`` output files containing derivatives of the Hamiltonian and FEP (BAR) data.
 See the NAMD documentation for the `theoretical backdrop <https://www.ks.uiuc.edu/Research/namd/2.13/ug/node60.html>`_ and `implementation details <https://www.ks.uiuc.edu/Research/namd/2.13/ug/node61.html>`_.

@@ -1,6 +1,7 @@
 GOMC parsing
 ==============
 .. automodule:: alchemlyb.parsing.gomc
+   :no-members:
 
 The parsers featured in this module are constructed to properly parse `GOMC <http://gomc.eng.wayne.edu/>`_ free energy output files, 
 containing the Hamiltonian derivatives (:math:`\frac{dH}{d\lambda}`) for TI-based estimators and Hamiltonian differences (:math:`\Delta H` 

@@ -15,57 +15,57 @@ def plot_convergence(
 ) -> Axes:
     """Plot the forward and backward convergence.
 
-     The input could be the result from
-     :func:`~alchemlyb.convergence.forward_backward_convergence` or
-     :func:`~alchemlyb.convergence.fwdrev_cumavg_Rc`. The input should be a
-     :class:`pandas.DataFrame` which has column `Forward`, `Backward` and
-     :attr:`pandas.DataFrame.attrs` should compile with :ref:`note-on-units`.
-     The errorbar will be plotted if column `Forward_Error` and `Backward_Error`
-     is present.
+    The input could be the result from
+    :func:`~alchemlyb.convergence.forward_backward_convergence` or
+    :func:`~alchemlyb.convergence.fwdrev_cumavg_Rc`. The input should be a
+    :class:`pandas.DataFrame` which has column `Forward`, `Backward` and
+    :attr:`pandas.DataFrame.attrs` should compile with :ref:`note-on-units`.
+    The errorbar will be plotted if column `Forward_Error` and `Backward_Error`
+    is present.
 
-     `Forward`: A column of free energy estimate from the first X% of data,
-     where optional `Forward_Error` column is the corresponding error.
+    `Forward`: A column of free energy estimate from the first X% of data,
+    where optional `Forward_Error` column is the corresponding error.
 
-     `Backward`: A column of free energy estimate from the last X% of data.,
-     where optional `Backward_Error` column is the corresponding error.
+    `Backward`: A column of free energy estimate from the last X% of data.,
+    where optional `Backward_Error` column is the corresponding error.
 
     `final_error` is the error of the final value and is shown as the error band around the
     final value. It can be provided in case an estimate is available that is more appropriate
     than the default, which is the error of the last value in `Backward`.
 
-     Parameters
-     ----------
-     dataframe : Dataframe
-         Output Dataframe has column `Forward`, `Backward` or optionally
-         `Forward_Error`, `Backward_Error` see :ref:`plot_convergence <plot_convergence>`.
-     units : str
-         The unit of the estimate. The default is `None`, which is to use the
-         unit in the input. Setting this will change the output unit.
-     final_error : float
-         The error of the final value in ``units``. If not given, takes the last
-         error in `backward_error`.
-     ax : matplotlib.axes.Axes
-         Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
-         a new axes will be generated.
+    Parameters
+    ----------
+    dataframe : Dataframe
+        Output Dataframe has column `Forward`, `Backward` or optionally
+        `Forward_Error`, `Backward_Error` see :ref:`plot_convergence <plot_convergence>`.
+    units : str
+        The unit of the estimate. The default is `None`, which is to use the
+        unit in the input. Setting this will change the output unit.
+    final_error : float
+        The error of the final value in ``units``. If not given, takes the last
+        error in `backward_error`.
+    ax : matplotlib.axes.Axes
+        Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
+        a new axes will be generated.
 
-     Returns
-     -------
-     matplotlib.axes.Axes
-         An axes with the forward and backward convergence drawn.
+    Returns
+    -------
+    matplotlib.axes.Axes
+        An axes with the forward and backward convergence drawn.
 
-     Note
-     ----
-     The code is taken and modified from
-     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
+    Note
+    ----
+    The code is taken and modified from
+    `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
 
-     .. versionchanged:: 1.0.0
-         Keyword arg final_error for plotting a horizontal error bar.
-         The array input has been deprecated.
-         The units default to `None` which uses the units in the input.
-     .. versionchanged:: 0.6.0
-         data now takes in dataframe
-     .. versionadded:: 0.4.0
+    .. versionchanged:: 1.0.0
+        Keyword arg final_error for plotting a horizontal error bar.
+        The array input has been deprecated.
+        The units default to `None` which uses the units in the input.
+    .. versionchanged:: 0.6.0
+        data now takes in dataframe
+    .. versionadded:: 0.4.0
 
     """
     if units is not None:
@@ -162,47 +162,47 @@ def plot_block_average(
 ) -> Axes:
     """Plot the block average free energy estimates.
 
-     The input could be the result from
-     :func:`~alchemlyb.convergence.block_average`. The input should be a
-     :class:`pandas.DataFrame` which has column `FE` and
-     :attr:`pandas.DataFrame.attrs` should compile with :ref:`note-on-units`.
-     The errorbar will be plotted if column `FE_Error`
-     is present.
+    The input could be the result from
+    :func:`~alchemlyb.convergence.block_average`. The input should be a
+    :class:`pandas.DataFrame` which has column `FE` and
+    :attr:`pandas.DataFrame.attrs` should compile with :ref:`note-on-units`.
+    The errorbar will be plotted if column `FE_Error`
+    is present.
 
-     `FE`: A column of free energy estimate from some X% block of the data,
-     where optional `FE_Error` column is the corresponding error.
+    `FE`: A column of free energy estimate from some X% block of the data,
+    where optional `FE_Error` column is the corresponding error.
 
     `final_error` is the error of the final value and is shown as the error band around the
     final value. It can be provided in case an estimate is available that is more appropriate
     than the default, which is the error of the last value in `Backward`.
 
-     Parameters
-     ----------
-     dataframe : Dataframe
-         Output Dataframe has column `FE`, or optionally
-         `FE_Error`.
-     units : str
-         The unit of the estimate. The default is `None`, which is to use the
-         unit in the input. Setting this will change the output unit.
-     final_error : float
-         The error (standard deviation) of the final value in ``units``. If not given, takes the
-         overall error of the time blocks, unless these were not provided, it which case it
-         equals 1 kT.
-     ax : matplotlib.axes.Axes
-         Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
-         a new axes will be generated.
+    Parameters
+    ----------
+    dataframe : Dataframe
+        Output Dataframe has column `FE`, or optionally
+        `FE_Error`.
+    units : str
+        The unit of the estimate. The default is `None`, which is to use the
+        unit in the input. Setting this will change the output unit.
+    final_error : float
+        The error (standard deviation) of the final value in ``units``. If not given, takes the
+        overall error of the time blocks, unless these were not provided, it which case it
+        equals 1 kT.
+    ax : matplotlib.axes.Axes
+        Matplotlib axes object where the plot will be drawn on. If ``ax=None``,
+        a new axes will be generated.
 
-     Returns
-     -------
-     matplotlib.axes.Axes
-         An axes with the forward and backward convergence drawn.
+    Returns
+    -------
+    matplotlib.axes.Axes
+        An axes with the forward and backward convergence drawn.
 
-     Note
-     ----
-     The code is taken and modified from
-     `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
+    Note
+    ----
+    The code is taken and modified from
+    `Alchemical Analysis <https://github.com/MobleyLab/alchemical-analysis>`_.
 
-     .. versionadded:: 2.4.0
+    .. versionadded:: 2.4.0
 
     """
     if units is not None:

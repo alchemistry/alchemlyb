@@ -173,7 +173,7 @@ def extract_u_nk(
         Support for Interleaved Double-Wide Sampling files added, with various
         robustness checks.
 
-        :param:`fep_files` can now be a list of filenames.
+        ``fep_files`` can now be a list of filenames.
 
     .. versionchanged:: 2.6.0
         Added parameter ignore_equilibration.

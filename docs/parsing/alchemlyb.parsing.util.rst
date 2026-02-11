@@ -2,6 +2,7 @@ Utility parsing functions
 =========================
 
 .. automodule:: alchemlyb.parsing.util
+   :no-members:
 
 API Reference
 -------------
