@@ -1,9 +1,9 @@
-.. _estimatators_TI_GQ:
+.. _estimators_TI_GQ:
 
 TI_GQ
 =====
 The :class:`~alchemlyb.estimators.TI_GQ` estimator is an implementation of `thermodynamic integration <https://en.wikipedia.org/wiki/Thermodynamic_integration>`_ that uses the `gaussian quadrature <https://en.wikipedia.org/wiki/Gaussian_quadrature>`_ for integrating the space between :math:`\left<\frac{dH}{d\lambda}\right>` values for each :math:`\lambda` sampled.
-To use this method, please make sure that the simulations are performed at certain :math:`\lambda` values using fixed gaussian quadrature points (e.g., [He2020]_). Currently, up to 16 guassian quadrature points are supported (see the table below).
+To use this method, please make sure that the simulations are performed at certain :math:`\lambda` values using fixed gaussian quadrature points (e.g., [He2020]_). Currently, up to 16 gaussian quadrature points are supported (see the table below).
 
 .. list-table:: gaussian quadrature points
     :widths: 5 30

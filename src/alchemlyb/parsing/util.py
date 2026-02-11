@@ -7,6 +7,8 @@ import os
 from os import PathLike
 from typing import TextIO
 
+__all__ = ["anyopen", "bz2_open", "gzip_open"]
+
 
 def bz2_open(filename: str, mode: str) -> TextIO:
     mode += "t" if mode in ["r", "w", "a", "x"] else ""

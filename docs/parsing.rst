@@ -6,7 +6,7 @@
 Parsing data files
 ==================
 **alchemlyb** features parsing submodules for getting raw data from different software packages into common data structures that can be used directly by its :ref:`subsamplers <subsampling>` and :ref:`estimators <estimators>`.
-Each submodule features at least two functions, namely:
+Each submodule features some of the following functions, namely:
 
 :func:`extract_dHdl`
   Extract the gradient of the Hamiltonian, :math:`\frac{dH}{d\lambda}`, for each timestep of the sampled state.
@@ -241,4 +241,5 @@ See the documentation for the package you are using for more details on parser u
     gomc
     parquet
     lammps
+    util
     

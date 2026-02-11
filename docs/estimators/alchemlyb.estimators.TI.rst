@@ -1,4 +1,4 @@
-.. _estimatators_TI:
+.. _estimators_TI:
 
 TI
 ==

@@ -160,14 +160,13 @@ def plot_block_average(
     final_error: None | float = None,
     ax: None | Axes = None,
 ) -> Axes:
-    """Plot the forward and backward convergence.
+    """Plot the block average free energy estimates.
 
      The input could be the result from
-     :func:`~alchemlyb.convergence.forward_backward_convergence` or
-     :func:`~alchemlyb.convergence.fwdrev_cumavg_Rc`. The input should be a
+     :func:`~alchemlyb.convergence.block_average`. The input should be a
      :class:`pandas.DataFrame` which has column `FE` and
      :attr:`pandas.DataFrame.attrs` should compile with :ref:`note-on-units`.
-     The errorbar will be plotted if column `FE_Error` and `Backward_Error`
+     The errorbar will be plotted if column `FE_Error`
      is present.
 
      `FE`: A column of free energy estimate from some X% block of the data,
@@ -180,8 +179,8 @@ def plot_block_average(
      Parameters
      ----------
      dataframe : Dataframe
-         Output Dataframe has column `Forward`, `Backward` or optionally
-         `Forward_Error`, `Backward_Error` see :ref:`plot_convergence <plot_convergence>`.
+         Output Dataframe has column `FE`, or optionally
+         `FE_Error`.
      units : str
          The unit of the estimate. The default is `None`, which is to use the
          unit in the input. Setting this will change the output unit.
