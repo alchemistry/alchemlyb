@@ -231,6 +231,17 @@ class TestEstimator:
         assert np.isclose(summary["TI"]["Stages"]["TOTAL"], 21.8, 0.1)
         assert np.isclose(summary["BAR"]["Stages"]["TOTAL"], 21.8, 0.1)
 
+    def test_summary_bar_stage_errors_quadrature_sum_to_total_error(self, workflow):
+        """
+        For this ABFE fixture the stages (coul, vdw, bonded) partition all
+        adjacent-state transitions, so the quadrature sum of stage errors
+        must equal the TOTAL error.
+        """
+        summary = workflow.generate_result()
+        stage_errors = summary["BAR_Error"]["Stages"].drop("TOTAL").to_numpy()
+        total_error = summary["BAR_Error"]["Stages"]["TOTAL"]
+        assert np.isclose(np.sqrt((stage_errors**2).sum()), total_error)
+
     def test_no_name_estimate(self, workflow):
         with pytest.raises(ValueError):
             workflow.estimate("aaa")
