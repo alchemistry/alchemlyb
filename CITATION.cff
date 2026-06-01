@@ -110,6 +110,9 @@ authors:
     family-names: Clark
     orcid: https://orcid.org/0000-0003-4897-5651
     affiliation: National Institute of Standards and Technology
+  - given-names: Jonathan
+    family-names: Berg
+    orcid: 'https://orcid.org/0009-0007-4451-2824'
 identifiers:
   - type: swh
     value: 'swh:1:dir:4cd266754be413312ee7ef3f1f7fbe05b38192cf'
