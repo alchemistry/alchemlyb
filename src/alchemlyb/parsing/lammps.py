@@ -502,7 +502,7 @@ def extract_u_nk_from_u_n(
     column_lambda: int,
     column_U: int,
     column_U_cross: int,
-    dependence: Callable[[float], float] = lambda x: (x),
+    dependence: Callable[[float], float] = lambda x: x,
     index: int = -1,
     units: str = "real",
     prec: int = 4,
@@ -1023,7 +1023,7 @@ def extract_dHdl_from_u_n(
     T: float,
     column_lambda: int | None = None,
     column_u_cross: int | None = None,
-    dependence: Callable[[float], float] = lambda x: (1 / x),
+    dependence: Callable[[float], float] = lambda x: 1 / x,
     units: str = "real",
     prec: int = 4,
 ) -> pd.DataFrame:
