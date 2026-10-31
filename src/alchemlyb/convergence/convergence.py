@@ -100,8 +100,11 @@ def forward_backward_convergence(
     for i, df in enumerate(df_list):
         lambda_values = list({x[1:] for x in df.index.to_numpy()})
         if len(lambda_values) > 1:
-            ind = next(j for j in range(len(lambda_values[0])) 
-                       if len({x[j] for x in lambda_values}) > 1)
+            ind = next(
+                j
+                for j in range(len(lambda_values[0]))
+                if len({x[j] for x in lambda_values}) > 1
+            )
             raise ValueError(
                 f"Provided DataFrame, df_list[{i}] has more than one lambda value in df.index[{ind}]"
             )
@@ -119,9 +122,7 @@ def forward_backward_convergence(
         )
         forward_list.append(mean)
         forward_error_list.append(error)
-        logger.info(
-            f"{forward_list[-1]:.2f} +/- {forward_error_list[-1]:.2f} kT"
-        )
+        logger.info(f"{forward_list[-1]:.2f} +/- {forward_error_list[-1]:.2f} kT")
 
     logger.info("Begin backward analysis")
     backward_list = []
@@ -136,9 +137,7 @@ def forward_backward_convergence(
         )
         backward_list.append(mean)
         backward_error_list.append(error)
-        logger.info(
-            f"{backward_list[-1]:.2f} +/- {backward_error_list[-1]:.2f} kT"
-        )
+        logger.info(f"{backward_list[-1]:.2f} +/- {backward_error_list[-1]:.2f} kT")
 
     convergence = pd.DataFrame(
         {
@@ -458,8 +457,11 @@ def block_average(
     for i, df in enumerate(df_list):
         lambda_values = list({x[1:] for x in df.index.to_numpy()})
         if len(lambda_values) > 1:
-            ind = next(j for j in range(len(lambda_values[0])) 
-                       if len({x[j] for x in lambda_values}) > 1)
+            ind = next(
+                j
+                for j in range(len(lambda_values[0]))
+                if len({x[j] for x in lambda_values}) > 1
+            )
             raise ValueError(
                 f"Provided DataFrame, df_list[{i}] has more than one lambda value in df.index[{ind}]"
             )
@@ -489,9 +491,7 @@ def block_average(
             average_error_list.append(np.nan)
         else:
             average_error_list.append(result.d_delta_f_.iloc[0, -1])
-        logger.info(
-            f"{average_list[-1]:.2f} +/- {average_error_list[-1]:.2f} kT"
-        )
+        logger.info(f"{average_list[-1]:.2f} +/- {average_error_list[-1]:.2f} kT")
 
     convergence = pd.DataFrame(
         {

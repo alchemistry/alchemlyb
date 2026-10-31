@@ -259,7 +259,10 @@ def energy_from_units(units: str) -> float:
 
 
 def tuple_from_filename(
-    filename: str, separator: str = "_", indices: tuple[int] | list[int] = (2, 3), prec: int = 4
+    filename: str,
+    separator: str = "_",
+    indices: tuple[int] | list[int] = (2, 3),
+    prec: int = 4,
 ) -> tuple[float, ...]:
     r"""Pull a tuple representing the lambda values used, as defined by the filenames.
 
@@ -299,7 +302,7 @@ def tuple_from_filename(
     The function automatically handles compressed files (.gz, .bz2) by removing the
     compression extensions before parsing.
 
-    This module is compatible with the standard outputs of 
+    This module is compatible with the standard outputs of
     `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`_.
 
     Parameters
@@ -427,10 +430,7 @@ def get_bar_lambdas(
     ]
     if len(indices) == 3:
         lambda2_list = list(
-            {
-                    lambda_from_filename(y, index=indices[2], prec=prec)
-                    for y in fep_files
-            }
+            {lambda_from_filename(y, index=indices[2], prec=prec) for y in fep_files}
         )
         if len(lambda2_list) > 1:
             raise ValueError(
@@ -498,7 +498,7 @@ def extract_u_nk_from_u_n(
     column_lambda: int,
     column_U: int,
     column_U_cross: int,
-    dependence: Callable[[float], float] = lambda x: (x),
+    dependence: Callable[[float], float] = lambda x: x,
     index: int = -1,
     units: str = "real",
     prec: int = 4,
@@ -582,7 +582,8 @@ def extract_u_nk_from_u_n(
         )
 
     lambda_values = list(
-        {lambda_from_filename(y, index=index, prec=prec) for y in files})
+        {lambda_from_filename(y, index=index, prec=prec) for y in files}
+    )
     lambda_values = sorted(lambda_values)
 
     u_nk = pd.DataFrame(columns=["time", "fep-lambda"] + lambda_values)
@@ -1004,7 +1005,7 @@ def extract_dHdl_from_u_n(
     T: float,
     column_lambda: int | None = None,
     column_u_cross: int | None = None,
-    dependence: Callable[[float], float] = lambda x: (1 / x),
+    dependence: Callable[[float], float] = lambda x: 1 / x,
     units: str = "real",
     prec: int = 4,
 ) -> pd.DataFrame:

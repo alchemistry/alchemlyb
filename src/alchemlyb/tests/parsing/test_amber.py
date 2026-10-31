@@ -43,9 +43,11 @@ def test_no_dHdl_data_points(caplog, testfiles):
 def test_None_in_mbar(caplog, testfiles):
     """Test if we deal with an incorrect MBAR section"""
     filename = testfiles["none_in_mbar"][0]
-    with (pytest.raises(ValueError, match="strange parsing the following MBAR section"),
-        caplog.at_level(logging.ERROR)):
-            _ = extract(str(filename), T=298.0)
+    with (
+        pytest.raises(ValueError, match="strange parsing the following MBAR section"),
+        caplog.at_level(logging.ERROR),
+    ):
+        _ = extract(str(filename), T=298.0)
     assert "strange parsing the following MBAR section" in caplog.text
 
 
@@ -60,54 +62,66 @@ def test_unfinished_run(caplog, testfiles):
 def test_no_atomic_section(caplog, testfiles):
     """Test if raise an exception if there is no ATOMIC section"""
     filename = testfiles["no_atomic_section"][0]
-    with (pytest.raises(ValueError, match='no "ATOMIC" section found'),
-        caplog.at_level(logging.ERROR)):
-            _ = extract(str(filename), T=298.0)
+    with (
+        pytest.raises(ValueError, match='no "ATOMIC" section found'),
+        caplog.at_level(logging.ERROR),
+    ):
+        _ = extract(str(filename), T=298.0)
     assert 'No "ATOMIC" section found' in caplog.text
 
 
 def test_no_control_data(caplog, testfiles):
     """Test if we raise an exception if there is no CONTROL section"""
     filename = testfiles["no_control_data"][0]
-    with (pytest.raises(ValueError, match='no "CONTROL DATA" section found'),
-        caplog.at_level(logging.ERROR)):
-            _ = extract(str(filename), T=298.0)
+    with (
+        pytest.raises(ValueError, match='no "CONTROL DATA" section found'),
+        caplog.at_level(logging.ERROR),
+    ):
+        _ = extract(str(filename), T=298.0)
     assert 'No "CONTROL DATA" section found' in caplog.text
 
 
 def test_no_free_energy_info(caplog, testfiles):
     """Test if we raise an exception if there is no free energy section"""
     filename = testfiles["no_free_energy_info"][0]
-    with (pytest.raises(ValueError, match="no free energy section found"),
-        caplog.at_level(logging.ERROR)):
-            _ = extract(str(filename), T=298.0)
+    with (
+        pytest.raises(ValueError, match="no free energy section found"),
+        caplog.at_level(logging.ERROR),
+    ):
+        _ = extract(str(filename), T=298.0)
     assert "No free energy section found" in caplog.text
 
 
 def test_no_useful_data(caplog, testfiles):
     """Test if we raise an exception if there is no data"""
     filename = testfiles["no_useful_data"][0]
-    with (pytest.raises(ValueError, match="does not contain any data"),
-        caplog.at_level(logging.ERROR)):
-            _ = extract(str(filename), T=298.0)
+    with (
+        pytest.raises(ValueError, match="does not contain any data"),
+        caplog.at_level(logging.ERROR),
+    ):
+        _ = extract(str(filename), T=298.0)
     assert "does not contain any data" in caplog.text
 
 
 def test_no_temp0_set(caplog, testfiles):
     """Test if we raise an exception if there is no temp0 set"""
     filename = testfiles["no_temp0_set"][0]
-    with (pytest.raises(ValueError, match='no valid "temp0" record found'),
-        caplog.at_level(logging.ERROR)):
-            _ = extract(str(filename), T=298.0)
+    with (
+        pytest.raises(ValueError, match='no valid "temp0" record found'),
+        caplog.at_level(logging.ERROR),
+    ):
+        _ = extract(str(filename), T=298.0)
     assert 'No valid "temp0" record found' in caplog.text
 
 
 def test_no_results_section(caplog, testfiles):
     """Test if we raise an exception if there is no RESULTS section"""
     filename = testfiles["no_results_section"][0]
-    with (pytest.raises(ValueError, match='no "RESULTS" section found'),
-        caplog.at_level(logging.ERROR)):
-            _ = extract(str(filename), T=298.0)
+    with (
+        pytest.raises(ValueError, match='no "RESULTS" section found'),
+        caplog.at_level(logging.ERROR),
+    ):
+        _ = extract(str(filename), T=298.0)
     assert 'No "RESULTS" section found' in caplog.text
 
 
@@ -117,18 +131,22 @@ def test_long_and_wrong_number_MBAR(caplog, testfiles):
     number of MBAR states than expected
     """
     filename = testfiles["high_and_wrong_number_of_mbar_windows"][0]
-    with (pytest.raises(ValueError, match="the number of lambda windows read"),
-        caplog.at_level(logging.ERROR)):
-            _ = extract_u_nk(str(filename), T=300.0)
+    with (
+        pytest.raises(ValueError, match="the number of lambda windows read"),
+        caplog.at_level(logging.ERROR),
+    ):
+        _ = extract_u_nk(str(filename), T=300.0)
     assert "the number of lambda windows read" in caplog.text
 
 
 def test_no_starting_time(caplog, testfiles):
     """Test if raise an exception if the starting time is not read"""
     filename = testfiles["no_starting_simulation_time"][0]
-    with (pytest.raises(ValueError, match="No starting simulation time in file"),
-        caplog.at_level(logging.ERROR)):
-            _ = extract(str(filename), T=298.0)
+    with (
+        pytest.raises(ValueError, match="No starting simulation time in file"),
+        caplog.at_level(logging.ERROR),
+    ):
+        _ = extract(str(filename), T=298.0)
     assert "No starting simulation time in file" in caplog.text
 
 

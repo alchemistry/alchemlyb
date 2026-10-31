@@ -320,15 +320,10 @@ def _extract_state(
                 )
             if ("legend" in line) and (" to " in line):
                 statevec.append(
-                    
-                        [
-                            float(i)
-                            for i in line.strip()
-                            .split(" to ")[-1]
-                            .strip('"()')
-                            .split(",")
-                        ]
-                    
+                    [
+                        float(i)
+                        for i in line.strip().split(" to ")[-1].strip('"()').split(",")
+                    ]
                 )
 
     return state, lambdas, statevec
@@ -452,7 +447,7 @@ def _parse_header(line: str, headers: dict[str, Any], depth: int = 2) -> None:
     >>> headers
     {'s0': {'legend': {'_val': 'Potential Energy (kJ/mol)'}}}
 
- 
+
     .. versionchanged:: 2.6.0
        The `headers` parameter is now required and must be a dictionary.
     """

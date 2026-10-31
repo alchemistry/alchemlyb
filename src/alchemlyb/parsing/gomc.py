@@ -225,7 +225,9 @@ def _extract_dataframe(filename: str) -> pd.DataFrame:
                 # read the headers
                 elements = line.split()
                 for i, element in enumerate(elements):
-                    if element.startswith((u_col_match, dh_col_match, h_col_match, pv_col_match)):
+                    if element.startswith(
+                        (u_col_match, dh_col_match, h_col_match, pv_col_match)
+                    ):
                         names.append(element)
             else:
                 # parse line as floats

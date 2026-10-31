@@ -151,9 +151,12 @@ class SectionParser:
     def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, typ: type[BaseException] | None, 
-                 value: BaseException | None,
-                 traceback: types.TracebackType | None) -> None:
+    def __exit__(
+        self,
+        typ: type[BaseException] | None,
+        value: BaseException | None,
+        traceback: types.TracebackType | None,
+    ) -> None:
         self.close()
 
 
@@ -218,7 +221,9 @@ def file_validation(outfile: str) -> FEData:
             raise ValueError(f'no "CONTROL DATA" section found in file {outfile}')
 
         (ntpr,) = secp.extract_section("^Nature and format of output:", "^$", ["ntpr"])
-        _nstlim, dt = secp.extract_section("Molecular dynamics:", "^$", ["nstlim", "dt"])
+        _nstlim, dt = secp.extract_section(
+            "Molecular dynamics:", "^$", ["nstlim", "dt"]
+        )
         (T,) = secp.extract_section("temperature regulation:", "^$", ["temp0"])
         if not T:
             logger.error('No valid "temp0" record found in file {}.', outfile)

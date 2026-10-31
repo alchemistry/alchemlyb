@@ -106,13 +106,13 @@ class Test_TI_GQ_separate_mean_and_variance_multi_column:
     def test_mean_list(self, ethanol_lambdas_means_variances_index):
         assert all(
             isinstance(means, pd.Series)
-                for means in ethanol_lambdas_means_variances_index[1]
+            for means in ethanol_lambdas_means_variances_index[1]
         )
 
     def test_variance_list(self, ethanol_lambdas_means_variances_index):
         assert all(
             isinstance(variances, pd.Series)
-                for variances in ethanol_lambdas_means_variances_index[2]
+            for variances in ethanol_lambdas_means_variances_index[2]
         )
 
     def test_data_length(self, ethanol_lambdas_means_variances_index):
@@ -136,13 +136,13 @@ class Test_TI_GQ_separate_mean_and_variance_single_column:
     def test_mean_list(self, tyk2_complex_lambdas_means_variances_index):
         assert all(
             isinstance(means, pd.Series)
-                for means in tyk2_complex_lambdas_means_variances_index[1]
+            for means in tyk2_complex_lambdas_means_variances_index[1]
         )
 
     def test_variance_list(self, tyk2_complex_lambdas_means_variances_index):
         assert all(
             isinstance(variances, pd.Series)
-                for variances in tyk2_complex_lambdas_means_variances_index[2]
+            for variances in tyk2_complex_lambdas_means_variances_index[2]
         )
 
     def test_data_length(self, tyk2_complex_lambdas_means_variances_index):

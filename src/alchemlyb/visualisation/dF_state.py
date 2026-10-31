@@ -233,7 +233,7 @@ def plot_dF_state(
             ax.xaxis.set_ticks([])
             for i in x + 0.5 * width * len(estimators):
                 ax.annotate(
-                    r"$\mathrm{%d-%d}$" % (i, i + 1), # noqa: UP031, UP032, RUF100
+                    r"$\mathrm{%d-%d}$" % (i, i + 1),  # noqa: UP031, UP032, RUF100
                     xy=(i, 0),
                     xycoords=("data", "axes fraction"),
                     xytext=(0, -2),

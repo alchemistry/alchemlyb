@@ -93,9 +93,7 @@ def _corrupt_fepout(fepout_in, params, tmp_path):
                 if line.startswith(prefix):
                     tokens_out = func(line.split())
                     line = (
-                        " ".join(tokens_out) + "\n"
-                        if tokens_out is not None
-                        else None
+                        " ".join(tokens_out) + "\n" if tokens_out is not None else None
                     )
             if line is not None:
                 f_out.write(line)

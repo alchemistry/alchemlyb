@@ -16,7 +16,9 @@ from matplotlib.axes import Axes
 
 
 def plot_mbar_overlap_matrix(
-    matrix: np.ndarray, skip_lambda_index: list[int] | None = None, ax: None | Axes = None
+    matrix: np.ndarray,
+    skip_lambda_index: list[int] | None = None,
+    ax: None | Axes = None,
 ) -> Axes:
     """Plot the MBAR overlap matrix.
 

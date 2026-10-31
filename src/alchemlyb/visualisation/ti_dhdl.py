@@ -120,7 +120,8 @@ def plot_ti_dhdl(
         else:  # pragma: no cover
             raise ValueError(
                 f"Number of colors ({len(labels)}) should be larger than the "
-                f"number of data ({len(dhdl_list)})")
+                f"number of data ({len(dhdl_list)})"
+            )
 
     # Get the real data out
     xs, ndx, _dx = [0], 0, 0.001

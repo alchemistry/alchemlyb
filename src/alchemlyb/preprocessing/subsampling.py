@@ -411,9 +411,10 @@ def _prepare_input(
                 "values are sorted by time, increasing."
             )
 
-    if series is not None and (len(series) != len(df) or not all(
-            series.reset_index()["time"] == df.reset_index()["time"]
-        )):
+    if series is not None and (
+        len(series) != len(df)
+        or not all(series.reset_index()["time"] == df.reset_index()["time"])
+    ):
         raise ValueError("series and data must be sampled at the same times")
     return df, series
 

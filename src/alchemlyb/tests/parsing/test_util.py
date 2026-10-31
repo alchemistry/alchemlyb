@@ -22,9 +22,11 @@ def test_gzip_stream():
 
     for leg in dataset["data"]:
         for filename in dataset["data"][leg]:
-            with (open(filename, "rb") as f,
-                anyopen(f, mode="r", compression="gzip") as f_uc):
-                    assert type(f_uc.readline()) is str
+            with (
+                open(filename, "rb") as f,
+                anyopen(f, mode="r", compression="gzip") as f_uc,
+            ):
+                assert type(f_uc.readline()) is str
 
 
 def test_gzip_stream_wrong():
