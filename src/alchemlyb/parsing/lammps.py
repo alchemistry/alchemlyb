@@ -112,6 +112,17 @@ from . import _init_attrs
 from ..postprocessors.units import R_kJmol, kJ2kcal
 
 
+def _read_lammps_table(filepath: str) -> pd.DataFrame:
+    """Read a LAMMPS ``fix ave/time`` table with numeric columns.
+
+    Pandas 3+ may infer large timesteps as strings when values are null-padded
+    in some compressed outputs; coerce to float and drop incomplete rows.
+    """
+    table = pd.read_csv(filepath, sep=" ", comment="#", header=None)
+    numeric = table.apply(pd.to_numeric, errors="coerce")
+    return numeric.dropna(how="any").reset_index(drop=True)
+
+
 def _validate_ensemble_parameters(ensemble: str, pressure: float | None) -> None:
     """
     Validate ensemble and pressure parameters for LAMMPS parsing.
@@ -602,8 +613,8 @@ def extract_u_nk_from_u_n(
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
-        tmp_data = pd.read_csv(file, sep=" ", comment="#", header=None)
-        ind = [x for x in col_indices if x > len(tmp_data.columns)]
+        tmp_data = _read_lammps_table(file)
+        ind = [x for x in col_indices if x >= len(tmp_data.columns)]
         if len(ind) > 0:
             raise ValueError(
                 "Number of columns, {}, is less than indices: {}".format(
@@ -866,7 +877,7 @@ def extract_u_nk(
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
-        tmp_data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        tmp_data = _read_lammps_table(file)
         ind = [x for x in col_indices if x >= len(tmp_data.columns)]
         if len(ind) > 0:
             raise ValueError(
@@ -1095,14 +1106,14 @@ def extract_dHdl_from_u_n(
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
-        data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        data = _read_lammps_table(file)
         lx = len(data.columns)
         if any(x >= lx for x in col_indices):
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
 
-        data = data.iloc[:, col_indices]
+        data = data.iloc[:, col_indices].copy()
 
         data.columns = ["time", "fep-lambda", "U"]
         data["fep-lambda"] = data["fep-lambda"].round(prec)
@@ -1244,14 +1255,14 @@ def extract_dHdl(
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
-        data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        data = _read_lammps_table(file)
         lx = len(data.columns)
         if any(x >= lx for x in col_indices):
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
 
-        data = data.iloc[:, col_indices]
+        data = data.iloc[:, col_indices].copy()
         if column_lambda2 is None:
             # dU_back: U(l-dl) - U(l); dU_forw: U(l+dl) - U(l)
             data.columns = ["time", "fep-lambda", "dlambda", "dU_forw", "dU_back"]
@@ -1427,14 +1438,14 @@ def extract_H(
         if not os.path.isfile(file):
             raise ValueError("File not found: {}".format(file))
 
-        data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        data = _read_lammps_table(file)
         lx = len(data.columns)
         if any(x >= lx for x in col_indices):
             raise ValueError(
                 "Number of columns, {}, is less than index: {}".format(lx, col_indices)
             )
 
-        data = data.iloc[:, col_indices]
+        data = data.iloc[:, col_indices].copy()
         if column_lambda2 is None:
             columns = ["time", "fep-lambda", "U"]
         else:
