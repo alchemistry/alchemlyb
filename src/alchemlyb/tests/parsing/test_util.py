@@ -36,10 +36,12 @@ def test_gzip_stream_wrong():
 
     for leg in dataset["data"]:
         for filename in dataset["data"][leg]:
-            with (open(filename, "rb") as f,  # noqa: SIM117
-                anyopen(f, mode="r", compression="bzip2") as f_uc):
-                    with pytest.raises(OSError, match="Invalid data stream"):  # noqa: RUF100, SIM117
-                        assert type(f_uc.readline()) is str
+            with (  # noqa: SIM117
+                open(filename, "rb") as f,
+                anyopen(f, mode="r", compression="bzip2") as f_uc,
+            ):
+                with pytest.raises(OSError, match="Invalid data stream"):
+                    assert type(f_uc.readline()) is str
 
 
 def test_gzip_stream_wrong_no_compression():
