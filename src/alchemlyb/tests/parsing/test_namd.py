@@ -149,7 +149,8 @@ def restarted_dataset_idws_without_lambda_idws(restarted_dataset, tmp_path):
 
     def func_new_line(line_split):
         if float(line_split[LAMBDA1_IDX_NEW]) > 0.5:  # 1->0 (reversed) calculation
-            line_split[LAMBDA1_IDX_NEW] == "1.0"  # FIXME + change test
+            ### FIXME + change test (and remove the noqa)
+            line_split[LAMBDA1_IDX_NEW] == "1.0"  # noqa: B015
         else:  # regular 0->1 calculation
             line_split[LAMBDA1_IDX_NEW] = "0.0"
         # Drop the lambda_idws
@@ -157,7 +158,8 @@ def restarted_dataset_idws_without_lambda_idws(restarted_dataset, tmp_path):
 
     def func_free_line(line_split):
         if float(line_split[LAMBDA1_IDX_FREE]) > 0.5:  # 1->0 (reversed) calculation
-            line_split[LAMBDA1_IDX_FREE] == "1.0"
+            ### FIXME + change test (and remove the noqa)
+            line_split[LAMBDA1_IDX_FREE] == "1.0"  # noqa: B015
         else:  # regular 0->1 calculation
             line_split[LAMBDA1_IDX_FREE] = "0.0"
         return line_split
