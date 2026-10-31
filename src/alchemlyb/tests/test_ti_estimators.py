@@ -119,14 +119,14 @@ class TestTI(TIestimatorMixin):
 def test_TI_separate_dhdl_multiple_column(benzene):
     dHdl = benzene
     estimator = TI().fit(dHdl)
-    assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()])
+    assert all(isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl())
     assert sorted([len(dhdl) for dhdl in estimator.separate_dhdl()]) == [8, 16]
 
 
 def test_TI_separate_dhdl_single_column(Coulomb):
     dHdl = Coulomb
     estimator = TI().fit(dHdl)
-    assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()])
+    assert all(isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl())
     assert [len(dhdl) for dhdl in estimator.separate_dhdl()] == [
         5,
     ]
@@ -139,7 +139,7 @@ def test_TI_separate_dhdl_no_pertubed(Coulomb):
     dHdl.insert(1, "bound", [1.0] * len(dHdl))
     dHdl.set_index("bound-lambda", append=True, inplace=True)
     estimator = TI().fit(dHdl)
-    assert all([isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl()])
+    assert all(isinstance(dhdl, pd.Series) for dhdl in estimator.separate_dhdl())
     assert [len(dhdl) for dhdl in estimator.separate_dhdl()] == [5]
 
 
@@ -175,6 +175,6 @@ class Test_MultipleColumnUnits:
     def test_ti_separate_dhdl(self, dhdl):
         ti = TI().fit(dhdl)
         dhdl_list = ti.separate_dhdl()
-        for dhdl in dhdl_list:
-            assert dhdl.attrs["temperature"] == 300
-            assert dhdl.attrs["energy_unit"] == "kT"
+        for dhdl_item in dhdl_list:
+            assert dhdl_item.attrs["temperature"] == 300
+            assert dhdl_item.attrs["energy_unit"] == "kT"

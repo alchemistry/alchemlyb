@@ -1,12 +1,13 @@
 """Parsers for extracting alchemical data from `Gromacs <http://www.gromacs.org/>`_ output files."""
 
-import numpy as np
-import pandas as pd
 from typing import Any
 
+import numpy as np
+import pandas as pd
+
+from ..postprocessors.units import R_kJmol
 from . import _init_attrs
 from .util import anyopen
-from ..postprocessors.units import R_kJmol
 
 k_b = R_kJmol
 
@@ -92,8 +93,8 @@ def extract_u_nk(xvg: str, T: float, filter: bool = True) -> pd.DataFrame:
     if u_cols:
         u = df[u_cols[0]]
 
-    u_k = dict()
-    cols = list()
+    u_k = {}
+    cols = []
     for col in dH:
         u_col = eval(col.split("to")[1])  # type: ignore[attr-defined]
         # calculate reduced potential u_k = dH + pV + U
@@ -315,19 +316,14 @@ def _extract_state(
         for line in headers["_raw_lines"]:
             if ("legend" in line) and ("lambda" in line):
                 lambdas.append(
-                    [word.strip(")(,") for word in line.split() if "lambda" in word][0]
+                    next(word.strip(")(,") for word in line.split() if "lambda" in word)
                 )
             if ("legend" in line) and (" to " in line):
                 statevec.append(
-                    (
-                        [
-                            float(i)
-                            for i in line.strip()
-                            .split(" to ")[-1]
-                            .strip('"()')
-                            .split(",")
-                        ]
-                    )
+                    [
+                        float(i)
+                        for i in line.strip().split(" to ")[-1].strip('"()').split(",")
+                    ]
                 )
 
     return state, lambdas, statevec
@@ -370,15 +366,15 @@ def _extract_dataframe(
 
     xaxis = _get_value_by_key(headers, "xaxis", "label")
     names = [
-        _get_value_by_key(headers, "s{}".format(x), "legend")
+        _get_value_by_key(headers, f"s{x}", "legend")
         for x in range(len(headers))
-        if "s{}".format(x) in headers
+        if f"s{x}" in headers
     ]
     cols = [xaxis] + names
 
     # march through column names, mark duplicates when found
     cols = [
-        col + "{}[duplicated]".format(i) if col in cols[:i] else col  # type: ignore[operator]
+        col + f"{i}[duplicated]" if col in cols[:i] else col  # type: ignore[operator]
         for i, col in enumerate(cols)
     ]
 
@@ -420,7 +416,7 @@ def _extract_dataframe(
     return df
 
 
-def _parse_header(line: str, headers: dict[str, Any] = {}, depth: int = 2) -> None:
+def _parse_header(line: str, headers: dict[str, Any], depth: int = 2) -> None:
     """Build python dictionary for single line header
 
     Update python dictionary to ``headers`` by reading ``line`` separated by
@@ -451,6 +447,9 @@ def _parse_header(line: str, headers: dict[str, Any] = {}, depth: int = 2) -> No
     >>> headers
     {'s0': {'legend': {'_val': 'Potential Energy (kJ/mol)'}}}
 
+
+    .. versionchanged:: 2.6.0
+       The `headers` parameter is now required and must be a dictionary.
     """
     # Remove a first character, i.e. @
     s = line[1:].split(None, 1)
