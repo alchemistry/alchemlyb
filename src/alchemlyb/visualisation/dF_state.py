@@ -1,3 +1,4 @@
+# noqa: N999 (file name does not adhere to PEP 8 module name conventions)
 """Functions for Plotting the dF states.
 
 To assess the quality of the free energy estimation, The dF between adjacent
@@ -8,13 +9,14 @@ The code for producing the dF states plot is modified based on
 
 """
 
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.font_manager import FontProperties as FP
-from matplotlib.figure import Figure
 from typing import Any
 
-from ..estimators import TI, BAR, MBAR
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.figure import Figure
+from matplotlib.font_manager import FontProperties as FP
+
+from ..estimators import BAR, MBAR, TI
 from ..postprocessors.units import get_unit_converter
 
 
@@ -98,8 +100,7 @@ def plot_dF_state(
     convert = get_unit_converter(units)
     for dhdl_list in estimators:
         len_dF = sum([len(dhdl.delta_f_) - 1 for dhdl in dhdl_list])
-        if len_dF > max_length:
-            max_length = len_dF
+        max_length = max(max_length, len_dF)
         dF = []
         error = []
         for dhdl in dhdl_list:
@@ -137,9 +138,7 @@ def plot_dF_state(
         mnb = max([len(i) for i in xs])
     else:
         raise ValueError(
-            "Not recognising {}, only supports 'landscape' or 'portrait'.".format(
-                orientation
-            )
+            f"Not recognising {orientation}, only supports 'landscape' or 'portrait'."
         )
 
     # Sort out the colors
@@ -170,9 +169,7 @@ def plot_dF_state(
             pass
         else:
             raise ValueError(
-                "Number of colors ({}) should be larger than the number of data ({})".format(
-                    len(colors), len(estimators)
-                )
+                f"Number of colors ({len(colors)}) should be larger than the number of data ({len(estimators)})"
             )
 
     # Sort out the labels
@@ -191,9 +188,7 @@ def plot_dF_state(
             pass
         else:
             raise ValueError(
-                "Length of labels ({}) should be the same as the number of data ({})".format(
-                    len(labels), len(estimators)
-                )
+                f"Length of labels ({len(labels)}) should be the same as the number of data ({len(estimators)})"
             )
 
     # Plot the figure
@@ -216,7 +211,7 @@ def plot_dF_state(
                 color=colors[i],
                 yerr=ye,
                 lw=lw,
-                error_kw=dict(elinewidth=elw, ecolor="black", capsize=0.5 * elw),
+                error_kw={"elinewidth": elw, "ecolor": "black", "capsize": 0.5 * elw},
             )
             lines += (line[0],)
         for dir in ["left", "right", "top", "bottom"]:
@@ -238,7 +233,7 @@ def plot_dF_state(
             ax.xaxis.set_ticks([])
             for i in x + 0.5 * width * len(estimators):
                 ax.annotate(
-                    r"$\mathrm{%d-%d}$" % (i, i + 1),
+                    r"$\mathrm{%d-%d}$" % (i, i + 1), # noqa: UP031, UP032, RUF100
                     xy=(i, 0),
                     xycoords=("data", "axes fraction"),
                     xytext=(0, -2),
@@ -259,7 +254,7 @@ def plot_dF_state(
         leg = plt.legend(lines, labels, loc=3, ncol=2, prop=FP(size=10), fancybox=True)
         plt.title("The free energy change breakdown", fontsize=12)
         plt.xlabel("States", fontsize=12, color="#151B54")
-        plt.ylabel(r"$\Delta G$ ({})".format(units), fontsize=12, color="#151B54")
+        plt.ylabel(rf"$\Delta G$ ({units})", fontsize=12, color="#151B54")
     elif orientation == "portrait":
         leg = ax.legend(
             lines,
@@ -267,7 +262,7 @@ def plot_dF_state(
             loc=0,
             ncol=2,
             prop=FP(size=8),
-            title=r"$\Delta G$ ({})".format(units) + r"$\mathit{vs.}$ lambda pair",
+            title=rf"$\Delta G$ ({units})" + r"$\mathit{vs.}$ lambda pair",
             fancybox=True,
         )
 

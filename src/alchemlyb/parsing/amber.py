@@ -12,15 +12,17 @@ Some of the file parsing parts are adapted from
 """
 
 import re
-from typing import Any, Iterator
+import types
+from collections.abc import Iterator
+from typing import Any, Self
 
 import numpy as np
 import pandas as pd
 from loguru import logger
 
+from ..postprocessors.units import R_kJmol, kJ2kcal
 from . import _init_attrs_dict
 from .util import anyopen
-from ..postprocessors.units import R_kJmol, kJ2kcal
 
 k_b = R_kJmol * kJ2kcal
 
@@ -78,12 +80,10 @@ class SectionParser:
 
     def skip_lines(self, nlines: int) -> None | str:
         """Skip a given number of lines."""
-        lineno = 0
-        for line in self:
-            lineno += 1
+        for lineno, line in enumerate(self):
             if lineno > nlines:
                 return line
-        return None
+        return None  # type: ignore[unreachable]
 
     def skip_after(self, pattern: str) -> bool:
         """Skip until after a line that matches a regex pattern."""
@@ -148,10 +148,12 @@ class SectionParser:
         """Close the filehandle."""
         self.fileh.close()
 
-    def __enter__(self) -> "SectionParser":
+    def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, typ: Any, value: Any, traceback: Any) -> None:
+    def __exit__(self, typ: type[BaseException] | None, 
+                 value: BaseException | None,
+                 traceback: types.TracebackType | None) -> None:
         self.close()
 
 
@@ -159,17 +161,17 @@ class FEData:
     """A simple struct container to collect data from individual files."""
 
     __slots__ = [
-        "clambda",
-        "t0",
-        "dt",
         "T",
-        "ntpr",
         "bar_intervall",
+        "clambda",
+        "dt",
         "gradients",
-        "mbar_energies",
         "have_mbar",
-        "mbar_lambdas",
+        "mbar_energies",
         "mbar_lambda_idx",
+        "mbar_lambdas",
+        "ntpr",
+        "t0",
     ]
 
     def __init__(self) -> None:
@@ -216,7 +218,7 @@ def file_validation(outfile: str) -> FEData:
             raise ValueError(f'no "CONTROL DATA" section found in file {outfile}')
 
         (ntpr,) = secp.extract_section("^Nature and format of output:", "^$", ["ntpr"])
-        nstlim, dt = secp.extract_section("Molecular dynamics:", "^$", ["nstlim", "dt"])
+        _nstlim, dt = secp.extract_section("Molecular dynamics:", "^$", ["nstlim", "dt"])
         (T,) = secp.extract_section("temperature regulation:", "^$", ["temp0"])
         if not T:
             logger.error('No valid "temp0" record found in file {}.', outfile)

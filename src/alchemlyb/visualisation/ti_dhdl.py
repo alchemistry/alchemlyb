@@ -9,11 +9,12 @@ The code for producing the dhdl plot is modified based on
 
 """
 
+from typing import Any
+
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.font_manager import FontProperties as FP
 from matplotlib.axes import Axes
-from typing import Any
+from matplotlib.font_manager import FontProperties as FP
 
 from ..postprocessors.units import get_unit_converter
 
@@ -86,7 +87,7 @@ def plot_ti_dhdl(
 
     dhdl_list = new_unit
     if ax is None:
-        fig, ax = plt.subplots(figsize=(8, 6))
+        _fig, ax = plt.subplots(figsize=(8, 6))
 
     ax.spines["bottom"].set_position("zero")
     ax.spines["top"].set_color("none")
@@ -94,7 +95,7 @@ def plot_ti_dhdl(
     ax.xaxis.set_ticks_position("bottom")
     ax.yaxis.set_ticks_position("left")
 
-    for k, spine in ax.spines.items():
+    for spine in ax.spines.values():
         spine.set_zorder(12.2)
 
     # Make level names
@@ -108,9 +109,7 @@ def plot_ti_dhdl(
             lv_names2 = labels
         else:  # pragma: no cover
             raise ValueError(
-                "Length of labels ({}) should be the same as the number of data ({})".format(
-                    len(labels), len(dhdl_list)
-                )
+                f"Length of labels ({len(labels)}) should be the same as the number of data ({len(dhdl_list)})"
             )
 
     if colors is None:
@@ -120,11 +119,8 @@ def plot_ti_dhdl(
             pass
         else:  # pragma: no cover
             raise ValueError(
-                "Number of colors ({}) should be larger than the number of data ({})".format(
-                    len(labels),  # type: ignore[arg-type]
-                    len(dhdl_list),
-                )
-            )
+                f"Number of colors ({len(labels)}) should be larger than the "
+                f"number of data ({len(dhdl_list)})")
 
     # Get the real data out
     xs, ndx, _dx = [0], 0, 0.001
@@ -162,7 +158,9 @@ def plot_ti_dhdl(
     dl_mat = np.array([xs - i for i in xs])  # type: ignore[operator]
     ri = range(len(xs))
 
-    def getInd(r: range = ri, z: list[int] = [0]) -> list[int]:  # type: ignore[return]
+    def getInd(r: range = ri, z: list[int] | None = None) -> list[int]:  # type: ignore[return]
+        if z is None:
+            z = [0]
         primo = r[0]
         min_dl = ndx * 0.02 * 2 ** (primo > 10)
         if dl_mat[primo].max() < min_dl:
@@ -197,7 +195,7 @@ def plot_ti_dhdl(
 
     for i, j in zip(xs[1:], xt[1:]):
         ax.annotate(
-            ("{:.2f}".format(i - 1.0 if i > 1.0 else i) if not j == "" else ""),
+            (f"{i - 1.0 if i > 1.0 else i:.2f}" if j != "" else ""),
             xy=(i, 0),
             size=10,
             rotation=90,
@@ -216,7 +214,7 @@ def plot_ti_dhdl(
     ax.grid(which="both", color="w", lw=0.25, axis="y", zorder=12)
     ax.set_ylabel(
         r"$\langle{\frac{\partial U}{\partial\lambda}}\rangle_{\lambda}$"
-        + "({})".format(units),
+        + f"({units})",
         fontsize=20,
         color="#151B54",
     )

@@ -22,8 +22,8 @@ def test_gzip_stream():
 
     for leg in dataset["data"]:
         for filename in dataset["data"][leg]:
-            with open(filename, "rb") as f:
-                with anyopen(f, mode="r", compression="gzip") as f_uc:
+            with (open(filename, "rb") as f,
+                anyopen(f, mode="r", compression="gzip") as f_uc):
                     assert type(f_uc.readline()) is str
 
 
@@ -36,9 +36,9 @@ def test_gzip_stream_wrong():
 
     for leg in dataset["data"]:
         for filename in dataset["data"][leg]:
-            with open(filename, "rb") as f:
-                with anyopen(f, mode="r", compression="bzip2") as f_uc:
-                    with pytest.raises(OSError, match="Invalid data stream"):
+            with (open(filename, "rb") as f,  # noqa: SIM117
+                anyopen(f, mode="r", compression="bzip2") as f_uc):
+                    with pytest.raises(OSError, match="Invalid data stream"):  # noqa: RUF100, SIM117
                         assert type(f_uc.readline()) is str
 
 
@@ -51,9 +51,8 @@ def test_gzip_stream_wrong_no_compression():
 
     for leg in dataset["data"]:
         for filename in dataset["data"][leg]:
-            with open(filename, "rb") as f:
-                with anyopen(f, mode="r") as f_uc:
-                    assert type(f_uc.readline()) is bytes
+            with open(filename, "rb") as f, anyopen(f, mode="r") as f_uc:
+                assert type(f_uc.readline()) is bytes
 
 
 @pytest.mark.parametrize("extension", ["bz2", "gz"])
@@ -127,6 +126,6 @@ def test_stream_unsupported_compression():
         stream.seek(0)
 
         # read from stream
-        with pytest.raises(ValueError):
-            with anyopen(stream, "r", compression=compression) as f:
+        with pytest.raises(ValueError):  # noqa: SIM117
+            with anyopen(stream, "r", compression=compression) as f:  # noqa: C405, RUF100
                 f.read()

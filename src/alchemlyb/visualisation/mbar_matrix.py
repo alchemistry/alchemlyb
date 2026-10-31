@@ -16,7 +16,7 @@ from matplotlib.axes import Axes
 
 
 def plot_mbar_overlap_matrix(
-    matrix: np.ndarray, skip_lambda_index: list[int] = [], ax: None | Axes = None
+    matrix: np.ndarray, skip_lambda_index: list[int] | None = None, ax: None | Axes = None
 ) -> Axes:
     """Plot the MBAR overlap matrix.
 
@@ -47,10 +47,12 @@ def plot_mbar_overlap_matrix(
 
     """
     # Compute the size of the figure, if ax is not given.
+    if skip_lambda_index is None:
+        skip_lambda_index = []
     max_prob = matrix.max()
     size = len(matrix)
     if ax is None:
-        fig, ax = plt.subplots(figsize=(size / 2, size / 2))
+        _fig, ax = plt.subplots(figsize=(size / 2, size / 2))
     ax.set_xticks([])
     ax.set_yticks([])
     ax.axis("off")
@@ -64,7 +66,7 @@ def plot_mbar_overlap_matrix(
             elif matrix[j, i] > 0.995:
                 ii = "1.00"
             else:
-                ii = "{:.2f}".format(matrix[j, i])[1:]
+                ii = f"{matrix[j, i]:.2f}"[1:]
             alf = matrix[j, i] / max_prob
             ax.fill_between(
                 [i, i + 1],

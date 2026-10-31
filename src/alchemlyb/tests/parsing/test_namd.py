@@ -5,13 +5,14 @@ from os.path import basename
 from re import search
 
 import pytest
-from alchemtest.namd import load_idws
-from alchemtest.namd import load_restarted
-from alchemtest.namd import load_restarted_reversed
-from alchemtest.namd import load_tyr2ala
+from alchemtest.namd import (
+    load_idws,
+    load_restarted,
+    load_restarted_reversed,
+    load_tyr2ala,
+)
 
-from alchemlyb.parsing.namd import extract_u_nk, extract
-
+from alchemlyb.parsing.namd import extract, extract_u_nk
 
 # Indices of lambda values in the following line in NAMD fepout files:
 # #NEW FEP WINDOW: LAMBDA SET TO 0.6 LAMBDA2 0.7 LAMBDA_IDWS 0.5
@@ -86,19 +87,18 @@ def _corrupt_fepout(fepout_in, params, tmp_path):
     """
 
     fepout_out = tmp_path / basename(fepout_in)
-    with bz2.open(fepout_out, "wt") as f_out:
-        with bz2.open(fepout_in, "rt") as f_in:
-            for line in f_in:
-                for prefix, func in params:
-                    if line.startswith(prefix):
-                        tokens_out = func(line.split())
-                        line = (
-                            " ".join(tokens_out) + "\n"
-                            if tokens_out is not None
-                            else None
-                        )
-                if line is not None:
-                    f_out.write(line)
+    with bz2.open(fepout_out, "wt") as f_out, bz2.open(fepout_in, "rt") as f_in:
+        for line in f_in:
+            for prefix, func in params:
+                if line.startswith(prefix):
+                    tokens_out = func(line.split())
+                    line = (
+                        " ".join(tokens_out) + "\n"
+                        if tokens_out is not None
+                        else None
+                    )
+            if line is not None:
+                f_out.write(line)
     return str(fepout_out)
 
 
@@ -149,7 +149,7 @@ def restarted_dataset_idws_without_lambda_idws(restarted_dataset, tmp_path):
 
     def func_new_line(line_split):
         if float(line_split[LAMBDA1_IDX_NEW]) > 0.5:  # 1->0 (reversed) calculation
-            line_split[LAMBDA1_IDX_NEW] == "1.0"
+            line_split[LAMBDA1_IDX_NEW] == "1.0"  # FIXME + change test
         else:  # regular 0->1 calculation
             line_split[LAMBDA1_IDX_NEW] = "0.0"
         # Drop the lambda_idws

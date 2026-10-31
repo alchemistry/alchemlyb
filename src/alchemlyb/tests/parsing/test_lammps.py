@@ -1,11 +1,12 @@
 """LAMMPS parser tests."""
 
 import copy
+
 import pytest
+from alchemtest.lammps import load_benzene, load_lj_dimer
 from numpy.testing import assert_almost_equal, assert_approx_equal
 
 from alchemlyb.parsing import lammps as lmp
-from alchemtest.lammps import load_benzene, load_lj_dimer
 
 T_K = 300
 pressure = 1.01325
@@ -409,7 +410,7 @@ class TestLammpsMbar:
     def test_u_nk_error_inconsistent_lambda(self, data):
         """Test error inconsistent lambda values in filenames"""
 
-        filenames, kwargs, filenames2 = copy.deepcopy(data)
+        filenames, kwargs, _filenames2 = copy.deepcopy(data)
         filenames.sort()
         filenames = filenames[:-1]
 
@@ -434,7 +435,7 @@ class TestLammpsMbar:
     def test_u_nk_error_nonfloat_lambda(self, data):
         """Test nonfloat lambda"""
 
-        filenames, kwargs, filenames2 = copy.deepcopy(data)
+        filenames, kwargs, _filenames2 = copy.deepcopy(data)
         kwargs["indices"] = [1, 2]
 
         with pytest.raises(
@@ -462,7 +463,7 @@ class TestLammpsMbar:
     def test_u_nk_error_multiple_values_lambda2(self, data):
         """Test multiple values of lambda"""
 
-        filenames, kwargs, filenames2 = copy.deepcopy(data)
+        filenames, kwargs, _filenames2 = copy.deepcopy(data)
         kwargs["indices"] = [2, 3, 2]
 
         with pytest.raises(
@@ -475,8 +476,8 @@ class TestLammpsMbar:
         """Test error no file"""
 
         filenames, kwargs, filenames2 = copy.deepcopy(data)
-        ind1 = [i for i, x in enumerate(filenames) if "_1_1" in x][0]
-        ind2 = [i for i, x in enumerate(filenames2) if "_1_1" in x][0]
+        ind1 = next(i for i, x in enumerate(filenames) if "_1_1" in x)
+        ind2 = next(i for i, x in enumerate(filenames2) if "_1_1" in x)
         filenames[ind1] = filenames2[ind2]
         with pytest.raises(
             ValueError,
@@ -487,7 +488,7 @@ class TestLammpsMbar:
     def test_u_nk_error_prec_1(self, data):
         """Test error no file"""
 
-        filenames, kwargs, filenames2 = copy.deepcopy(data)
+        filenames, kwargs, _filenames2 = copy.deepcopy(data)
         kwargs["columns_lambda1"] = [1, 4]
         with pytest.raises(
             ValueError,
@@ -498,7 +499,7 @@ class TestLammpsMbar:
     def test_u_nk_error_prec_2(self, data):
         """Test error no file"""
 
-        filenames, kwargs, filenames2 = copy.deepcopy(data)
+        filenames, kwargs, _filenames2 = copy.deepcopy(data)
         kwargs["columns_lambda1"] = [4, 1]
         with pytest.raises(
             ValueError,
@@ -561,8 +562,8 @@ class TestLammpsMbar:
 
     def test_u_nk_file_collection_list_vs_string(self, data):
         """Test file collection behavior for list vs string inputs (lines 761-765)."""
-        import tempfile
         import os
+        import tempfile
 
         # Create a simple test scenario to verify file collection logic
         # We'll create temporary files and test the collection mechanism
@@ -596,7 +597,7 @@ class TestLammpsMbar:
                 )
                 assert result_list is not None
                 list_success = True
-            except Exception:
+            except Exception:  # noqa: BLE001
                 list_success = False
 
             # Test string pattern (lines 763-764: files = glob.glob(fep_files))
@@ -614,7 +615,7 @@ class TestLammpsMbar:
                 )
                 assert result_pattern is not None
                 pattern_success = True
-            except Exception:
+            except Exception:  # noqa: BLE001
                 pattern_success = False
 
             # Both code paths should work
@@ -735,8 +736,8 @@ class TestLammpsTI:
         """Test error no file"""
         filenames, kwargs = copy.deepcopy(data)
         filenames2 = load_benzene()["data"]["ti"]["1_coul-off"]
-        ind1 = [i for i, x in enumerate(filenames) if "_1" in x][0]
-        ind2 = [i for i, x in enumerate(filenames2) if "_1" in x][0]
+        ind1 = next(i for i, x in enumerate(filenames) if "_1" in x)
+        ind2 = next(i for i, x in enumerate(filenames2) if "_1" in x)
         filenames[ind1] = filenames2[ind2]
         filenames.append("test_test_1_1_test_1.txt")
 

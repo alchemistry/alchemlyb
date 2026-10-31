@@ -4,10 +4,10 @@ import warnings
 from typing import Any
 
 import pandas as pd
+from loguru import logger
 from pymbar.timeseries import detect_equilibration as _detect_equilibration
 from pymbar.timeseries import statistical_inefficiency as _statistical_inefficiency
 from pymbar.timeseries import subsample_correlated_data as _subsample_correlated_data
-from loguru import logger
 
 from .. import pass_attrs
 
@@ -220,7 +220,7 @@ def u_nk2series(df: pd.DataFrame, method: str = "dE") -> pd.Series:
             new_lambda = df.iloc[:, index - 1]
         series = new_lambda - current_lambda
     else:
-        raise ValueError("Decorrelation method {} not found.".format(method))
+        raise ValueError(f"Decorrelation method {method} not found.")
     return series
 
 
@@ -411,11 +411,10 @@ def _prepare_input(
                 "values are sorted by time, increasing."
             )
 
-    if series is not None:
-        if len(series) != len(df) or not all(
+    if series is not None and (len(series) != len(df) or not all(
             series.reset_index()["time"] == df.reset_index()["time"]
-        ):
-            raise ValueError("series and data must be sampled at the same times")
+        )):
+        raise ValueError("series and data must be sampled at the same times")
     return df, series
 
 
@@ -632,7 +631,7 @@ def equilibrium_detection(
 
         # calculate statistical inefficiency of series, with equilibrium detection
         logger.debug("Running equilibration detection.")
-        t, statinef, Neff_max = _detect_equilibration(series.values)
+        t, statinef, _Neff_max = _detect_equilibration(series.values)
         logger.debug("Start index: {}.", t)
         logger.debug("Statistical inefficiency: {:.2f}.", statinef)
 

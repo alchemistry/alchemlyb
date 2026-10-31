@@ -1,12 +1,13 @@
 """Tests for all TI-based estimators in ``alchemlyb``."""
 
-import pandas as pd
-import numpy as np
 import copy
+
+import numpy as np
+import pandas as pd
 import pytest
 
 import alchemlyb
-from alchemlyb.estimators import TI_GQ, TI
+from alchemlyb.estimators import TI, TI_GQ
 from alchemlyb.parsing import amber
 
 
@@ -104,18 +105,14 @@ class Test_TI_GQ_separate_mean_and_variance_multi_column:
 
     def test_mean_list(self, ethanol_lambdas_means_variances_index):
         assert all(
-            [
-                isinstance(means, pd.Series)
+            isinstance(means, pd.Series)
                 for means in ethanol_lambdas_means_variances_index[1]
-            ]
         )
 
     def test_variance_list(self, ethanol_lambdas_means_variances_index):
         assert all(
-            [
-                isinstance(variances, pd.Series)
+            isinstance(variances, pd.Series)
                 for variances in ethanol_lambdas_means_variances_index[2]
-            ]
         )
 
     def test_data_length(self, ethanol_lambdas_means_variances_index):
@@ -138,18 +135,14 @@ class Test_TI_GQ_separate_mean_and_variance_single_column:
 
     def test_mean_list(self, tyk2_complex_lambdas_means_variances_index):
         assert all(
-            [
-                isinstance(means, pd.Series)
+            isinstance(means, pd.Series)
                 for means in tyk2_complex_lambdas_means_variances_index[1]
-            ]
         )
 
     def test_variance_list(self, tyk2_complex_lambdas_means_variances_index):
         assert all(
-            [
-                isinstance(variances, pd.Series)
+            isinstance(variances, pd.Series)
                 for variances in tyk2_complex_lambdas_means_variances_index[2]
-            ]
         )
 
     def test_data_length(self, tyk2_complex_lambdas_means_variances_index):
@@ -170,7 +163,7 @@ def test_TI_GQ_separate_mean_variance_no_pertubed(tyk2_complex):
     means = dHdl.groupby(level=dHdl.index.names[1:]).mean()
     variances = np.square(dHdl.groupby(level=dHdl.index.names[1:]).sem())
     _, new_means, _, _ = TI_GQ().separate_mean_variance(means, variances)
-    assert all([isinstance(dhdl, pd.Series) for dhdl in new_means])
+    assert all(isinstance(dhdl, pd.Series) for dhdl in new_means)
     assert [len(dhdl) for dhdl in new_means] == [12]
 
 
