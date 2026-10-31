@@ -4,10 +4,10 @@ import pytest
 
 from alchemlyb import concat
 from alchemlyb.convergence import (
-    forward_backward_convergence,
-    fwdrev_cumavg_Rc,
     A_c,
     block_average,
+    forward_backward_convergence,
+    fwdrev_cumavg_Rc,
 )
 from alchemlyb.convergence.convergence import _cummean
 
@@ -86,7 +86,7 @@ def test_block_average_error_3_bar(gmx_ABFE_complex_u_nk, estimator):
     # Test if lambda state column representing one of the two lambda
     # states in the df indices is missing from *both* dfs.
     df_list = gmx_ABFE_complex_u_nk[10:12]
-    state1 = list(set(x[1:] for x in df_list[0].index))[0]
+    state1 = next(iter({x[1:] for x in df_list[0].index}))
     df_list[0] = df_list[0].drop(state1, axis=1)
     df_list[1] = df_list[1].drop(state1, axis=1)
     with pytest.raises(
@@ -101,7 +101,7 @@ def test_block_average_error_4_bar(gmx_ABFE_complex_u_nk, estimator):
     # Test if lambda state column representing one of the two lambda
     # states in the df indices is missing from *one* dfs.
     df_list = gmx_ABFE_complex_u_nk[10:12]
-    state1 = list(set(x[1:] for x in df_list[0].index))[0]
+    state1 = next(iter({x[1:] for x in df_list[0].index}))
     df_list[0] = df_list[0].drop(state1, axis=1)
     with pytest.raises(
         ValueError,
@@ -204,7 +204,7 @@ def test_R_c_converged():
     data = pd.Series(data=[0] * 100)
     data.attrs["temperature"] = 310
     data.attrs["energy_unit"] = "kcal/mol"
-    value, running_average = fwdrev_cumavg_Rc(data)
+    value, _running_average = fwdrev_cumavg_Rc(data)
     np.testing.assert_allclose(value, 0.0)
 
 
@@ -212,7 +212,7 @@ def test_R_c_notconverged():
     data = pd.Series(data=range(21))
     data.attrs["temperature"] = 310
     data.attrs["energy_unit"] = "kcal/mol"
-    value, running_average = fwdrev_cumavg_Rc(data, tol=0.1, precision=0.05)
+    value, _running_average = fwdrev_cumavg_Rc(data, tol=0.1, precision=0.05)
     np.testing.assert_allclose(value, 1.0)
 
 
@@ -220,7 +220,7 @@ def test_R_c_real():
     data = pd.Series(data=np.hstack((range(10), [4.5] * 10)))
     data.attrs["temperature"] = 310
     data.attrs["energy_unit"] = "kcal/mol"
-    value, running_average = fwdrev_cumavg_Rc(data, tol=2.0)
+    value, _running_average = fwdrev_cumavg_Rc(data, tol=2.0)
     np.testing.assert_allclose(value, 0.35)
 
 

@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from typing import Literal
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 import pymbar
-import numpy.typing as npt
 from sklearn.base import BaseEstimator
 
 from . import BAR
@@ -126,7 +127,7 @@ class MBAR(BaseEstimator, _EstimatorMixOut):
         # handle for pymbar.MBAR object
         self._mbar = None
 
-    def fit(self, u_nk: pd.DataFrame, compute_entropy_enthalpy: bool = False) -> "MBAR":
+    def fit(self, u_nk: pd.DataFrame, compute_entropy_enthalpy: bool = False) -> MBAR:
         """
         Compute overlap matrix of reduced potentials using multi-state
         Bennett acceptance ratio.

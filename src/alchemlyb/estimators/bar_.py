@@ -106,7 +106,7 @@ class BAR(BaseEstimator, _EstimatorMixOut):
         ]
 
         # Pull lambda states from indices
-        states = list(set(x[1:] if len(x[1:]) > 1 else x[1] for x in u_nk.index))
+        states = list({x[1:] if len(x[1:]) > 1 else x[1] for x in u_nk.index})
         for state in states:
             if state not in self._states_:
                 raise ValueError(

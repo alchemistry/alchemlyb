@@ -1,11 +1,11 @@
-import os
+import os  # noqa: N999
 
+import joblib
 import numpy as np
 import pandas as pd
 import pytest
 from alchemtest.amber import load_bace_example
 from alchemtest.gmx import load_ABFE
-import joblib
 
 import alchemlyb.parsing.amber
 from alchemlyb.workflows.abfe import ABFE
@@ -56,7 +56,7 @@ class TestInit:
             )
 
     def test_wildcard_in_dir(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: SIM117
             with pytest.warns(match="A real directory is expected in `dir`="):
                 ABFE(
                     dir="/*/",
@@ -88,7 +88,7 @@ class TestRun:
         monkeypatch.setattr(workflow, "dHdl_list", [])
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
-        monkeypatch.setattr(workflow, "estimator", dict())
+        monkeypatch.setattr(workflow, "estimator", {})
         workflow.run(
             uncorr=None,
             estimators="MBAR",
@@ -116,8 +116,8 @@ class TestRead:
         """test if the files has been loaded correctly."""
         assert len(workflow.u_nk_list) == 30
         assert len(workflow.dHdl_list) == 30
-        assert all([len(u_nk) == 1001 for u_nk in workflow.u_nk_list])
-        assert all([len(dHdl) == 1001 for dHdl in workflow.dHdl_list])
+        assert all(len(u_nk) == 1001 for u_nk in workflow.u_nk_list)
+        assert all(len(dHdl) == 1001 for dHdl in workflow.dHdl_list)
 
     def test_no_parser(self):
         dir = os.path.dirname(load_ABFE()["data"]["complex"][0])
@@ -154,7 +154,7 @@ class TestRead:
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
 
         def extract_u_nk(self, T):
-            raise IOError("Error read u_nk.")
+            raise OSError("Error read u_nk.")
 
         monkeypatch.setattr(workflow, "_extract_u_nk", extract_u_nk)
         with pytest.raises(OSError, match=r"Error reading u_nk"):
@@ -165,7 +165,7 @@ class TestRead:
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
 
         def extract_dHdl(self, T):
-            raise IOError("Error read dHdl.")
+            raise OSError("Error read dHdl.")
 
         monkeypatch.setattr(workflow, "_extract_dHdl", extract_dHdl)
         with pytest.raises(OSError, match=r"Error reading dHdl"):
@@ -177,8 +177,8 @@ class TestSubsample:
         """Test if the data has been shrinked by subsampling."""
         assert len(workflow.u_nk_sample_list) == 30
         assert len(workflow.dHdl_sample_list) == 30
-        assert all([len(u_nk) < 1001 for u_nk in workflow.u_nk_sample_list])
-        assert all([len(dHdl) < 1001 for dHdl in workflow.dHdl_sample_list])
+        assert all(len(u_nk) < 1001 for u_nk in workflow.u_nk_sample_list)
+        assert all(len(dHdl) < 1001 for dHdl in workflow.dHdl_sample_list)
 
     def test_uncorr_threshold(self, workflow, monkeypatch):
         """Test if the full data will be used when the number of data points
@@ -192,8 +192,8 @@ class TestSubsample:
         monkeypatch.setattr(workflow, "u_nk_sample_list", [])
         monkeypatch.setattr(workflow, "dHdl_sample_list", [])
         workflow.preprocess(threshold=50)
-        assert all([len(u_nk) == 40 for u_nk in workflow.u_nk_sample_list])
-        assert all([len(dHdl) == 40 for dHdl in workflow.dHdl_sample_list])
+        assert all(len(u_nk) == 40 for u_nk in workflow.u_nk_sample_list)
+        assert all(len(dHdl) == 40 for dHdl in workflow.dHdl_sample_list)
 
     def test_no_u_nk_preprocess(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "u_nk_list", [])
@@ -220,7 +220,7 @@ class TestEstimator:
 
     def test_method(self, workflow, monkeypatch):
         """Test if the method keyword could be passed to the AutoMBAR estimator."""
-        monkeypatch.setattr(workflow, "estimator", dict())
+        monkeypatch.setattr(workflow, "estimator", {})
         workflow.estimate(estimators="MBAR", method="adaptive")
         assert "MBAR" in workflow.estimator
 
@@ -247,7 +247,7 @@ class TestEstimator:
             workflow.estimate("aaa")
 
     def test_single_estimator_mbar(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, "estimator", dict())
+        monkeypatch.setattr(workflow, "estimator", {})
         workflow.estimate(estimators="MBAR")
         assert len(workflow.estimator) == 1
         assert "MBAR" in workflow.estimator
@@ -255,18 +255,18 @@ class TestEstimator:
         assert np.isclose(summary["MBAR"]["Stages"]["TOTAL"], 21.645742066696315, 0.1)
 
     def test_mbar_n_bootstraps(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, "estimator", dict())
+        monkeypatch.setattr(workflow, "estimator", {})
         workflow.estimate(estimators="MBAR", n_bootstraps=2)
         summary = workflow.generate_result()
         bootstrap_error = summary["MBAR_Error"]["Stages"]["TOTAL"]
-        monkeypatch.setattr(workflow, "estimator", dict())
+        monkeypatch.setattr(workflow, "estimator", {})
         workflow.estimate(estimators="MBAR", n_bootstraps=0)
         summary = workflow.generate_result()
         non_bootstrap_error = summary["MBAR_Error"]["Stages"]["TOTAL"]
         assert bootstrap_error != non_bootstrap_error
 
     def test_single_estimator_ti(self, workflow, monkeypatch):
-        monkeypatch.setattr(workflow, "estimator", dict())
+        monkeypatch.setattr(workflow, "estimator", {})
         monkeypatch.setattr(workflow, "summary", None)
         workflow.estimate(estimators="TI")
         summary = workflow.generate_result()
@@ -274,7 +274,7 @@ class TestEstimator:
 
     def test_unprocessed_u_nk(self, workflow, monkeypatch):
         monkeypatch.setattr(workflow, "u_nk_sample_list", None)
-        monkeypatch.setattr(workflow, "estimator", dict())
+        monkeypatch.setattr(workflow, "estimator", {})
         workflow.estimate()
         assert len(workflow.estimator) == 3
         assert "MBAR" in workflow.estimator
@@ -296,7 +296,7 @@ class TestEstimator:
         monkeypatch.setattr(workflow, "u_nk_sample_list", None)
         monkeypatch.setattr(workflow, "dHdl_list", gmx_benzene_Coulomb_dHdl)
         monkeypatch.setattr(workflow, "dHdl_sample_list", gmx_benzene_Coulomb_dHdl)
-        monkeypatch.setattr(workflow, "estimator", dict())
+        monkeypatch.setattr(workflow, "estimator", {})
         monkeypatch.setattr(workflow, "summary", None)
         # Add another lambda column
         for dHdl in workflow.dHdl_sample_list:

@@ -2,9 +2,9 @@
 
 import pandas as pd
 
+from ..postprocessors.units import R_kJmol
 from . import _init_attrs
 from .util import anyopen
-from ..postprocessors.units import R_kJmol
 
 k_b = R_kJmol
 
@@ -37,7 +37,7 @@ def extract_u_nk(filename: str, T: float) -> pd.DataFrame:
     u_col_match = ["Total_En"]
     beta = 1 / (k_b * T)
 
-    state, lambdas, statevec = _extract_state(filename)
+    _state, lambdas, statevec = _extract_state(filename)
 
     # extract a DataFrame from free energy file data
     df = _extract_dataframe(filename)
@@ -64,8 +64,8 @@ def extract_u_nk(filename: str, T: float) -> pd.DataFrame:
     if u_cols:
         u = df[u_cols[0]]
 
-    u_k = dict()
-    cols = list()
+    u_k = {}
+    cols = []
     for col in dH:
         u_col = eval(col.split("->")[1][:-1])  # type: ignore[attr-defined]
         # calculate reduced potential u_k = dH + pV + U
@@ -119,7 +119,7 @@ def extract_dHdl(filename: str, T: float) -> pd.DataFrame:
     """
     beta = 1 / (k_b * T)
 
-    state, lambdas, statevec = _extract_state(filename)
+    _state, lambdas, statevec = _extract_state(filename)
 
     # extract a DataFrame from free energy data
     df = _extract_dataframe(filename)
@@ -225,13 +225,9 @@ def _extract_dataframe(filename: str) -> pd.DataFrame:
                 # read the headers
                 elements = line.split()
                 for i, element in enumerate(elements):
-                    if element.startswith(u_col_match):
-                        names.append(element)
-                    elif element.startswith(dh_col_match):
-                        names.append(element)
-                    elif element.startswith(h_col_match):
-                        names.append(element)
-                    elif element.startswith(pv_col_match):
+                    if element.startswith(
+                        (u_col_match, dh_col_match, h_col_match, pv_col_match)
+                    ):
                         names.append(element)
             else:
                 # parse line as floats

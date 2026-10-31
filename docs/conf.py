@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # alchemlyb documentation build configuration file, created by
 # sphinx-quickstart on Wed Feb  1 15:01:17 2017.
@@ -21,6 +20,7 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 import datetime
+
 import alchemlyb
 
 # -- General configuration ------------------------------------------------

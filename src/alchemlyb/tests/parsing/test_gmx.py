@@ -3,18 +3,18 @@
 import bz2
 
 import pytest
-from alchemtest.gmx import load_benzene
 from alchemtest.gmx import (
+    load_benzene,
     load_expanded_ensemble_case_1,
     load_expanded_ensemble_case_2,
     load_expanded_ensemble_case_3,
+    load_water_particle_with_potential_energy,
+    load_water_particle_with_total_energy,
+    load_water_particle_without_energy,
 )
-from alchemtest.gmx import load_water_particle_with_potential_energy
-from alchemtest.gmx import load_water_particle_with_total_energy
-from alchemtest.gmx import load_water_particle_without_energy
 from numpy.testing import assert_almost_equal
 
-from alchemlyb.parsing.gmx import extract_dHdl, extract_u_nk, extract
+from alchemlyb.parsing.gmx import extract, extract_dHdl, extract_u_nk
 
 
 def test_dHdl():
