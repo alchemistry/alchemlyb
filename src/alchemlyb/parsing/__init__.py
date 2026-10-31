@@ -1,5 +1,7 @@
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable
+from typing import Any
+
 import pandas as pd
 
 
@@ -39,7 +41,7 @@ def _init_attrs_dict(
         outfile: str, T: float, *args: Any, **kwargs: Any
     ) -> dict[str, None | pd.DataFrame]:
         dict_with_df = func(outfile, T, *args, **kwargs)
-        for k in dict_with_df.keys():
+        for k in dict_with_df:
             dataframe = dict_with_df[k]
             if dataframe is not None:
                 dataframe.attrs["temperature"] = T

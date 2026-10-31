@@ -166,4 +166,3 @@ class WorkflowBase:
 
     def plot(self, *args: Any, **kwargs: Any) -> None:
         """The function for producing any plots."""
-        pass

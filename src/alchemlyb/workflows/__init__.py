@@ -1,6 +1,6 @@
 __all__ = [
-    "base",
     "ABFE",
+    "base",
 ]
 
 from .abfe import ABFE

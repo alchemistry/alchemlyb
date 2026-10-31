@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.font_manager import FontProperties as FP
-from matplotlib.axes import Axes
 import pandas as pd
+from matplotlib.axes import Axes
+from matplotlib.font_manager import FontProperties as FP
 
 from ..postprocessors.units import get_unit_converter
 
@@ -82,7 +82,7 @@ def plot_convergence(
         backward_error = np.zeros(len(backward))
 
     if ax is None:  # pragma: no cover
-        fig, ax = plt.subplots(figsize=(8, 6))
+        _fig, ax = plt.subplots(figsize=(8, 6))
 
     plt.setp(ax.spines["bottom"], color="#D2B9D3", lw=3, zorder=-2)
     plt.setp(ax.spines["left"], color="#D2B9D3", lw=3, zorder=-2)
@@ -147,7 +147,7 @@ def plot_convergence(
         frameon=False,
     )
     ax.set_xlabel(r"Fraction of the simulation time", fontsize=16, color="#151B54")
-    ax.set_ylabel(r"$\Delta G$ ({})".format(units), fontsize=16, color="#151B54")
+    ax.set_ylabel(rf"$\Delta G$ ({units})", fontsize=16, color="#151B54")
     plt.tick_params(axis="x", color="#D2B9D3")
     plt.tick_params(axis="y", color="#D2B9D3")
     plt.tight_layout()
@@ -215,7 +215,7 @@ def plot_block_average(
         df_avg_error = np.zeros(len(df_avg))
 
     if ax is None:  # pragma: no cover
-        fig, ax = plt.subplots(figsize=(8, 6))
+        _fig, ax = plt.subplots(figsize=(8, 6))
 
     plt.setp(ax.spines["bottom"], color="#D2B9D3", lw=3, zorder=-2)
     plt.setp(ax.spines["left"], color="#D2B9D3", lw=3, zorder=-2)
@@ -268,7 +268,7 @@ def plot_block_average(
         frameon=False,
     )
     ax.set_xlabel(r"Fraction of the Simulation Time", fontsize=16, color="#151B54")
-    ax.set_ylabel(r"$\Delta G$ ({})".format(units), fontsize=16, color="#151B54")
+    ax.set_ylabel(rf"$\Delta G$ ({units})", fontsize=16, color="#151B54")
     plt.tick_params(axis="x", color="#D2B9D3")
     plt.tick_params(axis="y", color="#D2B9D3")
     plt.tight_layout()

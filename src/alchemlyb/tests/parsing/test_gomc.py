@@ -2,7 +2,7 @@
 
 from alchemtest.gomc import load_benzene
 
-from alchemlyb.parsing.gomc import extract_dHdl, extract_u_nk, extract
+from alchemlyb.parsing.gomc import extract, extract_dHdl, extract_u_nk
 
 
 def test_dHdl():

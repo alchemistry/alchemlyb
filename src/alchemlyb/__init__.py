@@ -1,5 +1,6 @@
+from collections.abc import Callable, Sequence
 from functools import wraps
-from typing import Any, Callable, Sequence
+from typing import Any
 
 import pandas as pd
 

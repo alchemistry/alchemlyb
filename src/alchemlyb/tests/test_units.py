@@ -5,13 +5,13 @@ import alchemlyb
 from alchemlyb import pass_attrs
 from alchemlyb.postprocessors.units import to_kT
 from alchemlyb.preprocessing import (
-    dhdl2series,
-    u_nk2series,
-    decorrelate_u_nk,
     decorrelate_dhdl,
+    decorrelate_u_nk,
+    dhdl2series,
+    equilibrium_detection,
     slicing,
     statistical_inefficiency,
-    equilibrium_detection,
+    u_nk2series,
 )
 
 
