@@ -4,3 +4,7 @@
 # ensure all recent changes were black-formatted (prep for 2.4.0)
 d7058a5a8e489a9213ed499e999bb226397bc708
 
+# ruff code linting and formatting
+bcad7d873686b892e7f37ee86abc66f624753610
+04b8e57d4b6a2c46cbd8046174ca79353f34704e
+
