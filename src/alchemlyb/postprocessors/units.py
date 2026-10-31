@@ -2,9 +2,10 @@
 Unit conversion and constants
 """
 
-from scipy.constants import R, calorie
+from collections.abc import Callable
+
 import pandas as pd
-from typing import Callable
+from scipy.constants import R, calorie
 
 #: conversion factor from kJ to kcal, based on :data:`scipy.constants.calorie`
 #: in :mod:`scipy.constants`

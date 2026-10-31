@@ -1,6 +1,6 @@
 import pytest
 
-from alchemlyb.parsing.parquet import extract_u_nk, extract_dHdl
+from alchemlyb.parsing.parquet import extract_dHdl, extract_u_nk
 
 
 @pytest.mark.parametrize(
