@@ -3,7 +3,6 @@
 import bz2
 import gzip
 import os
-
 from os import PathLike
 from typing import TextIO
 
@@ -70,8 +69,8 @@ def anyopen(
     compressions = {"bzip2": bz2_open, "gzip": gzip_open}
 
     # if `datafile` is a stream
-    if (hasattr(datafile, "read") and any((i in mode for i in ("r",)))) or (
-        hasattr(datafile, "write") and any((i in mode for i in ("w", "a", "x")))
+    if (hasattr(datafile, "read") and any(i in mode for i in ("r",))) or (
+        hasattr(datafile, "write") and any(i in mode for i in ("w", "a", "x"))
     ):
         # if no compression specified, just pass the stream through
         if compression is None:
@@ -93,9 +92,6 @@ def anyopen(
     # use extension to determine the compression used, if present
     elif compression is None:
         ext = os.path.splitext(datafile)[1]  # type: ignore[arg-type]
-        if ext in extensions:
-            opener = extensions[ext]
-        else:
-            opener = open  # type: ignore[assignment]
+        opener = extensions.get(ext, open)
 
     return opener(datafile, mode)  # type: ignore[arg-type]

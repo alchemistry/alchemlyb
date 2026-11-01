@@ -1,13 +1,13 @@
 from .convergence import (
-    forward_backward_convergence,
-    fwdrev_cumavg_Rc,
     A_c,
     block_average,
+    forward_backward_convergence,
+    fwdrev_cumavg_Rc,
 )
 
 __all__ = [
-    "forward_backward_convergence",
-    "fwdrev_cumavg_Rc",
     "A_c",
     "block_average",
+    "forward_backward_convergence",
+    "fwdrev_cumavg_Rc",
 ]

@@ -100,16 +100,28 @@ For TI extraction (`extract_dHdl`):
 
 """
 
+import glob
 import os
 import warnings
 from collections.abc import Callable
+
 import numpy as np
 import pandas as pd
-import glob
 from scipy import constants
 
-from . import _init_attrs
 from ..postprocessors.units import R_kJmol, kJ2kcal
+from . import _init_attrs
+
+
+def _read_lammps_table(filepath: str) -> pd.DataFrame:
+    """Read a LAMMPS ``fix ave/time`` table with numeric columns.
+
+    Pandas 3+ may infer large timesteps as strings when values are null-padded
+    in some compressed outputs; coerce to float and drop incomplete rows.
+    """
+    table = pd.read_csv(filepath, sep=" ", comment="#", header=None)
+    numeric = table.apply(pd.to_numeric, errors="coerce")
+    return numeric.dropna(how="any").reset_index(drop=True)
 
 
 def _validate_ensemble_parameters(ensemble: str, pressure: float | None) -> None:
@@ -194,8 +206,8 @@ def beta_from_units(T: float, units: str) -> float:
             beta = 1 / (constants.R * T / constants.Avogadro * 1e21)
         case _:
             raise ValueError(
-                "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron, "
-                "lj, metal, micro, nano, real, si".format(units)
+                f"LAMMPS unit type, {units}, is not supported. Supported types are: cgs, electron, "
+                "lj, metal, micro, nano, real, si"
             )
 
     return beta
@@ -250,15 +262,18 @@ def energy_from_units(units: str) -> float:
             scaling_factor = 1
         case _:
             raise ValueError(
-                "LAMMPS unit type, {}, is not supported. Supported types are: cgs, electron, "
-                "lj, metal, micro, nano, real, si".format(units)
+                f"LAMMPS unit type, {units}, is not supported. Supported types are: cgs, electron, "
+                "lj, metal, micro, nano, real, si"
             )
 
     return scaling_factor
 
 
 def tuple_from_filename(
-    filename: str, separator: str = "_", indices: list[int] = [2, 3], prec: int = 4
+    filename: str,
+    separator: str = "_",
+    indices: tuple[int] | list[int] = (2, 3),
+    prec: int = 4,
 ) -> tuple[float, ...]:
     r"""Pull a tuple representing the lambda values used, as defined by the filenames.
 
@@ -268,29 +283,29 @@ def tuple_from_filename(
 
     Examples with different indices configurations:
 
-    **Default indices=[2, 3], separator="_":**
+    **Default indices=(2, 3), separator="_":**
 
     - ``fep_0.0_1.0.txt`` → (0.0, 1.0)
     - ``simulation_data_0.25_0.75_output.dat`` → (0.25, 0.75)
     - ``lammps_run_0.5_1.0.log.gz`` → (0.5, 1.0)
     - ``path/to/file_prefix_0.1_0.9_suffix.txt.bz2`` → (0.1, 0.9)
 
-    **indices=[0, 1], separator="_":**
+    **indices=(0, 1), separator="_":**
 
     - ``0.0_1.0_fep.txt`` → (0.0, 1.0)
     - ``0.25_0.75_simulation.dat`` → (0.25, 0.75)
 
-    **indices=[1, 3], separator="_":**
+    **indices=(1, 3), separator="_":**
 
     - ``run_0.0_data_1.0_output.txt`` → (0.0, 1.0)
     - ``sim_0.25_info_0.75_result.dat`` → (0.25, 0.75)
 
-    **indices=[0, 2], separator="-":**
+    **indices=(0, 2), separator="-":**
 
     - ``0.0-data-1.0.txt`` → (0.0, 1.0)
     - ``0.25-sim-0.75.dat`` → (0.25, 0.75)
 
-    **indices=[-2, -1], separator="_" (negative indexing):**
+    **indices=(-2, -1), separator="_" (negative indexing):**
 
     - ``prefix_data_0.0_1.0.txt`` → (0.0, 1.0)
     - ``long_filename_with_many_parts_0.25_0.75.dat`` → (0.25, 0.75)
@@ -298,7 +313,8 @@ def tuple_from_filename(
     The function automatically handles compressed files (.gz, .bz2) by removing the
     compression extensions before parsing.
 
-    This module is compatible with the standard outputs of `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`_.
+    This module is compatible with the standard outputs of
+    `generate_alchemical_lammps_inputs <https://github.com/usnistgov/generate_alchemical_lammps_inputs>`_.
 
     Parameters
     ----------
@@ -307,7 +323,7 @@ def tuple_from_filename(
         contain numerical lambda values separated by the specified separator.
     separator : str, default="_"
         Separator used to breakup the filename. The choice in ``indices`` is dependent on this choice.
-    indices : list, default=[2, 3]
+    indices : tuple or list, default=(2, 3)
         Indices used to pull :math:`\lambda` and :math:`\lambda'` from the filename
         components after splitting by separator. Supports both positive and negative indexing.
     prec : int, default=4
@@ -388,7 +404,7 @@ def lambda_from_filename(
 
 def get_bar_lambdas(
     fep_files: str | list[str],
-    indices: list[int] = [2, 3],
+    indices: tuple[int] | list[int] = (2, 3),
     prec: int = 4,
     force: bool = False,
 ) -> tuple[list[float], list[tuple[float, ...]], float | None]:
@@ -398,7 +414,7 @@ def get_bar_lambdas(
     ----------
     fep_files: str or list of str
         Path(s) to fepout files to extract data from.
-    indices : list[int], default=[2,3]
+    indices : tuple[int] or list[int], default=(2,3)
         In provided file names, using underscore as a separator, these indices mark the part of the filename
         containing the lambda information. If three values, implies a value of lambda2 is present.
         See :func:`tuple_from_filename` for details on how indices are used to extract lambda values.
@@ -425,12 +441,7 @@ def get_bar_lambdas(
     ]
     if len(indices) == 3:
         lambda2_list = list(
-            set(
-                [
-                    lambda_from_filename(y, index=indices[2], prec=prec)
-                    for y in fep_files
-                ]
-            )
+            {lambda_from_filename(y, index=indices[2], prec=prec) for y in fep_files}
         )
         if len(lambda2_list) > 1:
             raise ValueError(
@@ -442,10 +453,10 @@ def get_bar_lambdas(
     else:
         lambda2 = None
 
-    lambda_values = sorted(list(set([x for y in lambda_pairs for x in y])))
+    lambda_values = sorted({x for y in lambda_pairs for x in y})
 
     if [x for x in lambda_values if round(float(x), prec) < 0]:
-        raise ValueError("Lambda values must be positive: {}".format(lambda_values))
+        raise ValueError(f"Lambda values must be positive: {lambda_values}")
 
     # check that all needed lamba combinations are present
     lambda_dict = {x: [y[1] for y in lambda_pairs if y[0] == x] for x in lambda_values}
@@ -459,9 +470,7 @@ def get_bar_lambdas(
 
     if missing_combinations_mbar:
         warnings.warn(
-            "The following combinations of lambda and lambda prime are missing for MBAR analysis: {}".format(
-                missing_combinations_mbar
-            )
+            f"The following combinations of lambda and lambda prime are missing for MBAR analysis: {missing_combinations_mbar}"
         )
     else:
         return lambda_values, lambda_pairs, lambda2
@@ -487,9 +496,7 @@ def get_bar_lambdas(
 
     if missing_combinations_bar and not force:
         raise ValueError(
-            "BAR calculation cannot be performed without the following lambda-lambda prime combinations: {}".format(
-                missing_combinations_bar
-            )
+            f"BAR calculation cannot be performed without the following lambda-lambda prime combinations: {missing_combinations_bar}"
         )
 
     return lambda_values, lambda_pairs, lambda2
@@ -502,7 +509,7 @@ def extract_u_nk_from_u_n(
     column_lambda: int,
     column_U: int,
     column_U_cross: int,
-    dependence: Callable[[float], float] = lambda x: (x),
+    dependence: Callable[[float], float] = lambda x: x,
     index: int = -1,
     units: str = "real",
     prec: int = 4,
@@ -573,20 +580,20 @@ def extract_u_nk_from_u_n(
     beta = beta_from_units(T, units)
 
     if not isinstance(column_lambda, int):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY004
             f"Provided column for lambda must be type int. column_u_lambda: {column_lambda}, type: {type(column_lambda)}"
         )
     if not isinstance(column_U_cross, int):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY004
             f"Provided column for `U_cross` must be type int. column_U_cross: {column_U_cross}, type: {type(column_U_cross)}"
         )
     if not isinstance(column_U, int):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY004
             f"Provided column for `U` must be type int. column_U: {column_U}, type: {type(column_U)}"
         )
 
     lambda_values = list(
-        set([lambda_from_filename(y, index=index, prec=prec) for y in files])
+        {lambda_from_filename(y, index=index, prec=prec) for y in files}
     )
     lambda_values = sorted(lambda_values)
 
@@ -600,15 +607,13 @@ def extract_u_nk_from_u_n(
 
     for file in files:
         if not os.path.isfile(file):
-            raise ValueError("File not found: {}".format(file))
+            raise ValueError(f"File not found: {file}")
 
-        tmp_data = pd.read_csv(file, sep=" ", comment="#", header=None)
-        ind = [x for x in col_indices if x > len(tmp_data.columns)]
+        tmp_data = _read_lammps_table(file)
+        ind = [x for x in col_indices if x >= len(tmp_data.columns)]
         if len(ind) > 0:
             raise ValueError(
-                "Number of columns, {}, is less than indices: {}".format(
-                    len(tmp_data.columns), ind
-                )
+                f"Number of columns, {len(tmp_data.columns)}, is less than indices: {ind}"
             )
         data = tmp_data.iloc[:, col_indices].copy()
         data.columns = columns
@@ -639,9 +644,7 @@ def extract_u_nk_from_u_n(
 
                 if u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12][0] != 0:
                     raise ValueError(
-                        "Energy values already available for lambda, {}, lambda', {}.".format(
-                            lambda1, lambda12
-                        )
+                        f"Energy values already available for lambda, {lambda1}, lambda', {lambda12}."
                     )
 
                 u_nk.loc[u_nk[lambda1_col] == lambda1, lambda12] = beta * (
@@ -665,11 +668,11 @@ def extract_u_nk_from_u_n(
 def extract_u_nk(
     fep_files: str | list[str],
     T: float,
-    columns_lambda1: list[int] = [1, 2],
+    columns_lambda1: tuple[int] | list[int] = (1, 2),
     column_dU: int = 4,
     column_U: int = 3,
     column_lambda2: int | None = None,
-    indices: list[int] = [1, 2],
+    indices: tuple[int] | list[int] = (1, 2),
     units: str = "real",
     vdw_lambda: int = 1,
     ensemble: str = "nvt",
@@ -699,7 +702,7 @@ def extract_u_nk(
         aggregated using `glob <https://docs.python.org/3/library/glob.html>`_. For example, "/path/to/files/something_*_*.txt".
     T : float
         Temperature in Kelvin at which the simulation was sampled.
-    columns_lambda1 : list[int], default=[1,2]
+    columns_lambda1 : tuple[int] | list[int], default=(1,2)
         Indices for columns (column number minus one) representing (1) the lambda at which the system is equilibrated and (2) the lambda used
         in the computation of the potential energy.
     column_dU : int, default=4
@@ -709,10 +712,10 @@ def extract_u_nk(
     column_lambda2 : int, default=None
         Index for column (column number minus one) for the unchanging value of lambda for another potential.
         If ``None`` then we do not expect two lambda values being varied.
-    indices : list[int], default=[1,2]
+    indices : tuple[int] or list[int], default=(1,2)
         In provided file names, using underscore as a separator, these indices mark the part of the filename
         containing the lambda information for :func:`alchemlyb.parsing.get_bar_lambdas`. If ``column_lambda2 != None``
-        this list should be of length three, where the last value represents the invariant lambda.
+        this tuple or list should be of length three, where the last value represents the invariant lambda.
     units : str, default="real"
         Unit system used in LAMMPS calculation. Currently supported: "cgs", "electron", "lj", "metal", "micro", "nano",
         "real", "si"
@@ -779,11 +782,11 @@ def extract_u_nk(
             f"Provided column for lambda must be type int. column_lambda2: {column_lambda2}, type: {type(column_lambda2)}"
         )
     if not isinstance(column_dU, int):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY004
             f"Provided column for dU_nk must be type int. column_dU: {column_dU}, type: {type(column_dU)}"
         )
     if not isinstance(column_U, int):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY004
             f"Provided column for U must be type int. column_U: {column_U}, type: {type(column_U)}"
         )
 
@@ -864,15 +867,13 @@ def extract_u_nk(
     # Parse Files
     for file in files:
         if not os.path.isfile(file):
-            raise ValueError("File not found: {}".format(file))
+            raise ValueError(f"File not found: {file}")
 
-        tmp_data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        tmp_data = _read_lammps_table(file)
         ind = [x for x in col_indices if x >= len(tmp_data.columns)]
         if len(ind) > 0:
             raise ValueError(
-                "Number of columns, {}, is less than necessary for indices: {}".format(
-                    len(tmp_data.columns), ind
-                )
+                f"Number of columns, {len(tmp_data.columns)}, is less than necessary for indices: {ind}"
             )
         data = tmp_data.iloc[:, col_indices].copy()
         data.columns = columns
@@ -891,7 +892,7 @@ def extract_u_nk(
                 raise ValueError(
                     "Lambda value found in a file does not align with those in the filenames."
                     " Check that 'columns_lambda1[0]' or 'prec' are defined correctly. lambda"
-                    " file: {}; lambda columns: {}".format(lambda1, lambda_values)
+                    f" file: {lambda1}; lambda columns: {lambda_values}"
                 )
             tmp_df = data.loc[data[lambda1_col] == lambda1]
             # Iterate over evaluated lambda' values at specific lambda state
@@ -905,7 +906,7 @@ def extract_u_nk(
                     raise ValueError(
                         "Lambda value found in a file does not align with those in the filenames. "
                         "Check that 'columns_lambda1[1]' or 'prec' are defined correctly. lambda"
-                        " file: {}; lambda columns: {}".format(lambda12, lambda_values)
+                        f" file: {lambda12}; lambda columns: {lambda_values}"
                     )
                 else:
                     column_name_value = lambda_values[column_list[0]]
@@ -952,9 +953,7 @@ def extract_u_nk(
 
                 if u_nk.iloc[row_indices, column_index][0] != 0:
                     raise ValueError(
-                        "Energy values already available for lambda, {}, lambda', {}. Check for a duplicate file.".format(
-                            lambda1, lambda12
-                        )
+                        f"Energy values already available for lambda, {lambda1}, lambda', {lambda12}. Check for a duplicate file."
                     )
                 if lambda1 == lambda12 and not np.all(tmp_df2["dU_nk"][0] <= tol):
                     raise ValueError(
@@ -985,14 +984,8 @@ def extract_u_nk(
                     tmp_df2 = tmp_df2.set_index("time").reindex(new_index).reset_index()
 
                     warnings.warn(
-                        "Number of energy values in file, {}, N={}, inconsistent with previous".format(
-                            file,
-                            old_length,
-                        )
-                        + " files of length, {}. Adding NaN to row: {}".format(
-                            u_nk.iloc[row_indices, column_index].shape[0],
-                            np.unique(np.where(tmp_df2.isna())[0]),
-                        )
+                        f"Number of energy values in file, {file}, N={old_length}, inconsistent with previous"
+                        + f" files of length, {u_nk.iloc[row_indices, column_index].shape[0]}. Adding NaN to row: {np.unique(np.where(tmp_df2.isna())[0])}"
                     )
 
                 # calculate reduced potential u_k = dH + pV + U
@@ -1023,7 +1016,7 @@ def extract_dHdl_from_u_n(
     T: float,
     column_lambda: int | None = None,
     column_u_cross: int | None = None,
-    dependence: Callable[[float], float] = lambda x: (1 / x),
+    dependence: Callable[[float], float] = lambda x: 1 / x,
     units: str = "real",
     prec: int = 4,
 ) -> pd.DataFrame:
@@ -1080,11 +1073,11 @@ def extract_dHdl_from_u_n(
     beta = beta_from_units(T, units)
 
     if not isinstance(column_lambda, int):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY004
             f"Provided column for lambda must be type int. column_lambda: {column_lambda}, type: {type(column_lambda)}"
         )
     if not isinstance(column_u_cross, int):
-        raise ValueError(
+        raise ValueError(  # noqa: TRY004
             f"Provided column for u_cross must be type int. column_u_cross: {column_u_cross}, type: {type(column_u_cross)}"
         )
 
@@ -1093,16 +1086,16 @@ def extract_dHdl_from_u_n(
 
     for file in files:
         if not os.path.isfile(file):
-            raise ValueError("File not found: {}".format(file))
+            raise ValueError(f"File not found: {file}")
 
-        data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        data = _read_lammps_table(file)
         lx = len(data.columns)
         if any(x >= lx for x in col_indices):
             raise ValueError(
-                "Number of columns, {}, is less than index: {}".format(lx, col_indices)
+                f"Number of columns, {lx}, is less than index: {col_indices}"
             )
 
-        data = data.iloc[:, col_indices]
+        data = data.iloc[:, col_indices].copy()
 
         data.columns = ["time", "fep-lambda", "U"]
         data["fep-lambda"] = data["fep-lambda"].round(prec)
@@ -1125,7 +1118,7 @@ def extract_dHdl(
     column_lambda1: int = 1,
     column_dlambda1: int = 2,
     column_lambda2: int | None = None,
-    columns_derivative: list[int] = [8, 7],
+    columns_derivative: tuple[int] | list[int] = (8, 7),
     vdw_lambda: int = 1,
     units: str = "real",
     prec: int = 4,
@@ -1157,7 +1150,7 @@ def extract_dHdl(
     column_lambda2 : int, default=None
         Index for column (column number minus one) for a second value of lambda.
         If this array is ``None`` then we do not expect two lambda values.
-    columns_derivative : list[int], default=[8, 7]
+    columns_derivative : tuple[int] or list[int], default=(8, 7)
         Indices for columns (column number minus one) representing the the forward
         and backward derivative respectively.
     vdw_lambda : int, default=1
@@ -1189,40 +1182,30 @@ def extract_dHdl(
     else:
         files = glob.glob(fep_files)
     if not files:
-        raise ValueError("No files have been found that match: {}".format(fep_files))
+        raise ValueError(f"No files have been found that match: {fep_files}")
 
     beta = beta_from_units(T, units)
 
     if not isinstance(column_lambda1, int):
-        raise ValueError(
-            "Provided column_lambda1 must be type 'int', instead of {}".format(
-                type(column_lambda1)
-            )
+        raise ValueError(  # noqa: TRY004
+            f"Provided column_lambda1 must be type 'int', instead of {type(column_lambda1)}"
         )
     if column_lambda2 is not None and not isinstance(column_lambda2, int):
         raise ValueError(
-            "Provided column_lambda2 must be type 'int', instead of {}".format(
-                type(column_lambda2)
-            )
+            f"Provided column_lambda2 must be type 'int', instead of {type(column_lambda2)}"
         )
     if not isinstance(column_dlambda1, int):
-        raise ValueError(
-            "Provided column_dlambda1 must be type 'int', instead of {}".format(
-                type(column_dlambda1)
-            )
+        raise ValueError(  # noqa: TRY004
+            f"Provided column_dlambda1 must be type 'int', instead of {type(column_dlambda1)}"
         )
 
     if len(columns_derivative) != 2:
         raise ValueError(
-            "Provided columns for derivative values must have a length of two, columns_derivative: {}".format(
-                columns_derivative
-            )
+            f"Provided columns for derivative values must have a length of two, columns_derivative: {columns_derivative}"
         )
     if not np.all([isinstance(x, int) for x in columns_derivative]):
         raise ValueError(
-            "Provided column for columns_derivative must be type int. columns_derivative: {}, type: {}".format(
-                columns_derivative, type([type(x) for x in columns_derivative])
-            )
+            f"Provided column for columns_derivative must be type int. columns_derivative: {columns_derivative}, type: {type([type(x) for x in columns_derivative])}"
         )
 
     if column_lambda2 is None:
@@ -1242,16 +1225,16 @@ def extract_dHdl(
 
     for file in files:
         if not os.path.isfile(file):
-            raise ValueError("File not found: {}".format(file))
+            raise ValueError(f"File not found: {file}")
 
-        data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        data = _read_lammps_table(file)
         lx = len(data.columns)
         if any(x >= lx for x in col_indices):
             raise ValueError(
-                "Number of columns, {}, is less than index: {}".format(lx, col_indices)
+                f"Number of columns, {lx}, is less than index: {col_indices}"
             )
 
-        data = data.iloc[:, col_indices]
+        data = data.iloc[:, col_indices].copy()
         if column_lambda2 is None:
             # dU_back: U(l-dl) - U(l); dU_forw: U(l+dl) - U(l)
             data.columns = ["time", "fep-lambda", "dlambda", "dU_forw", "dU_back"]
@@ -1386,29 +1369,23 @@ def extract_H(
     else:
         files = glob.glob(fep_files)
     if not files:
-        raise ValueError("No files have been found that match: {}".format(fep_files))
+        raise ValueError(f"No files have been found that match: {fep_files}")
 
     _validate_ensemble_parameters(ensemble, pressure)
 
     beta = beta_from_units(T, units)
 
     if not isinstance(column_lambda1, int):
-        raise ValueError(
-            "Provided column_lambda1 must be type 'int', instead of {}".format(
-                type(column_lambda1)
-            )
+        raise ValueError(  # noqa: TRY004
+            f"Provided column_lambda1 must be type 'int', instead of {type(column_lambda1)}"
         )
     if not isinstance(column_pe, int):
-        raise ValueError(
-            "Provided column_pe must be type 'int', instead of {}".format(
-                type(column_pe)
-            )
+        raise ValueError(  # noqa: TRY004
+            f"Provided column_pe must be type 'int', instead of {type(column_pe)}"
         )
     if column_lambda2 is not None and not isinstance(column_lambda2, int):
         raise ValueError(
-            "Provided column_lambda2 must be type 'int', instead of {}".format(
-                type(column_lambda2)
-            )
+            f"Provided column_lambda2 must be type 'int', instead of {type(column_lambda2)}"
         )
 
     if column_lambda2 is None:
@@ -1425,16 +1402,16 @@ def extract_H(
 
     for file in files:
         if not os.path.isfile(file):
-            raise ValueError("File not found: {}".format(file))
+            raise ValueError(f"File not found: {file}")
 
-        data = pd.read_csv(file, sep=" ", comment="#", header=None)
+        data = _read_lammps_table(file)
         lx = len(data.columns)
         if any(x >= lx for x in col_indices):
             raise ValueError(
-                "Number of columns, {}, is less than index: {}".format(lx, col_indices)
+                f"Number of columns, {lx}, is less than index: {col_indices}"
             )
 
-        data = data.iloc[:, col_indices]
+        data = data.iloc[:, col_indices].copy()
         if column_lambda2 is None:
             columns = ["time", "fep-lambda", "U"]
         else:

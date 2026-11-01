@@ -8,13 +8,13 @@ from numpy.testing import assert_allclose
 
 import alchemlyb
 from alchemlyb.preprocessing import (
+    decorrelate_dhdl,
+    decorrelate_u_nk,
+    dhdl2series,
+    equilibrium_detection,
     slicing,
     statistical_inefficiency,
-    equilibrium_detection,
-    decorrelate_u_nk,
-    decorrelate_dhdl,
     u_nk2series,
-    dhdl2series,
 )
 
 
@@ -218,7 +218,7 @@ class CorrelatedPreprocessors:
         df_sub = self.slicer(data, lower=200, upper=5000, step=2)
         df_sliced = slicing(data, lower=200, upper=5000, step=2)
 
-        assert np.all((df_sub == df_sliced))
+        assert np.all(df_sub == df_sliced)
 
 
 class TestStatisticalInefficiency(TestSlicing, CorrelatedPreprocessors):
