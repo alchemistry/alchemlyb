@@ -451,7 +451,7 @@ def slicing(
        The rows with NaN values are not dropped by default.
     """
     try:
-        df = df.loc[lower:upper:step]  # type: ignore[misc]
+        df = df.loc[lower:upper:step]
     except KeyError:
         raise KeyError("DataFrame rows must be sorted by time, increasing.")
 
