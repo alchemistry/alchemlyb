@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 
+from ..postprocessors.units import R_kJmol, kJ2kcal
 from . import _init_attrs
 from .util import anyopen
-from ..postprocessors.units import R_kJmol, kJ2kcal
 
 k_b = R_kJmol * kJ2kcal
 
@@ -120,7 +120,7 @@ def _get_lambdas(fep_files: str | list[str]) -> None | list[float]:
     all_lambdas.update(lambda_fwd_map.values())
     all_lambdas.update(lambda_bwd_map.keys())
     all_lambdas.update(lambda_bwd_map.values())
-    return list(sorted(all_lambdas, reverse=not is_ascending))
+    return sorted(all_lambdas, reverse=not is_ascending)
 
 
 @_init_attrs
@@ -240,7 +240,7 @@ def extract_u_nk(
                     lambda_idws_at_start = (
                         float(line_split[10]) if "LAMBDA_IDWS" in line_split else None
                     )
-                    has_idws = True if lambda_idws_at_start is not None else False
+                    has_idws = lambda_idws_at_start is not None
 
                 # this line marks end of window; dump data into dataframe
                 if line_split[0] == "#Free":

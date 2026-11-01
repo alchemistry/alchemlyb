@@ -6,8 +6,8 @@ import pytest
 
 import alchemlyb
 from alchemlyb.convergence import forward_backward_convergence
-from alchemlyb.estimators import MBAR, TI, BAR
-from alchemlyb.visualisation import plot_convergence, plot_block_average
+from alchemlyb.estimators import BAR, MBAR, TI
+from alchemlyb.visualisation import plot_block_average, plot_convergence
 from alchemlyb.visualisation.dF_state import plot_dF_state
 from alchemlyb.visualisation.mbar_matrix import plot_mbar_overlap_matrix
 from alchemlyb.visualisation.ti_dhdl import plot_ti_dhdl
@@ -294,13 +294,13 @@ class Test_Units:
 
     @pytest.mark.parametrize("units", [None, "kT", "kJ/mol", "kcal/mol"])
     def test_plot_ti_dhdl(self, estimaters, units):
-        ti, mbar = estimaters
+        ti, _mbar = estimaters
         ax = plot_ti_dhdl(ti, units=units)
         assert isinstance(ax, matplotlib.axes.Axes)
         plt.close(ax.figure)
 
     def test_plot_ti_dhdl_unknown(self, estimaters):
-        ti, mbar = estimaters
+        ti, _mbar = estimaters
         with pytest.raises(ValueError):
             plot_ti_dhdl(ti, units="ddd")
 

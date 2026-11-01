@@ -2,31 +2,31 @@
 fixture that are made directly from parsing the files. Any additional operations like
 concat should be done at local level."""
 
+import pandas as pd
 import pytest
-from pytest import LogCaptureFixture
 from alchemtest.amber import load_bace_example, load_simplesolvated, load_tyk2_example
 from alchemtest.gmx import (
+    load_ABFE,
     load_benzene,
     load_ethanol,
     load_expanded_ensemble_case_1,
     load_expanded_ensemble_case_2,
     load_expanded_ensemble_case_3,
-    load_water_particle_with_total_energy,
     load_water_particle_with_potential_energy,
+    load_water_particle_with_total_energy,
     load_water_particle_without_energy,
-    load_ABFE,
 )
-import pandas as pd
 from alchemtest.gomc import load_benzene as gomc_load_benzene
 from alchemtest.namd import (
-    load_tyr2ala,
     load_idws,
     load_restarted,
     load_restarted_reversed,
+    load_tyr2ala,
 )
 from loguru import logger
+from pytest import LogCaptureFixture
 
-from alchemlyb.parsing import gmx, amber, gomc, namd
+from alchemlyb.parsing import amber, gmx, gomc, namd
 
 
 @pytest.fixture

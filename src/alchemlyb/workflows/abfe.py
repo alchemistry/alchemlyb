@@ -1,29 +1,30 @@
 import os
 import warnings
+from collections.abc import Callable
 from os.path import join
 from pathlib import Path
+from typing import Any
 
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import joblib
 from loguru import logger
 from matplotlib.axes import Axes
-from typing import Any, Callable
 
-from .base import WorkflowBase
 from .. import concat
 from ..convergence import forward_backward_convergence
-from ..estimators import MBAR, BAR, TI, FEP_ESTIMATORS, TI_ESTIMATORS
-from ..parsing import gmx, amber, parquet
+from ..estimators import BAR, FEP_ESTIMATORS, MBAR, TI, TI_ESTIMATORS
+from ..parsing import amber, gmx, parquet
 from ..postprocessors.units import get_unit_converter
 from ..preprocessing.subsampling import decorrelate_dhdl, decorrelate_u_nk
 from ..visualisation import (
+    plot_convergence,
+    plot_dF_state,
     plot_mbar_overlap_matrix,
     plot_ti_dhdl,
-    plot_dF_state,
-    plot_convergence,
 )
+from .base import WorkflowBase
 
 
 class ABFE(WorkflowBase):
@@ -573,7 +574,7 @@ class ABFE(WorkflowBase):
             u_nk = self.u_nk_list[0]
             stages = u_nk.reset_index("time").index.names
             logger.info("use the stage name from u_nk")
-        except Exception:
+        except Exception:  # noqa: BLE001
             dHdl = self.dHdl_list[0]
             stages = dHdl.reset_index("time").index.names
             logger.info("use the stage name from dHdl")

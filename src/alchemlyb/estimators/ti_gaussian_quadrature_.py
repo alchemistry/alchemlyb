@@ -1,7 +1,10 @@
+import typing
+
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from sklearn.base import BaseEstimator
-import numpy.typing as npt
+
 from .. import concat
 from .base import _EstimatorMixOut
 
@@ -36,7 +39,7 @@ class TI_GQ(BaseEstimator, _EstimatorMixOut):
 
     """
 
-    special_points = {
+    special_points: typing.ClassVar = {
         1: {"lambdas": [0.5], "weights": [1.0]},
         2: {"lambdas": [0.21132, 0.78867], "weights": [0.5, 0.5]},
         3: {"lambdas": [0.1127, 0.5, 0.88729], "weights": [0.27777, 0.44444, 0.27777]},
